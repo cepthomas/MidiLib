@@ -64,7 +64,7 @@ Probably I should make this into a nuget package at some point.
 # Third Party
 
 This application uses these FOSS components:
-- NAudio DLL including modified controls and midi file utilities: [NAudio](https://github.com/naudio/NAudio) (Microsoft Public License).
+- [NAudio](https://github.com/naudio/NAudio) (Microsoft Public License).
 
 
 # License

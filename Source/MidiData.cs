@@ -674,13 +674,11 @@ namespace MidiLib
         /// <param name="ppq"></param>
         public void ExportMidi(List<PatternInfo> patterns, string name, string exportPath, int ppq)
         {
-            //TODO2 export options: selected channels (e.g. drums)
             //TODO2 export options: as zip.
             //TODO2 export options: start/end time range?
 
             if (Directory.Exists(exportPath))
             {
-
                 foreach (var pattern in patterns)
                 {
                     var newfn = Path.Join(exportPath, $"{name}_{pattern.Name.Replace(' ', '_')}.mid");

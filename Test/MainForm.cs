@@ -52,6 +52,12 @@ namespace MidiLib.Test
 
         /// <summary>Prevent button press recursion.</summary>
         bool _guard = false;
+
+        /// <summary>Current loaded file.</summary>
+        string _fn = "";
+
+        /// <summary>Adjust to taste.</summary>
+        string _exportPath = @"C:\Dev\repos\MidiLib\out";
         #endregion
 
         #region Lifecycle
@@ -63,7 +69,6 @@ namespace MidiLib.Test
             InitializeComponent();
 
             _player = new(_midiDevice);
-            _player.StatusEvent += Player_StatusEvent;
         }
 
         /// <summary>
@@ -71,8 +76,6 @@ namespace MidiLib.Test
         /// </summary>
         void MainForm_Load(object? sender, EventArgs e)
         {
-            //KeyPreview = true; // for routing kbd strokes through MainForm_KeyDown
-
             // The text output.
             txtViewer.Font = Font;
             txtViewer.WordWrap = true;
@@ -119,8 +122,9 @@ namespace MidiLib.Test
             else
             {
                 OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
-                // @"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty";
-                // also in C:\Dev\repos\ClipExplorer\_files
+                // OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty");
+                // OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
+                // OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid");
             }
 
             LogMessage("INF Hello. C to clear text, W to toggle word wrap");
@@ -156,16 +160,6 @@ namespace MidiLib.Test
         #endregion
 
         #region State management
-        /// <summary>
-        /// Player has something to say.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Player_StatusEvent(object? sender, StatusEventArgs e)
-        {
-            this.InvokeIfRequired(_ => { LogMessage(e.Message); });
-        }
-
         /// <summary>
         /// General state management. Triggered by play button or the player via mm timer function.
         /// </summary>
@@ -304,6 +298,7 @@ namespace MidiLib.Test
         public bool OpenFile(string fn)
         {
             bool ok = true;
+            _fn = "";
 
             LogMessage($"INF Reading file: {fn}");
 
@@ -336,7 +331,7 @@ namespace MidiLib.Test
                     {
                         switch (p.Name)
                         {
-                            // These don't contain a pattern
+                            // These don't contain a pattern.
                             case "SFF1": // initial patches are in here
                             case "SFF2":
                             case "SInt":
@@ -364,6 +359,8 @@ namespace MidiLib.Test
                 {
                     btnPlay.Checked = true; // ==> Start()
                 }
+
+                _fn = fn;
             }
             catch (Exception ex)
             {
@@ -552,10 +549,13 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Export_Click(object sender, EventArgs e)
         {
-            // public void ExportMidi(List<PatternInfo> patterns, string name, string exportPath, int ppq)  TODO1
-            // export only selected channels or all if none selected.
-            // use original ppq, ptob.
+            // TODO2 export only selected channels (e.g. drums) or all if none selected.
 
+            List<PatternInfo> patterns = _mdata.Patterns;
+            string name = Path.GetFileNameWithoutExtension(_fn);
+
+            // Use original ppq.
+            _mdata.ExportMidi(patterns, name, _exportPath, _mdata.DeltaTicksPerQuarterNote);
         }
 
         /// <summary>

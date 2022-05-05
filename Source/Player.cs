@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,13 +15,6 @@ namespace MidiLib
     /// <summary>Player state.</summary>
     public enum RunState { Stopped, Playing, Complete }
     #endregion
-
-    /// <summary>Player has something to say or show.</summary>
-    public class StatusEventArgs : EventArgs
-    {
-        public string Message { get; set; } = "";
-        //public int Subdiv { get; set; } = -1;
-    }
 
     /// <summary>
     /// A "good enough" midi player.
@@ -38,6 +32,9 @@ namespace MidiLib
 
         ///<summary>Backing.</summary>
         int _currentSubdiv = 0;
+
+        ///<summary>Adjust to taste.</summary>
+        string _dumpFile = @"C:\Dev\repos\MidiLib\out\midi_out.txt";
         #endregion
 
         #region Properties
@@ -55,11 +52,6 @@ namespace MidiLib
 
         /// <summary>Log outbound traffic. Warning - can get busy.</summary>
         public bool LogMidi { get; set; } = false;
-        #endregion
-
-        #region Events
-        /// <summary>Something changed event.</summary>
-        public event EventHandler<StatusEventArgs>? StatusEvent;
         #endregion
 
         #region Lifecycle
@@ -111,7 +103,6 @@ namespace MidiLib
         public void Reset()
         {
             State = RunState.Stopped;
-            //Volume = 0.8;
             TotalSubdivs = 0;
             CurrentSubdiv = 0;
         }
@@ -313,24 +304,15 @@ namespace MidiLib
         /// <param name="evt"></param>
         void MidiSend(MidiEvent evt)
         {
-            _midiOut?.Send(evt.GetAsShortMessage());
-
-            if (LogMidi)
+            if(_midiOut is not null)
             {
-                LogMessage($"SND {evt}");
+                _midiOut.Send(evt.GetAsShortMessage());
+
+                if (LogMidi)
+                {
+                    File.AppendAllText(_dumpFile, $"SND {evt}");
+                }
             }
-        }
-
-        /// <summary>
-        /// Talk about it.
-        /// </summary>
-        /// <param name="msg"></param>
-        void LogMessage(string msg)
-        {
-            StatusEvent?.Invoke(this, new StatusEventArgs()
-            {
-                Message = msg
-            });
         }
         #endregion
     }
