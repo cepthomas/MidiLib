@@ -1,0 +1,75 @@
+
+MIDI and Style Player Help
+
+Select menu Setup | MIDI Setup to select MIDI Device for playback.
+Select menu File | Open to Open a MIDI or a Style File.
+
+MIDI files can be paused or stopped while playing.
+
+Style files can be 
+- played like MIDI files 
+or 
+- user selected parts in Style files can be looped
+
+Select menu File | Exit to end the program.
+
+For programmers only
+This program can be run from a bat file in several ways. The command is:
+
+javaw -jar <the path to>/MIDIandStylePlayer.jar parameter1 parameter2 parameter3 parameter4
+
+parameter1 (optional): the name of a file to open. If the file name has spaces, the file name must be in quotes. 
+parameter2 (optional, requires parameter1): play 
+parameter3 (optional, requires parameter1 and parameter2): part:style_section:loop number 
+parameter4 (optional, requires parameter1 and parameter2): hidden
+
+If "<the path to>" has spaces, the entire jar file name must be in quotes.
+
+Sample command: 
+javaw -jar "C:/my programs/MIDIandStylePlayer.jar" "C:/files/my style.sty" play part:MA:4 hidden
+
+- If no parameter is defined: The program just opens 
+- If parameter1 is defined: The program opens and loads the defined file 
+- If parameter1 and parameter2 are defined: The program opens; loads the defined file and starts playing this file 
+- If parameter1 and parameter2 and parameter3 are defined: The program opens; loads the defined file; starts playing the defined style section the loopnumber times; and closes automatically. 
+- If parameter4 is defined, the User Interface is hidden and the program closes automatically.
+
+parameter1 (the "file name") MUST be the first parameter; the order of the remaining parameters does not matter.
+
+Style section format: 
+MA = Main A; MB = Main B; MC = Main C; MD = Main D 
+IA = Intro A; IB = Intro B; IC = Intro C; ID = Intro D 
+EA = Ending A; EB = Ending B; EC = Ending C; ED = Ending D 
+FAA = Fill In AA; FBB = Fill In BB; FCC = Fill In CC; FDD = Fill In DD 
+FAB = Fill In AB; FBA = Fill In BA (breaks)
+
+Associating a file type (e.g. ".sty") to this program:
+
+1. Create a bat file (e.g. "MIDIandStylePlayer.bat") in Notepad with this command: javaw -jar "<the path to>/MIDIandStylePlayer.jar" %1
+
+2. Convert this bat file to an executable file (".exe" extension) using a converter. Search Google to find a converter for your system. Give the converted file a name, e.g. "MIDIandStylePlayer.exe"
+
+3. In Explorer, right click a file of the type (e.g. ".sty") you want to associate to this program.
+
+4. Select "Open with"; find the executable "MIDIandStylePlayer.exe" at your computer; and select this.
+
+5. If you want to associate more file types to this program, repeat step 3 and 4.
+
+Settings Files Location
+Settings files are saved in a subfolder (named jososoft) to the Users Application Data Folder.
+
+In newer Windows versions you will find the Settings Files in folder:
+C:\Users\<user>\AppData\Roaming\jososoft
+
+Settings Files Editing
+It is NOT recommended to edit the Settings Files manually.
+
+However, you can edit files with ini and dat extensions in Note Pad.
+
+When saving the edited file make sure to save it in the right name by selecting All Files when saving. Otherwise you wil get a file with double extension, e.g. 'programdata.ini.txt'.
+
+Files with other extensions that the above mentioned are not manually editable.
+
+If Settings Files are deleted the program will automatically create new files. Notice that these new Settings Files will hold default values.
+
+Notice that the Settings Files format is not documented; and I cannot make any troubleshooting if the Settings Files has been edited manually.

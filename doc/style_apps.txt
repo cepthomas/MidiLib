@@ -1,0 +1,169 @@
+7.1.1 General Style Software
+-----------------------------------------
+
+Midi and Style Player (by Jørgen Sørensen)
+(Note: A standard midi player will not produce an acceptable result for styles.)
+http://www.jososoft.dk/yamaha/software.htm
+
+MidiPlayer (by Michael P. Bedesem)
+Supports playing midi, style, voice, multipad, wav and mp3 files on a PC. Views all internals of a style file in detail..
+(Note: A standard midi player will not produce an acceptable result for styles.)
+http://psrtutorial.com/MB/midiplayer.html
+
+StyleDump (by Michael P. Bedesem)
+Views all internals of a style file in detail. (Unlike MidiPlayer, StylePlayer does not convert or modify the file in any way.)
+http://psrtutorial.com/MB/styledump.html
+StyleDump is a general purpose file viewer for:
+    Yamaha style files (SFF1 & 2)
+    Section midi data (Main A, Ending A, etc)
+    CASM
+    OTS
+    MusicFinder database entries
+    Midi song files
+    Voice edit files
+    Organ flute files
+    Multipads
+The listings include midi events, meta events, sysex events and any special commands, where known. Wherever possible and appropriate, the contents, including sysex commands, have been translated to English descriptions and decimal values. The displayed information may be sorted, searched, columns rearranged, printed, or copied to the clipboard. While the program MidiPlayer includes some of these capabilities, StyleDump works on the raw data, whereas MidiPlayer performs inter-instrument conversions and file corrections
+
+Style Files - Introduction and Details
+Peter Wierzba / Michael P. Bedesem Page 44 / 55
+V2.1
+StylePlayer (by Michael P. Bedesem)
+Supports playing style files on a PC. Similar to MidiPlayer but more focused on style playing.
+(Note: A standard midi player will not produce an acceptable result for styles.)
+http://psrtutorial.com/MB/styleplayer.html
+
+7.1.2 Style Adaptation Software
+-----------------------------------------
+This section lists software which may be used if a style should only be adapted to a different keyboard model.
+
+MidiPlayer (by Michael P. Bedesem)
+Supports various functions to convert styles for the different PSR instruments.
+http://psrtutorial.com/MB/midiplayer.html
+
+Mix Master (by Michael P. Bedesem)
+Supports various functions to convert styles for the different PSR instruments.
+http://psrtutorial.com/MB/mixMaster.html
+
+Style Old Format Converter (by Jørgen Sørensen)
+Converts styles for use on older/smaller keyboards.
+http://www.jososoft.dk/yamaha/software.htm
+
+Style Revoicer (by Jørgen Sørensen)
+Change voices and parameters, transpose etc. in style files.
+http://www.jososoft.dk/yamaha/software.htm
+
+7.1.3 Style Modification Software
+-----------------------------------------
+This section lists software which may be used to modify a style in various ways.
+Style Creator (in the PSR/Tyros)
+CasmEdit (by Evgeny Osenenko)
+Manipulate style files and create and modify CASM sections.
+http://www.mnppsaturn.ru/osenenko/Main_eng.htm
+
+CASM Editor
+Displays and edits the CASM section.
+http://www.jososoft.dk/yamaha/software.htm
+
+MDB Editor (by Jørgen Sørensen)
+Add, edit or delete records in the MDB section in style files.
+http://www.jososoft.dk/yamaha/software.htm
+
+MidiPlayer (by Michael P. Bedesem)
+Edit channel transpose, OTS and individual (vs measure) voice, volume, pan, tempo, and
+effect events. Converts styles (voices, volumes, OTS) from one instrument to another
+(including MegaVoice to standard voice) .
+http://psrtutorial.com/MB/midiplayer.html
+
+Mix Master (by Michael P. Bedesem)
+Supports editing of patterns (note/velocity/length/time), channel assignments, voices, effects,
+controllers, user sysex, notes, drum kits, drum kit & voice assignment, drum note
+characteristics (vol, pan, effect send, pitch, LPF, EG Rate), quantize, fade In/Out, Retardando 
+Style Files - Introduction and Details
+Peter Wierzba / Michael P. Bedesem Page 45 / 55
+V2.1
+Casm viewing but no editing functions. Does not destroy the Casm or other style sections
+when file is saved.
+http://psrtutorial.com/MB/mixMaster.html
+
+OTS Editor (by Jørgen Sørensen)
+Edit all parameters in OTS sections.
+http://www.jososoft.dk/yamaha/software.htm
+
+PsrStyleDatabase (by Peter Wierzba)
+Can also add, edit or delete records in the MDB section in style files.
+http://www.wierzba.homepage.t-online.de/
+
+StyleAdjust (by Michael P. Bedesem)
+This program permits unlimited experimentation with the Tempo and note duration of a style
+http://psrtutorial.com/MB/bedesem.html (available by email request to mpb@sover.net)
+
+StyleEdit (by Michael P. Bedesem)
+Edit internal stylename, tempo, copyright info and main section order for a PSR style.
+http://psrtutorial.com/MB/bedesem.html (available by email request to mpb@sover.net)
+
+StyleFix (by Michael P. Bedesem)
+Convert internal names from numbers to names, replace bass voices for older instruments,
+exchange CD for AB sections, add a Break, remove OTS/MF Database sections.
+http://psrtutorial.com/MB/bedesem.html (available by email request to mpb@sover.net)
+
+Style Half Bar Fill Creator (by Jørgen Sørensen)
+Create fill in's and breaks of half the normal bar length, e.g. a 2/4 fill in a 4/4 style file.
+http://www.jososoft.dk/yamaha/software.htm
+
+StyleMaker (by Michael P. Bedesem)
+This program supports editing an existing style file in a sequencer, or creating a PSR style
+from a midi song file, or midi/style templates (including Band In The Box styles).
+http://psrtutorial.com/MB/bedesem.html (No longer supported; available by email request to
+mpb@sover.net)
+
+Style ReMixer (by Jørgen Sørensen)
+Remix style parts in styles.
+http://www.jososoft.dk/yamaha/software.htm
+
+Style Revoicer (by Jørgen Sørensen)
+Change voices and parameters, transpose etc. in style files.
+http://www.jososoft.dk/yamaha/software.htm
+
+Style Split and Splice (by Jørgen Sørensen)
+Split and splice style files for editing the midi part of the style file with sequencer software.
+http://www.jososoft.dk/yamaha/software.htm
+
+Style Tempo Editor (by Jørgen Sørensen)
+Set individual tempo in style parts.
+http://www.jososoft.dk/yamaha/software.htm
+
+Style Time and Tempo in Name (by Jørgen Sørensen)
+Add time signature and tempo values in the style file name.
+http://www.jososoft.dk/yamaha/software.htm
+
+Style Time Editor (by Jørgen Sørensen)
+Set individual time signatures in style parts.
+http://www.jososoft.dk/yamaha/software.htm
+
+Visual Styler (by MojoFlux)
+Copy style parts from more style files to one single style file.
+http://www.crestonhall.com/music/vs.php
+
+7.1.4 Style Making Software
+-----------------------------------------
+This section lists software which may be used to create styles from scratch or from midi files.
+Style Creator (in the PSR/Tyros)
+
+Midi2style (by Jørgen Sørensen)
+For creating style files from midi files.
+http://www.jososoft.dk/yamaha/software.htm
+
+StyleMaker (by Michael P. Bedesem)
+http://psrtutorial.com/MB/bedesem.html
+
+One Man Band
+http://www.1manband.nl/omb.htm
+
+StyleMagic YA
+http://www.midisoft.pl/en
+
+Style Works XT
+http://www.emc-musicsoftware.com
+7.2 Midi Specification and Tutorials
+This chapter provides links to documents explaining th

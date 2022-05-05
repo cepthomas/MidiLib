@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>MidiLib.Test</RootNamespace>
+    <AssemblyName>MidiLib.Test</AssemblyName>
+    <Deterministic>False</Deterministic>
+    <Description>MidiLib tester</Description>
+    <Copyright>MIT License</Copyright>
+    <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>CS1591;CA1822</NoWarn>
+    <Nullable>enable</Nullable>
+    <!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
+    <SatelliteResourceLanguages>none</SatelliteResourceLanguages> <!-- en none -->
+    <!-- <ApplicationIcon>Resources\Morso.ico</ApplicationIcon> -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Source\Source.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="NBagOfTricks">
+      <HintPath>..\lib\NBagOfTricks.dll</HintPath>
+    </Reference>
+    <Reference Include="NBagOfUis">
+      <HintPath>..\lib\NBagOfUis.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
