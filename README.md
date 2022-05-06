@@ -16,6 +16,16 @@ New:
 |   |   - tests from old projects?
 ```
 
+# Diagrams?
+
+```mermaid
+  graph TD;
+      A-->B;
+      A-->C;
+      B-->D;
+      C-->D;
+```
+
 # Design
 ## Data is MidiData and PatternInfo.
 - Processes and contains a massaged version of the midi/style file contents.
