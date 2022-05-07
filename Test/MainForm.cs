@@ -113,6 +113,10 @@ namespace MidiLib.Test
             sldTempo.Value = _defaultTempo;
             SetTimer();
 
+            // Make sure out path exists.
+            DirectoryInfo di = new(_exportPath);
+            di.Create();
+
             // Look for filename passed in.
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1)
@@ -530,10 +534,10 @@ namespace MidiLib.Test
             try
             {
                 // Collect filters.
-                List<string> patterns = new();
+                List<string> patternNames = new();
                 foreach(var p in lbPatterns.CheckedItems)
                 {
-                    patterns.Add(p.ToString()!);
+                    patternNames.Add(p.ToString()!);
                 }
 
                 List<int> channels = new();
@@ -542,21 +546,27 @@ namespace MidiLib.Test
                     channels.Add(cc.ChannelNumber);
                 }
 
-                if (sender == btnDumpSeq)
+                if (sender == btnDumpAll)
                 {
-                    var s = _mdata.DumpSequentialEvents(patterns, channels);
+                    var s = _mdata.DumpAllEvents(channels);
                     LogMessage($"INF Dumped to {s}");
                 }
-                else if (sender == btnDumpGrouped)
+                else if (sender == btnDumpPattern)
                 {
-                    var s = _mdata.DumpGroupedEvents(patterns, channels);
-                    LogMessage($"INF Dumped to {s}");
+                    foreach(var patternName in patternNames)
+                    {
+                        var s = _mdata.DumpGroupedEvents(patternName, channels, true);
+                        LogMessage($"INF Dumped to {s}");
+                    }
                 }
                 else if (sender == btnExport)
                 {
-                    // Use original ppq.
-                    var s = _mdata.ExportMidi(patterns, channels, _mdata.DeltaTicksPerQuarterNote, false);
-                    LogMessage($"INF Export midi to {s}");
+                    foreach (var patternName in patternNames)
+                    {
+                        // Use original ppq.
+                        var s = _mdata.ExportMidi(patternName, channels, _mdata.DeltaTicksPerQuarterNote, false);
+                        LogMessage($"INF Export midi to {s}");
+                    }
                 }
                 else
                 {
