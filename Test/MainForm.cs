@@ -233,9 +233,10 @@ namespace MidiLib.Test
                         // Mute any other non-solo channels.
                         for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
                         {
-                            if (i != chc.ChannelNumber && chc.State != ChannelState.Solo)
+                            int chnum = i + 1;
+                            if (chnum != chc.ChannelNumber && chc.State != ChannelState.Solo)
                             {
-                                _player.Kill(i);
+                                _player.Kill(chnum);
                             }
                         }
                         break;
@@ -398,9 +399,9 @@ namespace MidiLib.Test
                 Tempo = _defaultTempo
             };
 
-            for (int chind = 0; chind < MidiDefs.NUM_CHANNELS; chind++)
+            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
-                int chnum = chind + 1;
+                int chnum = i + 1;
 
                 var chEvents = _mdata.AllEvents.
                     Where(e => e.PatternName == pinfo.PatternName && e.ChannelNumber == chnum && (e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent)).
@@ -408,13 +409,13 @@ namespace MidiLib.Test
 
                 if (chEvents.Any())
                 {
-                    _player.SetEvents(chind, chEvents, mt);
-                    PatchInfo patch = pinfo.Patches[chind];
+                    _player.SetEvents(i, chEvents, mt);
+                    PatchInfo patch = pinfo.Patches[i];
 
                     // Make new controls. Bind to internal channel object.
                     ChannelControl control = new()
                     {
-                        Channel = _player.GetChannel(chind),
+                        Channel = _player.GetChannel(i),
                         Location = new(x, y),
                         Patch = patch,
                         //// default state
@@ -546,7 +547,7 @@ namespace MidiLib.Test
                     var s = _mdata.DumpSequentialEvents(patterns, channels);
                     LogMessage($"INF Dumped to {s}");
                 }
-                else if (sender == btnDumpSeq)
+                else if (sender == btnDumpGrouped)
                 {
                     var s = _mdata.DumpGroupedEvents(patterns, channels);
                     LogMessage($"INF Dumped to {s}");
@@ -559,7 +560,7 @@ namespace MidiLib.Test
                 }
                 else
                 {
-                    LogMessage($"ERR Ooops");
+                    LogMessage($"ERR Ooops: {sender}");
                 }
             }
             catch (Exception ex)

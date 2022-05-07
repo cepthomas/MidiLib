@@ -27,7 +27,7 @@ namespace MidiLib
         /// <summary>Midi output device.</summary>
         MidiOut? _midiOut = null;
 
-        /// <summary>All the channels. Index is 0-based channel number.</summary>
+        /// <summary>All the channels. Index is 0-based, not channel number.</summary>
         readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];
 
         ///<summary>Backing.</summary>
@@ -80,7 +80,8 @@ namespace MidiLib
             // Init the channels.
             for (int i = 0; i < _channels.Length; i++)
             {
-                var ch = new Channel { ChannelNumber = i + 1 }; // midi is 1-based
+                int chnum = i + 1;
+                var ch = new Channel { ChannelNumber = chnum };
                 //ch.Events.Clear();
                 _channels[i] = ch;
             }
@@ -148,9 +149,8 @@ namespace MidiLib
                 bool solo = _channels.Where(c => c.State == ChannelState.Solo).Any();
 
                 // Process each channel.
-                for (int i = 0; i < _channels.Length; i++)
+                foreach(var ch in _channels)
                 {
-                    var ch = _channels[i];
                     // Look for events to send.
                     if (ch.State == ChannelState.Solo || (!solo && ch.State == ChannelState.Normal))
                     {
@@ -235,7 +235,6 @@ namespace MidiLib
         public void SetEvents(int channelNumber, IEnumerable<EventDesc> events, MidiTime mt)
         {
             var ch = GetChannel(channelNumber);
-////            ch.ResetEvents();
 
             // First scale time.
             events.ForEach(e => e.ScaledTime = mt.MidiToInternal(e.AbsoluteTime));
@@ -292,7 +291,8 @@ namespace MidiLib
             // Send midi stop all notes just in case.
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
-                Kill(i + 1);
+                int chnum = i + 1;
+                Kill(chnum);
             }
         }
         #endregion

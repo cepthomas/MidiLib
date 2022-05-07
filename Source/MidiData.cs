@@ -528,6 +528,7 @@ namespace MidiLib
                 StringBuilder sb = new();
                 for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
                 {
+                    int chnum = i + 1;
                     switch (pattern.Patches[i].Modifier)
                     {
                         case PatchInfo.PatchModifier.NotAssigned:
@@ -535,11 +536,11 @@ namespace MidiLib
                             break;
 
                         case PatchInfo.PatchModifier.None:
-                            sb.Append($"Ch:{i + 1} Patch:{MidiDefs.GetInstrumentDef(pattern.Patches[i].PatchNumber)}");
+                            sb.Append($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentDef(pattern.Patches[i].PatchNumber)} ");
                             break;
 
                         case PatchInfo.PatchModifier.IsDrums:
-                            sb.Append($"Ch:{i + 1} Patch:IsDrums");
+                            sb.Append($"Ch:{chnum} Patch:IsDrums ");
                             break;
                     }
                 }
@@ -688,20 +689,22 @@ namespace MidiLib
                 // Patches.
                 for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
                 {
+                    int chnum = i + 1;
                     if (pattern.Patches[i].Modifier == PatchInfo.PatchModifier.None)
                     {
-                        outEvents.Add(new PatchChangeEvent(0, i + 1, pattern.Patches[i].PatchNumber));
+                        outEvents.Add(new PatchChangeEvent(0, chnum, pattern.Patches[i].PatchNumber));
                     }
                 }
 
                 // Gather the midi events for the pattern ordered by timestamp.
-                GetFilteredEvents(patternNames, channels).ForEach(e =>
+                List<string> selPatterns = new() { patternName };
+                GetFilteredEvents(selPatterns, channels).ForEach(e =>
                 {
                     // TODO1 adjust velocity for noteon based on channel slider value. This is clumsy. Static file needs runtime information.
                     outEvents.Add(e.MidiEvent);
                 });
 
-                // Add end track.
+                // Add end track. "end track was not the last event in track 0"
                 long ltime = outEvents.Last().AbsoluteTime;
                 var endt = new MetaEvent(MetaEventType.EndTrack, 0, ltime);
                 outEvents.Add(endt);
@@ -749,8 +752,8 @@ namespace MidiLib
             string name = Path.GetFileNameWithoutExtension(_fn);
 
             // Clean the file name.
-            name = name.Replace('.', '_').Replace(' ', '_');
-            mod = mod.Replace('.', '_').Replace(' ', '_');
+            name = name.Replace('.', '-').Replace(' ', '_');
+            mod = mod.Replace(' ', '_');
 
             var newfn = Path.Join(ExportPath, $"{name}_{mod}.{ext}");
             return newfn;

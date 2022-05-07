@@ -31,12 +31,12 @@ namespace MidiLib.Test
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.btnRewind = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnDumpSeq = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.btnDumpGrouped = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnExport = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnDumpSeq = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnExport = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.txtViewer = new NBagOfUis.TextViewer();
             this.sldVolume = new NBagOfUis.Slider();
             this.barBar = new NBagOfUis.BarBar();
@@ -64,10 +64,10 @@ namespace MidiLib.Test
             this.btnRewind,
             this.toolStripSeparator6,
             this.btnDumpGrouped,
-            this.btnDumpSeq,
             this.toolStripSeparator7,
-            this.btnExport,
+            this.btnDumpSeq,
             this.toolStripSeparator8,
+            this.btnExport,
             this.toolStripSeparator9});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
@@ -163,6 +163,16 @@ namespace MidiLib.Test
             this.toolStripSeparator6.Name = "toolStripSeparator6";
             this.toolStripSeparator6.Size = new System.Drawing.Size(6, 27);
             // 
+            // btnDumpGrouped
+            // 
+            this.btnDumpGrouped.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnDumpGrouped.Image = ((System.Drawing.Image)(resources.GetObject("btnDumpGrouped.Image")));
+            this.btnDumpGrouped.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnDumpGrouped.Name = "btnDumpGrouped";
+            this.btnDumpGrouped.Size = new System.Drawing.Size(79, 24);
+            this.btnDumpGrouped.Text = "dump grp";
+            this.btnDumpGrouped.Click += new System.EventHandler(this.Dump_Click);
+            // 
             // btnDumpSeq
             // 
             this.btnDumpSeq.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -192,6 +202,11 @@ namespace MidiLib.Test
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
             this.toolStripSeparator8.Size = new System.Drawing.Size(6, 27);
+            // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 27);
             // 
             // txtViewer
             // 
@@ -288,20 +303,6 @@ namespace MidiLib.Test
             this.btnNone.UseVisualStyleBackColor = true;
             this.btnNone.Click += new System.EventHandler(this.AllOrNone_Click);
             // 
-            // btnDumpGrouped
-            // 
-            this.btnDumpGrouped.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnDumpGrouped.Image = ((System.Drawing.Image)(resources.GetObject("btnDumpGrouped.Image")));
-            this.btnDumpGrouped.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnDumpGrouped.Name = "btnDumpGrouped";
-            this.btnDumpGrouped.Size = new System.Drawing.Size(79, 24);
-            this.btnDumpGrouped.Text = "dump grp";
-            // 
-            // toolStripSeparator9
-            // 
-            this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 27);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
@@ -344,6 +345,7 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStripButton btnRewind;
         private System.Windows.Forms.ToolStripButton btnDumpSeq;
         private System.Windows.Forms.ToolStripButton btnExport;
+        private System.Windows.Forms.ToolStripButton btnDumpGrouped;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
@@ -352,11 +354,10 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.CheckedListBox lbPatterns;
         private System.Windows.Forms.Button btnAll;
         private System.Windows.Forms.Button btnNone;
-        private System.Windows.Forms.ToolStripButton btnDumpGrouped;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
     }
 }
 

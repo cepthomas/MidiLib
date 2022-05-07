@@ -71,6 +71,19 @@ Requires VS2019 and .NET5.
 Probably I should make this into a nuget package at some point.
 
 
+
+Channel:
+        /// <summary>Actual 1-based midi channel number.</summary>
+        public int ChannelNumber { get; set; } = -1;
+
+
+        /// <summary>All the channels. Index is 0-based, not channel number.</summary>
+        readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];
+
+        /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
+        public PatchInfo[] Patches { get; set; } = new PatchInfo[MidiDefs.NUM_CHANNELS];
+
+
 # Third Party
 
 This application uses these FOSS components:

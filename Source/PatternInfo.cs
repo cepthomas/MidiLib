@@ -28,7 +28,7 @@ namespace MidiLib
         /// <summary>Key signature, if supplied by file.</summary>
         public string KeySig { get; set; } = "";
 
-        /// <summary>All the channel patches. Index is 0-based channel number.</summary>
+        /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
         public PatchInfo[] Patches { get; set; } = new PatchInfo[MidiDefs.NUM_CHANNELS];
 
         /// <summary>Normal constructor.</summary>
@@ -60,18 +60,19 @@ namespace MidiLib
 
             for(int i = 0; i <MidiDefs.NUM_CHANNELS; i++)
             {
-                switch(Patches[i].Modifier)
+                int chnum = i + 1;
+                switch (Patches[i].Modifier)
                 {
                     case PatchInfo.PatchModifier.NotAssigned:
                         // Ignore.
                         break;
 
                     case PatchInfo.PatchModifier.None:
-                        content.Add($"Ch:{i + 1} Patch:{MidiDefs.GetInstrumentDef(Patches[i].PatchNumber)}");
+                        content.Add($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentDef(Patches[i].PatchNumber)}");
                         break;
 
                     case PatchInfo.PatchModifier.IsDrums:
-                        content.Add($"Ch:{i + 1} Patch:IsDrums");
+                        content.Add($"Ch:{chnum} Patch:IsDrums");
                         break;
                 }
             }
