@@ -11,29 +11,7 @@ using NBagOfTricks;
 
 // TODO1 tracks? for (int track = 0; track < _mdata.Tracks; track++) events.GetTrackEvents(track))
 
-// TODO2: auto-determine which channels have drums? adjust quiet drums?
-// see 2 non-std drum channels in "C:\\Users\\cepth\\OneDrive\\Audio\\Midi\\styles\\Gary USB\\g-70 styles\\G-70 #1\\ContempBeat_G70.S423.STY",
-
-// TODO2 where/how to manage time (not subdivs)?
-// // /// <summary>Total length.</summary>
-// public TimeSpan Length { get { return new TimeSpan(0, 0, 0, 0, (int)(_totalSubdivs * _msecPerSubdiv)); } }
-// // /// <summary>Current time.</summary>
-// public TimeSpan Current
-// {
-//    get { return new TimeSpan(0, 0, 0, 0, (int)(_currentSubdiv * _msecPerSubdiv)); }
-//    set { _currentSubdiv = (int)(value.TotalMilliseconds / _msecPerSubdiv); _currentSubdiv = MathUtils.Constrain(_currentSubdiv, 0, _totalSubdivs); }
-// }
-//
-// public string GetInfo()
-// {
-//     int bars = _totalSubdivs / BEATS_PER_BAR / PPQ;
-//     int beats = _totalSubdivs / PPQ % BEATS_PER_BAR;
-//     int subdivs = _totalSubdivs % PPQ;
-
-//     int inc = _zeroBased ? 0 : 1;
-//     string s = $"{_tempo} bpm {Length:mm\\:ss\\.fff} ({bars + inc}:{beats + inc}:{subdivs + inc:00})";
-//     return s;
-// }
+// TODO auto-determine which channels have drums? adjust quiet drums?
 
 
 namespace MidiLib
@@ -49,7 +27,7 @@ namespace MidiLib
     public class EventDesc
     {
         /// <summary>From whence this came. Empty for simple midi files.</summary>
-        public string Pattern { get; set; } = "";
+        public string PatternName { get; set; } = "";
         
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get; set; }
@@ -78,6 +56,9 @@ namespace MidiLib
 
         /// <summary>Default values if not supplied in pattern. Mainly for managing patches.</summary>
         readonly PatternInfo _patternDefaults = new();
+
+        /// <summary>Current loaded file.</summary>
+        string _fn = "";
         #endregion
 
         #region Properties gleaned from file
@@ -89,28 +70,30 @@ namespace MidiLib
 
         /// <summary>Original resolution for all events.</summary>
         public int DeltaTicksPerQuarterNote { get; private set; } = 0;
-
-        /// <summary>Stuff found while reading the file.</summary>
-        public List<(string, string)> Messages { get; private set; } = new();
         #endregion
 
-        #region Properties - patterns and events
+        #region Properties for client use
         /// <summary>All file pattern sections. Plain midi files will have only one, unnamed.</summary>
-        public List<PatternInfo> Patterns { get; private set; } = new();
+        public List<PatternInfo> AllPatterns { get; private set; } = new();
 
         /// <summary>All the midi events. This is the verbatim content of the file.</summary>
         public List<EventDesc> AllEvents { get; private set; } = new();
+
+        /// <summary>Where to put output products.</summary>
+        public string ExportPath { get; set; } = "SET_ME!";
         #endregion
 
         #region Public functions
         /// <summary>
         /// Read a file.
         /// </summary>
-        /// <param name="fn"></param>
+        /// <param name="fn">The file to open.</param>
         /// <param name="defaultTempo">Specified by client.</param>
         /// <param name="includeNoisy"></param>
         public void Read(string fn, int defaultTempo, bool includeNoisy)
         {
+            _fn = fn;
+
             if(AllEvents.Count > 0)
             {
                 throw new InvalidOperationException("You don't want to do this more than once");
@@ -120,7 +103,7 @@ namespace MidiLib
             _includeNoisy = includeNoisy;
 
             // Always at least one pattern - for plain midi.
-            Patterns.Add(new PatternInfo() { Name = "" });
+            AllPatterns.Add(new PatternInfo() { PatternName = "" });
 
             using var br = new BinaryReader(File.OpenRead(fn));
             bool done = false;
@@ -252,9 +235,9 @@ namespace MidiLib
 
                     case PatchChangeEvent evt:
                         var index = evt.Channel - 1;
-                        PatchInfo patch = new() { Patch = evt.Patch, Modifier = PatchInfo.PatchModifier.None };
+                        PatchInfo patch = new() { PatchNumber = evt.Patch, Modifier = PatchInfo.PatchModifier.None };
                         _patternDefaults.Patches[index] = patch;
-                        Patterns.Last().Patches[index] = patch;
+                        AllPatterns.Last().Patches[index] = patch;
                         AddMidiEvent(evt);
                         break;
 
@@ -273,21 +256,21 @@ namespace MidiLib
                     case TempoEvent evt:
                         var tempo = (int)Math.Round(evt.Tempo);
                         _patternDefaults.Tempo = tempo;
-                        Patterns.Last().Tempo = tempo;
+                        AllPatterns.Last().Tempo = tempo;
                         AddMidiEvent(evt);
                         break;
 
                     case TimeSignatureEvent evt:
                         var tsig = evt.TimeSignature;
                         _patternDefaults.TimeSig = tsig;
-                        Patterns.Last().TimeSig = tsig;
+                        AllPatterns.Last().TimeSig = tsig;
                         AddMidiEvent(evt);
                         break;
 
                     case KeySignatureEvent evt:
                         var ksig = evt.ToString();
                         _patternDefaults.KeySig = ksig;
-                        Patterns.Last().KeySig = ksig;
+                        AllPatterns.Last().KeySig = ksig;
                         AddMidiEvent(evt);
                         break;
 
@@ -297,10 +280,10 @@ namespace MidiLib
 
                     case TextEvent evt when evt.MetaEventType == MetaEventType.Marker:
                         // Indicates start of a new midi pattern.
-                        if(Patterns.Last().Name == "")
+                        if(AllPatterns.Last().PatternName == "")
                         {
                             // It's the default/single pattern so update its name.
-                            Patterns.Last().Name = evt.Text;
+                            AllPatterns.Last().PatternName = evt.Text;
                         }
                         else
                         {
@@ -308,7 +291,7 @@ namespace MidiLib
                             CleanUpPattern();
 
                             // Add a new pattern with defaults set to previous one.
-                            Patterns.Add(new PatternInfo() { Name = evt.Text });
+                            AllPatterns.Add(new PatternInfo() { PatternName = evt.Text });
                         }
 
                         absoluteTime = 0;
@@ -335,10 +318,10 @@ namespace MidiLib
             ///// Local function. /////
             void AddMidiEvent(MidiEvent evt)
             {
-                var pi = Patterns.Last();
+                var pi = AllPatterns.Last();
                 AllEvents.Add(new EventDesc()
                 {
-                    Pattern = pi.Name,
+                    PatternName = pi.PatternName,
                     ChannelNumber = evt.Channel,
                     AbsoluteTime = evt.AbsoluteTime,
                     ScaledTime = -1, // scale later
@@ -425,7 +408,7 @@ namespace MidiLib
         /// </summary>
         void CleanUpPattern()
         {
-            var pi = Patterns.Last();
+            var pi = AllPatterns.Last();
             if (pi.Tempo == 0)
             {
                 pi.Tempo = _patternDefaults.Tempo;
@@ -487,46 +470,42 @@ namespace MidiLib
 
             return i;
         }
-
-        /// <summary>
-        /// Info to return to caller.
-        /// </summary>
-        /// <param name="cat"></param>
-        /// <param name="message"></param>
-        void AddMessage(string cat, string message)
-        {
-            Messages.Add((cat, message));
-        }
         #endregion
 
         #region Utilities and diagnostics
         /// <summary>
-        /// Dump the contents in a csv readable form.
-        /// This is as the events appear in the original file.
+        /// Dump the contents in a csv readable form. This is as the events appear in the original file.
         /// </summary>
-        /// <returns></returns>
-        public List<string> GetSequentialEvents()
+        /// <param name="patternNames">Specific patterns.</param>
+        /// <param name="channels">Specific channnels or all if empty.</param>
+        /// <returns>File name of dump file.</returns>
+        public string DumpSequentialEvents(List<string> patternNames, List<int> channels)
         {
-            List<string> contents = new();
-            contents.Add("AbsoluteTime,Event,Pattern,Channel,Content");
+            List<string> contentText = new();
+            contentText.Add("AbsoluteTime,Event,Pattern,Channel,Content");
 
-            AllEvents.OrderBy(v => v.AbsoluteTime).
-                ForEach(evt => contents.Add($"{evt.AbsoluteTime},{evt.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "")}," +
-                $"{evt.Pattern},{evt.ChannelNumber},{evt.MidiEvent}"));
+            GetFilteredEvents(patternNames, channels).
+                ForEach(evt => contentText.Add($"{evt.AbsoluteTime},{evt.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "")}," +
+                $"{evt.PatternName},{evt.ChannelNumber},{evt.MidiEvent}"));
 
-            return contents;
+            // Dump away.
+            var newfn = MakeExportFileName("sequential", "csv");
+            File.WriteAllLines(newfn, contentText);
+            return newfn;            
         }
 
         /// <summary>
         /// Makes csv dumps of some events grouped by pattern/channel.
         /// </summary>
-        /// <returns></returns>
-        public List<string> GetGroupedEvents()
+        /// <param name="patternNames">Specific patterns.</param>
+        /// <param name="channels">Specific channnels or all if empty.</param>
+        /// <returns>File name of dump file.</returns>
+        public string DumpGroupedEvents(List<string> patternNames, List<int> channels)
         {
             bool includeOther = false;
-            Dictionary<string, PatternInfo> patternLUT = new();
+            Dictionary<string, PatternInfo> patternLUT = new(); // TODO1 This is clumsy. Static file needs runtime information.
 
-            List<string> meta = new()
+            List<string> metaText = new()
             {
                 $"---------------------Meta---------------------",
                 $"Meta,Value",
@@ -535,16 +514,16 @@ namespace MidiLib
                 $"Tracks,{Tracks}"
             };
 
-            List<string> patterns = new()
+            List<string> patternText = new()
             {
                 "",
                 "---------------------Patterns---------------------",
                 "Name,Tempo,TimeSig,KeySig,Patches",
             };
 
-            foreach (var pattern in Patterns)
+            foreach (var pattern in AllPatterns)
             {
-                patternLUT.Add(pattern.Name, pattern);
+                patternLUT.Add(pattern.PatternName, pattern);
 
                 StringBuilder sb = new();
                 for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
@@ -556,7 +535,7 @@ namespace MidiLib
                             break;
 
                         case PatchInfo.PatchModifier.None:
-                            sb.Append($"Ch:{i + 1} Patch:{MidiDefs.GetInstrumentDef(pattern.Patches[i].Patch)}");
+                            sb.Append($"Ch:{i + 1} Patch:{MidiDefs.GetInstrumentDef(pattern.Patches[i].PatchNumber)}");
                             break;
 
                         case PatchInfo.PatchModifier.IsDrums:
@@ -564,17 +543,17 @@ namespace MidiLib
                             break;
                     }
                 }
-                patterns.Add($"{pattern.Name},{pattern.Tempo},{pattern.TimeSig},{pattern.KeySig},{sb}");
+                patternText.Add($"{pattern.PatternName},{pattern.Tempo},{pattern.TimeSig},{pattern.KeySig},{sb}");
             }
 
-            List<string> notes = new()
+            List<string> notesText = new()
             {
                 "",
                 "---------------------Notes---------------------",
                 "AbsoluteTime,Pattern,Channel,Event,NoteNum,NoteName,Velocity,Duration",
             };
 
-            List<string> other = new()
+            List<string> otherText = new()
             {
                 "",
                 "---------------------Other---------------------",
@@ -582,63 +561,63 @@ namespace MidiLib
             };
 
             string lastPattern = "";
-            foreach (var me in AllEvents)
+            foreach (var me in GetFilteredEvents(patternNames, channels))
             {
-                if (me.Pattern != lastPattern)
+                if (me.PatternName != lastPattern)
                 {
-                    notes.Add($"---------------------{me.Pattern}-------------------------");
-                    other.Add($"---------------------{me.Pattern}-------------------------");
-                    lastPattern = me.Pattern;
+                    notesText.Add($"---------------------{me.PatternName}-------------------------");
+                    otherText.Add($"---------------------{me.PatternName}-------------------------");
+                    lastPattern = me.PatternName;
                 }
 
                 // Boilerplate.
                 string ntype = me.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "");
-                string sc = $"{me.MidiEvent.AbsoluteTime},{me.Pattern},{me.MidiEvent.Channel},{ntype}";
+                string sc = $"{me.MidiEvent.AbsoluteTime},{me.PatternName},{me.MidiEvent.Channel},{ntype}";
 
                 switch (me.MidiEvent)
                 {
                     case NoteOnEvent evt:
                         int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
-                        string nname = patternLUT[me.Pattern].Patches[evt.Channel].Modifier == PatchInfo.PatchModifier.IsDrums ?
+                        string nname = patternLUT[me.PatternName].Patches[evt.Channel].Modifier == PatchInfo.PatchModifier.IsDrums ?
                             $"{MidiDefs.GetDrumDef(evt.NoteNumber)}" :
                             $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
-                        notes.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
+                        notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
                         break;
 
                     case NoteEvent evt: // used for NoteOff
-                        notes.Add($"{sc},{evt.NoteNumber},,{evt.Velocity},");
+                        notesText.Add($"{sc},{evt.NoteNumber},,{evt.Velocity},");
                         break;
 
                     case TempoEvent evt:
-                        meta.Add($"Tempo,{evt.Tempo}");
-                        other.Add($"{sc},{evt.Tempo},{evt.MicrosecondsPerQuarterNote}");
+                        metaText.Add($"Tempo,{evt.Tempo}");
+                        otherText.Add($"{sc},{evt.Tempo},{evt.MicrosecondsPerQuarterNote}");
                         break;
 
                     case TimeSignatureEvent evt:
-                        other.Add($"{sc},{evt.TimeSignature},,");
+                        otherText.Add($"{sc},{evt.TimeSignature},,");
                         break;
 
                     case KeySignatureEvent evt:
-                        other.Add($"{sc},{evt.SharpsFlats},{evt.MajorMinor},");
+                        otherText.Add($"{sc},{evt.SharpsFlats},{evt.MajorMinor},");
                         break;
 
                     case PatchChangeEvent evt:
-                        string pname = patternLUT[me.Pattern].Patches[evt.Channel].Modifier == PatchInfo.PatchModifier.IsDrums ?
+                        string pname = patternLUT[me.PatternName].Patches[evt.Channel].Modifier == PatchInfo.PatchModifier.IsDrums ?
                             $"" :
                             $"{MidiDefs.GetInstrumentDef(evt.Patch)}"; // drum kit?
-                        other.Add($"{sc},{evt.Patch},{pname},");
+                        otherText.Add($"{sc},{evt.Patch},{pname},");
                         break;
 
                     case ControlChangeEvent evt:
-                        other.Add($"{sc},{(int)evt.Controller},{MidiDefs.GetControllerDef((int)evt.Controller)},{evt.ControllerValue}");
+                        otherText.Add($"{sc},{(int)evt.Controller},{MidiDefs.GetControllerDef((int)evt.Controller)},{evt.ControllerValue}");
                         break;
 
                     case PitchWheelChangeEvent evt:
-                        other.Add($"{sc},{evt.Pitch},,");
+                        otherText.Add($"{sc},{evt.Pitch},,");
                         break;
 
                     case TextEvent evt:
-                        other.Add($"{sc},{evt.Text},,,");
+                        otherText.Add($"{sc},{evt.Text},,,");
                         break;
 
                     //case ChannelAfterTouchEvent:
@@ -653,117 +632,130 @@ namespace MidiLib
                 }
             }
 
-            List<string> ret = new();
-            ret.AddRange(meta);
-            ret.AddRange(patterns);
-            ret.AddRange(notes);
+            // Dump away.
+            var newfn = MakeExportFileName("grouped", "csv");
+            File.WriteAllLines(newfn, metaText);
+            File.AppendAllLines(newfn, patternText);
+            File.AppendAllLines(newfn, notesText);
             if (includeOther)
             {
-                ret.AddRange(other);
+                File.AppendAllLines(newfn, otherText);
             }
 
-            return ret;
+            return newfn;
         }
 
         /// <summary>
         /// Export pattern parts to individual midi files.
         /// </summary>
-        /// <param name="patterns">Specific patterns.</param>
-        /// <param name="name"></param>
-        /// <param name="exportPath"></param>
-        /// <param name="ppq"></param>
-        public void ExportMidi(List<PatternInfo> patterns, string name, string exportPath, int ppq)
+        /// <param name="patternNames">Specific patterns.</param>
+        /// <param name="channels">Specific channnels or all if empty.</param>
+        /// <param name="ppq">Export at this resolution.</param>
+        /// <param name="zip">TODO export as zip.</param>
+        /// <returns>File name of export file.</returns>
+        public string ExportMidi(List<string> patternNames, List<int> channels, int ppq, bool zip)
         {
-            //TODO2 export options: as zip.
-            //TODO2 export options: start/end time range?
+            string ret = "???";
+            string name = Path.GetFileNameWithoutExtension(_fn);
 
-            if (Directory.Exists(exportPath))
+            foreach (var patternName in patternNames)
             {
-                foreach (var pattern in patterns)
+                var pattern = AllPatterns.Where(p => p.PatternName == patternName).First();
+                var newfn = MakeExportFileName(patternName, "mid");
+
+                // Init output file contents.
+                MidiEventCollection outColl = new(1, ppq);
+                IList<MidiEvent> outEvents = outColl.AddTrack();
+
+                // Tempo.
+                outEvents.Add(new TempoEvent(0, 0) { Tempo = pattern.Tempo });
+
+                // General info.
+                var info = $"Export {patternName}";
+                outEvents.Add(new TextEvent(info, MetaEventType.TextEvent, 0));
+
+                // Optional.
+                if (pattern.TimeSig != "")
                 {
-                    var newfn = Path.Join(exportPath, $"{name}_{pattern.Name.Replace(' ', '_')}.mid");
-                    var info = $"Export {pattern.Name}";
-
-                    ExportOnePattern(pattern, newfn, info, ppq);
+                    // TODO figure out TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, _ppq).
                 }
-                AddMessage("INF", $"Midi exported to {exportPath}");
+
+                if (pattern.KeySig != "")
+                {
+                    outEvents.Add(new KeySignatureEvent(0, 0, 0));
+                }
+
+                // Patches.
+                for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+                {
+                    if (pattern.Patches[i].Modifier == PatchInfo.PatchModifier.None)
+                    {
+                        outEvents.Add(new PatchChangeEvent(0, i + 1, pattern.Patches[i].PatchNumber));
+                    }
+                }
+
+                // Gather the midi events for the pattern ordered by timestamp.
+                GetFilteredEvents(patternNames, channels).ForEach(e =>
+                {
+                    // TODO1 adjust velocity for noteon based on channel slider value. This is clumsy. Static file needs runtime information.
+                    outEvents.Add(e.MidiEvent);
+                });
+
+                // Add end track.
+                long ltime = outEvents.Last().AbsoluteTime;
+                var endt = new MetaEvent(MetaEventType.EndTrack, 0, ltime);
+                outEvents.Add(endt);
+
+                MidiFile.Export(newfn, outColl);
+                ret = newfn;
             }
-            else
-            {
-                AddMessage("ERR", "Invalid export path");
-            }
+            return ret;
         }
 
         /// <summary>
-        /// Output part of the file to a new midi file.
+        /// Get enumerator for events using supplied filters.
         /// </summary>
-        /// <param name="pattern">Specific pattern if a style file.</param>
-        /// <param name="fn">Where to put the midi file.</param>
-        /// <param name="info">Extra info to add to midi file.</param>
-        /// <param name="ppq"></param>
-        public void ExportOnePattern(PatternInfo pattern, string fn, string info, int ppq)
+        /// <param name="patternNames">Specific patterns.</param>
+        /// <param name="channels">Specific channnels or all if empty.</param>
+        /// <returns>Enumerator</returns>
+        IEnumerable<EventDesc> GetFilteredEvents(List<string> patternNames, List<int> channels)
         {
-            // Init output file contents.
-            MidiEventCollection outColl = new(1, ppq);
-            IList<MidiEvent> outEvents = outColl.AddTrack();
+            IEnumerable<EventDesc> descs;
 
-            // Tempo.
-            outEvents.Add(new TempoEvent(0, 0) { Tempo = pattern.Tempo });
-
-            // General info.
-            outEvents.Add(new TextEvent(info, MetaEventType.TextEvent, 0));
-
-            // Optional.
-            if (pattern.TimeSig != "")
+            if(channels.Count > 0)
             {
-                //TODO2 outEvents.Add(new TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, _ppq));
-                //FF 58 04 nn dd cc bb Time Signature
-                //The time signature is expressed as four numbers.nn and dd represent the numerator and denominator of the time
-                //signature as it would be notated.The denominator is a negative power of two: 2 represents a quarter - note, 3
-                //represents an eighth - note, etc.The cc parameter expresses the number of MIDI clocks in a metronome click.The
-                //bb parameter expresses the number of notated 32nd - notes in a MIDI quarter - note(24 MIDI clocks).This was
-                //added because there are already multiple programs which allow a user to specify that what MIDI thinks of as a
-                //quarter - note(24 clocks) is to be notated as, or related to in terms of, something else.
-                //Therefore, the complete event for 6/8 time, where the metronome clicks every three eighth-notes, but there are
-                //24 clocks per quarter-note, 72 to the bar, would be (in hex):
-                //FF 58 04 06 03 24 08
-                //That is, 6/8 time(8 is 2 to the 3rd power, so this is 06 03), 36 MIDI clocks per dotted-quarter(24 hex!), and
-                //eight notated 32nd-notes per quarter-note.
+                descs = AllEvents.
+                    Where(e => patternNames.Contains(e.PatternName) && channels.Contains(e.ChannelNumber)).
+                    OrderBy(e => e.AbsoluteTime);
+            }
+            else
+            {
+                descs = AllEvents.
+                    Where(e => patternNames.Contains(e.PatternName)).
+                    OrderBy(e => e.AbsoluteTime);
             }
 
-            if (pattern.KeySig != "")
-            {
-                outEvents.Add(new KeySignatureEvent(0, 0, 0));
-            }
-
-            // Patches.
-            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-            {
-                if (pattern.Patches[i].Modifier == PatchInfo.PatchModifier.None)
-                {
-                    outEvents.Add(new PatchChangeEvent(0, i + 1, pattern.Patches[i].Patch));
-                }
-            }
-
-            // Gather the midi events for the pattern ordered by timestamp.
-            AllEvents.Where(p => p.Pattern == pattern.Name).OrderBy(e => e.AbsoluteTime).ForEach(e => 
-            {
-                outEvents.Add(e.MidiEvent);
-                // TODO1 adjust velocity for noteon based on channel slider value.
-                //{
-                //    e.AbsoluteTime = kv.Key;
-                //        e.Channel = control.ChannelNumber;
-                //        noteEvents.Add(e);
-                //});
-            });
-
-            // Add end track.
-            long ltime = outEvents.Last().AbsoluteTime;
-            var endt = new MetaEvent(MetaEventType.EndTrack, 0, ltime);
-            outEvents.Add(endt);
-
-            MidiFile.Export(fn, outColl);
+            return descs;
         }
+
+        /// <summary>
+        /// Create a new clean filename for export.
+        /// </summary>
+        /// <param name="mod"></param>
+        /// <param name="ext"></param>
+        /// <returns></returns>
+        string MakeExportFileName(string mod, string ext)
+        {
+            string name = Path.GetFileNameWithoutExtension(_fn);
+
+            // Clean the file name.
+            name = name.Replace('.', '_').Replace(' ', '_');
+            mod = mod.Replace('.', '_').Replace(' ', '_');
+
+            var newfn = Path.Join(ExportPath, $"{name}_{mod}.{ext}");
+            return newfn;
+        }
+
         #endregion
     }
 }

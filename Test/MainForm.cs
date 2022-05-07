@@ -38,17 +38,17 @@ namespace MidiLib.Test
         /// <summary>My midi out.</summary>
         readonly string _midiDevice = "VirtualMIDISynth #1";
 
-        ///// <summary>Supported file types.</summary>
-        //readonly string _fileTypes = "Style Files|*.sty;*.pcs;*.sst;*.prs|Midi Files|*.mid";
+        /// <summary>Supported file types. Can be used for open file dialog.</summary>
+        readonly string _fileTypes = "Style Files|*.sty;*.pcs;*.sst;*.prs|Midi Files|*.mid";
 
         /// <summary>Use this if not supplied.</summary>
-        int _defaultTempo = 100;
+        readonly int _defaultTempo = 100;
 
         /// <summary>Only 4/4 time supported.</summary>
-        int _beatsPerBar = 4;
+        readonly int _beatsPerBar = 4;
 
-        /// <summary>Our internal ppq aka resolution - used for sending realtime midi messages.</summary>
-        int _ppq = 32;
+        /// <summary>Our internal ppq/resolution - used for sending realtime midi messages.</summary>
+        readonly int _ppq = 32;
 
         /// <summary>Prevent button press recursion.</summary>
         bool _guard = false;
@@ -57,7 +57,7 @@ namespace MidiLib.Test
         string _fn = "";
 
         /// <summary>Adjust to taste.</summary>
-        string _exportPath = @"C:\Dev\repos\MidiLib\out";
+        readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
         #endregion
 
         #region Lifecycle
@@ -88,7 +88,7 @@ namespace MidiLib.Test
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
-            sldVolume.Value = 0.8;
+            sldVolume.Value = Channel.DEFAULT_VOLUME;
             sldVolume.Resolution = 0.05;
             sldTempo.DrawColor = _controlColor;
             sldTempo.Value = 100;
@@ -122,9 +122,9 @@ namespace MidiLib.Test
             else
             {
                 OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
-                // OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty");
-                // OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
-                // OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid");
+                //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty");
+                //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
+                //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid");
             }
 
             LogMessage("INF Hello. C to clear text, W to toggle word wrap");
@@ -165,7 +165,7 @@ namespace MidiLib.Test
         /// </summary>
         void UpdateState()
         {
-            // Suppress recursive updates caused by manually changing the play button.
+            // Suppress recursive updates caused by manually pressing the play button.
             if (_guard)
             {
                 return;
@@ -263,12 +263,8 @@ namespace MidiLib.Test
             if (!_mmTimer.Running)
             {
                 _mmTimer.Start();
-                _player.Run(true);
             }
-            else
-            {
-                Rewind();
-            }
+            _player.Run(true);
         }
 
         /// <summary>
@@ -315,21 +311,22 @@ namespace MidiLib.Test
 
                 // Init new stuff with contents of file/pattern.
                 lbPatterns.Items.Clear();
-                if(_mdata.Patterns.Count == 0)
+
+                if(_mdata.AllPatterns.Count == 0)
                 {
                     LogMessage($"ERR Something wrong with this file: {fn}");
                     ok = false;
                 }
-                else if(_mdata.Patterns.Count == 1) // plain midi
+                else if(_mdata.AllPatterns.Count == 1) // plain midi
                 {
-                    var pinfo = _mdata.Patterns[0];
+                    var pinfo = _mdata.AllPatterns[0];
                     LoadPattern(pinfo);
                 }
                 else // style - multiple patterns.
                 {
-                    foreach (var p in _mdata.Patterns)
+                    foreach (var p in _mdata.AllPatterns)
                     {
-                        switch (p.Name)
+                        switch (p.PatternName)
                         {
                             // These don't contain a pattern.
                             case "SFF1": // initial patches are in here
@@ -342,7 +339,7 @@ namespace MidiLib.Test
                                 break;
 
                             default:
-                                lbPatterns.Items.Add(p.Name);
+                                lbPatterns.Items.Add(p.PatternName);
                                 break;
                         }
                     }
@@ -361,10 +358,13 @@ namespace MidiLib.Test
                 }
 
                 _fn = fn;
+                Text = $"Midi Lib - {fn}";
+
             }
             catch (Exception ex)
             {
                 LogMessage($"ERR Couldn't open the file: {fn} because: {ex.Message}");
+                Text = "Midi Lib";
                 ok = false;
             }
 
@@ -381,16 +381,8 @@ namespace MidiLib.Test
         {
             _player.Reset();
 
-            // First save current state to restore after loading.
-            Dictionary<int, (ChannelState, double, bool, bool)> states = new();
-            foreach (var control in _channelControls)
-            {
-                states.Add(control.ChannelNumber,
-                    (control.State, control.Volume, control.Selected, control.Patch.Modifier == PatchInfo.PatchModifier.IsDrums));
-                Controls.Remove(control);
-            }
-
             // Clean out our collection.
+            _channelControls.ForEach(c => Controls.Remove(c));
             _channelControls.Clear();
 
             // Create the new controls.
@@ -411,48 +403,45 @@ namespace MidiLib.Test
                 int chnum = chind + 1;
 
                 var chEvents = _mdata.AllEvents.
-                    Where(e => e.Pattern == pinfo.Name && e.ChannelNumber == chnum && (e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent)).
+                    Where(e => e.PatternName == pinfo.PatternName && e.ChannelNumber == chnum && (e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent)).
                     OrderBy(e => e.AbsoluteTime);
 
                 if (chEvents.Any())
                 {
                     _player.SetEvents(chind, chEvents, mt);
+                    PatchInfo patch = pinfo.Patches[chind];
 
                     // Make new controls. Bind to internal channel object.
                     ChannelControl control = new()
                     {
                         Channel = _player.GetChannel(chind),
                         Location = new(x, y),
+                        Patch = patch,
+                        //// default state
+                        //State = ChannelState.Normal,
+                        //Volume = Channel.DEFAULT_VOLUME,
+                        //Selected = false
                     };
-
-                    // Restore previous attributes if they match the new control.
-                    if (states.ContainsKey(chnum))
-                    {
-                        control.State = states[chnum].Item1;
-                        control.Volume = states[chnum].Item2;
-                        control.Selected = states[chnum].Item3;
-                        control.Patch.Modifier = states[chnum].Item4 ? PatchInfo.PatchModifier.IsDrums : PatchInfo.PatchModifier.None;
-                    }
 
                     control.ChannelChange += Control_ChannelChange;
                     Controls.Add(control);
+                    _channelControls.Add(control);
 
                     lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
-
-                    _channelControls.Add(control);
 
                     // Adjust positioning.
                     y += control.Height + 5;
 
                     // Send patch maybe. These can change per pattern.
-                    _player.SetPatch(chnum, pinfo.Patches[chind]);
+                    _player.SetPatch(chnum, patch);
                 }
             }
 
-            // Figure out times. Round up to bar.
-            int floor = lastSubdiv / (_ppq * 4); // 4/4 only.
-            lastSubdiv = (floor + 1) * _ppq * 4;
+            //// Figure out times. Round up to bar.
+            //int floor = lastSubdiv / (_ppq * 4); // 4/4 only.
+            //lastSubdiv = (floor + 1) * _ppq * 4;
 
+            // Figure out times.
             barBar.Length = new BarSpan(lastSubdiv);
             barBar.Start = BarSpan.Zero;
             barBar.End = barBar.Length - BarSpan.OneSubdiv;
@@ -460,13 +449,13 @@ namespace MidiLib.Test
         }
 
         /// <summary>
-        /// 
+        /// Load pattern selection.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void Patterns_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            var pinfo = _mdata.Patterns.Where(p => p.Name == lbPatterns.SelectedItem.ToString()).First();
+            var pinfo = _mdata.AllPatterns.Where(p => p.PatternName == lbPatterns.SelectedItem.ToString()).First();
 
             LoadPattern(pinfo!);
 
@@ -475,6 +464,20 @@ namespace MidiLib.Test
             if (btnAutoplay.Checked)
             {
                 btnPlay.Checked = true; // ==> Start()
+            }
+        }
+
+        /// <summary>
+        /// Pattern selection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void AllOrNone_Click(object? sender, EventArgs e)
+        {
+            bool check = sender == btnAll;
+            for(int i = 0; i < lbPatterns.Items.Count; i++)
+            {
+                lbPatterns.SetItemChecked(i, check);                
             }
         }
         #endregion
@@ -486,9 +489,9 @@ namespace MidiLib.Test
         /// </summary>
         void MmTimerCallback(double totalElapsed, double periodElapsed)
         {
+            // TODO This sometimes blows up on shutdown with ObjectDisposedException. I am probably doing bad things with threads.
             try
             {
-                // TODO2 Sometimes blows up on shutdown - ObjectDisposedException. I am probably doing bad things with threads.
                 _player.DoNextStep();
                 // Bump over to main thread.
                 this.InvokeIfRequired(_ => UpdateState());
@@ -519,43 +522,50 @@ namespace MidiLib.Test
         /// <summary>
         /// Dump current file to human readable aand/or midi
         /// </summary>
-        void Dump_Click(object sender, EventArgs e)
+        void Dump_Click(object? sender, EventArgs e)
         {
-            //var ds = _mdata.GetSequentialEvents();
-            var ds = _mdata.GetGroupedEvents();
+            _mdata.ExportPath = _exportPath;
 
-            if (ds.Count == 0)
+            try
             {
-                ds.Add("No data");
+                // Collect filters.
+                List<string> patterns = new();
+                foreach(var p in lbPatterns.CheckedItems)
+                {
+                    patterns.Add(p.ToString()!);
+                }
+
+                List<int> channels = new();
+                foreach (var cc in _channelControls.Where(c => c.Selected))
+                {
+                    channels.Add(cc.ChannelNumber);
+                }
+
+                if (sender == btnDumpSeq)
+                {
+                    var s = _mdata.DumpSequentialEvents(patterns, channels);
+                    LogMessage($"INF Dumped to {s}");
+                }
+                else if (sender == btnDumpSeq)
+                {
+                    var s = _mdata.DumpGroupedEvents(patterns, channels);
+                    LogMessage($"INF Dumped to {s}");
+                }
+                else if (sender == btnExport)
+                {
+                    // Use original ppq.
+                    var s = _mdata.ExportMidi(patterns, channels, _mdata.DeltaTicksPerQuarterNote, false);
+                    LogMessage($"INF Export midi to {s}");
+                }
+                else
+                {
+                    LogMessage($"ERR Ooops");
+                }
             }
-
-            // To clipboard.
-            Clipboard.SetText(string.Join(Environment.NewLine, ds));
-            LogMessage("INF Data dumped to clipboard");
-
-            // or to file.
-            // using SaveFileDialog dumpDlg = new() { Title = "Dump to file", FileName = "dump.csv" };
-            // if (dumpDlg.ShowDialog() == DialogResult.OK)
-            // {
-            //     File.WriteAllLines(dumpDlg.FileName, ds.ToArray());
-            //     LogMessage("INF Data dumped to file");
-            // }
-        }
-
-        /// <summary>
-        /// Export parts to midi.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Export_Click(object sender, EventArgs e)
-        {
-            // TODO2 export only selected channels (e.g. drums) or all if none selected.
-
-            List<PatternInfo> patterns = _mdata.Patterns;
-            string name = Path.GetFileNameWithoutExtension(_fn);
-
-            // Use original ppq.
-            _mdata.ExportMidi(patterns, name, _exportPath, _mdata.DeltaTicksPerQuarterNote);
+            catch (Exception ex)
+            {
+                LogMessage($"ERR {ex.Message}");
+            }
         }
 
         /// <summary>

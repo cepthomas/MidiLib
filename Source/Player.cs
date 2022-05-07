@@ -42,7 +42,7 @@ namespace MidiLib
         public RunState State { get; set; } = RunState.Stopped;
 
         /// <summary>Current master volume.</summary>
-        public double Volume { get; set; } = 0.8;
+        public double Volume { get; set; } = Channel.DEFAULT_VOLUME;
 
         /// <summary>Total length in subdivs.</summary>
         public int TotalSubdivs { get; private set; }
@@ -227,7 +227,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// 
+        /// Set events for channel.
         /// </summary>
         /// <param name="channelNumber"></param>
         /// <param name="events"></param>
@@ -235,7 +235,7 @@ namespace MidiLib
         public void SetEvents(int channelNumber, IEnumerable<EventDesc> events, MidiTime mt)
         {
             var ch = GetChannel(channelNumber);
-            ch.ResetEvents();
+////            ch.ResetEvents();
 
             // First scale time.
             events.ForEach(e => e.ScaledTime = mt.MidiToInternal(e.AbsoluteTime));
@@ -268,7 +268,7 @@ namespace MidiLib
 
             if (patch.Modifier == PatchInfo.PatchModifier.None)
             {
-                PatchChangeEvent evt = new(0, channelNumber, patch.Patch);
+                PatchChangeEvent evt = new(0, channelNumber, patch.PatchNumber);
                 MidiSend(evt);
             }
         }

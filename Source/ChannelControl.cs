@@ -25,7 +25,7 @@ namespace MidiLib
         #endregion
 
         #region Properties
-        /// <summary>Bound ogject.</summary>
+        /// <summary>Bound object.</summary>
         public Channel Channel { get; set; } = new();
 
         /// <summary>Actual 1-based midi channel number for UI.</summary>
@@ -46,7 +46,6 @@ namespace MidiLib
         {
             get { return Channel.Patch; }
             set { Channel.Patch = value; UpdateUi(); }
-            //set { Channel.Patch = Math.Min(value, MidiDefs.MAX_MIDI); UpdateUi(); }
         }
 
         /// <summary>Current volume.</summary>
@@ -65,10 +64,9 @@ namespace MidiLib
         /// <summary>User has selected this channel.</summary>
         public bool Selected
         {
-            get { return _selected; }
-            set { _selected = value; UpdateUi(); }
+            get { return Channel.Selected; }
+            set { Channel.Selected = value; UpdateUi(); }
         }
-        bool _selected = false;
 
         /// <summary>Indicate user selected.</summary>
         public Color SelectedColor { get; set; } = Color.Aquamarine;
@@ -193,9 +191,9 @@ namespace MidiLib
             using Form f = new()
             {
                 Text = "Select Patch",
-                Size = new Size(300, 350),
+                Size = new Size(800, 500),
                 StartPosition = FormStartPosition.Manual,
-                Location = new Point(200, 200),
+                Location = Cursor.Position,
                 FormBorderStyle = FormBorderStyle.FixedToolWindow,
                 ShowIcon = false,
                 ShowInTaskbar = false
@@ -216,7 +214,7 @@ namespace MidiLib
             lv.Click += (object? sender, EventArgs e) =>
             {
                 int ind = lv.SelectedIndices[0];
-                Channel.Patch.Patch = ind - 1; // skip NoPatch entry
+                Channel.Patch.PatchNumber = ind - 1; // skip NoPatch entry
 
                 UpdateUi();
                 ChannelChange?.Invoke(this, new() { PatchChange = true });
@@ -234,7 +232,7 @@ namespace MidiLib
         /// <param name="e"></param>
         void ChannelNumber_Click(object? sender, EventArgs e)
         {
-            _selected = !_selected;
+            Selected = !Selected;
             UpdateUi();
         }
         #endregion
@@ -265,8 +263,22 @@ namespace MidiLib
             // General.
             lblChannelNumber.Text = $"{ChannelNumber}:";
             lblDrums.BackColor = Channel.Patch.Modifier == PatchInfo.PatchModifier.IsDrums ? SelectedColor : UnselectedColor;
-            lblChannelNumber.BackColor = _selected ? SelectedColor : UnselectedColor;
-            lblPatch.Text = Channel.Patch.Modifier == PatchInfo.PatchModifier.None ? "NoPatch" : MidiDefs.GetInstrumentDef(Channel.Patch.Patch);
+            lblChannelNumber.BackColor = Selected ? SelectedColor : UnselectedColor;
+
+            switch(Channel.Patch.Modifier)
+            {
+                case PatchInfo.PatchModifier.None:
+                    lblPatch.Text = MidiDefs.GetInstrumentDef(Channel.Patch.PatchNumber);
+                    break;
+
+                case PatchInfo.PatchModifier.NotAssigned:
+                    lblPatch.Text = "NoPatch";
+                    break;
+
+                case PatchInfo.PatchModifier.IsDrums:
+                    lblPatch.Text = "IsDrums";
+                    break;
+            }
         }
 
         /// <summary>

@@ -20,6 +20,7 @@ namespace MidiLib
         #region Constants
         public const double MIN_VOLUME = 0.0;
         public const double MAX_VOLUME = 2.0;
+        public const double DEFAULT_VOLUME = 0.8;
         #endregion
 
         #region Fields
@@ -37,8 +38,8 @@ namespace MidiLib
         /// <summary>For muting/soloing.</summary>
         public ChannelState State { get; set; } = ChannelState.Normal;
 
-        ///<summary>The duration of the whole channel.</summary>
-        public int MaxSubdiv { get; private set; } = 0;
+        /// <summary>For user selection.</summary>
+        public bool Selected { get; set; } = false;
 
         /// <summary>Current patch.</summary>
         public PatchInfo Patch { get; set; } = new();
@@ -49,6 +50,9 @@ namespace MidiLib
             get { return _volume; }
             set { _volume = MathUtils.Constrain(value, MIN_VOLUME, MAX_VOLUME, 0.05); }
         }
+
+        ///<summary>The duration of the whole channel.</summary>
+        public int MaxSubdiv { get; private set; } = 0;
         #endregion
 
         #region Functions
@@ -58,6 +62,10 @@ namespace MidiLib
         /// <param name="events"></param>
         public void SetEvents(IEnumerable<EventDesc> events)
         {
+            // Reset.
+            _events.Clear();
+            MaxSubdiv = 0;
+
             // Bin by subdiv.
             foreach (var te in events)
             {
@@ -80,14 +88,6 @@ namespace MidiLib
         public List<MidiEvent> GetEvents(int subdiv)
         {
             return _events.ContainsKey(subdiv) ? _events[subdiv] : new List<MidiEvent>();
-        }
-
-        /// <summary>
-        /// Clear events.
-        /// </summary>
-        public void ResetEvents()
-        {
-            _events.Clear();
         }
         #endregion
     }

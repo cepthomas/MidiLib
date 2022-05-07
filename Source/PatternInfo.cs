@@ -17,7 +17,7 @@ namespace MidiLib
         public const int NO_PATCH = -1;
 
         /// <summary>Pattern name. Empty indicates single pattern aka plain midi file.</summary>
-        public string Name { get; set; } = "";
+        public string PatternName { get; set; } = "";
 
         /// <summary>Tempo, if supplied by file. Default indicates invalid which will be filled in during read.</summary>
         public int Tempo { get; set; } = 0;
@@ -45,7 +45,7 @@ namespace MidiLib
         public override string ToString()
         {
             List<string> content = new();
-            content.Add($"Name:{(Name == "" ? "None" : Name)}");
+            content.Add($"Name:{(PatternName == "" ? "None" : PatternName)}");
             content.Add($"Tempo:{Tempo}");
 
             if (TimeSig != "")
@@ -67,7 +67,7 @@ namespace MidiLib
                         break;
 
                     case PatchInfo.PatchModifier.None:
-                        content.Add($"Ch:{i + 1} Patch:{MidiDefs.GetInstrumentDef(Patches[i].Patch)}");
+                        content.Add($"Ch:{i + 1} Patch:{MidiDefs.GetInstrumentDef(Patches[i].PatchNumber)}");
                         break;
 
                     case PatchInfo.PatchModifier.IsDrums:
@@ -94,6 +94,6 @@ namespace MidiLib
         public PatchModifier Modifier { get; set; } = PatchModifier.NotAssigned;
 
         /// <summary>The channel patch number.</summary>
-        public int Patch { get; set; } = 0;
+        public int PatchNumber { get; set; } = 0;
     }
 }
