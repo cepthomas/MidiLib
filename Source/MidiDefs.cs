@@ -107,6 +107,14 @@ namespace MidiLib
             "Helicopter", "Applause", "Gunshot"
         };
 
+
+        /// <summary>The GM midi drum kit definitions.</summary>
+        static readonly string[] _drumKits = new string[]
+        {
+            "Standard" = 0, "Room" = 8, "Power" = 16, "Electronic" = 24, "TR808" = 25, "Jazz" = 32, "Brush" = 40, "Orchestra" = 48, "SFX" = 56
+        };
+
+
         /// <summary>The GM midi drum definitions.</summary>
         static readonly string[] _drumNames = new string[]
         {
