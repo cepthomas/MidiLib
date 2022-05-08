@@ -61,6 +61,8 @@ namespace MidiLib
         /// <param name="midiDevice">Client supplies name of device.</param>
         public Player(string midiDevice)
         {
+            File.Delete(_dumpFile);
+
             // Figure out which midi output device.
             int devIndex = -1;
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
@@ -310,7 +312,7 @@ namespace MidiLib
 
                 if (LogMidi)
                 {
-                    File.AppendAllText(_dumpFile, $"SND {evt}");
+                    File.AppendAllText(_dumpFile, $"SND {evt}{Environment.NewLine}");
                 }
             }
         }

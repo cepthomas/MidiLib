@@ -1,6 +1,9 @@
 # MidiLib
 
-TODO1 fix all this
+TODO1 test plain midi file input
+TODO1 test that export/dump are ok
+
+TODO1 fix all this doc
 
 ```
 New:
@@ -75,7 +78,6 @@ Probably I should make this into a nuget package at some point.
 Channel:
         /// <summary>Actual 1-based midi channel number.</summary>
         public int ChannelNumber { get; set; } = -1;
-
 
         /// <summary>All the channels. Index is 0-based, not channel number.</summary>
         readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];

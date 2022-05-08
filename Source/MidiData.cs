@@ -31,10 +31,10 @@ namespace MidiLib
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get; set; }
 
-        /// <summary>Time from original file.</summary>
+        /// <summary>Time (subdivs) from original file.</summary>
         public long AbsoluteTime { get; set; }
 
-        /// <summary>Time scaled to internal units.</summary>
+        /// <summary>Time (subdivs) scaled to internal units using send PPQ.</summary>
         public int ScaledTime { get; set; }
 
         /// <summary>The raw event.</summary>
@@ -473,20 +473,27 @@ namespace MidiLib
 
         #region Utilities and diagnostics
         /// <summary>
-        /// Dump the contents in a csv readable form. This is as the events appear in the original file.
+        /// Export the contents in a csv readable form. This is as the events appear in the original file.
         /// </summary>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <returns>File name of dump file.</returns>
-        public string DumpAllEvents(List<int> channels)
+        public string ExportAllEvents(List<int> channels)
         {
-            List<string> contentText = new();
+            List<string> contentText = new()
+            {
+                $"Meta,Value",
+                $"MidiFileType,{MidiFileType}",
+                $"DeltaTicksPerQuarterNote,{DeltaTicksPerQuarterNote}",
+                $"Tracks,{Tracks}",
+            };
+
             contentText.Add("AbsoluteTime,Event,Pattern,Channel,Content");
 
             GetFilteredEvents("", channels).
                 ForEach(evt => contentText.Add($"{evt.AbsoluteTime},{evt.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "")}," +
                 $"{evt.PatternName},{evt.ChannelNumber},{evt.MidiEvent}"));
 
-            // Dump away.
+            // Export away.
             var newfn = MakeExportFileName("all", "csv");
             File.WriteAllLines(newfn, contentText);
             return newfn;            
@@ -499,7 +506,7 @@ namespace MidiLib
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="includeOther">false if just notes or true if everything.</param>
         /// <returns>File name of dump file.</returns>
-        public string DumpGroupedEvents(string patternName, List<int> channels, bool includeOther)
+        public string ExportGroupedEvents(string patternName, List<int> channels, bool includeOther)
         {
             var pattern = AllPatterns.Where(p => p.PatternName == patternName).First();
 
@@ -514,11 +521,11 @@ namespace MidiLib
                         break;
 
                     case PatchInfo.PatchModifier.None:
-                        patches.Append($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentDef(pattern.Patches[i].PatchNumber)} ");
+                        patches.Append($"{chnum}:{MidiDefs.GetInstrumentDef(pattern.Patches[i].PatchNumber)} ");
                         break;
 
                     case PatchInfo.PatchModifier.IsDrums:
-                        patches.Append($"Ch:{chnum} Patch:IsDrums ");
+                        patches.Append($"{chnum}:IsDrums ");
                         break;
                 }
             }
@@ -549,7 +556,6 @@ namespace MidiLib
                 "AbsoluteTime,Pattern,Channel,Event,Val1,Val2,Val3",
             };
 
-            //string lastPattern = "";
             foreach (var me in GetFilteredEvents(patternName, channels))
             {
                 // Boilerplate.
@@ -560,9 +566,10 @@ namespace MidiLib
                 {
                     case NoteOnEvent evt:
                         int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
-                        string nname = pattern.Patches[evt.Channel].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO1 This is clumsy. Static file needs runtime information.
-                            $"{MidiDefs.GetDrumDef(evt.NoteNumber)}" :
-                            $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
+                        //string nname = pattern.Patches[evt.Channel - 1].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO This is clumsy. Static file needs runtime information.
+                        //    $"{MidiDefs.GetDrumDef(evt.NoteNumber)}" :
+                        //    $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
+                        string nname = MidiDefs.NoteNumberToName(evt.NoteNumber);
                         notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
                         break;
 
@@ -584,9 +591,10 @@ namespace MidiLib
                         break;
 
                     case PatchChangeEvent evt:
-                        string pname = pattern.Patches[evt.Channel].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO1 This is clumsy. Static file needs runtime information.
-                            $"" :
-                            $"{MidiDefs.GetInstrumentDef(evt.Patch)}"; // drum kit?
+                        //string pname = pattern.Patches[evt.Channel - 1].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO This is clumsy. Static file needs runtime information.
+                        //    $"" :
+                        //    $"{MidiDefs.GetInstrumentDef(evt.Patch)}"; // drum kit?
+                        string pname = MidiDefs.GetInstrumentDef(evt.Patch);
                         otherText.Add($"{sc},{evt.Patch},{pname},");
                         break;
 
@@ -614,7 +622,7 @@ namespace MidiLib
                 }
             }
 
-            // Dump away.
+            // Export away.
             var newfn = MakeExportFileName(patternName, "csv");
             File.WriteAllLines(newfn, metaText);
             File.AppendAllLines(newfn, notesText);
@@ -676,7 +684,7 @@ namespace MidiLib
             // Gather the midi events for the pattern ordered by timestamp.
             GetFilteredEvents(patternName, channels).ForEach(e =>
             {
-                // TODO1 adjust velocity for noteon based on channel slider value. This is clumsy. Static file needs runtime information.
+                // TODO adjust velocity for noteon based on channel slider value. This is clumsy. Static file needs runtime information.
                 outEvents.Add(e.MidiEvent);
             });
 

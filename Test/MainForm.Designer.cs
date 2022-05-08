@@ -17,7 +17,6 @@ namespace MidiLib.Test
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnAutoplay = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -31,19 +30,19 @@ namespace MidiLib.Test
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.btnRewind = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnDumpPattern = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnDumpAll = new System.Windows.Forms.ToolStripButton();
+            this.btnExportAll = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnExport = new System.Windows.Forms.ToolStripButton();
+            this.btnExportPattern = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnExportMidi = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.txtViewer = new NBagOfUis.TextViewer();
             this.sldVolume = new NBagOfUis.Slider();
-            this.barBar = new NBagOfUis.BarBar();
             this.sldTempo = new NBagOfUis.Slider();
             this.lbPatterns = new System.Windows.Forms.CheckedListBox();
             this.btnAll = new System.Windows.Forms.Button();
             this.btnNone = new System.Windows.Forms.Button();
+            this.sldPosition = new NBagOfUis.Slider();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -63,11 +62,11 @@ namespace MidiLib.Test
             this.toolStripSeparator5,
             this.btnRewind,
             this.toolStripSeparator6,
-            this.btnDumpAll,
+            this.btnExportAll,
             this.toolStripSeparator8,
-            this.btnDumpPattern,
+            this.btnExportPattern,
             this.toolStripSeparator7,
-            this.btnExport,
+            this.btnExportMidi,
             this.toolStripSeparator9});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
@@ -138,7 +137,6 @@ namespace MidiLib.Test
             // 
             this.btnPlay.CheckOnClick = true;
             this.btnPlay.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnPlay.Image = ((System.Drawing.Image)(resources.GetObject("btnPlay.Image")));
             this.btnPlay.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnPlay.Name = "btnPlay";
             this.btnPlay.Size = new System.Drawing.Size(41, 24);
@@ -152,7 +150,6 @@ namespace MidiLib.Test
             // btnRewind
             // 
             this.btnRewind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnRewind.Image = ((System.Drawing.Image)(resources.GetObject("btnRewind.Image")));
             this.btnRewind.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRewind.Name = "btnRewind";
             this.btnRewind.Size = new System.Drawing.Size(58, 24);
@@ -163,45 +160,42 @@ namespace MidiLib.Test
             this.toolStripSeparator6.Name = "toolStripSeparator6";
             this.toolStripSeparator6.Size = new System.Drawing.Size(6, 27);
             // 
-            // btnDumpPattern
+            // btnExportAll
             // 
-            this.btnDumpPattern.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnDumpPattern.Image = ((System.Drawing.Image)(resources.GetObject("btnDumpPattern.Image")));
-            this.btnDumpPattern.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnDumpPattern.Name = "btnDumpPattern";
-            this.btnDumpPattern.Size = new System.Drawing.Size(79, 24);
-            this.btnDumpPattern.Text = "dump patt";
-            this.btnDumpPattern.Click += new System.EventHandler(this.Dump_Click);
+            this.btnExportAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnExportAll.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnExportAll.Name = "btnExportAll";
+            this.btnExportAll.Size = new System.Drawing.Size(72, 24);
+            this.btnExportAll.Text = "dump all";
+            this.btnExportAll.Click += new System.EventHandler(this.Export_Click);
             // 
-            // btnDumpAll
+            // toolStripSeparator8
             // 
-            this.btnDumpAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnDumpAll.Image = ((System.Drawing.Image)(resources.GetObject("btnDumpAll.Image")));
-            this.btnDumpAll.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnDumpAll.Name = "btnDumpAll";
-            this.btnDumpAll.Size = new System.Drawing.Size(79, 24);
-            this.btnDumpAll.Text = "dump all";
-            this.btnDumpAll.Click += new System.EventHandler(this.Dump_Click);
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 27);
+            // 
+            // btnExportPattern
+            // 
+            this.btnExportPattern.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnExportPattern.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnExportPattern.Name = "btnExportPattern";
+            this.btnExportPattern.Size = new System.Drawing.Size(83, 24);
+            this.btnExportPattern.Text = "dump patt";
+            this.btnExportPattern.Click += new System.EventHandler(this.Export_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
             this.toolStripSeparator7.Size = new System.Drawing.Size(6, 27);
             // 
-            // btnExport
+            // btnExportMidi
             // 
-            this.btnExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnExport.Image = ((System.Drawing.Image)(resources.GetObject("btnExport.Image")));
-            this.btnExport.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnExport.Name = "btnExport";
-            this.btnExport.Size = new System.Drawing.Size(90, 24);
-            this.btnExport.Text = "export midi";
-            this.btnExport.Click += new System.EventHandler(this.Dump_Click);
-            // 
-            // toolStripSeparator8
-            // 
-            this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 27);
+            this.btnExportMidi.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnExportMidi.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnExportMidi.Name = "btnExportMidi";
+            this.btnExportMidi.Size = new System.Drawing.Size(90, 24);
+            this.btnExportMidi.Text = "export midi";
+            this.btnExportMidi.Click += new System.EventHandler(this.Export_Click);
             // 
             // toolStripSeparator9
             // 
@@ -236,23 +230,6 @@ namespace MidiLib.Test
             this.sldVolume.Size = new System.Drawing.Size(138, 50);
             this.sldVolume.TabIndex = 42;
             this.sldVolume.Value = 1D;
-            // 
-            // barBar
-            // 
-            this.barBar.BeatsPerBar = 4;
-            this.barBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.barBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.barBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.barBar.Location = new System.Drawing.Point(162, 40);
-            this.barBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.barBar.MarkerColor = System.Drawing.Color.Black;
-            this.barBar.Name = "barBar";
-            this.barBar.ProgressColor = System.Drawing.Color.NavajoWhite;
-            this.barBar.Size = new System.Drawing.Size(355, 50);
-            this.barBar.Snap = NBagOfUis.BarBar.SnapType.Bar;
-            this.barBar.SubdivsPerBeat = 8;
-            this.barBar.TabIndex = 82;
-            this.barBar.ZeroBased = false;
             // 
             // sldTempo
             // 
@@ -303,15 +280,31 @@ namespace MidiLib.Test
             this.btnNone.UseVisualStyleBackColor = true;
             this.btnNone.Click += new System.EventHandler(this.AllOrNone_Click);
             // 
+            // sldPosition
+            // 
+            this.sldPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sldPosition.DrawColor = System.Drawing.Color.Fuchsia;
+            this.sldPosition.Label = "pos";
+            this.sldPosition.Location = new System.Drawing.Point(154, 40);
+            this.sldPosition.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.sldPosition.Maximum = 100D;
+            this.sldPosition.Minimum = 0D;
+            this.sldPosition.Name = "sldPosition";
+            this.sldPosition.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.sldPosition.Resolution = 1D;
+            this.sldPosition.Size = new System.Drawing.Size(376, 50);
+            this.sldPosition.TabIndex = 92;
+            this.sldPosition.Value = 10D;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1250, 709);
+            this.Controls.Add(this.sldPosition);
             this.Controls.Add(this.btnNone);
             this.Controls.Add(this.btnAll);
             this.Controls.Add(this.lbPatterns);
-            this.Controls.Add(this.barBar);
             this.Controls.Add(this.sldTempo);
             this.Controls.Add(this.txtViewer);
             this.Controls.Add(this.toolStrip1);
@@ -335,7 +328,6 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStrip toolStrip1;
         private NBagOfUis.Slider sldVolume;
         private NBagOfUis.TextViewer txtViewer;
-        private NBagOfUis.BarBar barBar;
         private NBagOfUis.Slider sldTempo;
         private System.Windows.Forms.ToolStripButton btnAutoplay;
         private System.Windows.Forms.ToolStripButton btnLoop;
@@ -343,9 +335,9 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStripButton btnKillMidi;
         private System.Windows.Forms.ToolStripButton btnPlay;
         private System.Windows.Forms.ToolStripButton btnRewind;
-        private System.Windows.Forms.ToolStripButton btnDumpAll;
-        private System.Windows.Forms.ToolStripButton btnExport;
-        private System.Windows.Forms.ToolStripButton btnDumpPattern;
+        private System.Windows.Forms.ToolStripButton btnExportAll;
+        private System.Windows.Forms.ToolStripButton btnExportMidi;
+        private System.Windows.Forms.ToolStripButton btnExportPattern;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
@@ -358,6 +350,7 @@ namespace MidiLib.Test
         private System.Windows.Forms.CheckedListBox lbPatterns;
         private System.Windows.Forms.Button btnAll;
         private System.Windows.Forms.Button btnNone;
+        private NBagOfUis.Slider sldPosition;
     }
 }
 

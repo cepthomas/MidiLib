@@ -19,7 +19,7 @@ namespace MidiLib.Test
 {
     public partial class MainForm : Form
     {
-        #region Fields
+        #region Fields - internal
         /// <summary>Midi player.</summary>
         readonly Player _player;
 
@@ -32,32 +32,31 @@ namespace MidiLib.Test
         /// <summary>All the channel controls.</summary>
         readonly List<ChannelControl> _channelControls = new();
 
+        /// <summary>Prevent button press recursion.</summary>
+        bool _guard = false;
+
+        /// <summary>Our internal midi send timer resolution.</summary>
+        readonly int _sendPPQ = 32;
+
+        /// <summary>Only 4/4 time supported.</summary>
+        readonly int _beatsPerBar = 4;
+
+        /// <summary>Current file.</summary>
+        string _fn = "";
+        #endregion
+
+        #region Fields - user custom
         /// <summary>Cosmetics.</summary>
         readonly Color _controlColor = Color.Aquamarine;
 
         /// <summary>My midi out.</summary>
         readonly string _midiDevice = "VirtualMIDISynth #1";
 
-        /// <summary>Supported file types. Can be used for open file dialog.</summary>
-        readonly string _fileTypes = "Style Files|*.sty;*.pcs;*.sst;*.prs|Midi Files|*.mid";
+        /// <summary>Adjust to taste.</summary>
+        readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
 
         /// <summary>Use this if not supplied.</summary>
         readonly int _defaultTempo = 100;
-
-        /// <summary>Only 4/4 time supported.</summary>
-        readonly int _beatsPerBar = 4;
-
-        /// <summary>Our internal ppq/resolution - used for sending realtime midi messages.</summary>
-        readonly int _ppq = 32;
-
-        /// <summary>Prevent button press recursion.</summary>
-        bool _guard = false;
-
-        /// <summary>Current loaded file.</summary>
-        string _fn = "";
-
-        /// <summary>Adjust to taste.</summary>
-        readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
         #endregion
 
         #region Lifecycle
@@ -76,38 +75,32 @@ namespace MidiLib.Test
         /// </summary>
         void MainForm_Load(object? sender, EventArgs e)
         {
+            toolStrip1.Renderer = new NBagOfUis.CheckBoxRenderer() { SelectedColor = _controlColor };
+
             // The text output.
             txtViewer.Font = Font;
             txtViewer.WordWrap = true;
             txtViewer.Colors.Add("ERR", Color.LightPink);
             txtViewer.Colors.Add("WRN", Color.Plum);
 
-            // Toolbar configs.
+            // Toolbar configs. Adjust to taste.
             btnAutoplay.Checked = false;
             btnLoop.Checked = true;
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
             sldVolume.Value = Channel.DEFAULT_VOLUME;
-            sldVolume.Resolution = 0.05;
             sldTempo.DrawColor = _controlColor;
-            sldTempo.Value = 100;
-            sldTempo.Resolution = 5;
-
-            // Time controller.
-            barBar.ZeroBased = true;
-            barBar.BeatsPerBar = _beatsPerBar;
-            barBar.SubdivsPerBeat = _ppq;
-            barBar.Snap = BarBar.SnapType.Beat;
-            barBar.ProgressColor = _controlColor;
+            sldTempo.Value = _defaultTempo;
+            sldPosition.DrawColor = _controlColor;
 
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(); };
             btnRewind.Click += (_, __) => { Rewind(); };
             btnKillMidi.Click += (_, __) => { _player.KillAll(); };
+            btnLogMidi.Click += (_, __) => { _player.LogMidi = btnLogMidi.Checked; };
             sldTempo.ValueChanged += (_, __) => { SetTimer(); };
-            lbPatterns.SelectedIndexChanged += (_, __) => { _player.CurrentSubdiv = barBar.Current.Subdiv; };
-            barBar.CurrentTimeChanged += (_, __) => { _player.CurrentSubdiv = barBar.Current.Subdiv; };
+            sldPosition.ValueChanged += (_, __) => { SetPositionFromSlider(); };
 
             // Set up timer.
             sldTempo.Value = _defaultTempo;
@@ -130,8 +123,6 @@ namespace MidiLib.Test
                 //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
                 //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid");
             }
-
-            LogMessage("INF Hello. C to clear text, W to toggle word wrap");
         }
 
         /// <summary>
@@ -162,6 +153,27 @@ namespace MidiLib.Test
             base.Dispose(disposing);
         }
         #endregion
+
+        //sldPosition.Value = 
+        //    barBar.Current = new(_player.CurrentSubdiv);
+
+        //void SetPositionInit()
+        //{
+
+        //}
+
+
+        void SetPositionFromInternal()
+        {
+            int pos = _player.CurrentSubdiv * (int)sldPosition.Maximum / _player.TotalSubdivs;
+            sldPosition.Value = pos;
+        }
+
+        void SetPositionFromSlider() // click from ui
+        {
+            int pos = _player.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
+            _player.CurrentSubdiv = pos;
+        }
 
         #region State management
         /// <summary>
@@ -212,7 +224,7 @@ namespace MidiLib.Test
             }
 
             // Update UI.
-            barBar.Current = new(_player.CurrentSubdiv);
+            SetPositionFromInternal();
 
             _guard = false;
         }
@@ -286,8 +298,9 @@ namespace MidiLib.Test
         /// </summary>
         void Rewind()
         {
-            barBar.Current = BarSpan.Zero;
+            //barBar.Current = BarSpan.Zero;
             _player.CurrentSubdiv = 0;
+            sldPosition.Value = 0;
         }
         #endregion
 
@@ -398,7 +411,7 @@ namespace MidiLib.Test
             // For scaling subdivs to internal.
             MidiTime mt = new()
             {
-                InternalPpq = _ppq,
+                InternalPpq = _sendPPQ,
                 MidiPpq = _mdata.DeltaTicksPerQuarterNote,
                 Tempo = _defaultTempo
             };
@@ -413,7 +426,7 @@ namespace MidiLib.Test
 
                 if (chEvents.Any())
                 {
-                    _player.SetEvents(i, chEvents, mt);
+                    _player.SetEvents(chnum, chEvents, mt);
                     PatchInfo patch = pinfo.Patches[i];
 
                     // Make new controls. Bind to internal channel object.
@@ -441,16 +454,6 @@ namespace MidiLib.Test
                     _player.SetPatch(chnum, patch);
                 }
             }
-
-            //// Figure out times. Round up to bar.
-            //int floor = lastSubdiv / (_ppq * 4); // 4/4 only.
-            //lastSubdiv = (floor + 1) * _ppq * 4;
-
-            // Figure out times.
-            barBar.Length = new BarSpan(lastSubdiv);
-            barBar.Start = BarSpan.Zero;
-            barBar.End = barBar.Length - BarSpan.OneSubdiv;
-            barBar.Current = BarSpan.Zero;
         }
 
         /// <summary>
@@ -487,7 +490,11 @@ namespace MidiLib.Test
         }
         #endregion
 
+
+
         #region Process tick
+        int _report = 0;
+
         /// <summary>
         /// Multimedia timer callback. Synchronously outputs the next midi events.
         /// This is running on the background thread.
@@ -497,12 +504,20 @@ namespace MidiLib.Test
             // TODO This sometimes blows up on shutdown with ObjectDisposedException. I am probably doing bad things with threads.
             try
             {
+                if(--_report <= 0)
+                {
+                    this.InvokeIfRequired(_ => LogMessage($"DBG CurrentSubdiv:{_player.CurrentSubdiv}"));
+                    _report = 100;
+                }
+
                 _player.DoNextStep();
                 // Bump over to main thread.
                 this.InvokeIfRequired(_ => UpdateState());
+
             }
-            catch
+            catch (Exception ex)
             {
+                MessageBox.Show(ex.Message);
             }
         }
         #endregion
@@ -515,7 +530,7 @@ namespace MidiLib.Test
         {
             MidiTime mt = new()
             {
-                InternalPpq = _ppq,
+                InternalPpq = _sendPPQ,
                 MidiPpq = _mdata.DeltaTicksPerQuarterNote,
                 Tempo = sldTempo.Value
             };
@@ -525,9 +540,9 @@ namespace MidiLib.Test
         }
 
         /// <summary>
-        /// Dump current file to human readable aand/or midi
+        /// Export current file to human readable or midi.
         /// </summary>
-        void Dump_Click(object? sender, EventArgs e)
+        void Export_Click(object? sender, EventArgs e)
         {
             _mdata.ExportPath = _exportPath;
 
@@ -546,20 +561,20 @@ namespace MidiLib.Test
                     channels.Add(cc.ChannelNumber);
                 }
 
-                if (sender == btnDumpAll)
+                if (sender == btnExportAll)
                 {
-                    var s = _mdata.DumpAllEvents(channels);
-                    LogMessage($"INF Dumped to {s}");
+                    var s = _mdata.ExportAllEvents(channels);
+                    LogMessage($"INF Exported to {s}");
                 }
-                else if (sender == btnDumpPattern)
+                else if (sender == btnExportPattern)
                 {
                     foreach(var patternName in patternNames)
                     {
-                        var s = _mdata.DumpGroupedEvents(patternName, channels, true);
-                        LogMessage($"INF Dumped to {s}");
+                        var s = _mdata.ExportGroupedEvents(patternName, channels, true);
+                        LogMessage($"INF Exported to {s}");
                     }
                 }
-                else if (sender == btnExport)
+                else if (sender == btnExportMidi)
                 {
                     foreach (var patternName in patternNames)
                     {
