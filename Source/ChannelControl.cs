@@ -128,7 +128,7 @@ namespace MidiLib
                 var lbl = sender as Label;
 
                 // Figure out state.
-                State = ChannelState.Normal; // default
+                ChannelState newState = ChannelState.Normal; // default
 
                 // Toggle control. Get current.
                 bool soloSel = lblSolo.BackColor == SelectedColor;
@@ -140,12 +140,12 @@ namespace MidiLib
                     {
                         if(muteSel)
                         {
-                            State = ChannelState.Mute;
+                            newState = ChannelState.Mute;
                         }
                     }
                     else // select
                     {
-                        State = ChannelState.Solo;
+                        newState = ChannelState.Solo;
                     }
                 }
                 else // lblMute
@@ -154,17 +154,21 @@ namespace MidiLib
                     {
                         if (soloSel)
                         {
-                            State = ChannelState.Solo;
+                            newState = ChannelState.Solo;
                         }
                     }
                     else // select
                     {
-                        State = ChannelState.Mute;
+                        newState = ChannelState.Mute;
                     }
                 }
 
-                UpdateUi();
-                ChannelChange?.Invoke(this, new ChannelChangeEventArgs() { StateChange = true });
+                if(newState != State)
+                {
+                    State = newState;
+                    UpdateUi();
+                    ChannelChange?.Invoke(this, new ChannelChangeEventArgs() { StateChange = true });
+                }
             }
         }
 
@@ -261,7 +265,7 @@ namespace MidiLib
             }
 
             // General.
-            lblChannelNumber.Text = $"{ChannelNumber}:";
+            lblChannelNumber.Text = $"Ch{ChannelNumber}";
             lblDrums.BackColor = Channel.Patch.Modifier == PatchInfo.PatchModifier.IsDrums ? SelectedColor : UnselectedColor;
             lblChannelNumber.BackColor = Selected ? SelectedColor : UnselectedColor;
 

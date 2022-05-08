@@ -75,7 +75,7 @@ namespace MidiLib
         /// <summary>All file pattern sections. Plain midi files will have only one, unnamed.</summary>
         public List<PatternInfo> AllPatterns { get; private set; } = new();
 
-        /// <summary>All the midi events. This is the verbatim content of the file.</summary>
+        /// <summary>All the midi events. This is the verbatim ordered content of the file.</summary>
         public List<EventDesc> AllEvents { get; private set; } = new();
 
         /// <summary>Where to put output products.</summary>
