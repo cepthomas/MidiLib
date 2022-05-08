@@ -432,7 +432,7 @@ namespace MidiLib.Test
                     // Make new controls. Bind to internal channel object.
                     ChannelControl control = new()
                     {
-                        Channel = _player.GetChannel(i),
+                        Channel = _player.GetChannel(chnum),
                         Location = new(x, y),
                         Patch = patch,
                         //// default state

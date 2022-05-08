@@ -13,9 +13,6 @@ namespace MidiLib
     /// <summary>Properties associated with a pattern.</summary>
     public class PatternInfo
     {
-        /// <summary>Special value for Patches.</summary>
-        public const int NO_PATCH = -1;
-
         /// <summary>Pattern name. Empty indicates single pattern aka plain midi file.</summary>
         public string PatternName { get; set; } = "";
 

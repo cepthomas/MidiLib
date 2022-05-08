@@ -172,7 +172,8 @@ namespace MidiLib
                                         // Adjust volume and maybe drum channel.
                                         NoteOnEvent ne = new(
                                             evt.AbsoluteTime,
-                                            ch.Patch.Modifier == PatchInfo.PatchModifier.IsDrums ? MidiDefs.DEFAULT_DRUM_CHANNEL : evt.Channel,
+                                            //ch.Patch.Modifier == PatchInfo.PatchModifier.IsDrums ? MidiDefs.DEFAULT_DRUM_CHANNEL : evt.Channel,//TODO1?
+                                            evt.Channel,
                                             evt.NoteNumber,
                                             Math.Min((int)(evt.Velocity * Volume * ch.Volume), MidiDefs.MAX_MIDI),
                                             evt.OffEvent is null ? 0 : evt.NoteLength); // Fix NAudio NoteLength bug.

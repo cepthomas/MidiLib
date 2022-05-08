@@ -198,7 +198,7 @@ namespace MidiLib
             int absoluteTime = 0;
 
             // Read all midi events.
-            MidiEvent? me = null; // current
+            MidiEvent? me = null; // current event
             while (br.BaseStream.Position < startPos + chunkSize)
             {
                 _lastStreamPos = br.BaseStream.Position;
@@ -238,6 +238,7 @@ namespace MidiLib
                         _patternDefaults.Patches[index] = patch;
                         AllPatterns.Last().Patches[index] = patch;
                         AddMidiEvent(evt);
+//                        Debug.WriteLine(evt.ToString());
                         break;
 
                     case SysexEvent evt:
@@ -327,6 +328,9 @@ namespace MidiLib
                     MidiEvent = evt
                 });
             }
+
+            //File.Delete("events.txt");
+            //AllEvents.ForEach(e => File.AppendAllText("events.txt", $"{e.MidiEvent}{Environment.NewLine}"));
 
             return absoluteTime;
         }
@@ -489,7 +493,7 @@ namespace MidiLib
 
             contentText.Add("AbsoluteTime,Event,Pattern,Channel,Content");
 
-            GetFilteredEvents("", channels).
+            GetFilteredEvents("", channels, false).
                 ForEach(evt => contentText.Add($"{evt.AbsoluteTime},{evt.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "")}," +
                 $"{evt.PatternName},{evt.ChannelNumber},{evt.MidiEvent}"));
 
@@ -556,7 +560,7 @@ namespace MidiLib
                 "AbsoluteTime,Pattern,Channel,Event,Val1,Val2,Val3",
             };
 
-            foreach (var me in GetFilteredEvents(patternName, channels))
+            foreach (var me in GetFilteredEvents(patternName, channels, true))
             {
                 // Boilerplate.
                 string ntype = me.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "");
@@ -682,7 +686,7 @@ namespace MidiLib
             }
 
             // Gather the midi events for the pattern ordered by timestamp.
-            GetFilteredEvents(patternName, channels).ForEach(e =>
+            GetFilteredEvents(patternName, channels, true).ForEach(e =>
             {
                 // TODO adjust velocity for noteon based on channel slider value. This is clumsy. Static file needs runtime information.
                 outEvents.Add(e.MidiEvent);
@@ -703,8 +707,9 @@ namespace MidiLib
         /// </summary>
         /// <param name="patternName">Specific pattern or all if empty.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
+        /// <param name="sortTime">Optional sort.</param>
         /// <returns>Enumerator</returns>
-        IEnumerable<EventDesc> GetFilteredEvents(string patternName, List<int> channels)
+        IEnumerable<EventDesc> GetFilteredEvents(string patternName, List<int> channels, bool sortTime)
         {
             IEnumerable<EventDesc> descs;
 
@@ -725,7 +730,7 @@ namespace MidiLib
             }
 
             // Always order.
-            return descs.OrderBy(e => e.AbsoluteTime);
+            return sortTime ? descs.OrderBy(e => e.AbsoluteTime) : descs;
         }
 
         /// <summary>
