@@ -1,7 +1,5 @@
 # MidiLib
 
-TODO1 test plain midi file input
-TODO1 test that export/dump are ok
 
 TODO1 fix all this doc
 
