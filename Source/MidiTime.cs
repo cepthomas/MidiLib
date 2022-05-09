@@ -14,10 +14,10 @@ namespace MidiLib
         public int MidiPpq { get; set; } = 96;
 
         /// <summary>Resolution for internal format.</summary>
-        public int InternalPpq { get; set; } = 4;
+        public int InternalPpq { get; set; } = 16;
 
         /// <summary>Tempo aka BPM.</summary>
-        public double Tempo { get; set; } = 0.0;
+        public double Tempo { get; set; } = 0;
 
         ///// <summary>Time signature Future?</summary>
         // public string TimeSig { get; set; } = "";

@@ -81,7 +81,7 @@ Channel:
         readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];
 
         /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
-        public PatchInfo[] Patches { get; set; } = new PatchInfo[MidiDefs.NUM_CHANNELS];
+        public PatchInfo[] Patches { get; set; } = new PatchInfo[MidiDefs.NUM_CHANNELS];  >>>>>>>>>> int
 
 
 # Third Party

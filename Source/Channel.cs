@@ -42,7 +42,7 @@ namespace MidiLib
         public bool Selected { get; set; } = false;
 
         /// <summary>Current patch.</summary>
-        public PatchInfo Patch { get; set; } = new();
+        public int Patch { get; set; } = -1;
 
         /// <summary>Current volume.</summary>
         public double Volume

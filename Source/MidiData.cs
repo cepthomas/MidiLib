@@ -82,6 +82,16 @@ namespace MidiLib
         public string ExportPath { get; set; } = "SET_ME!";
         #endregion
 
+
+
+        /// <summary>One-based channel number for drums.</summary>
+        public int DrumChannel { get; set; } = 0;
+
+        /// <summary>One-based channel number for extra drums.</summary>
+        public int DrumChannel2 { get; set; } = 0;
+
+
+
         #region Public functions
         /// <summary>
         /// Read a file.
@@ -92,6 +102,9 @@ namespace MidiLib
         public void Read(string fn, int defaultTempo, bool includeNoisy)
         {
             _fn = fn;
+
+            DrumChannel = MidiDefs.DEFAULT_DRUM_CHANNEL;
+            DrumChannel2 = 0;
 
             if(AllEvents.Count > 0)
             {
@@ -234,9 +247,9 @@ namespace MidiLib
 
                     case PatchChangeEvent evt:
                         var index = evt.Channel - 1;
-                        PatchInfo patch = new() { PatchNumber = evt.Patch, Modifier = PatchInfo.PatchModifier.None };
-                        _patternDefaults.Patches[index] = patch;
-                        AllPatterns.Last().Patches[index] = patch;
+                        //PatchInfo patch = new() { PatchNumber = evt.Patch, Modifier = PatchInfo.PatchModifier.None };
+                        _patternDefaults.Patches[index] = evt.Patch;
+                        AllPatterns.Last().Patches[index] = evt.Patch;
                         AddMidiEvent(evt);
 //                        Debug.WriteLine(evt.ToString());
                         break;
@@ -429,11 +442,16 @@ namespace MidiLib
 
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
-                if (pi.Patches[i].Modifier == PatchInfo.PatchModifier.NotAssigned &&
-                    _patternDefaults.Patches[i].Modifier != PatchInfo.PatchModifier.NotAssigned)
+                if (pi.Patches[i] < 0)
                 {
                     pi.Patches[i] = _patternDefaults.Patches[i];
                 }
+
+                //if (pi.Patches[i].Modifier == PatchInfo.PatchModifier.NotAssigned &&
+                //    _patternDefaults.Patches[i].Modifier != PatchInfo.PatchModifier.NotAssigned)
+                //{
+                //    pi.Patches[i] = _patternDefaults.Patches[i];
+                //}
             }
         }
 
@@ -518,20 +536,27 @@ namespace MidiLib
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
                 int chnum = i + 1;
-                switch (pattern.Patches[i].Modifier)
+
+                if(pattern.Patches[i] >= 0)
                 {
-                    case PatchInfo.PatchModifier.NotAssigned:
-                        // Ignore.
-                        break;
-
-                    case PatchInfo.PatchModifier.None:
-                        patches.Append($"{chnum}:{MidiDefs.GetInstrumentDef(pattern.Patches[i].PatchNumber)} ");
-                        break;
-
-                    case PatchInfo.PatchModifier.IsDrums:
-                        patches.Append($"{chnum}:IsDrums ");
-                        break;
+                    patches.Append($"{chnum}:{MidiDefs.GetInstrumentDef(pattern.Patches[i])} ");
                 }
+
+
+                //switch (pattern.Patches[i].Modifier)
+                //{
+                //    case PatchInfo.PatchModifier.NotAssigned:
+                //        // Ignore.
+                //        break;
+
+                //    case PatchInfo.PatchModifier.None:
+                //        patches.Append($"{chnum}:{MidiDefs.GetInstrumentDef(pattern.Patches[i].PatchNumber)} ");
+                //        break;
+
+                //    case PatchInfo.PatchModifier.IsDrums: TODO1
+                //        patches.Append($"{chnum}:IsDrums ");
+                //        break;
+                //}
             }
 
             List<string> metaText = new()
@@ -679,10 +704,14 @@ namespace MidiLib
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
                 int chnum = i + 1;
-                if (pattern.Patches[i].Modifier == PatchInfo.PatchModifier.None)
+                if (pattern.Patches[i] >= 0)
                 {
-                    outEvents.Add(new PatchChangeEvent(0, chnum, pattern.Patches[i].PatchNumber));
+                    outEvents.Add(new PatchChangeEvent(0, chnum, pattern.Patches[i]));
                 }
+                //if (pattern.Patches[i].Modifier == PatchInfo.PatchModifier.None)
+                //{
+                //    outEvents.Add(new PatchChangeEvent(0, chnum, pattern.Patches[i].PatchNumber));
+                //}
             }
 
             // Gather the midi events for the pattern ordered by timestamp.

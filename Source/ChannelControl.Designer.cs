@@ -34,7 +34,6 @@ namespace MidiLib
             this.lblPatch = new System.Windows.Forms.Label();
             this.lblSolo = new System.Windows.Forms.Label();
             this.lblMute = new System.Windows.Forms.Label();
-            this.lblDrums = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lblChannelNumber
@@ -87,19 +86,10 @@ namespace MidiLib
             this.lblMute.TabIndex = 46;
             this.lblMute.Text = "M";
             // 
-            // lblDrums
-            // 
-            this.lblDrums.Location = new System.Drawing.Point(341, 7);
-            this.lblDrums.Name = "lblDrums";
-            this.lblDrums.Size = new System.Drawing.Size(20, 20);
-            this.lblDrums.TabIndex = 47;
-            this.lblDrums.Text = "D";
-            // 
             // ChannelControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.lblDrums);
             this.Controls.Add(this.lblMute);
             this.Controls.Add(this.lblSolo);
             this.Controls.Add(this.lblPatch);
@@ -119,6 +109,5 @@ namespace MidiLib
         private System.Windows.Forms.Label lblPatch;
         private System.Windows.Forms.Label lblSolo;
         private System.Windows.Forms.Label lblMute;
-        private System.Windows.Forms.Label lblDrums;
     }
 }

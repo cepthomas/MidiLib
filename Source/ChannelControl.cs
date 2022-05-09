@@ -42,7 +42,7 @@ namespace MidiLib
         }
 
         /// <summary>Current patch.</summary>
-        public PatchInfo Patch
+        public int Patch
         {
             get { return Channel.Patch; }
             set { Channel.Patch = value; UpdateUi(); }
@@ -98,7 +98,6 @@ namespace MidiLib
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;
             lblChannelNumber.Click += ChannelNumber_Click;
-            lblDrums.Click += Drums_Click;
 
             UpdateUi();
         }
@@ -167,21 +166,8 @@ namespace MidiLib
                 {
                     State = newState;
                     UpdateUi();
-                    ChannelChange?.Invoke(this, new ChannelChangeEventArgs() { StateChange = true });
+                    ChannelChange?.Invoke(this, new() { StateChange = true });
                 }
-            }
-        }
-
-        /// <summary>
-        /// Handles is drums button.
-        /// </summary>
-        void Drums_Click(object? sender, EventArgs e)
-        {
-            if (sender is not null)
-            {
-                Channel.Patch.Modifier = Channel.Patch.Modifier == PatchInfo.PatchModifier.IsDrums ?
-                    PatchInfo.PatchModifier.None : PatchInfo.PatchModifier.IsDrums;
-                UpdateUi();
             }
         }
 
@@ -218,7 +204,7 @@ namespace MidiLib
             lv.Click += (object? sender, EventArgs e) =>
             {
                 int ind = lv.SelectedIndices[0];
-                Channel.Patch.PatchNumber = ind - 1; // skip NoPatch entry
+                Channel.Patch = ind - 1; // skip NoPatch entry TODO1 or make 0 = NoPatch?
 
                 UpdateUi();
                 ChannelChange?.Invoke(this, new() { PatchChange = true });
@@ -266,23 +252,24 @@ namespace MidiLib
 
             // General.
             lblChannelNumber.Text = $"Ch{ChannelNumber}";
-            lblDrums.BackColor = Channel.Patch.Modifier == PatchInfo.PatchModifier.IsDrums ? SelectedColor : UnselectedColor;
             lblChannelNumber.BackColor = Selected ? SelectedColor : UnselectedColor;
+            lblPatch.Text = Channel.Patch >= 0 ? MidiDefs.GetInstrumentDef(Channel.Patch) : "NoPatch";
 
-            switch(Channel.Patch.Modifier)
-            {
-                case PatchInfo.PatchModifier.None:
-                    lblPatch.Text = MidiDefs.GetInstrumentDef(Channel.Patch.PatchNumber);
-                    break;
 
-                case PatchInfo.PatchModifier.NotAssigned:
-                    lblPatch.Text = "NoPatch";
-                    break;
+            //switch(Channel.Patch.Modifier)
+            //{
+            //    case PatchInfo.PatchModifier.None:
+            //        lblPatch.Text = MidiDefs.GetInstrumentDef(Channel.Patch.PatchNumber);
+            //        break;
 
-                case PatchInfo.PatchModifier.IsDrums:
-                    lblPatch.Text = "IsDrums";
-                    break;
-            }
+            //    case PatchInfo.PatchModifier.NotAssigned:
+            //        lblPatch.Text = "NoPatch";
+            //        break;
+
+            //    case PatchInfo.PatchModifier.IsDrums: TODO1
+            //        lblPatch.Text = "IsDrums";
+            //        break;
+            //}
         }
 
         /// <summary>

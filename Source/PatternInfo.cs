@@ -10,6 +10,26 @@ using NAudio.Midi;
 
 namespace MidiLib
 {
+
+
+    // /// <summary>Properties associated with a pattern patch.</summary>
+    // public class PatchInfo
+    // {
+    //     public enum PatchModifier
+    //     {
+    //         None,           // Normal, Patch is valid.
+    //         NotAssigned,    // Patch is unknown.
+    //         IsDrums         // Patch is actually drums, treat as such on output.
+    //     }
+
+    //     /// <summary>Patch may not be what you think.</summary>
+    //     public PatchModifier Modifier { get; set; } = PatchModifier.NotAssigned;
+
+    //     /// <summary>The channel patch number.</summary>
+    //     public int PatchNumber { get; set; } = 0;
+    // }
+
+
     /// <summary>Properties associated with a pattern.</summary>
     public class PatternInfo
     {
@@ -26,9 +46,9 @@ namespace MidiLib
         public string KeySig { get; set; } = "";
 
         /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
-        public PatchInfo[] Patches { get; set; } = new PatchInfo[MidiDefs.NUM_CHANNELS];
+        public int[] Patches { get; set; } = new int[MidiDefs.NUM_CHANNELS];
 
-        /// <summary>All the midi events, usually ordered by time.</summary>
+        /// <summary>All the midi events, (usually) ordered by time.</summary>
         public List<EventDesc> AllEvents { get; private set; } = new();
 
         /// <summary>Normal constructor.</summary>
@@ -61,40 +81,29 @@ namespace MidiLib
             for(int i = 0; i <MidiDefs.NUM_CHANNELS; i++)
             {
                 int chnum = i + 1;
-                switch (Patches[i].Modifier)
+                if(Patches[i] >= 0)
                 {
-                    case PatchInfo.PatchModifier.NotAssigned:
-                        // Ignore.
-                        break;
-
-                    case PatchInfo.PatchModifier.None:
-                        content.Add($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentDef(Patches[i].PatchNumber)}");
-                        break;
-
-                    case PatchInfo.PatchModifier.IsDrums:
-                        content.Add($"Ch:{chnum} Patch:IsDrums");
-                        break;
+                    content.Add($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentDef(Patches[i])}");
                 }
+
+                ////TODO1 this for drums:
+                //switch (Patches[i].Modifier)
+                //{
+                //    case PatchInfo.PatchModifier.NotAssigned:
+                //        // Ignore.
+                //        break;
+
+                //    case PatchInfo.PatchModifier.None:
+                //        content.Add($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentDef(Patches[i].PatchNumber)}");
+                //        break;
+
+                //    case PatchInfo.PatchModifier.IsDrums:
+                //        content.Add($"Ch:{chnum} Patch:IsDrums");
+                //        break;
+                //}
             }
 
             return string.Join(' ', content);
         }
-    }
-
-    /// <summary>Properties associated with a pattern patch.</summary>
-    public class PatchInfo
-    {
-        public enum PatchModifier
-        {
-            None,           // Normal, Patch is valid.
-            NotAssigned,    // Patch is unknown.
-            IsDrums         // Patch is actually drums, treat as such on output.
-        }
-
-        /// <summary>Patch may not be what you think.</summary>
-        public PatchModifier Modifier { get; set; } = PatchModifier.NotAssigned;
-
-        /// <summary>The channel patch number.</summary>
-        public int PatchNumber { get; set; } = 0;
     }
 }

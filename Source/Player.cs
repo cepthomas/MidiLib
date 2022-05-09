@@ -163,11 +163,11 @@ namespace MidiLib
                             switch (mevt)
                             {
                                 case NoteOnEvent evt:
-                                    if (ch.Patch.Modifier == PatchInfo.PatchModifier.IsDrums && evt.Velocity == 0)
-                                    {
-                                        // Skip drum noteoffs as windows GM doesn't like them.
-                                    }
-                                    else
+                                    // TODO1 drums if (ch.Patch.Modifier == PatchInfo.PatchModifier.IsDrums && evt.Velocity == 0)
+                                    //{
+                                    //    // Skip drum noteoffs as windows GM doesn't like them.
+                                    //}
+                                    //else
                                     {
                                         // Adjust volume and maybe drum channel.
                                         NoteOnEvent ne = new(
@@ -183,11 +183,11 @@ namespace MidiLib
                                     break;
 
                                 case NoteEvent evt:
-                                    if (ch.Patch.Modifier == PatchInfo.PatchModifier.IsDrums)
-                                    {
-                                        // Skip drum noteoffs as windows GM doesn't like them.
-                                    }
-                                    else
+                                    //if (ch.Patch.Modifier == PatchInfo.PatchModifier.IsDrums) TODO1
+                                    //{
+                                    //    // Skip drum noteoffs as windows GM doesn't like them.
+                                    //}
+                                    //else
                                     {
                                         MidiSend(evt);
                                     }
@@ -263,14 +263,13 @@ namespace MidiLib
         /// </summary>
         /// <param name="channelNumber">Substitute patch for this channel.</param>
         /// <param name="patch">Use this patch for Patch Channel.</param>
-        public void SetPatch(int channelNumber, PatchInfo patch)
+        public void SetPatch(int channelNumber, int patch)
         {
-            var ch = GetChannel(channelNumber);
-            ch.Patch = patch;
-
-            if (patch.Modifier == PatchInfo.PatchModifier.None)
+            if(patch >= 0)
             {
-                PatchChangeEvent evt = new(0, channelNumber, patch.PatchNumber);
+                var ch = GetChannel(channelNumber);
+                ch.Patch = patch;
+                PatchChangeEvent evt = new(0, channelNumber, patch);
                 MidiSend(evt);
             }
         }

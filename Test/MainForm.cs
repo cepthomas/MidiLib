@@ -118,10 +118,10 @@ namespace MidiLib.Test
             }
             else
             {
-                //OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
+                OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
                 //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty");
                 //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
-                OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid");
+                //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid"); //TODO1 not quite right...
             }
         }
 
@@ -154,13 +154,7 @@ namespace MidiLib.Test
         }
         #endregion
 
-        //sldPosition.Value = 
-        //    barBar.Current = new(_player.CurrentSubdiv);
 
-        //void SetPositionInit()
-        //{
-
-        //}
 
 
         void SetPositionFromInternal()
@@ -263,7 +257,7 @@ namespace MidiLib.Test
                 }
             }
 
-            if (e.PatchChange && chc.Patch.Modifier == PatchInfo.PatchModifier.None)
+            if (e.PatchChange && chc.Patch >= 0)
             {
                 _player.SetPatch(chc.ChannelNumber, chc.Patch);
             }
@@ -427,14 +421,14 @@ namespace MidiLib.Test
                 if (chEvents.Any())
                 {
                     _player.SetEvents(chnum, chEvents, mt);
-                    PatchInfo patch = pinfo.Patches[i];
+                    //PatchInfo patch = pinfo.Patches[i];
 
                     // Make new controls. Bind to internal channel object.
                     ChannelControl control = new()
                     {
                         Channel = _player.GetChannel(chnum),
                         Location = new(x, y),
-                        Patch = patch,
+                        Patch = pinfo.Patches[i],
                         //// default state
                         //State = ChannelState.Normal,
                         //Volume = Channel.DEFAULT_VOLUME,
@@ -451,7 +445,7 @@ namespace MidiLib.Test
                     y += control.Height + 5;
 
                     // Send patch maybe. These can change per pattern.
-                    _player.SetPatch(chnum, patch);
+                    _player.SetPatch(chnum, pinfo.Patches[i]);
                 }
             }
         }
