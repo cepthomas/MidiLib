@@ -84,11 +84,9 @@ namespace MidiLib
 
 
 
-        /// <summary>One-based channel number for drums.</summary>
-        public int DrumChannel { get; set; } = 0;
+        /// <summary>One-based channel numbers for drums.</summary>
+        public List<int> DrumChannels { get; set; } = new();
 
-        /// <summary>One-based channel number for extra drums.</summary>
-        public int DrumChannel2 { get; set; } = 0;
 
 
 
@@ -102,9 +100,7 @@ namespace MidiLib
         public void Read(string fn, int defaultTempo, bool includeNoisy)
         {
             _fn = fn;
-
-            DrumChannel = MidiDefs.DEFAULT_DRUM_CHANNEL;
-            DrumChannel2 = 0;
+            DrumChannels.Add(MidiDefs.DEFAULT_DRUM_CHANNEL);
 
             if(AllEvents.Count > 0)
             {

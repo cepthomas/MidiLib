@@ -43,6 +43,8 @@ namespace MidiLib.Test
             this.btnAll = new System.Windows.Forms.Button();
             this.btnNone = new System.Windows.Forms.Button();
             this.sldPosition = new NBagOfUis.Slider();
+            this.txtDrumChannels = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -252,7 +254,7 @@ namespace MidiLib.Test
             this.lbPatterns.BackColor = System.Drawing.SystemColors.Control;
             this.lbPatterns.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lbPatterns.FormattingEnabled = true;
-            this.lbPatterns.Location = new System.Drawing.Point(8, 196);
+            this.lbPatterns.Location = new System.Drawing.Point(8, 251);
             this.lbPatterns.Name = "lbPatterns";
             this.lbPatterns.Size = new System.Drawing.Size(138, 354);
             this.lbPatterns.TabIndex = 89;
@@ -260,10 +262,9 @@ namespace MidiLib.Test
             // 
             // btnAll
             // 
-            this.btnAll.AutoSize = true;
-            this.btnAll.Location = new System.Drawing.Point(8, 158);
+            this.btnAll.Location = new System.Drawing.Point(8, 213);
             this.btnAll.Name = "btnAll";
-            this.btnAll.Size = new System.Drawing.Size(35, 30);
+            this.btnAll.Size = new System.Drawing.Size(50, 30);
             this.btnAll.TabIndex = 90;
             this.btnAll.Text = "all";
             this.btnAll.UseVisualStyleBackColor = true;
@@ -271,10 +272,9 @@ namespace MidiLib.Test
             // 
             // btnNone
             // 
-            this.btnNone.AutoSize = true;
-            this.btnNone.Location = new System.Drawing.Point(52, 158);
+            this.btnNone.Location = new System.Drawing.Point(66, 213);
             this.btnNone.Name = "btnNone";
-            this.btnNone.Size = new System.Drawing.Size(52, 30);
+            this.btnNone.Size = new System.Drawing.Size(50, 30);
             this.btnNone.TabIndex = 91;
             this.btnNone.Text = "none";
             this.btnNone.UseVisualStyleBackColor = true;
@@ -296,11 +296,30 @@ namespace MidiLib.Test
             this.sldPosition.TabIndex = 92;
             this.sldPosition.Value = 10D;
             // 
+            // txtDrumChannels
+            // 
+            this.txtDrumChannels.Location = new System.Drawing.Point(8, 179);
+            this.txtDrumChannels.Name = "txtDrumChannels";
+            this.txtDrumChannels.Size = new System.Drawing.Size(138, 27);
+            this.txtDrumChannels.TabIndex = 93;
+            this.txtDrumChannels.Leave += new System.EventHandler(this.DrumChannels_Leave);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(7, 158);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(109, 20);
+            this.label1.TabIndex = 94;
+            this.label1.Text = "Drum Channels";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1250, 709);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.txtDrumChannels);
             this.Controls.Add(this.sldPosition);
             this.Controls.Add(this.btnNone);
             this.Controls.Add(this.btnAll);
@@ -351,6 +370,8 @@ namespace MidiLib.Test
         private System.Windows.Forms.Button btnAll;
         private System.Windows.Forms.Button btnNone;
         private NBagOfUis.Slider sldPosition;
+        private System.Windows.Forms.TextBox txtDrumChannels;
+        private System.Windows.Forms.Label label1;
     }
 }
 

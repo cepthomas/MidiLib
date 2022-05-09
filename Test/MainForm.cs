@@ -156,6 +156,7 @@ namespace MidiLib.Test
 
 
 
+        //////////////// these need homes //////////////////////////
 
         void SetPositionFromInternal()
         {
@@ -168,6 +169,37 @@ namespace MidiLib.Test
             int pos = _player.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
             _player.CurrentSubdiv = pos;
         }
+
+
+        private void DrumChannels_Leave(object sender, EventArgs e)
+        {
+            _mdata.DrumChannels.Clear();
+
+            var parts = txtDrumChannels.Text.SplitByTokens(" ,");
+            foreach(var p in parts)
+            {
+                bool ok = int.TryParse(p, out int val);
+                if(ok)
+                {
+                    ok = val > 0 && val <= MidiDefs.NUM_CHANNELS;
+                }
+
+                if (ok)
+                {
+                    _mdata.DrumChannels.Add(val);
+                }
+                else
+                {
+                    LogMessage("ERR Invalid drum channel");
+                    txtDrumChannels.Text = "";
+                    _mdata.DrumChannels.Clear();
+                    _mdata.DrumChannels.Add(MidiDefs.DEFAULT_DRUM_CHANNEL);
+                }
+            }
+        }
+
+
+
 
         #region State management
         /// <summary>
