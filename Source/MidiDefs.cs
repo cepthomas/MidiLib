@@ -32,12 +32,13 @@ namespace MidiLib
         /// <returns></returns>
         public static string GetInstrumentDef(int which)
         {
-            if(which < 0 || which > MAX_MIDI)
+            string ret = which switch
             {
-                throw new ArgumentOutOfRangeException(nameof(which));
-            }
-
-            return _instrumentNames[which];
+                -1 => "NoPatch",
+                >= 0 and < MAX_MIDI => _instrumentNames[which],
+                _ => throw new ArgumentOutOfRangeException(nameof(which)),
+            };
+            return ret;
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="which"></param>
         /// <returns></returns>
-        public static string GetDrumDef(int which)
+        public static string GetDrumDef(int which)//TODO2 make like GetDrumKit
         {
             if (which < 0 || which > MAX_MIDI)
             {
@@ -60,7 +61,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="which"></param>
         /// <returns></returns>
-        public static string GetControllerDef(int which)
+        public static string GetControllerDef(int which)//TODO2 make like GetDrumKit
         {
             if (which < 0 || which > MAX_MIDI)
             {
@@ -68,6 +69,31 @@ namespace MidiLib
             }
 
             return _controllerNames[which];
+        }
+
+        /// <summary>
+        /// Get GM drum kit name.
+        /// </summary>
+        /// <param name="which"></param>
+        /// <returns></returns>
+        public static string GetDrumKit(int which)
+        {
+            //string ret = which switch
+            //{
+            //    //_drumKits.ContainsKey(which) => _drumKits[which],
+            //    >= 0 and < MAX_MIDI => _instrumentNames[which],
+            //    _ => throw new ArgumentOutOfRangeException(nameof(which)),
+            //};
+            //return ret;
+
+            if (_drumKits.ContainsKey(which))
+            {
+                return _drumKits[which];
+            }
+            else
+            {
+                return $"KIT{which}";
+            }
         }
 
         /// <summary>
@@ -107,13 +133,12 @@ namespace MidiLib
             "Helicopter", "Applause", "Gunshot"
         };
 
-
-        ///// <summary>The GM midi drum kit definitions.</summary>
-        //static readonly string[] _drumKits = new string[] TODO1
-        //{
-        //    "Standard" = 0, "Room" = 8, "Power" = 16, "Electronic" = 24, "TR808" = 25, "Jazz" = 32, "Brush" = 40, "Orchestra" = 48, "SFX" = 56
-        //};
-
+        /// <summary>The GM midi drum kit definitions.</summary>
+        static readonly Dictionary<int, string> _drumKits = new()
+        {
+            { 0, "Standard" }, { 8, "Room" }, { 16, "Power" }, { 24, "Electronic" }, { 25, "TR808" },
+            { 32, "Jazz" }, { 40, "Brush" }, { 48, "Orchestra" }, { 56, "SFX" }
+        };
 
         /// <summary>The GM midi drum definitions.</summary>
         static readonly string[] _drumNames = new string[]

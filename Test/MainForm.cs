@@ -13,6 +13,7 @@ using System.Diagnostics;
 using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
+using static MidiLib.ChannelCollection;
 
 
 namespace MidiLib.Test
@@ -67,7 +68,7 @@ namespace MidiLib.Test
         {
             InitializeComponent();
 
-            _player = new(_midiDevice);
+            _player = new(_midiDevice) { MidiTraceFile = @"C:\Dev\repos\MidiLib\out\midi_out.txt" };
         }
 
         /// <summary>
@@ -121,7 +122,7 @@ namespace MidiLib.Test
                 OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
                 //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty");
                 //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
-                //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid"); //TODO1 not quite right...
+                //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid"); //TODO1 not quite right yet...
             }
         }
 
@@ -160,24 +161,59 @@ namespace MidiLib.Test
 
         void SetPositionFromInternal()
         {
-            int pos = _player.CurrentSubdiv * (int)sldPosition.Maximum / _player.TotalSubdivs;
+            int pos = _player.CurrentSubdiv * (int)sldPosition.Maximum / TheChannels.TotalSubdivs;
             sldPosition.Value = pos;
         }
 
         void SetPositionFromSlider() // click from ui
         {
-            int pos = _player.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
+            int pos = TheChannels.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
             _player.CurrentSubdiv = pos;
         }
 
 
-        private void DrumChannels_Leave(object sender, EventArgs e)
+        void ResetDrums()
         {
-            _mdata.DrumChannels.Clear();
+            // Reset drum channels.TODO1 also update controls.
+            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+            {
+                int chnum = i + 1;
+                TheChannels.SetChannelDrums(chnum, chnum == MidiDefs.DEFAULT_DRUM_CHANNEL);
+            }
+            txtDrumChannels.Text = MidiDefs.DEFAULT_DRUM_CHANNEL.ToString();
 
+        }
+
+        /// <summary>
+        /// Only allow integers and space.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void DrumChannels_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            char c = e.KeyChar;
+            e.Handled = !((c >= '0' && c <= '9') || (c == '\b') || (c == ' '));
+
+            //1 5 15 25
+
+
+
+        }
+
+        /// <summary>
+        /// Do something with the entry.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void DrumChannels_Leave(object sender, EventArgs e)
+        {
             var parts = txtDrumChannels.Text.SplitByTokens(" ,");
+            List<int> drumChannels = new();
+
             foreach(var p in parts)
             {
+                int chnum = int.Parse(p);
+
                 bool ok = int.TryParse(p, out int val);
                 if(ok)
                 {
@@ -186,14 +222,13 @@ namespace MidiLib.Test
 
                 if (ok)
                 {
-                    _mdata.DrumChannels.Add(val);
+                    drumChannels.Add(val);
                 }
                 else
                 {
                     LogMessage("ERR Invalid drum channel");
                     txtDrumChannels.Text = "";
-                    _mdata.DrumChannels.Clear();
-                    _mdata.DrumChannels.Add(MidiDefs.DEFAULT_DRUM_CHANNEL);
+//TODO1                    _mdata.DrumChannels.Clear();
                 }
             }
         }
@@ -291,7 +326,7 @@ namespace MidiLib.Test
 
             if (e.PatchChange && chc.Patch >= 0)
             {
-                _player.SetPatch(chc.ChannelNumber, chc.Patch);
+                _player.SendPatch(chc.ChannelNumber, chc.Patch);
             }
         }
         #endregion
@@ -352,6 +387,8 @@ namespace MidiLib.Test
                 // Process the file. Set the default tempo from preferences.
                 _mdata = new();
                 _mdata.Read(fn, _defaultTempo, false);
+
+                ResetDrums();
 
                 // Init new stuff with contents of file/pattern.
                 lbPatterns.Items.Clear();
@@ -452,13 +489,13 @@ namespace MidiLib.Test
 
                 if (chEvents.Any())
                 {
-                    _player.SetEvents(chnum, chEvents, mt);
+                    TheChannels.SetEvents(chnum, chEvents, mt);
                     //PatchInfo patch = pinfo.Patches[i];
 
                     // Make new controls. Bind to internal channel object.
                     ChannelControl control = new()
                     {
-                        Channel = _player.GetChannel(chnum),
+                        Channel = TheChannels.GetChannel(chnum), // TODO2 find a better way to bind.
                         Location = new(x, y),
                         Patch = pinfo.Patches[i],
                         //// default state
@@ -477,7 +514,7 @@ namespace MidiLib.Test
                     y += control.Height + 5;
 
                     // Send patch maybe. These can change per pattern.
-                    _player.SetPatch(chnum, pinfo.Patches[i]);
+                    _player.SendPatch(chnum, pinfo.Patches[i]);
                 }
             }
         }
@@ -527,7 +564,7 @@ namespace MidiLib.Test
         /// </summary>
         void MmTimerCallback(double totalElapsed, double periodElapsed)
         {
-            // TODO This sometimes blows up on shutdown with ObjectDisposedException. I am probably doing bad things with threads.
+            // TODOF This sometimes blows up on shutdown with ObjectDisposedException. I am probably doing bad things with threads.
             try
             {
                 if(--_report <= 0)

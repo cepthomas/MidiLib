@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
+using static MidiLib.ChannelCollection;
 
 
 namespace MidiLib
@@ -18,8 +19,6 @@ namespace MidiLib
 
     /// <summary>
     /// A "good enough" midi player.
-    /// There are some limitations: Windows multimedia timer has 1 msec resolution at best. This causes a trade-off between
-    /// ppq resolution and accuracy. The timer is also inherently wobbly.
     /// </summary>
     public class Player
     {
@@ -27,14 +26,11 @@ namespace MidiLib
         /// <summary>Midi output device.</summary>
         MidiOut? _midiOut = null;
 
-        /// <summary>All the channels. Index is 0-based, not channel number.</summary>
-        readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];
+        ///// <summary>All the channels. Index is 0-based, not channel number.</summary>
+        //readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];
 
-        ///<summary>Backing.</summary>
+        /// <summary>Backing.</summary>
         int _currentSubdiv = 0;
-
-        ///<summary>Adjust to taste.</summary>
-        string _dumpFile = @"C:\Dev\repos\MidiLib\out\midi_out.txt";
         #endregion
 
         #region Properties
@@ -44,14 +40,17 @@ namespace MidiLib
         /// <summary>Current master volume.</summary>
         public double Volume { get; set; } = Channel.DEFAULT_VOLUME;
 
-        /// <summary>Total length in subdivs.</summary>
-        public int TotalSubdivs { get; private set; }
+        ///// <summary>Total length in subdivs.</summary>
+        //public int TotalSubdivs { get; private set; }
 
         /// <summary>Current position in subdivs.</summary>
         public int CurrentSubdiv { get { return _currentSubdiv; } set { UpdateCurrent(value); } }
 
         /// <summary>Log outbound traffic. Warning - can get busy.</summary>
         public bool LogMidi { get; set; } = false;
+
+        /// <summary>Adjust to taste.</summary>
+        public string MidiTraceFile { get; set; } = "";
         #endregion
 
         #region Lifecycle
@@ -61,7 +60,10 @@ namespace MidiLib
         /// <param name="midiDevice">Client supplies name of device.</param>
         public Player(string midiDevice)
         {
-            File.Delete(_dumpFile);
+            if(MidiTraceFile != "")
+            {
+                File.Delete(MidiTraceFile);
+            }
 
             // Figure out which midi output device.
             int devIndex = -1;
@@ -80,13 +82,15 @@ namespace MidiLib
             }
 
             // Init the channels.
-            for (int i = 0; i < _channels.Length; i++)
-            {
-                int chnum = i + 1;
-                var ch = new Channel { ChannelNumber = chnum };
-                //ch.Events.Clear();
-                _channels[i] = ch;
-            }
+            TheChannels.Init();
+
+            //for (int i = 0; i < _channels.Length; i++)
+            //{
+            //    int chnum = i + 1;
+            //    var ch = new Channel { ChannelNumber = chnum };
+            //    //ch.Events.Clear();
+            //    _channels[i] = ch;
+            //}
         }
 
         /// <summary> 
@@ -106,7 +110,6 @@ namespace MidiLib
         public void Reset()
         {
             State = RunState.Stopped;
-            TotalSubdivs = 0;
             CurrentSubdiv = 0;
         }
         #endregion
@@ -135,7 +138,7 @@ namespace MidiLib
         /// <param name="newval"></param>
         void UpdateCurrent(int newval)
         {
-            _currentSubdiv = MathUtils.Constrain(newval, 0, TotalSubdivs);
+            _currentSubdiv = MathUtils.Constrain(newval, 0, TheChannels.TotalSubdivs);
         }
 
         /// <summary>
@@ -148,13 +151,13 @@ namespace MidiLib
             if (State == RunState.Playing)
             {
                 // Any soloes?
-                bool solo = _channels.Where(c => c.State == ChannelState.Solo).Any();
+                //bool solo = _channels.Where(c => c.State == ChannelState.Solo).Any();
 
                 // Process each channel.
-                foreach(var ch in _channels)
+                foreach(var ch in TheChannels)
                 {
                     // Look for events to send.
-                    if (ch.State == ChannelState.Solo || (!solo && ch.State == ChannelState.Normal))
+                    if (ch.State == ChannelState.Solo || (!TheChannels.AnySolo && ch.State == ChannelState.Normal))
                     {
                         // Process any sequence steps.
                         var playEvents = ch.GetEvents(_currentSubdiv);
@@ -163,17 +166,16 @@ namespace MidiLib
                             switch (mevt)
                             {
                                 case NoteOnEvent evt:
-                                    // TODO1 drums if (ch.Patch.Modifier == PatchInfo.PatchModifier.IsDrums && evt.Velocity == 0)
-                                    //{
-                                    //    // Skip drum noteoffs as windows GM doesn't like them.
-                                    //}
-                                    //else
+                                    if (ch.IsDrums && evt.Velocity == 0)
                                     {
-                                        // Adjust volume and maybe drum channel.
+                                        // Skip drum noteoffs as windows GM doesn't like them.
+                                    }
+                                    else
+                                    {
+                                        // Adjust volume. Redirect drum channel to default.
                                         NoteOnEvent ne = new(
                                             evt.AbsoluteTime,
-                                            //ch.Patch.Modifier == PatchInfo.PatchModifier.IsDrums ? MidiDefs.DEFAULT_DRUM_CHANNEL : evt.Channel,//TODO1?
-                                            evt.Channel,
+                                            ch.IsDrums ? MidiDefs.DEFAULT_DRUM_CHANNEL : evt.Channel,
                                             evt.NoteNumber,
                                             Math.Min((int)(evt.Velocity * Volume * ch.Volume), MidiDefs.MAX_MIDI),
                                             evt.OffEvent is null ? 0 : evt.NoteLength); // Fix NAudio NoteLength bug.
@@ -183,11 +185,11 @@ namespace MidiLib
                                     break;
 
                                 case NoteEvent evt:
-                                    //if (ch.Patch.Modifier == PatchInfo.PatchModifier.IsDrums) TODO1
-                                    //{
-                                    //    // Skip drum noteoffs as windows GM doesn't like them.
-                                    //}
-                                    //else
+                                    if (ch.IsDrums)
+                                    {
+                                        // Skip drum noteoffs as windows GM doesn't like them.
+                                    }
+                                    else
                                     {
                                         MidiSend(evt);
                                     }
@@ -204,7 +206,7 @@ namespace MidiLib
 
                 // Bump time. Check for end of play.
                 _currentSubdiv++;
-                if (_currentSubdiv >= TotalSubdivs)
+                if (_currentSubdiv >= TheChannels.TotalSubdivs)
                 {
                     State = RunState.Complete;
                     _currentSubdiv = 0;
@@ -214,63 +216,73 @@ namespace MidiLib
         #endregion
 
         #region Public functions - channel access
+        ///// <summary>
+        ///// Get channel object for channelNumber. Throws an exception for invalid values.
+        ///// </summary>
+        ///// <param name="channelNumber"></param>
+        ///// <returns></returns>
+        //public Channel GetChannel(int channelNumber)
+        //{
+        //    if (channelNumber < 1 || channelNumber > MidiDefs.NUM_CHANNELS)
+        //    {
+        //        throw new ArgumentOutOfRangeException(nameof(channelNumber));
+        //    }
+
+        //    return _channels[channelNumber - 1];
+        //}
+
+        ///// <summary>
+        ///// Set events for channel.
+        ///// </summary>
+        ///// <param name="channelNumber"></param>
+        ///// <param name="events"></param>
+        ///// <param name="mt"></param>
+        //public void SetEvents(int channelNumber, IEnumerable<EventDesc> events, MidiTime mt)
+        //{
+        //    var ch = GetChannel(channelNumber);
+
+        //    // First scale time.
+        //    events.ForEach(e => e.ScaledTime = mt.MidiToInternal(e.AbsoluteTime));
+
+        //    ch.SetEvents(events);
+
+        //    TotalSubdivs = Math.Max(TotalSubdivs, ch.MaxSubdiv);
+        //}
+
+        ///// <summary>
+        ///// Client is changing the state.
+        ///// </summary>
+        ///// <param name="channelNumber"></param>
+        ///// <param name="state"></param>
+        //public void SetChannelState(int channelNumber, ChannelState state)
+        //{
+        //    var ch = GetChannel(channelNumber);
+        //    ch.State = state;
+        //}
+
+        ///// <summary>
+        ///// Client stipulates drums override.
+        ///// </summary>
+        ///// <param name="channelNumber"></param>
+        ///// <param name="isDrums"></param>
+        //public void SetChannelDrums(int channelNumber, bool isDrums)
+        //{
+        //    var ch = GetChannel(channelNumber);
+        //    ch.IsDrums = isDrums;
+        //}
+
         /// <summary>
-        /// Get channel object for channelNumber. Throws an exception for invalid values.
-        /// </summary>
-        /// <param name="channelNumber"></param>
-        /// <returns></returns>
-        public Channel GetChannel(int channelNumber)
-        {
-            if (channelNumber < 1 || channelNumber > MidiDefs.NUM_CHANNELS)
-            {
-                throw new ArgumentOutOfRangeException(nameof(channelNumber));
-            }
-
-            return _channels[channelNumber - 1];
-        }
-
-        /// <summary>
-        /// Set events for channel.
-        /// </summary>
-        /// <param name="channelNumber"></param>
-        /// <param name="events"></param>
-        /// <param name="mt"></param>
-        public void SetEvents(int channelNumber, IEnumerable<EventDesc> events, MidiTime mt)
-        {
-            var ch = GetChannel(channelNumber);
-
-            // First scale time.
-            events.ForEach(e => e.ScaledTime = mt.MidiToInternal(e.AbsoluteTime));
-
-            ch.SetEvents(events);
-
-            TotalSubdivs = Math.Max(TotalSubdivs, ch.MaxSubdiv);
-        }
-
-        /// <summary>
-        /// Client is changing the state. Assumes client updates any UI.
-        /// </summary>
-        /// <param name="channelNumber"></param>
-        /// <param name="state"></param>
-        public void SetChannelState(int channelNumber, ChannelState state)
-        {
-            var ch = GetChannel(channelNumber);
-            ch.State = state;
-        }
-
-        /// <summary>
-        /// Client is changing the patch. Assumes client updates any UI.
+        /// Client is changing the patch.
         /// </summary>
         /// <param name="channelNumber">Substitute patch for this channel.</param>
         /// <param name="patch">Use this patch for Patch Channel.</param>
-        public void SetPatch(int channelNumber, int patch)
+        public void SendPatch(int channelNumber, int patch)
         {
             if(patch >= 0)
             {
-                var ch = GetChannel(channelNumber);
-                ch.Patch = patch;
                 PatchChangeEvent evt = new(0, channelNumber, patch);
                 MidiSend(evt);
+                TheChannels.SetPatch(channelNumber, patch);
             }
         }
 
@@ -280,7 +292,7 @@ namespace MidiLib
         /// <param name="channelNumber">1-based channel</param>
         public void Kill(int channelNumber)
         {
-            GetChannel(channelNumber);
+//            GetChannel(channelNumber);
             ControlChangeEvent nevt = new(0, channelNumber, MidiController.AllNotesOff, 0);
             MidiSend(nevt);
         }
@@ -310,9 +322,9 @@ namespace MidiLib
             {
                 _midiOut.Send(evt.GetAsShortMessage());
 
-                if (LogMidi)
+                if (LogMidi && MidiTraceFile != "")
                 {
-                    File.AppendAllText(_dumpFile, $"SND {evt}{Environment.NewLine}");
+                    File.AppendAllText(MidiTraceFile, $"{DateTime.Now:mm\\:ss\\.fff} {evt}{Environment.NewLine}");
                 }
             }
         }

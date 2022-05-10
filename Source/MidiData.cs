@@ -7,10 +7,11 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using NAudio.Midi;
 using NBagOfTricks;
+using static MidiLib.ChannelCollection;
 
 
-// TODO Handle tracks in origin files?
-// TODO auto-determine which channels have drums? adjust quiet drums?
+// TODOF Handle tracks from origin files?
+// TODO1 auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
 
 
 namespace MidiLib
@@ -26,7 +27,7 @@ namespace MidiLib
     public class EventDesc
     {
         /// <summary>From whence this came. Empty for simple midi files.</summary>
-        public string PatternName { get; set; } = "";
+        public string PatternName { get; set; } = ""; //TODO2 go away if patterns contain events.
         
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get; set; }
@@ -80,15 +81,10 @@ namespace MidiLib
 
         /// <summary>Where to put output products.</summary>
         public string ExportPath { get; set; } = "SET_ME!";
+
+        ///// <summary>One-based channel numbers for drums.</summary>
+        //public List<int> DrumChannels { get; set; } = new();
         #endregion
-
-
-
-        /// <summary>One-based channel numbers for drums.</summary>
-        public List<int> DrumChannels { get; set; } = new();
-
-
-
 
         #region Public functions
         /// <summary>
@@ -100,7 +96,6 @@ namespace MidiLib
         public void Read(string fn, int defaultTempo, bool includeNoisy)
         {
             _fn = fn;
-            DrumChannels.Add(MidiDefs.DEFAULT_DRUM_CHANNEL);
 
             if(AllEvents.Count > 0)
             {
@@ -533,26 +528,11 @@ namespace MidiLib
             {
                 int chnum = i + 1;
 
-                if(pattern.Patches[i] >= 0)
+                if (pattern.Patches[i] >= 0)
                 {
                     patches.Append($"{chnum}:{MidiDefs.GetInstrumentDef(pattern.Patches[i])} ");
+                    //TODO1 also needs runtime info! lblPatch.Text = Channel.IsDrums ? "IsDrums" : MidiDefs.GetInstrumentDef(pattern.Patches[i]);
                 }
-
-
-                //switch (pattern.Patches[i].Modifier)
-                //{
-                //    case PatchInfo.PatchModifier.NotAssigned:
-                //        // Ignore.
-                //        break;
-
-                //    case PatchInfo.PatchModifier.None:
-                //        patches.Append($"{chnum}:{MidiDefs.GetInstrumentDef(pattern.Patches[i].PatchNumber)} ");
-                //        break;
-
-                //    case PatchInfo.PatchModifier.IsDrums: TODO1
-                //        patches.Append($"{chnum}:IsDrums ");
-                //        break;
-                //}
             }
 
             List<string> metaText = new()
@@ -591,7 +571,7 @@ namespace MidiLib
                 {
                     case NoteOnEvent evt:
                         int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
-                        //string nname = pattern.Patches[evt.Channel - 1].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO This is clumsy. Static file needs runtime information.
+                        //string nname = pattern.Patches[evt.Channel - 1].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO1 This is clumsy. Static file needs runtime information.
                         //    $"{MidiDefs.GetDrumDef(evt.NoteNumber)}" :
                         //    $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
                         string nname = MidiDefs.NoteNumberToName(evt.NoteNumber);
@@ -616,7 +596,7 @@ namespace MidiLib
                         break;
 
                     case PatchChangeEvent evt:
-                        //string pname = pattern.Patches[evt.Channel - 1].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO This is clumsy. Static file needs runtime information.
+                        //string pname = pattern.Patches[evt.Channel - 1].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO1 This is clumsy. Static file needs runtime information.
                         //    $"" :
                         //    $"{MidiDefs.GetInstrumentDef(evt.Patch)}"; // drum kit?
                         string pname = MidiDefs.GetInstrumentDef(evt.Patch);
@@ -665,7 +645,7 @@ namespace MidiLib
         /// <param name="patternName">Specific pattern.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="ppq">Export at this resolution.</param>
-        /// <param name="zip">TODO export as zip.</param>
+        /// <param name="zip">TODOF export as zip.</param>
         /// <returns>File name of export file.</returns>
         public string ExportMidi(string patternName, List<int> channels, int ppq, bool zip)
         {
@@ -688,7 +668,7 @@ namespace MidiLib
             // Optional.
             if (pattern.TimeSig != "")
             {
-                // TODO figure out TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, _ppq).
+                // TODOF figure out TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, _ppq).
             }
 
             if (pattern.KeySig != "")
@@ -713,7 +693,7 @@ namespace MidiLib
             // Gather the midi events for the pattern ordered by timestamp.
             GetFilteredEvents(patternName, channels, true).ForEach(e =>
             {
-                // TODO adjust velocity for noteon based on channel slider value. This is clumsy. Static file needs runtime information.
+                // TODO1 adjust velocity for noteon based on channel slider value. This is clumsy. Static file needs runtime information.
                 outEvents.Add(e.MidiEvent);
             });
 
@@ -736,23 +716,13 @@ namespace MidiLib
         /// <returns>Enumerator</returns>
         IEnumerable<EventDesc> GetFilteredEvents(string patternName, List<int> channels, bool sortTime)
         {
-            IEnumerable<EventDesc> descs;
-
-            switch (((uint)patternName.Length, (uint)channels.Count))
+            IEnumerable<EventDesc> descs = ((uint)patternName.Length, (uint)channels.Count) switch
             {
-                case (0, 0):
-                    descs = AllEvents.AsEnumerable();
-                    break;
-                case (0, >0):
-                    descs = AllEvents.Where(e => channels.Contains(e.ChannelNumber));
-                    break;
-                case (>0, 0):
-                    descs = AllEvents.Where(e => patternName == e.PatternName);
-                    break;
-                case (>0, >0):
-                    descs = AllEvents.Where(e => patternName == e.PatternName && channels.Contains(e.ChannelNumber));
-                    break;
-            }
+                (0, 0) => AllEvents.AsEnumerable(),
+                (0, >0) => AllEvents.Where(e => channels.Contains(e.ChannelNumber)),
+                (>0, 0) => AllEvents.Where(e => patternName == e.PatternName),
+                (>0, >0) => AllEvents.Where(e => patternName == e.PatternName && channels.Contains(e.ChannelNumber))
+            };
 
             // Always order.
             return sortTime ? descs.OrderBy(e => e.AbsoluteTime) : descs;

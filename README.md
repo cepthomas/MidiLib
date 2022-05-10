@@ -1,7 +1,7 @@
 # MidiLib
 
 
-TODO1 fix all this doc
+TODO2 fix all this doc
 
 ```
 New:
@@ -66,6 +66,9 @@ To that end, and because the windows multimedia timer has inadequate accuracy fo
 limited to 32nd notes.
 Likewise, minimal attention has been paid to aesthetics over functionality. This explains the poor color choices.
 Audio and midi play devices are limited to the ones available on your box. (Hint- VirtualMidiSynth).
+
+There are some limitations: Windows multimedia timer has 1 msec resolution at best. This causes a trade-off between
+ppq resolution and accuracy. The timer is also inherently wobbly.
 
 Requires VS2019 and .NET5.
 

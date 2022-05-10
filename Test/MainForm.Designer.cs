@@ -298,16 +298,17 @@ namespace MidiLib.Test
             // 
             // txtDrumChannels
             // 
-            this.txtDrumChannels.Location = new System.Drawing.Point(8, 179);
+            this.txtDrumChannels.Location = new System.Drawing.Point(8, 180);
             this.txtDrumChannels.Name = "txtDrumChannels";
             this.txtDrumChannels.Size = new System.Drawing.Size(138, 27);
             this.txtDrumChannels.TabIndex = 93;
+            this.txtDrumChannels.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DrumChannels_KeyPress);
             this.txtDrumChannels.Leave += new System.EventHandler(this.DrumChannels_Leave);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(7, 158);
+            this.label1.Location = new System.Drawing.Point(6, 157);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(109, 20);
             this.label1.TabIndex = 94;

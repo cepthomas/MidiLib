@@ -41,6 +41,9 @@ namespace MidiLib
         /// <summary>For user selection.</summary>
         public bool Selected { get; set; } = false;
 
+        /// <summary>Drums are handled differently.</summary>
+        public bool IsDrums { get; set; } = false;
+
         /// <summary>Current patch.</summary>
         public int Patch { get; set; } = -1;
 

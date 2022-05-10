@@ -85,22 +85,6 @@ namespace MidiLib
                 {
                     content.Add($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentDef(Patches[i])}");
                 }
-
-                ////TODO1 this for drums:
-                //switch (Patches[i].Modifier)
-                //{
-                //    case PatchInfo.PatchModifier.NotAssigned:
-                //        // Ignore.
-                //        break;
-
-                //    case PatchInfo.PatchModifier.None:
-                //        content.Add($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentDef(Patches[i].PatchNumber)}");
-                //        break;
-
-                //    case PatchInfo.PatchModifier.IsDrums:
-                //        content.Add($"Ch:{chnum} Patch:IsDrums");
-                //        break;
-                //}
             }
 
             return string.Join(' ', content);

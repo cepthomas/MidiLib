@@ -204,7 +204,7 @@ namespace MidiLib
             lv.Click += (object? sender, EventArgs e) =>
             {
                 int ind = lv.SelectedIndices[0];
-                Channel.Patch = ind - 1; // skip NoPatch entry TODO1 or make 0 = NoPatch?
+                Channel.Patch = ind - 1; // skip NoPatch entry TODO2 or make 0 = NoPatch?
 
                 UpdateUi();
                 ChannelChange?.Invoke(this, new() { PatchChange = true });
@@ -253,23 +253,7 @@ namespace MidiLib
             // General.
             lblChannelNumber.Text = $"Ch{ChannelNumber}";
             lblChannelNumber.BackColor = Selected ? SelectedColor : UnselectedColor;
-            lblPatch.Text = Channel.Patch >= 0 ? MidiDefs.GetInstrumentDef(Channel.Patch) : "NoPatch";
-
-
-            //switch(Channel.Patch.Modifier)
-            //{
-            //    case PatchInfo.PatchModifier.None:
-            //        lblPatch.Text = MidiDefs.GetInstrumentDef(Channel.Patch.PatchNumber);
-            //        break;
-
-            //    case PatchInfo.PatchModifier.NotAssigned:
-            //        lblPatch.Text = "NoPatch";
-            //        break;
-
-            //    case PatchInfo.PatchModifier.IsDrums: TODO1
-            //        lblPatch.Text = "IsDrums";
-            //        break;
-            //}
+            lblPatch.Text = Channel.IsDrums ? "IsDrums" : MidiDefs.GetInstrumentDef(Channel.Patch);
         }
 
         /// <summary>
