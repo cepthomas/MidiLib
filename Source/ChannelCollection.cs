@@ -23,13 +23,13 @@ namespace MidiLib
         /// <summary>Total length of all channels in subdivs.</summary>
         public int TotalSubdivs { get; private set; }
 
-        /// <summary>At least one solo channel.</summary>
-        public bool AnySolo { get { return _channels.Where(c => c.State == ChannelState.Solo).Any(); } }
+        ///// <summary>At least one solo channel.</summary>
+        //public bool AnySolo { get { return _channels.Where(c => c.State == ChannelState.Solo).Any(); } }
         #endregion
 
         #region Public functions
         /// <summary>
-        /// 
+        /// Start up.
         /// </summary>
         public void Init()
         {
@@ -40,7 +40,6 @@ namespace MidiLib
             {
                 int chnum = i + 1;
                 var ch = new Channel { ChannelNumber = chnum };
-                //ch.Events.Clear();
                 _channels[i] = ch;
             }
         }
@@ -68,10 +67,21 @@ namespace MidiLib
         /// </summary>
         /// <param name="channelNumber"></param>
         /// <param name="state"></param>
-        public void SetChannelState(int channelNumber, ChannelState state) //TODO2 api by object or name?
+        public void SetChannelState(int channelNumber, ChannelState state)
         {
             var ch = GetChannel(channelNumber);
             ch.State = state;
+        }
+
+        /// <summary>
+        /// Is the channel drums?
+        /// </summary>
+        /// <param name="channelNumber"></param>
+        /// <returns>T/F</returns>
+        public bool IsDrums(int channelNumber)
+        {
+            var ch = GetChannel(channelNumber);
+            return ch.IsDrums;
         }
 
         /// <summary>
@@ -86,12 +96,15 @@ namespace MidiLib
             var ch = GetChannel(channelNumber);
             ch.Patch = patch;
         }
+        #endregion
 
+        #region Private functions
         /// <summary>
         /// Get channel object for channelNumber. Throws an exception for invalid values.
         /// </summary>
         /// <param name="channelNumber"></param>
         /// <returns>The channel</returns>
+        //public
         public Channel GetChannel(int channelNumber)
         {
             if (channelNumber < 1 || channelNumber > MidiDefs.NUM_CHANNELS)
@@ -103,11 +116,11 @@ namespace MidiLib
         }
         #endregion
 
-        #region IEnumerable
+        #region IEnumerable implementation
         /// <summary>
-        /// 
+        /// Enumerator.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Enumerator</returns>
         public IEnumerator<Channel> GetEnumerator()
         {
             for (int i = 0; i < _channels.Length; i ++)
@@ -116,6 +129,10 @@ namespace MidiLib
             }
         }
 
+        /// <summary>
+        /// Enumerator.
+        /// </summary>
+        /// <returns>Enumerator</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator(); // Just return the generic version

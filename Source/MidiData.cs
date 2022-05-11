@@ -27,7 +27,7 @@ namespace MidiLib
     public class EventDesc
     {
         /// <summary>From whence this came. Empty for simple midi files.</summary>
-        public string PatternName { get; set; } = ""; //TODO2 go away if patterns contain events.
+        public string PatternName { get; set; } = ""; //TODO1 go away if patterns contain events.
         
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get; set; }
@@ -45,7 +45,7 @@ namespace MidiLib
     /// <summary>
     /// Reads in and processes standard midi or yamaha style files.
     /// </summary>
-    public class MidiData //TODO2 api by PatternInfo and patternName - one or the other?
+    public class MidiData
     {
         #region Fields
         /// <summary>Include events like controller changes, pitch wheel, ...</summary>
@@ -81,9 +81,6 @@ namespace MidiLib
 
         /// <summary>Where to put output products.</summary>
         public string ExportPath { get; set; } = "SET_ME!";
-
-        ///// <summary>One-based channel numbers for drums.</summary>
-        //public List<int> DrumChannels { get; set; } = new();
         #endregion
 
         #region Public functions
@@ -114,8 +111,6 @@ namespace MidiLib
             while (!done)
             {
                 var sectionName = Encoding.UTF8.GetString(br.ReadBytes(4));
-
-                //Debug.WriteLine($"{sectionName}:{_lastStreamPos}");
 
                 switch (sectionName)
                 {
@@ -330,9 +325,6 @@ namespace MidiLib
                 });
             }
 
-            //File.Delete("events.txt");
-            //AllEvents.ForEach(e => File.AppendAllText("events.txt", $"{e.MidiEvent}{Environment.NewLine}"));
-
             return absoluteTime;
         }
 
@@ -521,9 +513,7 @@ namespace MidiLib
 
                 if (pattern.Patches[i] >= 0)
                 {
-                    var ch = TheChannels.GetChannel(chnum);
-                    var sp = ch.IsDrums ? "IsDrums" : MidiDefs.GetInstrumentDef(pattern.Patches[i]);
-                    //patches.Append($"{chnum}:{MidiDefs.GetInstrumentDef(pattern.Patches[i])} ");
+                    var sp = TheChannels.IsDrums(chnum) ? "IsDrums" : MidiDefs.GetInstrumentDef(pattern.Patches[i]);
                     patches.Append($"{chnum}:{sp} ");
                 }
             }
@@ -559,14 +549,13 @@ namespace MidiLib
                 // Boilerplate.
                 string ntype = me.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "");
                 string sc = $"{me.MidiEvent.AbsoluteTime},{me.PatternName},{me.MidiEvent.Channel},{ntype}";
-                var ch = TheChannels.GetChannel(me.MidiEvent.Channel);
 
                 switch (me.MidiEvent)
                 {
                     case NoteOnEvent evt:
                         int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
 
-                        string nname = ch.IsDrums ?
+                        string nname = TheChannels.IsDrums(me.MidiEvent.Channel) ?
                            $"{MidiDefs.GetDrumDef(evt.NoteNumber)}" :
                            $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
                         notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
@@ -590,7 +579,7 @@ namespace MidiLib
                         break;
 
                     case PatchChangeEvent evt:
-                        string pname = ch.IsDrums ?
+                        string pname = TheChannels.IsDrums(me.MidiEvent.Channel) ?
                            $"{MidiDefs.GetDrumKit(evt.Patch)}" :
                            $"{MidiDefs.GetInstrumentDef(evt.Patch)}";
                         otherText.Add($"{sc},{evt.Patch},{pname},");
@@ -691,10 +680,6 @@ namespace MidiLib
             long ltime = outEvents.Last().AbsoluteTime;
             var endt = new MetaEvent(MetaEventType.EndTrack, 0, ltime);
             outEvents.Add(endt);
-
-            //List<string> de = new();
-            //outEvents.ForEach(e => de.Add(e.ToString()));
-            //Clipboard.SetText(string.Join(Environment.NewLine, de));
 
             MidiFile.Export(newfn, outColl);
 

@@ -23,7 +23,7 @@ namespace MidiLib
         // public string TimeSig { get; set; } = "";
 
         /// <summary>
-        /// 
+        /// Conversion function.
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
@@ -34,7 +34,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// 
+        /// Conversion function.
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
@@ -45,7 +45,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// 
+        /// Conversion function.
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
@@ -56,7 +56,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// 
+        /// Conversion function.
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>

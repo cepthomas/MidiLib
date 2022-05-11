@@ -15,7 +15,7 @@ namespace MidiLib
     public partial class ChannelControl : UserControl
     {
         #region Events
-        /// <summary>Notify client of asynchronous changes from user.</summary>
+        /// <summary>Notify host of asynchronous changes from user.</summary>
         public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
         public class ChannelChangeEventArgs : EventArgs
         {
@@ -203,7 +203,6 @@ namespace MidiLib
                 HideSelection = false
             };
 
-            lv.Items.Add("NoPatch");
             for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
             {
                 lv.Items.Add(MidiDefs.GetInstrumentDef(i));
@@ -212,7 +211,7 @@ namespace MidiLib
             lv.Click += (object? sender, EventArgs e) =>
             {
                 int ind = lv.SelectedIndices[0];
-                Channel.Patch = ind - 1; // skip NoPatch entry TODO2 or make 0 = NoPatch?
+                Channel.Patch = ind;
 
                 UpdateUi();
                 ChannelChange?.Invoke(this, new() { PatchChange = true });

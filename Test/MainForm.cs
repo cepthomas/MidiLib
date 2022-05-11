@@ -41,6 +41,12 @@ namespace MidiLib.Test
 
         /// <summary>Current file.</summary>
         string _fn = "";
+
+        /// <summary>Main drum channel.</summary>
+        int _drumChannel1 = 0;
+
+        /// <summary>Secondary (optional) drum channel.</summary>
+        int _drumChannel2 = 0;
         #endregion
 
         #region Fields - user custom
@@ -64,7 +70,6 @@ namespace MidiLib.Test
         public MainForm()
         {
             InitializeComponent();
-
             _player = new(_midiDevice) { MidiTraceFile = @"C:\Dev\repos\MidiLib\out\midi_out.txt" };
         }
 
@@ -98,7 +103,7 @@ namespace MidiLib.Test
             btnKillMidi.Click += (_, __) => { _player.KillAll(); };
             btnLogMidi.Click += (_, __) => { _player.LogMidi = btnLogMidi.Checked; };
             sldTempo.ValueChanged += (_, __) => { SetTimer(); };
-            sldPosition.ValueChanged += (_, __) => { SetPositionFromSlider(); };
+            sldPosition.ValueChanged += (_, __) => { GetPosition(); };
 
             // Set up timer.
             sldTempo.Value = _defaultTempo;
@@ -118,10 +123,13 @@ namespace MidiLib.Test
             }
             else
             {
-                //OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
+                OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
                 //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty");
                 //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
-                OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid"); //TODO1 not quite right yet...
+                //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid");
+
+                // TODO?? see 2 non-std drum channels in:
+                //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\Gary USB\g-70 styles\G-70 #1\ContempBeat_G70.S423.STY");
             }
         }
 
@@ -153,89 +161,6 @@ namespace MidiLib.Test
             base.Dispose(disposing);
         }
         #endregion
-
-
-
-        //////////////// TODO2 these need homes //////////////////////////
-
-        void SetPositionFromInternal()
-        {
-            int pos = _player.CurrentSubdiv * (int)sldPosition.Maximum / TheChannels.TotalSubdivs;
-            sldPosition.Value = pos;
-        }
-
-        void SetPositionFromSlider() // click from ui
-        {
-            int pos = TheChannels.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
-            _player.CurrentSubdiv = pos;
-        }
-
-
-        //void ResetDrums()
-        //{
-        //    // Reset drum channels.
-        //    for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-        //    {
-        //        int chnum = i + 1;
-        //        TheChannels.SetChannelDrums(chnum, chnum == MidiDefs.DEFAULT_DRUM_CHANNEL);
-        //    }
-
-        //    txtDrumChannel1.Text = MidiDefs.DEFAULT_DRUM_CHANNEL.ToString();
-        //    txtDrumChannel2.Text = "";
-        //}
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void DrumChannels_Validating(object? sender, CancelEventArgs e)
-        {
-            // Check for valid value.
-            var tb = (ToolStripTextBox)sender!;
-            if(tb.Text.Length == 0)
-            {
-                // Valid condition.
-            }
-            else
-            {
-                bool ok = int.TryParse(tb.Text, out int val);
-                if (ok)
-                {
-                    ok = val > 0 && val <= MidiDefs.NUM_CHANNELS;
-                }
-                if (!ok)
-                {
-                    e.Cancel = true;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Get both selections and update UI.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void DrumChannels_Validated(object? sender, EventArgs e)
-        {
-            UpdateDrumChannels();
-            _channelControls.ForEach(ctl => ctl.IsDrums = ctl.ChannelNumber == _drumChannel1 || ctl.ChannelNumber == _drumChannel2);
-        }
-
-        int _drumChannel1 = 0;
-        int _drumChannel2 = 0;
-
-        /// <summary>
-        /// Convert UI entries for internal usage.
-        /// </summary>
-        void UpdateDrumChannels()
-        {
-            _drumChannel1 = txtDrumChannel1.Text.Length > 0 ? int.Parse(txtDrumChannel1.Text) : 0;
-            _drumChannel2 = txtDrumChannel2.Text.Length > 0 ? int.Parse(txtDrumChannel2.Text) : 0;
-        }
-
-
 
         #region State management
         /// <summary>
@@ -286,7 +211,7 @@ namespace MidiLib.Test
             }
 
             // Update UI.
-            SetPositionFromInternal();
+            SetPosition();
 
             _guard = false;
         }
@@ -553,8 +478,6 @@ namespace MidiLib.Test
         }
         #endregion
 
-
-
         #region Process tick
         int _report = 0;
 
@@ -582,6 +505,75 @@ namespace MidiLib.Test
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+        #endregion
+
+        #region Drum channel
+        /// <summary>
+        /// Check for legal entries for channel number.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void DrumChannels_Validating(object? sender, CancelEventArgs e)
+        {
+            // Check for valid value.
+            var tb = (ToolStripTextBox)sender!;
+            if (tb.Text.Length == 0)
+            {
+                // Valid condition.
+            }
+            else
+            {
+                bool ok = int.TryParse(tb.Text, out int val);
+                if (ok)
+                {
+                    ok = val > 0 && val <= MidiDefs.NUM_CHANNELS;
+                }
+                if (!ok)
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get both selections and update UI.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void DrumChannels_Validated(object? sender, EventArgs e)
+        {
+            UpdateDrumChannels();
+            _channelControls.ForEach(ctl => ctl.IsDrums = ctl.ChannelNumber == _drumChannel1 || ctl.ChannelNumber == _drumChannel2);
+        }
+
+        /// <summary>
+        /// Convert UI entries for internal usage.
+        /// </summary>
+        void UpdateDrumChannels()
+        {
+            _drumChannel1 = txtDrumChannel1.Text.Length > 0 ? int.Parse(txtDrumChannel1.Text) : 0;
+            _drumChannel2 = txtDrumChannel2.Text.Length > 0 ? int.Parse(txtDrumChannel2.Text) : 0;
+        }
+        #endregion
+
+        #region Position bar
+        /// <summary>
+        /// Set UI slider value.
+        /// </summary>
+        void SetPosition()
+        {
+            int pos = _player.CurrentSubdiv * (int)sldPosition.Maximum / TheChannels.TotalSubdivs;
+            sldPosition.Value = pos;
+        }
+
+        /// <summary>
+        /// Get UI slider value.
+        /// </summary>
+        void GetPosition()
+        {
+            int pos = TheChannels.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
+            _player.CurrentSubdiv = pos;
         }
         #endregion
 

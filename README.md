@@ -40,6 +40,8 @@ New:
 - Translates from MidiData to the wire.
 - Units are in subdivs - essentially midi ticks.
 - Writes native midi events to the output device every Tick(). Host is responsible for timing/frequency.
+- ChannelCollection - uses api for host, back end uses Channel objects.
+
 
 ## UI is MainForm (a typical example) and ChannelControl.
 - MainForm Creates a Player. Opens a file using MidiData. Stars and runs the timer based on user tempo selection/change.
@@ -84,7 +86,7 @@ Channel:
         readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];
 
         /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
-        public PatchInfo[] Patches { get; set; } = new PatchInfo[MidiDefs.NUM_CHANNELS];  >>>>>>>>>> int
+        public int[] Patches { get; set; } = new int[MidiDefs.NUM_CHANNELS];  >>>>>>>>>> int
 
 
 # Third Party

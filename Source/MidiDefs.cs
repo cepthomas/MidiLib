@@ -78,14 +78,6 @@ namespace MidiLib
         /// <returns></returns>
         public static string GetDrumKit(int which)
         {
-            //string ret = which switch
-            //{
-            //    //_drumKits.ContainsKey(which) => _drumKits[which],
-            //    >= 0 and < MAX_MIDI => _instrumentNames[which],
-            //    _ => throw new ArgumentOutOfRangeException(nameof(which)),
-            //};
-            //return ret;
-
             if (_drumKits.ContainsKey(which))
             {
                 return _drumKits[which];

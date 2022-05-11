@@ -26,9 +26,6 @@ namespace MidiLib
         /// <summary>Midi output device.</summary>
         MidiOut? _midiOut = null;
 
-        ///// <summary>All the channels. Index is 0-based, not channel number.</summary>
-        //readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];
-
         /// <summary>Backing.</summary>
         int _currentSubdiv = 0;
         #endregion
@@ -93,6 +90,7 @@ namespace MidiLib
             _midiOut?.Dispose();
             _midiOut = null;
         }
+
         /// <summary>
         /// Hard reset before loading a pattern.
         /// </summary>
@@ -140,13 +138,14 @@ namespace MidiLib
             if (State == RunState.Playing)
             {
                 // Any soloes?
-                //bool solo = _channels.Where(c => c.State == ChannelState.Solo).Any();
+                bool solo = false;
+                TheChannels.ForEach(ch => solo |= ch.State == ChannelState.Solo);
 
                 // Process each channel.
                 foreach(var ch in TheChannels)
                 {
-                    // Look for events to send.
-                    if (ch.State == ChannelState.Solo || (!TheChannels.AnySolo && ch.State == ChannelState.Normal))
+                    // Look for events to send. Any soloes?
+                    if (ch.State == ChannelState.Solo || (!solo && ch.State == ChannelState.Normal))
                     {
                         // Process any sequence steps.
                         var playEvents = ch.GetEvents(_currentSubdiv);
@@ -221,7 +220,6 @@ namespace MidiLib
         /// <param name="channelNumber">1-based channel</param>
         public void Kill(int channelNumber)
         {
-//            GetChannel(channelNumber);
             ControlChangeEvent nevt = new(0, channelNumber, MidiController.AllNotesOff, 0);
             MidiSend(nevt);
         }
