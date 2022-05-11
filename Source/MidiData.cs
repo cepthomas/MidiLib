@@ -11,7 +11,7 @@ using static MidiLib.ChannelCollection;
 
 
 // TODOF Handle tracks from origin files?
-// TODO1 auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
+// TODO2 auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
 
 
 namespace MidiLib
@@ -45,7 +45,7 @@ namespace MidiLib
     /// <summary>
     /// Reads in and processes standard midi or yamaha style files.
     /// </summary>
-    public class MidiData
+    public class MidiData //TODO2 api by PatternInfo and patternName - one or the other?
     {
         #region Fields
         /// <summary>Include events like controller changes, pitch wheel, ...</summary>
@@ -238,11 +238,9 @@ namespace MidiLib
 
                     case PatchChangeEvent evt:
                         var index = evt.Channel - 1;
-                        //PatchInfo patch = new() { PatchNumber = evt.Patch, Modifier = PatchInfo.PatchModifier.None };
                         _patternDefaults.Patches[index] = evt.Patch;
                         AllPatterns.Last().Patches[index] = evt.Patch;
                         AddMidiEvent(evt);
-//                        Debug.WriteLine(evt.ToString());
                         break;
 
                     case SysexEvent evt:
@@ -253,9 +251,9 @@ namespace MidiLib
                         break;
 
                     ///// Meta events /////
-                    case TrackSequenceNumberEvent evt:
-                        AddMidiEvent(evt);
-                        break;
+                    //case TrackSequenceNumberEvent evt:
+                    //    AddMidiEvent(evt);
+                    //    break;
 
                     case TempoEvent evt:
                         var tempo = (int)Math.Round(evt.Tempo);
@@ -306,11 +304,10 @@ namespace MidiLib
                         AddMidiEvent(evt);
                         break;
 
-                    case MetaEvent evt when evt.MetaEventType == MetaEventType.EndTrack:
-                        // Indicates end of current midi track.
-                        AddMidiEvent(evt);
-                        //_currentPattern = "";
-                        break;
+                    //case MetaEvent evt when evt.MetaEventType == MetaEventType.EndTrack:
+                    //    // Indicates end of current midi track.
+                    //    AddMidiEvent(evt);
+                    //    break;
 
                     default:
                         // Other MidiCommandCodes: AutoSensing, ChannelAfterTouch, ContinueSequence, Eox, KeyAfterTouch, StartSequence, StopSequence, TimingClock
@@ -437,12 +434,6 @@ namespace MidiLib
                 {
                     pi.Patches[i] = _patternDefaults.Patches[i];
                 }
-
-                //if (pi.Patches[i].Modifier == PatchInfo.PatchModifier.NotAssigned &&
-                //    _patternDefaults.Patches[i].Modifier != PatchInfo.PatchModifier.NotAssigned)
-                //{
-                //    pi.Patches[i] = _patternDefaults.Patches[i];
-                //}
             }
         }
 
@@ -530,8 +521,10 @@ namespace MidiLib
 
                 if (pattern.Patches[i] >= 0)
                 {
-                    patches.Append($"{chnum}:{MidiDefs.GetInstrumentDef(pattern.Patches[i])} ");
-                    //TODO1 also needs runtime info! lblPatch.Text = Channel.IsDrums ? "IsDrums" : MidiDefs.GetInstrumentDef(pattern.Patches[i]);
+                    var ch = TheChannels.GetChannel(chnum);
+                    var sp = ch.IsDrums ? "IsDrums" : MidiDefs.GetInstrumentDef(pattern.Patches[i]);
+                    //patches.Append($"{chnum}:{MidiDefs.GetInstrumentDef(pattern.Patches[i])} ");
+                    patches.Append($"{chnum}:{sp} ");
                 }
             }
 
@@ -566,15 +559,16 @@ namespace MidiLib
                 // Boilerplate.
                 string ntype = me.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "");
                 string sc = $"{me.MidiEvent.AbsoluteTime},{me.PatternName},{me.MidiEvent.Channel},{ntype}";
+                var ch = TheChannels.GetChannel(me.MidiEvent.Channel);
 
                 switch (me.MidiEvent)
                 {
                     case NoteOnEvent evt:
                         int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
-                        //string nname = pattern.Patches[evt.Channel - 1].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO1 This is clumsy. Static file needs runtime information.
-                        //    $"{MidiDefs.GetDrumDef(evt.NoteNumber)}" :
-                        //    $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
-                        string nname = MidiDefs.NoteNumberToName(evt.NoteNumber);
+
+                        string nname = ch.IsDrums ?
+                           $"{MidiDefs.GetDrumDef(evt.NoteNumber)}" :
+                           $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
                         notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
                         break;
 
@@ -596,10 +590,9 @@ namespace MidiLib
                         break;
 
                     case PatchChangeEvent evt:
-                        //string pname = pattern.Patches[evt.Channel - 1].Modifier == PatchInfo.PatchModifier.IsDrums ? // TODO1 This is clumsy. Static file needs runtime information.
-                        //    $"" :
-                        //    $"{MidiDefs.GetInstrumentDef(evt.Patch)}"; // drum kit?
-                        string pname = MidiDefs.GetInstrumentDef(evt.Patch);
+                        string pname = ch.IsDrums ?
+                           $"{MidiDefs.GetDrumKit(evt.Patch)}" :
+                           $"{MidiDefs.GetInstrumentDef(evt.Patch)}";
                         otherText.Add($"{sc},{evt.Patch},{pname},");
                         break;
 
@@ -668,7 +661,7 @@ namespace MidiLib
             // Optional.
             if (pattern.TimeSig != "")
             {
-                // TODOF figure out TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, _ppq).
+                // TODOF figure out TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, ppq).
             }
 
             if (pattern.KeySig != "")
@@ -684,16 +677,13 @@ namespace MidiLib
                 {
                     outEvents.Add(new PatchChangeEvent(0, chnum, pattern.Patches[i]));
                 }
-                //if (pattern.Patches[i].Modifier == PatchInfo.PatchModifier.None)
-                //{
-                //    outEvents.Add(new PatchChangeEvent(0, chnum, pattern.Patches[i].PatchNumber));
-                //}
             }
 
             // Gather the midi events for the pattern ordered by timestamp.
-            GetFilteredEvents(patternName, channels, true).ForEach(e =>
+            var events = GetFilteredEvents(patternName, channels, true);
+            events.ForEach(e =>
             {
-                // TODO1 adjust velocity for noteon based on channel slider value. This is clumsy. Static file needs runtime information.
+                // TODO2 adjust velocity for noteon based on channel current volume (runtime).
                 outEvents.Add(e.MidiEvent);
             });
 
@@ -701,6 +691,10 @@ namespace MidiLib
             long ltime = outEvents.Last().AbsoluteTime;
             var endt = new MetaEvent(MetaEventType.EndTrack, 0, ltime);
             outEvents.Add(endt);
+
+            //List<string> de = new();
+            //outEvents.ForEach(e => de.Add(e.ToString()));
+            //Clipboard.SetText(string.Join(Environment.NewLine, de));
 
             MidiFile.Export(newfn, outColl);
 

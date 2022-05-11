@@ -74,7 +74,7 @@ Requires VS2019 and .NET5.
 
 Probably I should make this into a nuget package at some point.
 
-
+Exports use the user assigned drum channel!
 
 Channel:
         /// <summary>Actual 1-based midi channel number.</summary>

@@ -68,21 +68,10 @@ namespace MidiLib
         /// </summary>
         /// <param name="channelNumber"></param>
         /// <param name="state"></param>
-        public void SetChannelState(int channelNumber, ChannelState state)
+        public void SetChannelState(int channelNumber, ChannelState state) //TODO2 api by object or name?
         {
             var ch = GetChannel(channelNumber);
             ch.State = state;
-        }
-
-        /// <summary>
-        /// Client stipulates drums override. This only changes the channel, client needs to tell Player too.
-        /// </summary>
-        /// <param name="channelNumber"></param>
-        /// <param name="isDrums"></param>
-        public void SetChannelDrums(int channelNumber, bool isDrums)
-        {
-            var ch = GetChannel(channelNumber);
-            ch.IsDrums = isDrums;
         }
 
         /// <summary>
@@ -121,7 +110,7 @@ namespace MidiLib
         /// <returns></returns>
         public IEnumerator<Channel> GetEnumerator()
         {
-            for (int i = 0; i <= _channels.Length; i ++)
+            for (int i = 0; i < _channels.Length; i ++)
             {
                 yield return _channels[i];
             }

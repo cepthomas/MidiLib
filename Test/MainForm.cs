@@ -39,9 +39,6 @@ namespace MidiLib.Test
         /// <summary>Our internal midi send timer resolution.</summary>
         readonly int _sendPPQ = 32;
 
-        /// <summary>Only 4/4 time supported.</summary>
-        readonly int _beatsPerBar = 4;
-
         /// <summary>Current file.</summary>
         string _fn = "";
         #endregion
@@ -111,6 +108,8 @@ namespace MidiLib.Test
             DirectoryInfo di = new(_exportPath);
             di.Create();
 
+            UpdateDrumChannels();
+
             // Look for filename passed in.
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1)
@@ -119,10 +118,10 @@ namespace MidiLib.Test
             }
             else
             {
-                OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
+                //OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
                 //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty");
                 //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
-                //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid"); //TODO1 not quite right yet...
+                OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid"); //TODO1 not quite right yet...
             }
         }
 
@@ -157,7 +156,7 @@ namespace MidiLib.Test
 
 
 
-        //////////////// these need homes //////////////////////////
+        //////////////// TODO2 these need homes //////////////////////////
 
         void SetPositionFromInternal()
         {
@@ -172,67 +171,69 @@ namespace MidiLib.Test
         }
 
 
-        void ResetDrums()
+        //void ResetDrums()
+        //{
+        //    // Reset drum channels.
+        //    for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+        //    {
+        //        int chnum = i + 1;
+        //        TheChannels.SetChannelDrums(chnum, chnum == MidiDefs.DEFAULT_DRUM_CHANNEL);
+        //    }
+
+        //    txtDrumChannel1.Text = MidiDefs.DEFAULT_DRUM_CHANNEL.ToString();
+        //    txtDrumChannel2.Text = "";
+        //}
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void DrumChannels_Validating(object? sender, CancelEventArgs e)
         {
-            // Reset drum channels.TODO1 also update controls.
-            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+            // Check for valid value.
+            var tb = (ToolStripTextBox)sender!;
+            if(tb.Text.Length == 0)
             {
-                int chnum = i + 1;
-                TheChannels.SetChannelDrums(chnum, chnum == MidiDefs.DEFAULT_DRUM_CHANNEL);
+                // Valid condition.
             }
-            txtDrumChannels.Text = MidiDefs.DEFAULT_DRUM_CHANNEL.ToString();
-
-        }
-
-        /// <summary>
-        /// Only allow integers and space.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void DrumChannels_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            char c = e.KeyChar;
-            e.Handled = !((c >= '0' && c <= '9') || (c == '\b') || (c == ' '));
-
-            //1 5 15 25
-
-
-
-        }
-
-        /// <summary>
-        /// Do something with the entry.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void DrumChannels_Leave(object sender, EventArgs e)
-        {
-            var parts = txtDrumChannels.Text.SplitByTokens(" ,");
-            List<int> drumChannels = new();
-
-            foreach(var p in parts)
+            else
             {
-                int chnum = int.Parse(p);
-
-                bool ok = int.TryParse(p, out int val);
-                if(ok)
+                bool ok = int.TryParse(tb.Text, out int val);
+                if (ok)
                 {
                     ok = val > 0 && val <= MidiDefs.NUM_CHANNELS;
                 }
-
-                if (ok)
+                if (!ok)
                 {
-                    drumChannels.Add(val);
-                }
-                else
-                {
-                    LogMessage("ERR Invalid drum channel");
-                    txtDrumChannels.Text = "";
-//TODO1                    _mdata.DrumChannels.Clear();
+                    e.Cancel = true;
                 }
             }
         }
 
+        /// <summary>
+        /// Get both selections and update UI.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void DrumChannels_Validated(object? sender, EventArgs e)
+        {
+            UpdateDrumChannels();
+            _channelControls.ForEach(ctl => ctl.IsDrums = ctl.ChannelNumber == _drumChannel1 || ctl.ChannelNumber == _drumChannel2);
+        }
+
+        int _drumChannel1 = 0;
+        int _drumChannel2 = 0;
+
+        /// <summary>
+        /// Convert UI entries for internal usage.
+        /// </summary>
+        void UpdateDrumChannels()
+        {
+            _drumChannel1 = txtDrumChannel1.Text.Length > 0 ? int.Parse(txtDrumChannel1.Text) : 0;
+            _drumChannel2 = txtDrumChannel2.Text.Length > 0 ? int.Parse(txtDrumChannel2.Text) : 0;
+        }
 
 
 
@@ -359,7 +360,6 @@ namespace MidiLib.Test
         /// </summary>
         void Rewind()
         {
-            //barBar.Current = BarSpan.Zero;
             _player.CurrentSubdiv = 0;
             sldPosition.Value = 0;
         }
@@ -384,11 +384,14 @@ namespace MidiLib.Test
 
             try
             {
+                // Reset drums. Or maybe not?
+                txtDrumChannel1.Text = MidiDefs.DEFAULT_DRUM_CHANNEL.ToString();
+                txtDrumChannel2.Text = "";
+                UpdateDrumChannels();
+
                 // Process the file. Set the default tempo from preferences.
                 _mdata = new();
                 _mdata.Read(fn, _defaultTempo, false);
-
-                ResetDrums();
 
                 // Init new stuff with contents of file/pattern.
                 lbPatterns.Items.Clear();
@@ -462,7 +465,7 @@ namespace MidiLib.Test
         {
             _player.Reset();
 
-            // Clean out our collection.
+            // Clean out our controls collection.
             _channelControls.ForEach(c => Controls.Remove(c));
             _channelControls.Clear();
 
@@ -495,13 +498,10 @@ namespace MidiLib.Test
                     // Make new controls. Bind to internal channel object.
                     ChannelControl control = new()
                     {
-                        Channel = TheChannels.GetChannel(chnum), // TODO2 find a better way to bind.
+                        Channel = TheChannels.GetChannel(chnum), // TODO2 find a better way to bind?
                         Location = new(x, y),
                         Patch = pinfo.Patches[i],
-                        //// default state
-                        //State = ChannelState.Normal,
-                        //Volume = Channel.DEFAULT_VOLUME,
-                        //Selected = false
+                        IsDrums = chnum == _drumChannel1 || chnum == _drumChannel2
                     };
 
                     control.ChannelChange += Control_ChannelChange;
@@ -631,19 +631,36 @@ namespace MidiLib.Test
                 }
                 else if (sender == btnExportPattern)
                 {
-                    foreach(var patternName in patternNames)
+                    if(_mdata.AllPatterns.Count == 1)
                     {
-                        var s = _mdata.ExportGroupedEvents(patternName, channels, true);
-                        LogMessage($"INF Exported to {s}");
+                        var s = _mdata.ExportGroupedEvents("", channels, true);
+                        LogMessage($"INF Exported default to {s}");
+                    }
+                    else
+                    {
+                        foreach (var patternName in patternNames)
+                        {
+                            var s = _mdata.ExportGroupedEvents(patternName, channels, true);
+                            LogMessage($"INF Exported pattern {patternName} to {s}");
+                        }
                     }
                 }
                 else if (sender == btnExportMidi)
                 {
-                    foreach (var patternName in patternNames)
+                    if (_mdata.AllPatterns.Count == 1)
                     {
                         // Use original ppq.
-                        var s = _mdata.ExportMidi(patternName, channels, _mdata.DeltaTicksPerQuarterNote, false);
+                        var s = _mdata.ExportMidi("", channels, _mdata.DeltaTicksPerQuarterNote, false);
                         LogMessage($"INF Export midi to {s}");
+                    }
+                    else
+                    {
+                        foreach (var patternName in patternNames)
+                        {
+                            // Use original ppq.
+                            var s = _mdata.ExportMidi(patternName, channels, _mdata.DeltaTicksPerQuarterNote, false);
+                            LogMessage($"INF Export midi to {s}");
+                        }
                     }
                 }
                 else

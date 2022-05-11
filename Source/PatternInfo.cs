@@ -10,26 +10,6 @@ using NAudio.Midi;
 
 namespace MidiLib
 {
-
-
-    // /// <summary>Properties associated with a pattern patch.</summary>
-    // public class PatchInfo
-    // {
-    //     public enum PatchModifier
-    //     {
-    //         None,           // Normal, Patch is valid.
-    //         NotAssigned,    // Patch is unknown.
-    //         IsDrums         // Patch is actually drums, treat as such on output.
-    //     }
-
-    //     /// <summary>Patch may not be what you think.</summary>
-    //     public PatchModifier Modifier { get; set; } = PatchModifier.NotAssigned;
-
-    //     /// <summary>The channel patch number.</summary>
-    //     public int PatchNumber { get; set; } = 0;
-    // }
-
-
     /// <summary>Properties associated with a pattern.</summary>
     public class PatternInfo
     {
@@ -56,7 +36,7 @@ namespace MidiLib
         {
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
-                Patches[i] = new();
+                Patches[i] = -1;
             }
         }
 

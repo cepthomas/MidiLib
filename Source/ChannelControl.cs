@@ -61,6 +61,13 @@ namespace MidiLib
             get { return Channel.MaxSubdiv; }
         }
 
+        /// <summary>Drum channel changed.</summary>
+        public bool IsDrums
+        {
+            get { return Channel.IsDrums; }
+            set { Channel.IsDrums = value; UpdateUi(); }
+        }
+
         /// <summary>User has selected this channel.</summary>
         public bool Selected
         {
@@ -91,6 +98,7 @@ namespace MidiLib
         /// <param name="e"></param>
         void ChannelControl_Load(object? sender, EventArgs e)
         {
+            sldVolume.Value = Channel.Volume;
             sldVolume.DrawColor = SelectedColor;
             sldVolume.Minimum = Channel.MIN_VOLUME;
             sldVolume.Maximum = Channel.MAX_VOLUME;
@@ -253,7 +261,7 @@ namespace MidiLib
             // General.
             lblChannelNumber.Text = $"Ch{ChannelNumber}";
             lblChannelNumber.BackColor = Selected ? SelectedColor : UnselectedColor;
-            lblPatch.Text = Channel.IsDrums ? "IsDrums" : MidiDefs.GetInstrumentDef(Channel.Patch);
+            lblPatch.Text = IsDrums ? "IsDrums" : MidiDefs.GetInstrumentDef(Channel.Patch);
         }
 
         /// <summary>
