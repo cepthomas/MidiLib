@@ -260,7 +260,7 @@ namespace MidiLib
             // General.
             lblChannelNumber.Text = $"Ch{ChannelNumber}";
             lblChannelNumber.BackColor = Selected ? SelectedColor : UnselectedColor;
-            lblPatch.Text = IsDrums ? "IsDrums" : MidiDefs.GetInstrumentDef(Channel.Patch);
+            lblPatch.Text = IsDrums ? "Drums" : MidiDefs.GetInstrumentDef(Channel.Patch);
         }
 
         /// <summary>

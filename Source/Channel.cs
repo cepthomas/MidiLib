@@ -24,7 +24,7 @@ namespace MidiLib
         #endregion
 
         #region Fields
-        ///<summary>The main collection of playable events for a channel/pattern. The key is the internal subdiv/time.</summary>
+        ///<summary>The collection of playable events for this channel and pattern. The key is the internal subdiv/time.</summary>
         readonly Dictionary<int, List<MidiEvent>> _events = new();
 
         ///<summary>Backing.</summary>

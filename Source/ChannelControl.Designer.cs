@@ -29,11 +29,13 @@ namespace MidiLib
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.lblChannelNumber = new System.Windows.Forms.Label();
             this.sldVolume = new NBagOfUis.Slider();
             this.lblPatch = new System.Windows.Forms.Label();
             this.lblSolo = new System.Windows.Forms.Label();
             this.lblMute = new System.Windows.Forms.Label();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
             // lblChannelNumber
@@ -44,11 +46,11 @@ namespace MidiLib
             this.lblChannelNumber.Size = new System.Drawing.Size(18, 20);
             this.lblChannelNumber.TabIndex = 3;
             this.lblChannelNumber.Text = "#";
+            this.toolTip1.SetToolTip(this.lblChannelNumber, "Select channel");
             // 
             // sldVolume
             // 
             this.sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sldVolume.Resolution = 0.05D;
             this.sldVolume.DrawColor = System.Drawing.Color.White;
             this.sldVolume.Label = "vol";
             this.sldVolume.Location = new System.Drawing.Point(195, 2);
@@ -57,8 +59,10 @@ namespace MidiLib
             this.sldVolume.Minimum = 0D;
             this.sldVolume.Name = "sldVolume";
             this.sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.sldVolume.Resolution = 0.05D;
             this.sldVolume.Size = new System.Drawing.Size(80, 30);
             this.sldVolume.TabIndex = 43;
+            this.toolTip1.SetToolTip(this.sldVolume, "Channel volume");
             this.sldVolume.Value = 1D;
             // 
             // lblPatch
@@ -77,6 +81,7 @@ namespace MidiLib
             this.lblSolo.Size = new System.Drawing.Size(20, 20);
             this.lblSolo.TabIndex = 45;
             this.lblSolo.Text = "S";
+            this.toolTip1.SetToolTip(this.lblSolo, "Solo");
             // 
             // lblMute
             // 
@@ -85,6 +90,7 @@ namespace MidiLib
             this.lblMute.Size = new System.Drawing.Size(20, 20);
             this.lblMute.TabIndex = 46;
             this.lblMute.Text = "M";
+            this.toolTip1.SetToolTip(this.lblMute, "Mute");
             // 
             // ChannelControl
             // 
@@ -96,7 +102,7 @@ namespace MidiLib
             this.Controls.Add(this.sldVolume);
             this.Controls.Add(this.lblChannelNumber);
             this.Name = "ChannelControl";
-            this.Size = new System.Drawing.Size(374, 38);
+            this.Size = new System.Drawing.Size(345, 38);
             this.Load += new System.EventHandler(this.ChannelControl_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -109,5 +115,6 @@ namespace MidiLib
         private System.Windows.Forms.Label lblPatch;
         private System.Windows.Forms.Label lblSolo;
         private System.Windows.Forms.Label lblMute;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

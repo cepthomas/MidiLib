@@ -74,9 +74,6 @@ namespace MidiLib
             {
                 throw new ArgumentException($"Invalid midi device: {midiDevice}");
             }
-
-            // Init the channels.
-            TheChannels.Init();
         }
 
         /// <summary> 
@@ -138,8 +135,7 @@ namespace MidiLib
             if (State == RunState.Playing)
             {
                 // Any soloes?
-                bool solo = false;
-                TheChannels.ForEach(ch => solo |= ch.State == ChannelState.Solo);
+                bool solo = TheChannels.AnySolo;
 
                 // Process each channel.
                 foreach(var ch in TheChannels)
@@ -172,7 +168,7 @@ namespace MidiLib
                                     }
                                     break;
 
-                                case NoteEvent evt:
+                                case NoteEvent evt: // aka NoteOff
                                     if (ch.IsDrums)
                                     {
                                         // Skip drum noteoffs as windows GM doesn't like them.

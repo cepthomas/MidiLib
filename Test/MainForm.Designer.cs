@@ -38,9 +38,9 @@ namespace MidiLib.Test
             this.btnExportMidi = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
-            this.txtDrumChannel1 = new System.Windows.Forms.ToolStripTextBox();
+            this.cmbDrumChannel1 = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
-            this.txtDrumChannel2 = new System.Windows.Forms.ToolStripTextBox();
+            this.cmbDrumChannel2 = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.txtViewer = new NBagOfUis.TextViewer();
             this.sldVolume = new NBagOfUis.Slider();
@@ -75,13 +75,13 @@ namespace MidiLib.Test
             this.btnExportMidi,
             this.toolStripSeparator9,
             this.toolStripLabel1,
-            this.txtDrumChannel1,
+            this.cmbDrumChannel1,
             this.toolStripLabel2,
-            this.txtDrumChannel2,
+            this.cmbDrumChannel2,
             this.toolStripSeparator10});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(1250, 27);
+            this.toolStrip1.Size = new System.Drawing.Size(1250, 28);
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -91,14 +91,14 @@ namespace MidiLib.Test
             this.btnAutoplay.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnAutoplay.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnAutoplay.Name = "btnAutoplay";
-            this.btnAutoplay.Size = new System.Drawing.Size(71, 24);
+            this.btnAutoplay.Size = new System.Drawing.Size(71, 25);
             this.btnAutoplay.Text = "autoplay";
             this.btnAutoplay.ToolTipText = "Autoplay the selection";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 28);
             // 
             // btnLoop
             // 
@@ -106,14 +106,14 @@ namespace MidiLib.Test
             this.btnLoop.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnLoop.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnLoop.Name = "btnLoop";
-            this.btnLoop.Size = new System.Drawing.Size(44, 24);
+            this.btnLoop.Size = new System.Drawing.Size(44, 25);
             this.btnLoop.Text = "loop";
             this.btnLoop.ToolTipText = "Loop forever";
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 28);
             // 
             // btnLogMidi
             // 
@@ -121,28 +121,28 @@ namespace MidiLib.Test
             this.btnLogMidi.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnLogMidi.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnLogMidi.Name = "btnLogMidi";
-            this.btnLogMidi.Size = new System.Drawing.Size(69, 24);
+            this.btnLogMidi.Size = new System.Drawing.Size(69, 25);
             this.btnLogMidi.Text = "log midi";
             this.btnLogMidi.ToolTipText = "Enable logging midi events";
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 28);
             // 
             // btnKillMidi
             // 
             this.btnKillMidi.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnKillMidi.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnKillMidi.Name = "btnKillMidi";
-            this.btnKillMidi.Size = new System.Drawing.Size(32, 24);
+            this.btnKillMidi.Size = new System.Drawing.Size(32, 25);
             this.btnKillMidi.Text = "kill";
             this.btnKillMidi.ToolTipText = "Kill all midi channels";
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 28);
             // 
             // btnPlay
             // 
@@ -150,101 +150,99 @@ namespace MidiLib.Test
             this.btnPlay.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnPlay.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnPlay.Name = "btnPlay";
-            this.btnPlay.Size = new System.Drawing.Size(41, 24);
+            this.btnPlay.Size = new System.Drawing.Size(41, 25);
             this.btnPlay.Text = "play";
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 28);
             // 
             // btnRewind
             // 
             this.btnRewind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnRewind.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRewind.Name = "btnRewind";
-            this.btnRewind.Size = new System.Drawing.Size(58, 24);
+            this.btnRewind.Size = new System.Drawing.Size(58, 25);
             this.btnRewind.Text = "rewind";
             // 
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 28);
             // 
             // btnExportAll
             // 
             this.btnExportAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnExportAll.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnExportAll.Name = "btnExportAll";
-            this.btnExportAll.Size = new System.Drawing.Size(72, 24);
+            this.btnExportAll.Size = new System.Drawing.Size(76, 25);
             this.btnExportAll.Text = "export all";
             this.btnExportAll.Click += new System.EventHandler(this.Export_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 28);
             // 
             // btnExportPattern
             // 
             this.btnExportPattern.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnExportPattern.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnExportPattern.Name = "btnExportPattern";
-            this.btnExportPattern.Size = new System.Drawing.Size(83, 24);
+            this.btnExportPattern.Size = new System.Drawing.Size(87, 25);
             this.btnExportPattern.Text = "export patt";
             this.btnExportPattern.Click += new System.EventHandler(this.Export_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 28);
             // 
             // btnExportMidi
             // 
             this.btnExportMidi.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnExportMidi.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnExportMidi.Name = "btnExportMidi";
-            this.btnExportMidi.Size = new System.Drawing.Size(90, 24);
+            this.btnExportMidi.Size = new System.Drawing.Size(90, 25);
             this.btnExportMidi.Text = "export midi";
             this.btnExportMidi.Click += new System.EventHandler(this.Export_Click);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 28);
             // 
             // toolStripLabel1
             // 
             this.toolStripLabel1.Name = "toolStripLabel1";
-            this.toolStripLabel1.Size = new System.Drawing.Size(36, 24);
+            this.toolStripLabel1.Size = new System.Drawing.Size(36, 25);
             this.toolStripLabel1.Text = "Dr1:";
             // 
-            // txtDrumChannel1
+            // cmbDrumChannel1
             // 
-            this.txtDrumChannel1.AutoSize = false;
-            this.txtDrumChannel1.Name = "txtDrumChannel1";
-            this.txtDrumChannel1.Size = new System.Drawing.Size(30, 27);
-            this.txtDrumChannel1.Validating += new System.ComponentModel.CancelEventHandler(this.DrumChannels_Validating);
-            this.txtDrumChannel1.Validated += new System.EventHandler(this.DrumChannels_Validated);
+            this.cmbDrumChannel1.AutoSize = false;
+            this.cmbDrumChannel1.Name = "cmbDrumChannel1";
+            this.cmbDrumChannel1.Size = new System.Drawing.Size(50, 28);
+            this.cmbDrumChannel1.SelectedIndexChanged += new System.EventHandler(this.DrumChannel_SelectedIndexChanged);
             // 
             // toolStripLabel2
             // 
             this.toolStripLabel2.Name = "toolStripLabel2";
-            this.toolStripLabel2.Size = new System.Drawing.Size(36, 24);
+            this.toolStripLabel2.Size = new System.Drawing.Size(36, 25);
             this.toolStripLabel2.Text = "Dr2:";
             // 
-            // txtDrumChannel2
+            // cmbDrumChannel2
             // 
-            this.txtDrumChannel2.AutoSize = false;
-            this.txtDrumChannel2.Name = "txtDrumChannel2";
-            this.txtDrumChannel2.Size = new System.Drawing.Size(30, 27);
-            this.txtDrumChannel2.Validating += new System.ComponentModel.CancelEventHandler(this.DrumChannels_Validating);
-            this.txtDrumChannel2.Validated += new System.EventHandler(this.DrumChannels_Validated);
+            this.cmbDrumChannel2.AutoSize = false;
+            this.cmbDrumChannel2.Name = "cmbDrumChannel2";
+            this.cmbDrumChannel2.Size = new System.Drawing.Size(50, 28);
+            this.cmbDrumChannel2.SelectedIndexChanged += new System.EventHandler(this.DrumChannel_SelectedIndexChanged);
             // 
             // toolStripSeparator10
             // 
             this.toolStripSeparator10.Name = "toolStripSeparator10";
-            this.toolStripSeparator10.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator10.Size = new System.Drawing.Size(6, 28);
             // 
             // txtViewer
             // 
@@ -394,9 +392,9 @@ namespace MidiLib.Test
         private System.Windows.Forms.Button btnNone;
         private NBagOfUis.Slider sldPosition;
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
-        private System.Windows.Forms.ToolStripTextBox txtDrumChannel1;
+        private System.Windows.Forms.ToolStripComboBox cmbDrumChannel1;
         private System.Windows.Forms.ToolStripLabel toolStripLabel2;
-        private System.Windows.Forms.ToolStripTextBox txtDrumChannel2;
+        private System.Windows.Forms.ToolStripComboBox cmbDrumChannel2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
     }
 }

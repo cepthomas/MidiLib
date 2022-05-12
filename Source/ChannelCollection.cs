@@ -9,6 +9,7 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
+    /// <summary>Contains all the midi channel descriptors and properties related to the full set.</summary>
     public class ChannelCollection : IEnumerable<Channel>
     {
         #region Fields
@@ -17,21 +18,21 @@ namespace MidiLib
         #endregion
 
         #region Properties
-        /// <summary>Current global user settings.</summary>
-        public static ChannelCollection TheChannels { get; set; } = new();
+        /// <summary>The global collection.</summary>
+        public static ChannelCollection TheChannels { get; } = new();
 
-        /// <summary>Total length of all channels in subdivs.</summary>
+        /// <summary>Longest length of channels in subdivs.</summary>
         public int TotalSubdivs { get; private set; }
 
-        ///// <summary>At least one solo channel.</summary>
-        //public bool AnySolo { get { return _channels.Where(c => c.State == ChannelState.Solo).Any(); } }
+        /// <summary>Has at least one solo channel.</summary>
+        public bool AnySolo { get { return _channels.Where(c => c.State == ChannelState.Solo).Any(); } }
         #endregion
 
         #region Public functions
         /// <summary>
-        /// Start up.
+        /// Normal constructor.
         /// </summary>
-        public void Init()
+        public ChannelCollection()
         {
             TotalSubdivs = 0;
 
@@ -42,6 +43,17 @@ namespace MidiLib
                 var ch = new Channel { ChannelNumber = chnum };
                 _channels[i] = ch;
             }
+        }
+
+
+        /// <summary>
+        /// Opaque binder.
+        /// </summary>
+        /// <param name="chnum">This channel to..</param>
+        /// <param name="control">This control.</param>
+        public void Bind(int chnum, ChannelControl control)
+        {
+            control.Channel = GetChannel(chnum);
         }
 
         /// <summary>
@@ -105,7 +117,7 @@ namespace MidiLib
         /// <param name="channelNumber"></param>
         /// <returns>The channel</returns>
         //public
-        public Channel GetChannel(int channelNumber)
+        Channel GetChannel(int channelNumber)
         {
             if (channelNumber < 1 || channelNumber > MidiDefs.NUM_CHANNELS)
             {

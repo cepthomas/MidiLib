@@ -41,12 +41,6 @@ namespace MidiLib.Test
 
         /// <summary>Current file.</summary>
         string _fn = "";
-
-        /// <summary>Main drum channel.</summary>
-        int _drumChannel1 = 0;
-
-        /// <summary>Secondary (optional) drum channel.</summary>
-        int _drumChannel2 = 0;
         #endregion
 
         #region Fields - user custom
@@ -97,6 +91,15 @@ namespace MidiLib.Test
             sldTempo.Value = _defaultTempo;
             sldPosition.DrawColor = _controlColor;
 
+            // Init channel selectors.
+            cmbDrumChannel1.Items.Add("NA");
+            cmbDrumChannel2.Items.Add("NA");
+            for (int i = 1; i <= MidiDefs.NUM_CHANNELS; i ++)
+            {
+                cmbDrumChannel1.Items.Add(i);
+                cmbDrumChannel2.Items.Add(i);
+            }
+
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(); };
             btnRewind.Click += (_, __) => { Rewind(); };
@@ -112,8 +115,6 @@ namespace MidiLib.Test
             // Make sure out path exists.
             DirectoryInfo di = new(_exportPath);
             di.Create();
-
-            UpdateDrumChannels();
 
             // Look for filename passed in.
             string[] args = Environment.GetCommandLineArgs();
@@ -309,10 +310,9 @@ namespace MidiLib.Test
 
             try
             {
-                // Reset drums. Or maybe not?
-                txtDrumChannel1.Text = MidiDefs.DEFAULT_DRUM_CHANNEL.ToString();
-                txtDrumChannel2.Text = "";
-                UpdateDrumChannels();
+                // Reset drums.
+                cmbDrumChannel1.SelectedIndex = MidiDefs.DEFAULT_DRUM_CHANNEL;
+                cmbDrumChannel2.SelectedIndex = 0;
 
                 // Process the file. Set the default tempo from preferences.
                 _mdata = new();
@@ -415,19 +415,26 @@ namespace MidiLib.Test
                     Where(e => e.PatternName == pinfo.PatternName && e.ChannelNumber == chnum && (e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent)).
                     OrderBy(e => e.AbsoluteTime);
 
+                // Is this channel pertinent?
                 if (chEvents.Any())
                 {
                     TheChannels.SetEvents(chnum, chEvents, mt);
-                    //PatchInfo patch = pinfo.Patches[i];
 
-                    // Make new controls. Bind to internal channel object.
-                    ChannelControl control = new()
-                    {
-                        Channel = TheChannels.GetChannel(chnum), // TODO2 find a better way to bind?
-                        Location = new(x, y),
-                        Patch = pinfo.Patches[i],
-                        IsDrums = chnum == _drumChannel1 || chnum == _drumChannel2
-                    };
+                    // Make new control.
+                    ChannelControl control = new() { Location = new(x, y) };
+                    //ChannelControl control = new()
+                    //{
+                    //    Location = new(x, y),
+                    //    Patch = pinfo.Patches[i],
+                    //    IsDrums = chnum == _drumChannel1 || chnum == _drumChannel2
+                    //};
+
+                    // Bind to internal channel object.
+                    TheChannels.Bind(chnum, control);
+
+                    // Now init the control - after binding!
+                    control.Patch = pinfo.Patches[i];
+                    //control.IsDrums = GetDrumChannels().Contains(chnum);
 
                     control.ChannelChange += Control_ChannelChange;
                     Controls.Add(control);
@@ -442,6 +449,8 @@ namespace MidiLib.Test
                     _player.SendPatch(chnum, pinfo.Patches[i]);
                 }
             }
+
+            UpdateDrumChannels();
         }
 
         /// <summary>
@@ -492,7 +501,7 @@ namespace MidiLib.Test
             {
                 if(--_report <= 0)
                 {
-                    this.InvokeIfRequired(_ => LogMessage($"DBG CurrentSubdiv:{_player.CurrentSubdiv}"));
+                    //this.InvokeIfRequired(_ => LogMessage($"DBG CurrentSubdiv:{_player.CurrentSubdiv}"));
                     _report = 100;
                 }
 
@@ -510,50 +519,23 @@ namespace MidiLib.Test
 
         #region Drum channel
         /// <summary>
-        /// Check for legal entries for channel number.
+        /// User changed the drum channel.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void DrumChannels_Validating(object? sender, CancelEventArgs e)
-        {
-            // Check for valid value.
-            var tb = (ToolStripTextBox)sender!;
-            if (tb.Text.Length == 0)
-            {
-                // Valid condition.
-            }
-            else
-            {
-                bool ok = int.TryParse(tb.Text, out int val);
-                if (ok)
-                {
-                    ok = val > 0 && val <= MidiDefs.NUM_CHANNELS;
-                }
-                if (!ok)
-                {
-                    e.Cancel = true;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Get both selections and update UI.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void DrumChannels_Validated(object? sender, EventArgs e)
+        void DrumChannel_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateDrumChannels();
-            _channelControls.ForEach(ctl => ctl.IsDrums = ctl.ChannelNumber == _drumChannel1 || ctl.ChannelNumber == _drumChannel2);
         }
 
         /// <summary>
-        /// Convert UI entries for internal usage.
+        /// Update all channels based on current UI.
         /// </summary>
         void UpdateDrumChannels()
         {
-            _drumChannel1 = txtDrumChannel1.Text.Length > 0 ? int.Parse(txtDrumChannel1.Text) : 0;
-            _drumChannel2 = txtDrumChannel2.Text.Length > 0 ? int.Parse(txtDrumChannel2.Text) : 0;
+            _channelControls.ForEach(ctl => ctl.IsDrums =
+                (ctl.ChannelNumber == cmbDrumChannel1.SelectedIndex) ||
+                (ctl.ChannelNumber == cmbDrumChannel2.SelectedIndex));
         }
         #endregion
 

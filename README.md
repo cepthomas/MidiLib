@@ -28,6 +28,10 @@ New:
 ```
 
 # Design
+- discuss apis for Player, ControlCollection,...
+- `NoteEvent` is used to represent Note Off and Key After Touch messages. It is also the base class for `NoteOnEvent`.
+
+
 ## Data is MidiData and PatternInfo.
 - Processes and contains a massaged version of the midi/style file contents.
 - Translates from raw file to MidiData internal representation.

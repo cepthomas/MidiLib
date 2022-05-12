@@ -213,7 +213,7 @@ namespace MidiLib
                         AddMidiEvent(evt);
                         break;
 
-                    case NoteEvent evt:
+                    case NoteEvent evt: // aka NoteOff
                         AddMidiEvent(evt);
                         break;
 
@@ -513,7 +513,7 @@ namespace MidiLib
 
                 if (pattern.Patches[i] >= 0)
                 {
-                    var sp = TheChannels.IsDrums(chnum) ? "IsDrums" : MidiDefs.GetInstrumentDef(pattern.Patches[i]);
+                    var sp = TheChannels.IsDrums(chnum) ? "Drums" : MidiDefs.GetInstrumentDef(pattern.Patches[i]);
                     patches.Append($"{chnum}:{sp} ");
                 }
             }
@@ -561,7 +561,7 @@ namespace MidiLib
                         notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
                         break;
 
-                    case NoteEvent evt: // used for NoteOff
+                    case NoteEvent evt: // aka NoteOff
                         notesText.Add($"{sc},{evt.NoteNumber},,{evt.Velocity},");
                         break;
 
@@ -672,7 +672,7 @@ namespace MidiLib
             var events = GetFilteredEvents(patternName, channels, true);
             events.ForEach(e =>
             {
-                // TODO2 adjust velocity for noteon based on channel current volume (runtime).
+                // TODO2 adjust velocity for noteon based on channel current volume from runtime.
                 outEvents.Add(e.MidiEvent);
             });
 
