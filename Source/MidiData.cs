@@ -27,7 +27,7 @@ namespace MidiLib
     public class EventDesc
     {
         /// <summary>From whence this came. Empty for simple midi files.</summary>
-        public string PatternName { get; set; } = ""; //TODO1 go away if patterns contain events.
+        public string PatternName { get; set; } = "";
         
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get; set; }

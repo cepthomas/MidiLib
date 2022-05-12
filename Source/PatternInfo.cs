@@ -28,8 +28,8 @@ namespace MidiLib
         /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
         public int[] Patches { get; set; } = new int[MidiDefs.NUM_CHANNELS];
 
-        /// <summary>All the midi events, (usually) ordered by time.</summary>
-        public List<EventDesc> AllEvents { get; private set; } = new();
+        ///// <summary>All the pattern midi events, (usually) ordered by time.</summary>
+        //public List<EventDesc> AllEvents { get; private set; } = new();
 
         /// <summary>Normal constructor.</summary>
         public PatternInfo()
