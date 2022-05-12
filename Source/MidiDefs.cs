@@ -30,7 +30,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="which"></param>
         /// <returns></returns>
-        public static string GetInstrumentDef(int which)
+        public static string GetInstrumentName(int which)
         {
             string ret = which switch
             {
@@ -46,14 +46,9 @@ namespace MidiLib
         /// </summary>
         /// <param name="which"></param>
         /// <returns></returns>
-        public static string GetDrumDef(int which)//TODO2 make like GetDrumKit
+        public static string GetDrumName(int which)
         {
-            if (which < 0 || which > MAX_MIDI)
-            {
-                throw new ArgumentOutOfRangeException(nameof(which));
-            }
-
-            return _drumNames[which];
+            return _drumNames.ContainsKey(which) ? _drumNames[which] : $"DRUM_{which}";
         }
 
         /// <summary>
@@ -61,14 +56,9 @@ namespace MidiLib
         /// </summary>
         /// <param name="which"></param>
         /// <returns></returns>
-        public static string GetControllerDef(int which)//TODO2 make like GetDrumKit
+        public static string GetControllerName(int which)
         {
-            if (which < 0 || which > MAX_MIDI)
-            {
-                throw new ArgumentOutOfRangeException(nameof(which));
-            }
-
-            return _controllerNames[which];
+            return _controllerNames.ContainsKey(which) ? _controllerNames[which] : $"CTLR_{which}";
         }
 
         /// <summary>
@@ -78,14 +68,7 @@ namespace MidiLib
         /// <returns></returns>
         public static string GetDrumKit(int which)
         {
-            if (_drumKits.ContainsKey(which))
-            {
-                return _drumKits[which];
-            }
-            else
-            {
-                return $"KIT{which}";
-            }
+            return _drumKits.ContainsKey(which) ? _drumKits[which] : $"KIT_{which}";
         }
 
         /// <summary>
@@ -133,34 +116,29 @@ namespace MidiLib
         };
 
         /// <summary>The GM midi drum definitions.</summary>
-        static readonly string[] _drumNames = new string[]
+        static readonly Dictionary<int, string> _drumNames = new()
         {
-            "D000", "D001", "D002", "D003", "D004", "D005", "D006", "D007", "D008", "D009", "D010", "D011", "D012", "D013", "D014", "D015",
-            "D016", "D017", "D018", "D019", "D020", "D021", "D022", "D023", "D024", "D025", "D026", "D027", "D028", "D029", "D030", "D031",
-            "D032", "D033", "D034",
-            "AcousticBassDrum", "BassDrum1", "SideStick", "AcousticSnare", "HandClap", "ElectricSnare", "LowFloorTom", "ClosedHiHat", "HighFloorTom",
-            "PedalHiHat", "LowTom", "OpenHiHat", "LowMidTom", "HiMidTom", "CrashCymbal1", "HighTom", "RideCymbal1", "ChineseCymbal", "RideBell",
-            "Tambourine", "SplashCymbal", "Cowbell", "CrashCymbal2", "Vibraslap", "RideCymbal2", "HiBongo", "LowBongo", "MuteHiConga", "OpenHiConga",
-            "LowConga", "HighTimbale", "LowTimbale", "HighAgogo", "LowAgogo", "Cabasa", "Maracas", "ShortWhistle", "LongWhistle", "ShortGuiro",
-            "LongGuiro", "Claves", "HiWoodBlock", "LowWoodBlock", "MuteCuica", "OpenCuica", "MuteTriangle", "OpenTriangle",
-            "D082", "D083", "D084", "D085", "D086", "D087", "D088", "D089", "D090", "D091", "D092", "D093", "D094", "D095", "D096", "D097",
-            "D098", "D099", "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107", "D108", "D109", "D110", "D111", "D112", "D113",
-            "D114", "D115", "D116", "D117", "D118", "D119", "D120", "D121", "D122", "D123", "D124", "D125", "D126", "D127"
+            { 035, "AcousticBassDrum" }, { 036, "BassDrum1" }, { 037, "SideStick" }, { 038, "AcousticSnare" }, { 039, "HandClap" }, 
+            { 040, "ElectricSnare" }, { 041, "LowFloorTom" }, { 042, "ClosedHiHat" }, { 043, "HighFloorTom" }, { 044, "PedalHiHat" }, 
+            { 045, "LowTom" }, { 046, "OpenHiHat" }, { 047, "LowMidTom" }, { 048, "HiMidTom" }, { 049, "CrashCymbal1" }, 
+            { 050, "HighTom" }, { 051, "RideCymbal1" }, { 052, "ChineseCymbal" }, { 053, "RideBell" }, { 054, "Tambourine" }, 
+            { 055, "SplashCymbal" }, { 056, "Cowbell" }, { 057, "CrashCymbal2" }, { 058, "Vibraslap" }, { 059, "RideCymbal2" }, 
+            { 060, "HiBongo" }, { 061, "LowBongo" }, { 062, "MuteHiConga" }, { 063, "OpenHiConga" }, { 064, "LowConga" }, 
+            { 065, "HighTimbale" }, { 066, "LowTimbale" }, { 067, "HighAgogo" }, { 068, "LowAgogo" }, { 069, "Cabasa" }, 
+            { 070, "Maracas" }, { 071, "ShortWhistle" }, { 072, "LongWhistle" }, { 073, "ShortGuiro" }, { 074, "LongGuiro" }, 
+            { 075, "Claves" }, { 076, "HiWoodBlock" }, { 077, "LowWoodBlock" }, { 078, "MuteCuica" }, { 079, "OpenCuica" }, 
+            { 080, "MuteTriangle" }, { 081, "OpenTriangle" }
         };
 
         /// <summary>The midi controller definitions.</summary>
-        static readonly string[] _controllerNames = new string[]
+        static readonly Dictionary<int, string> _controllerNames = new()
         {
-            "BankSelect", "Modulation", "BreathController", "C003", "FootController", "PortamentoTime", "C006", "Volume", "Balance", "C009",
-            "Pan", "Expression", "C012", "C013", "C014", "C015", "C016", "C017", "C018", "C019", "C020", "C021", "C022", "C023", "C024",
-            "C025", "C026", "C027", "C028", "C029", "C030", "C031", "BankSelectLSB", "ModulationLSB", "BreathControllerLSB", "C035",
-            "FootControllerLSB", "PortamentoTimeLSB", "C038", "VolumeLSB", "BalanceLSB", "C041", "PanLSB", "ExpressionLSB", "C044",
-            "C045", "C046", "C047", "C048", "C049", "C050", "C051", "C052", "C053", "C054", "C055", "C056", "C057", "C058", "C059", "C060",
-            "C061", "C062", "C063", "Sustain", "Portamento", "Sostenuto", "SoftPedal", "Legato", "Sustain2", "C070", "C071", "C072", "C073",
-            "C074", "C075", "C076", "C077", "C078", "C079", "C080", "C081", "C082", "C083", "PortamentoControl", "C085", "C086", "C087", "C088",
-            "C089", "C090", "C091", "C092", "C093", "C094", "C095", "C096", "C097", "C098", "C099", "C100", "C101", "C102", "C103", "C104",
-            "C105", "C106", "C107", "C108", "C109", "C110", "C111", "C112", "C113", "C114", "C115", "C116", "C117", "C118", "C119", "AllSoundOff",
-            "ResetAllControllers", "LocalKeyboard", "AllNotesOff", "C124", "C125", "C126", "C127", "C128", "C129"
+            { 000, "BankSelect" }, { 001, "Modulation" }, { 002, "BreathController" }, { 004, "FootController" }, { 005, "PortamentoTime" }, 
+            { 007, "Volume" }, { 008, "Balance" }, { 010, "Pan" }, { 011, "Expression" }, { 032, "BankSelectLSB" }, { 033, "ModulationLSB" }, 
+            { 034, "BreathControllerLSB" }, { 036, "FootControllerLSB" }, { 037, "PortamentoTimeLSB" }, { 039, "VolumeLSB" }, 
+            { 040, "BalanceLSB" }, { 042, "PanLSB" }, { 043, "ExpressionLSB" }, { 064, "Sustain" }, { 065, "Portamento" }, { 066, "Sostenuto" }, 
+            { 067, "SoftPedal" }, { 068, "Legato" }, { 069, "Sustain2" }, { 084, "PortamentoControl" }, { 120, "AllSoundOff" }, 
+            { 121, "ResetAllControllers" }, { 122, "LocalKeyboard" }, { 123, "AllNotesOff" }
         };
         #endregion
     }

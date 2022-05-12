@@ -63,7 +63,7 @@ namespace MidiLib
                 int chnum = i + 1;
                 if(Patches[i] >= 0)
                 {
-                    content.Add($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentDef(Patches[i])}");
+                    content.Add($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentName(Patches[i])}");
                 }
             }
 

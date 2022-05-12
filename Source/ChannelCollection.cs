@@ -104,7 +104,7 @@ namespace MidiLib
         public void SetPatch(int channelNumber, int patch)
         {
             // Use this call just to test for valid range.
-            MidiDefs.GetInstrumentDef(patch);
+            MidiDefs.GetInstrumentName(patch);
             var ch = GetChannel(channelNumber);
             ch.Patch = patch;
         }

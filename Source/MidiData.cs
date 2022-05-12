@@ -513,7 +513,7 @@ namespace MidiLib
 
                 if (pattern.Patches[i] >= 0)
                 {
-                    var sp = TheChannels.IsDrums(chnum) ? "Drums" : MidiDefs.GetInstrumentDef(pattern.Patches[i]);
+                    var sp = TheChannels.IsDrums(chnum) ? "Drums" : MidiDefs.GetInstrumentName(pattern.Patches[i]);
                     patches.Append($"{chnum}:{sp} ");
                 }
             }
@@ -556,7 +556,7 @@ namespace MidiLib
                         int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
 
                         string nname = TheChannels.IsDrums(me.MidiEvent.Channel) ?
-                           $"{MidiDefs.GetDrumDef(evt.NoteNumber)}" :
+                           $"{MidiDefs.GetDrumName(evt.NoteNumber)}" :
                            $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
                         notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
                         break;
@@ -581,12 +581,12 @@ namespace MidiLib
                     case PatchChangeEvent evt:
                         string pname = TheChannels.IsDrums(me.MidiEvent.Channel) ?
                            $"{MidiDefs.GetDrumKit(evt.Patch)}" :
-                           $"{MidiDefs.GetInstrumentDef(evt.Patch)}";
+                           $"{MidiDefs.GetInstrumentName(evt.Patch)}";
                         otherText.Add($"{sc},{evt.Patch},{pname},");
                         break;
 
                     case ControlChangeEvent evt:
-                        otherText.Add($"{sc},{(int)evt.Controller},{MidiDefs.GetControllerDef((int)evt.Controller)},{evt.ControllerValue}");
+                        otherText.Add($"{sc},{(int)evt.Controller},{MidiDefs.GetControllerName((int)evt.Controller)},{evt.ControllerValue}");
                         break;
 
                     case PitchWheelChangeEvent evt:

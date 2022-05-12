@@ -205,7 +205,7 @@ namespace MidiLib
 
             for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
             {
-                lv.Items.Add(MidiDefs.GetInstrumentDef(i));
+                lv.Items.Add(MidiDefs.GetInstrumentName(i));
             }
 
             lv.Click += (object? sender, EventArgs e) =>
@@ -260,7 +260,7 @@ namespace MidiLib
             // General.
             lblChannelNumber.Text = $"Ch{ChannelNumber}";
             lblChannelNumber.BackColor = Selected ? SelectedColor : UnselectedColor;
-            lblPatch.Text = IsDrums ? "Drums" : MidiDefs.GetInstrumentDef(Channel.Patch);
+            lblPatch.Text = IsDrums ? "Drums" : MidiDefs.GetInstrumentName(Channel.Patch);
         }
 
         /// <summary>
