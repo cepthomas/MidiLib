@@ -11,7 +11,7 @@ using static MidiLib.ChannelCollection;
 
 
 // TODOF Handle tracks from origin files?
-// TODO2 auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
+// TODOF auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
 
 
 namespace MidiLib
@@ -114,45 +114,16 @@ namespace MidiLib
 
                 switch (sectionName)
                 {
-                    case "MThd":
-                        ReadMThd(br);
-                        break;
-
-                    case "MTrk":
-                        ReadMTrk(br);
-                        break;
-
-                    case "CASM":
-                        ReadCASM(br);
-                        break;
-
-                    case "CSEG":
-                        ReadCSEG(br);
-                        break;
-
-                    case "Sdec":
-                        ReadSdec(br);
-                        break;
-
-                    case "Ctab":
-                        ReadCtab(br);
-                        break;
-
-                    case "Cntt":
-                        ReadCntt(br);
-                        break;
-
-                    case "OTSc": // One Touch Setting section
-                        ReadOTSc(br);
-                        break;
-
-                    case "FNRc": // MDB (Music Finder) section
-                        ReadFNRc(br);
-                        break;
-
-                    default:
-                        done = true;
-                        break;
+                    case "MThd": ReadMThd(br); break;
+                    case "MTrk": ReadMTrk(br); break;
+                    case "CASM": ReadCASM(br); break;
+                    case "CSEG": ReadCSEG(br); break;
+                    case "Sdec": ReadSdec(br); break;
+                    case "Ctab": ReadCtab(br); break;
+                    case "Cntt": ReadCntt(br); break;
+                    case "OTSc": ReadOTSc(br); break;// One Touch Setting section
+                    case "FNRc": ReadFNRc(br); break; // MDB (Music Finder) section
+                    default:     done = true;  break;
                 }
             }
 
@@ -496,7 +467,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Makes csv dumps of some events grouped by pattern/channel.
+        /// Makes csv dumps of some events grouped by pattern/channel. This is as the events appear in the original file.
         /// </summary>
         /// <param name="patternName">Specific pattern.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
@@ -622,7 +593,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Export pattern parts to individual midi files.
+        /// Export pattern parts to individual midi files. This is as the events appear in the original file.
         /// </summary>
         /// <param name="patternName">Specific pattern.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
@@ -672,7 +643,6 @@ namespace MidiLib
             var events = GetFilteredEvents(patternName, channels, true);
             events.ForEach(e =>
             {
-                // TODO2 adjust velocity for noteon based on channel current volume from runtime.
                 outEvents.Add(e.MidiEvent);
             });
 
@@ -697,9 +667,9 @@ namespace MidiLib
         {
             IEnumerable<EventDesc> descs = ((uint)patternName.Length, (uint)channels.Count) switch
             {
-                (0, 0) => AllEvents.AsEnumerable(),
-                (0, >0) => AllEvents.Where(e => channels.Contains(e.ChannelNumber)),
-                (>0, 0) => AllEvents.Where(e => patternName == e.PatternName),
+                ( 0,  0) => AllEvents.AsEnumerable(),
+                ( 0, >0) => AllEvents.Where(e => channels.Contains(e.ChannelNumber)),
+                (>0,  0) => AllEvents.Where(e => patternName == e.PatternName),
                 (>0, >0) => AllEvents.Where(e => patternName == e.PatternName && channels.Contains(e.ChannelNumber))
             };
 

@@ -128,8 +128,7 @@ namespace MidiLib.Test
                 //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty");
                 //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
                 //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid");
-
-                // TODO?? see 2 non-std drum channels in:
+                // This has drums on 9 and 11:
                 //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\Gary USB\g-70 styles\G-70 #1\ContempBeat_G70.S423.STY");
             }
         }
