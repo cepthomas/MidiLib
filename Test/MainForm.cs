@@ -55,6 +55,9 @@ namespace MidiLib.Test
 
         /// <summary>Use this if not supplied.</summary>
         readonly int _defaultTempo = 100;
+
+        /// <summary>Reporting interval.</summary>
+        int _report = 0;
         #endregion
 
         #region Lifecycle
@@ -421,12 +424,6 @@ namespace MidiLib.Test
 
                     // Make new control.
                     ChannelControl control = new() { Location = new(x, y) };
-                    //ChannelControl control = new()
-                    //{
-                    //    Location = new(x, y),
-                    //    Patch = pinfo.Patches[i],
-                    //    IsDrums = chnum == _drumChannel1 || chnum == _drumChannel2
-                    //};
 
                     // Bind to internal channel object.
                     TheChannels.Bind(chnum, control);
@@ -487,24 +484,22 @@ namespace MidiLib.Test
         #endregion
 
         #region Process tick
-        int _report = 0;
-
         /// <summary>
         /// Multimedia timer callback. Synchronously outputs the next midi events.
         /// This is running on the background thread.
         /// </summary>
         void MmTimerCallback(double totalElapsed, double periodElapsed)
         {
-            // TODOF This sometimes blows up on shutdown with ObjectDisposedException. I am probably doing bad things with threads.
             try
             {
-                if(--_report <= 0)
-                {
-                    //this.InvokeIfRequired(_ => LogMessage($"DBG CurrentSubdiv:{_player.CurrentSubdiv}"));
-                    _report = 100;
-                }
+                // if(--_report <= 0)
+                // {
+                //     this.InvokeIfRequired(_ => LogMessage($"DBG CurrentSubdiv:{_player.CurrentSubdiv}"));
+                //     _report = 100;
+                // }
 
                 _player.DoNextStep();
+
                 // Bump over to main thread.
                 this.InvokeIfRequired(_ => UpdateState());
 

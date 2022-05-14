@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Source\Source.csproj" />
+    <ProjectReference Include="..\MidiLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

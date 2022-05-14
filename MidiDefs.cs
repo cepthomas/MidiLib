@@ -13,6 +13,7 @@ namespace MidiLib
     /// <summary>Readable versions of midi numbers.</summary>
     public class MidiDefs
     {
+        #region Constants
         /// <summary>Midi caps.</summary>
         public const int MAX_MIDI = 127;
 
@@ -24,7 +25,9 @@ namespace MidiLib
 
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
+        #endregion
 
+        #region API
         /// <summary>
         /// Get patch name.
         /// </summary>
@@ -83,8 +86,9 @@ namespace MidiLib
             string s = $"{noteNames[root]}{octave}";
             return s;
         }
+        #endregion
 
-        #region The Names
+        #region The names
         /// <summary>All the root notes.</summary>
         static readonly string[] noteNames = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 

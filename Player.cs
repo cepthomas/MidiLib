@@ -28,6 +28,9 @@ namespace MidiLib
 
         /// <summary>Backing.</summary>
         int _currentSubdiv = 0;
+
+        /// <summary>Where to log to.</summary>
+        string _midiTraceFile = "";
         #endregion
 
         #region Properties
@@ -42,9 +45,6 @@ namespace MidiLib
 
         /// <summary>Log outbound traffic. Warning - can get busy.</summary>
         public bool LogMidi { get; set; } = false;
-
-        /// <summary>Adjust to taste.</summary>
-        public string MidiTraceFile { get; set; } = "";
         #endregion
 
         #region Lifecycle
@@ -52,11 +52,13 @@ namespace MidiLib
         /// Normal constructor.
         /// </summary>
         /// <param name="midiDevice">Client supplies name of device.</param>
-        public Player(string midiDevice)
+        /// <param name="midiTracePath">Where to log.</param>
+        public Player(string midiDevice, string midiTracePath)
         {
-            if(MidiTraceFile != "")
+            if (midiTracePath != "")
             {
-                File.Delete(MidiTraceFile);
+                _midiTraceFile = Path.Combine(midiTracePath, "midi_log.txt");
+                File.Delete(_midiTraceFile);
             }
 
             // Figure out which midi output device.
@@ -74,6 +76,13 @@ namespace MidiLib
             {
                 throw new ArgumentException($"Invalid midi device: {midiDevice}");
             }
+        }
+
+        /// <summary>
+        /// Empty constructor to satisfy nullability.
+        /// </summary>
+        public Player()
+        {
         }
 
         /// <summary> 
@@ -245,9 +254,9 @@ namespace MidiLib
             {
                 _midiOut.Send(evt.GetAsShortMessage());
 
-                if (LogMidi && MidiTraceFile != "")
+                if (LogMidi && _midiTraceFile != "")
                 {
-                    File.AppendAllText(MidiTraceFile, $"{DateTime.Now:mm\\:ss\\.fff} {evt}{Environment.NewLine}");
+                    File.AppendAllText(_midiTraceFile, $"{DateTime.Now:mm\\:ss\\.fff} {evt}{Environment.NewLine}");
                 }
             }
         }

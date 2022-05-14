@@ -1,7 +1,7 @@
 # MidiLib
 
 
-TODO2 fix all this doc
+TODOX fix all this doc
 
 ```
 New:
@@ -91,6 +91,77 @@ Channel:
 
         /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
         public int[] Patches { get; set; } = new int[MidiDefs.NUM_CHANNELS];  >>>>>>>>>> int
+
+See [Midi Definitions](MidiDefinitions.md).
+
+
+# Style notes - edit or locate
+
+Each of the other markers (Intro A, Main B, etc) defines musical patterns that are triggered by
+the keying chords. Intros play only once when triggered and then turn control over to the next
+section selected by the panel buttons. Main sections (A, B, C, and D) repeat until the style is
+stopped or an Ending or an Intro is selected. Ending sections play once and the style is
+stopped. Fill Ins are triggered manually, or play automatically (if Auto Fill is On) when a new
+main section is selected.
+
+ Get events.strictChecking: If true will error on non-paired note events
+
+The common order of the sections in the file is at follows:
+1. Midi section
+2. CASM section
+3. OTS (One Touch Setting) section
+4. MDB (Music Finder) section
+5. MH section
+
+In very rare cases there is a MH section at the end of the style file. Nothing is known about the purpose of this section.
+
+Internally, a style starts by specifying the tempo, the time signature and the copyright followed by several sections that are defined by marker events.
+
+The first two sections, SFF1 (or SFF2) and SInt, occupying the first measure of the midi part, include a Midi On plus midi commands to setup the default instruments and the amount of DSP (only DSP1 as a system effect is available for styles) used for each track.
+
+Each of the other markers (Intro A, Main B, etc) defines musical patterns that are triggered by the keying chords. Intros play only once when triggered and then turn control over to the next section selected by the panel buttons. Main sections (A, B, C, and D) repeat until the style is stopped or an Ending or an Intro is selected. Ending sections play once and the style is stopped. Fill Ins are triggered manually, or play automatically (if Auto Fill is On) when a new main section is selected.
+
+When a style is playing in the instrument, the SFF and SInt sections are executed when a style section is changed. This resets the voices and other channel parameters to their initial values. Because of this, if its is desired to change the voice or other settings for a single section, new settings can be inserted in only this section and the style will revert to the default whenever another section is selected. 
+
+The first two sections, SFF1 (or SFF2) and SInt, occupying the first measure of the midi part,
+include a Midi On plus midi commands to setup the default instruments and the amount of
+DSP (only DSP1 as a system effect is available for styles) used for each track.
+
+Each of the other markers (Intro A, Main B, etc) defines musical patterns that are triggered by
+the keying chords. Intros play only once when triggered and then turn control over to the next
+section selected by the panel buttons. Main sections (A, B, C, and D) repeat until the style is
+stopped or an Ending or an Intro is selected. Ending sections play once and the style is
+stopped. Fill Ins are triggered manually, or play automatically (if Auto Fill is On) when a new
+main section is selected.
+
+When a style is playing in the instrument, the SFF and SInt sections are executed when a
+style section is changed. This resets the voices and other channel parameters to their initial
+values. Because of this, if it is desired to change the voice or other settings for a single
+section, new settings can be inserted in only this section and the style will revert to the
+default whenever another section is selected.
+
+Fill Ins are limited to one measure in length; other sections can be any length up to 255
+measures, but are typically 2-8 measures. 
+
+An extended style file consists of one or more different sections of the following types:
+- MIDI section (mandatory)
+- CASM section (optional)
+- OTS (One Touch Setting) section (optional)
+- MDB (Music Finder) section (optional)
+- MH section (optional) (very rarely used)
+
+The midi section is the only mandatory section. It contains the musical sequences of the style.
+An optional CASM section contains extended information for the keyboard how to interpret
+and control playing of the style section. While its inclusion is optional, very likely the style’s
+author used it to convey important information and the style will not reproduce properly if
+removed. The OTS (One Touch Setting) section contains information for the four settings
+selectable from the keyboard. These can be used to easily setup the keyboard before using
+the style. The MDB (Music Finder) section contains information for what songs this particular
+style is appropriate. This information is automatically added to the Music Finder function, if the
+keyboard supports it. In very rare cases there is a MH section at the end of the style file.
+Nothing is known about the purpose of this section. 
+
+Only one section of each type may be present in a style file. 
 
 
 # Third Party

@@ -10,8 +10,8 @@ using NBagOfTricks;
 using static MidiLib.ChannelCollection;
 
 
-// TODOF Handle tracks from origin files?
-// TODOF auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
+// TODO Handle tracks from origin files?
+// TODO auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
 
 
 namespace MidiLib
@@ -598,10 +598,12 @@ namespace MidiLib
         /// <param name="patternName">Specific pattern.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="ppq">Export at this resolution.</param>
-        /// <param name="zip">TODOF export as zip.</param>
+        /// <param name="zip">Export as zip.</param>
         /// <returns>File name of export file.</returns>
         public string ExportMidi(string patternName, List<int> channels, int ppq, bool zip)
         {
+            // TODO export as zip.
+
             string name = Path.GetFileNameWithoutExtension(_fn);
 
             var pattern = AllPatterns.Where(p => p.PatternName == patternName).First();
@@ -621,7 +623,7 @@ namespace MidiLib
             // Optional.
             if (pattern.TimeSig != "")
             {
-                // TODOF figure out TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, ppq).
+                // TODO figure out TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, ppq).
             }
 
             if (pattern.KeySig != "")
