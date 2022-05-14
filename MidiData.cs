@@ -55,7 +55,7 @@ namespace MidiLib
         long _lastStreamPos = 0;
 
         /// <summary>Default values if not supplied in pattern. Mainly for managing patches.</summary>
-        readonly PatternInfo _patternDefaults = new();
+        PatternInfo _patternDefaults = new();
 
         /// <summary>Current loaded file.</summary>
         string _fn = "";
@@ -92,13 +92,9 @@ namespace MidiLib
         /// <param name="includeNoisy"></param>
         public void Read(string fn, int defaultTempo, bool includeNoisy)
         {
+            Reset();
+
             _fn = fn;
-
-            if(AllEvents.Count > 0)
-            {
-                throw new InvalidOperationException("You don't want to do this more than once");
-            }
-
             _patternDefaults.Tempo = defaultTempo;
             _includeNoisy = includeNoisy;
 
@@ -370,6 +366,22 @@ namespace MidiLib
         #endregion
 
         #region Private functions
+        /// <summary>
+        /// Clean up.
+        /// </summary>
+        void Reset()
+        {
+            _lastStreamPos = 0;
+            _patternDefaults = new();
+
+            MidiFileType = 0;
+            Tracks = 0;
+            DeltaTicksPerQuarterNote = 0;
+
+            AllPatterns.Clear();
+            AllEvents.Clear();
+        }
+
         /// <summary>
         /// Fill in missing info using defaults.
         /// </summary>

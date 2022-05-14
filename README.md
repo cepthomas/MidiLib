@@ -3,8 +3,7 @@
 
 TODOX fix all this doc.
 
-See [Midi Doc](MidiLibDoc.md).
-
+See [MidiLib Doc](MidiLibDoc.md).
 
 
 See [Midi Definitions](MidiDefinitions.md).

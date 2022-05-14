@@ -26,6 +26,9 @@ namespace MidiLib
 
         /// <summary>Has at least one solo channel.</summary>
         public bool AnySolo { get { return _channels.Where(c => c.State == ChannelState.Solo).Any(); } }
+
+        /// <summary>How many selected.</summary>
+        public int NumSelected { get { return _channels.Where(c => c.Selected).Count(); } }
         #endregion
 
         #region Public functions

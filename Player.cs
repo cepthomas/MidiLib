@@ -30,7 +30,7 @@ namespace MidiLib
         int _currentSubdiv = 0;
 
         /// <summary>Where to log to.</summary>
-        string _midiTraceFile = "";
+        readonly string _midiTraceFile = "";
         #endregion
 
         #region Properties
@@ -145,12 +145,13 @@ namespace MidiLib
             {
                 // Any soloes?
                 bool solo = TheChannels.AnySolo;
+                int numSelected = TheChannels.NumSelected;
 
                 // Process each channel.
-                foreach(var ch in TheChannels)
+                foreach (var ch in TheChannels)
                 {
-                    // Look for events to send. Any soloes?
-                    if (ch.State == ChannelState.Solo || (!solo && ch.State == ChannelState.Normal))
+                    // Look for events to send. ExpliciAny soloes?
+                    if ((numSelected == 0 || ch.Selected) && (ch.State == ChannelState.Solo || (!solo && ch.State == ChannelState.Normal)))
                     {
                         // Process any sequence steps.
                         var playEvents = ch.GetEvents(_currentSubdiv);
