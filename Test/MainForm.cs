@@ -16,6 +16,7 @@ using NBagOfUis;
 using static MidiLib.ChannelCollection;
 
 
+
 namespace MidiLib.Test
 {
     public partial class MainForm : Form
@@ -23,6 +24,9 @@ namespace MidiLib.Test
         #region Fields - internal
         /// <summary>Midi player.</summary>
         readonly Player _player;
+
+        /// <summary>Midi input.</summary>
+        readonly Listener _listener;
 
         /// <summary>The fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -48,7 +52,10 @@ namespace MidiLib.Test
         readonly Color _controlColor = Color.Aquamarine;
 
         /// <summary>My midi out.</summary>
-        readonly string _midiDevice = "VirtualMIDISynth #1";
+        readonly string _midiOutDevice = "VirtualMIDISynth #1";
+
+        /// <summary>My midi out.</summary>
+        readonly string _midiInDevice = "TODO";
 
         /// <summary>Adjust to taste.</summary>
         readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
@@ -56,8 +63,8 @@ namespace MidiLib.Test
         /// <summary>Use this if not supplied.</summary>
         readonly int _defaultTempo = 100;
 
-        /// <summary>Reporting interval.</summary>
-        int _report = 0;
+        ///// <summary>Reporting interval.</summary>
+        //int _report = 0;
         #endregion
 
         #region Lifecycle
@@ -67,7 +74,11 @@ namespace MidiLib.Test
         public MainForm()
         {
             InitializeComponent();
-            _player = new(_midiDevice) { MidiTraceFile = @"C:\Dev\repos\MidiLib\out\midi_out.txt" };
+
+            DirectoryInfo di = new(_exportPath);
+            di.Create();
+            _player = new(_midiOutDevice, _exportPath);
+            //TODO test _listener = new(_midiInDevice, _exportPath);
         }
 
         /// <summary>
@@ -115,6 +126,12 @@ namespace MidiLib.Test
             sldTempo.Value = _defaultTempo;
             SetTimer();
 
+            // Listen for midi inputs.
+            //_listener.InputEvent += (object? sender, MidiEventArgs e) => { LogMessage($"RCV {e}"); };
+            //_listener.Enable = true;
+
+            MidiTimeTest();
+
             // Make sure out path exists.
             DirectoryInfo di = new(_exportPath);
             di.Create();
@@ -127,12 +144,7 @@ namespace MidiLib.Test
             }
             else
             {
-                OpenFile(@"C:\Dev\repos\MidiStyleExplorer\test\_LoveSong.S474.sty");
-                //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\2kPopRock\60'sRock&Roll.S605.sty");
-                //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\_drums_ch1.mid");
-                //OpenFile(@"C:\Dev\repos\ClipExplorer\_files\25jazz.mid");
-                // This has drums on 9 and 11:
-                //OpenFile(@"C:\Users\cepth\OneDrive\Audio\Midi\styles\Gary USB\g-70 styles\G-70 #1\ContempBeat_G70.S423.STY");
+                OpenFile(@"C:\Dev\repos\test_midifiles\_LoveSong.S474.sty");
             }
         }
 
@@ -155,6 +167,7 @@ namespace MidiLib.Test
             _mmTimer.Dispose();
 
             _player?.Dispose();
+            _listener?.Dispose();
 
             if (disposing && (components is not null))
             {
@@ -550,6 +563,46 @@ namespace MidiLib.Test
         {
             int pos = TheChannels.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
             _player.CurrentSubdiv = pos;
+        }
+        #endregion
+
+        #region MidiTime
+        /// <summary>
+        /// Unit test.
+        /// </summary>
+        void MidiTimeTest()
+        {
+            // If we use ppq of 8 (32nd notes):
+            // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
+            //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
+
+            MidiTime mt = new()
+            {
+                InternalPpq = 8,
+                MidiPpq = 0,
+                Tempo = 100
+            };
+
+            TestClose(mt.InternalPeriod(), 75.0, 0.001);
+
+            mt.Tempo = 99;
+            TestClose(mt.InternalPeriod(), 75.757, 0.001);
+
+            mt.MidiPpq = 384;
+            mt.Tempo = 100;
+            TestClose(mt.MidiToSec(144000) / 60.0, 3.75, 0.001);
+
+            mt.MidiPpq = 96;
+            mt.Tempo = 100;
+            TestClose(mt.MidiPeriod(), 6.25, 0.001);
+
+            void TestClose(double value1, double value2, double tolerance)
+            {
+                if (Math.Abs(value1 - value2) > tolerance)
+                {
+                    LogMessage($"ERR [{value1}] not close enough to [{value2}]");
+                }
+            }
         }
         #endregion
 

@@ -57,7 +57,7 @@ namespace MidiLib
         {
             if (midiTracePath != "")
             {
-                _midiTraceFile = Path.Combine(midiTracePath, "midi_log.txt");
+                _midiTraceFile = Path.Combine(midiTracePath, "midi_out.txt");
                 File.Delete(_midiTraceFile);
             }
 
