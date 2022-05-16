@@ -144,7 +144,7 @@ namespace MidiLib.Test
             }
             else
             {
-                OpenFile(@"C:\Dev\repos\test_midifiles\_LoveSong.S474.sty");
+                OpenFile(@"C:\Dev\repos\MidiLib\Test\test_midifiles\_LoveSong.S474.sty");
             }
         }
 
