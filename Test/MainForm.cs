@@ -13,8 +13,6 @@ using System.Diagnostics;
 using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
-using static MidiLib.ChannelCollection;
-
 
 
 namespace MidiLib.Test
@@ -22,11 +20,14 @@ namespace MidiLib.Test
     public partial class MainForm : Form
     {
         #region Fields - internal
+        /// <summary>The internal channel objects.</summary>
+        ChannelCollection _allChannels = new();
+
         /// <summary>Midi player.</summary>
-        readonly Player _player;
+        Player _player;
 
         /// <summary>Midi input.</summary>
-        readonly Listener _listener;
+        Listener _listener;
 
         /// <summary>The fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -54,7 +55,7 @@ namespace MidiLib.Test
         /// <summary>My midi out.</summary>
         readonly string _midiOutDevice = "VirtualMIDISynth #1";
 
-        /// <summary>My midi out.</summary>
+        /// <summary>My midi in.</summary>
         readonly string _midiInDevice = "TODO";
 
         /// <summary>Adjust to taste.</summary>
@@ -77,7 +78,7 @@ namespace MidiLib.Test
 
             DirectoryInfo di = new(_exportPath);
             di.Create();
-            _player = new(_midiOutDevice, _exportPath);
+            _player = new();
             //TODO test _listener = new(_midiInDevice, _exportPath);
         }
 
@@ -126,15 +127,17 @@ namespace MidiLib.Test
             sldTempo.Value = _defaultTempo;
             SetTimer();
 
-            // Listen for midi inputs.
-            //_listener.InputEvent += (object? sender, MidiEventArgs e) => { LogMessage($"RCV {e}"); };
-            //_listener.Enable = true;
-
-            MidiTimeTest();
+            // MidiTimeTest();
 
             // Make sure out path exists.
             DirectoryInfo di = new(_exportPath);
             di.Create();
+
+            // Set up midi.
+            _player = new(_midiOutDevice, _allChannels, _exportPath);
+            //TODO test _listener = new(_midiInDevice, _exportPath);
+            //_listener.InputEvent += (object? sender, MidiEventArgs e) => { LogMessage($"RCV {e}"); };
+            //_listener.Enable = true;
 
             // Look for filename passed in.
             string[] args = Environment.GetCommandLineArgs();
@@ -433,13 +436,13 @@ namespace MidiLib.Test
                 // Is this channel pertinent?
                 if (chEvents.Any())
                 {
-                    TheChannels.SetEvents(chnum, chEvents, mt);
+                    _allChannels.SetEvents(chnum, chEvents, mt);
 
                     // Make new control.
                     ChannelControl control = new() { Location = new(x, y) };
 
                     // Bind to internal channel object.
-                    TheChannels.Bind(chnum, control);
+                    _allChannels.Bind(chnum, control);
 
                     // Now init the control - after binding!
                     control.Patch = pinfo.Patches[i];
@@ -530,7 +533,7 @@ namespace MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void DrumChannel_SelectedIndexChanged(object sender, EventArgs e)
+        void DrumChannel_SelectedIndexChanged(object? sender, EventArgs e)
         {
             UpdateDrumChannels();
         }
@@ -552,7 +555,7 @@ namespace MidiLib.Test
         /// </summary>
         void SetPosition()
         {
-            int pos = _player.CurrentSubdiv * (int)sldPosition.Maximum / TheChannels.TotalSubdivs;
+            int pos = _player.CurrentSubdiv * (int)sldPosition.Maximum / _allChannels.TotalSubdivs;
             sldPosition.Value = pos;
         }
 
@@ -561,7 +564,7 @@ namespace MidiLib.Test
         /// </summary>
         void GetPosition()
         {
-            int pos = TheChannels.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
+            int pos = _allChannels.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
             _player.CurrentSubdiv = pos;
         }
         #endregion

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
-using static MidiLib.ChannelCollection;
 
 
 namespace MidiLib
@@ -26,11 +25,14 @@ namespace MidiLib
         /// <summary>Midi output device.</summary>
         MidiOut? _midiOut = null;
 
+        /// <summary>The internal channel objects.</summary>
+        ChannelCollection _allChannels = new();
+
         /// <summary>Backing.</summary>
         int _currentSubdiv = 0;
 
         /// <summary>Where to log to.</summary>
-        readonly string _midiTraceFile = "";
+        readonly string _midiLogFile = "";
         #endregion
 
         #region Properties
@@ -52,13 +54,16 @@ namespace MidiLib
         /// Normal constructor.
         /// </summary>
         /// <param name="midiDevice">Client supplies name of device.</param>
-        /// <param name="midiTracePath">Where to log.</param>
-        public Player(string midiDevice, string midiTracePath)
+        /// <param name="channels">The actual channels.</param>
+        /// <param name="midiLogPath">Where to log wire events (optional).</param>
+        public Player(string midiDevice, ChannelCollection channels, string midiLogPath = "")
         {
-            if (midiTracePath != "")
+            _allChannels = channels;
+
+            if (midiLogPath != "")
             {
-                _midiTraceFile = Path.Combine(midiTracePath, "midi_out.txt");
-                File.Delete(_midiTraceFile);
+                _midiLogFile = Path.Combine(midiLogPath, "midi_out.txt");
+                File.Delete(_midiLogFile);
             }
 
             // Figure out which midi output device.
@@ -131,7 +136,7 @@ namespace MidiLib
         /// <param name="newval"></param>
         void UpdateCurrent(int newval)
         {
-            _currentSubdiv = MathUtils.Constrain(newval, 0, TheChannels.TotalSubdivs);
+            _currentSubdiv = MathUtils.Constrain(newval, 0, _allChannels.TotalSubdivs);
         }
 
         /// <summary>
@@ -144,14 +149,14 @@ namespace MidiLib
             if (State == RunState.Playing)
             {
                 // Any soloes?
-                bool solo = TheChannels.AnySolo;
-                int numSelected = TheChannels.NumSelected;
+                bool anySolo = _allChannels.AnySolo;
+                int numSelected = _allChannels.NumSelected;
 
                 // Process each channel.
-                foreach (var ch in TheChannels)
+                foreach (var ch in _allChannels)
                 {
-                    // Look for events to send. ExpliciAny soloes?
-                    if ((numSelected == 0 || ch.Selected) && (ch.State == ChannelState.Solo || (!solo && ch.State == ChannelState.Normal)))
+                    // Look for events to send. Any explicit solos?
+                    if ((numSelected == 0 || ch.Selected) && (ch.State == ChannelState.Solo || (!anySolo && ch.State == ChannelState.Normal)))
                     {
                         // Process any sequence steps.
                         var playEvents = ch.GetEvents(_currentSubdiv);
@@ -200,7 +205,7 @@ namespace MidiLib
 
                 // Bump time. Check for end of play.
                 _currentSubdiv++;
-                if (_currentSubdiv >= TheChannels.TotalSubdivs)
+                if (_currentSubdiv >= _allChannels.TotalSubdivs)
                 {
                     State = RunState.Complete;
                     _currentSubdiv = 0;
@@ -216,7 +221,7 @@ namespace MidiLib
             {
                 PatchChangeEvent evt = new(0, channelNumber, patch);
                 MidiSend(evt);
-                TheChannels.SetPatch(channelNumber, patch);
+                _allChannels.SetPatch(channelNumber, patch);
             }
         }
 
@@ -255,9 +260,9 @@ namespace MidiLib
             {
                 _midiOut.Send(evt.GetAsShortMessage());
 
-                if (LogMidi && _midiTraceFile != "")
+                if (_midiLogFile != "" && LogMidi)
                 {
-                    File.AppendAllText(_midiTraceFile, $"{DateTime.Now:mm\\:ss\\.fff} {evt}{Environment.NewLine}");
+                    File.AppendAllText(_midiLogFile, $"{DateTime.Now:mm\\:ss\\.fff} {evt}{Environment.NewLine}");
                 }
             }
         }

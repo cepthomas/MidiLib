@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using NAudio.Midi;
 using NBagOfTricks;
-using static MidiLib.ChannelCollection;
 
 
 // TODO Handle tracks from origin files?
@@ -48,6 +47,9 @@ namespace MidiLib
     public class MidiData
     {
         #region Fields
+        /// <summary>The internal channel objects.</summary>
+        ChannelCollection _allChannels = new();
+
         /// <summary>Include events like controller changes, pitch wheel, ...</summary>
         bool _includeNoisy = false;
 
@@ -496,7 +498,7 @@ namespace MidiLib
 
                 if (pattern.Patches[i] >= 0)
                 {
-                    var sp = TheChannels.IsDrums(chnum) ? "Drums" : MidiDefs.GetInstrumentName(pattern.Patches[i]);
+                    var sp = _allChannels.IsDrums(chnum) ? "Drums" : MidiDefs.GetInstrumentName(pattern.Patches[i]);
                     patches.Append($"{chnum}:{sp} ");
                 }
             }
@@ -538,7 +540,7 @@ namespace MidiLib
                     case NoteOnEvent evt:
                         int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
 
-                        string nname = TheChannels.IsDrums(me.MidiEvent.Channel) ?
+                        string nname = _allChannels.IsDrums(me.MidiEvent.Channel) ?
                            $"{MidiDefs.GetDrumName(evt.NoteNumber)}" :
                            $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
                         notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
@@ -562,7 +564,7 @@ namespace MidiLib
                         break;
 
                     case PatchChangeEvent evt:
-                        string pname = TheChannels.IsDrums(me.MidiEvent.Channel) ?
+                        string pname = _allChannels.IsDrums(me.MidiEvent.Channel) ?
                            $"{MidiDefs.GetDrumKit(evt.Patch)}" :
                            $"{MidiDefs.GetInstrumentName(evt.Patch)}";
                         otherText.Add($"{sc},{evt.Patch},{pname},");

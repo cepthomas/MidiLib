@@ -18,9 +18,6 @@ namespace MidiLib
         #endregion
 
         #region Properties
-        /// <summary>The global collection.</summary>
-        public static ChannelCollection TheChannels { get; } = new();
-
         /// <summary>Longest length of channels in subdivs.</summary>
         public int TotalSubdivs { get; private set; }
 
@@ -48,12 +45,11 @@ namespace MidiLib
             }
         }
 
-
         /// <summary>
         /// Opaque binder.
         /// </summary>
-        /// <param name="chnum">This channel to..</param>
-        /// <param name="control">This control.</param>
+        /// <param name="chnum">From this channel...</param>
+        /// <param name="control">...to this control.</param>
         public void Bind(int chnum, ChannelControl control)
         {
             control.Channel = GetChannel(chnum);
@@ -119,7 +115,6 @@ namespace MidiLib
         /// </summary>
         /// <param name="channelNumber"></param>
         /// <returns>The channel</returns>
-        //public
         Channel GetChannel(int channelNumber)
         {
             if (channelNumber < 1 || channelNumber > MidiDefs.NUM_CHANNELS)
@@ -138,7 +133,7 @@ namespace MidiLib
         /// <returns>Enumerator</returns>
         public IEnumerator<Channel> GetEnumerator()
         {
-            for (int i = 0; i < _channels.Length; i ++)
+            for (int i = 0; i < _channels.Length; i++)
             {
                 yield return _channels[i];
             }
