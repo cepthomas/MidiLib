@@ -49,6 +49,7 @@ namespace MidiLib.Test
             this.btnAll = new System.Windows.Forms.Button();
             this.btnNone = new System.Windows.Forms.Button();
             this.sldPosition = new NBagOfUis.Slider();
+            this.vkey = new MidiLib.VirtualKeyboard();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -253,7 +254,7 @@ namespace MidiLib.Test
             this.txtViewer.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtViewer.MaxText = 5000;
             this.txtViewer.Name = "txtViewer";
-            this.txtViewer.Size = new System.Drawing.Size(701, 656);
+            this.txtViewer.Size = new System.Drawing.Size(701, 635);
             this.txtViewer.TabIndex = 58;
             this.txtViewer.WordWrap = true;
             // 
@@ -336,11 +337,22 @@ namespace MidiLib.Test
             this.sldPosition.TabIndex = 92;
             this.sldPosition.Value = 10D;
             // 
+            // vkey
+            // 
+            this.vkey.Location = new System.Drawing.Point(13, 684);
+            this.vkey.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.vkey.Name = "vkey";
+            this.vkey.ShowNoteNames = false;
+            this.vkey.Size = new System.Drawing.Size(860, 90);
+            this.vkey.TabIndex = 93;
+            this.vkey.KeyboardEvent += new System.EventHandler<MidiLib.VirtualKeyboard.KeyboardEventArgs>(this.Vkey_KeyboardEvent);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1250, 709);
+            this.ClientSize = new System.Drawing.Size(1250, 779);
+            this.Controls.Add(this.vkey);
             this.Controls.Add(this.sldPosition);
             this.Controls.Add(this.btnNone);
             this.Controls.Add(this.btnAll);
@@ -396,6 +408,7 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStripLabel toolStripLabel2;
         private System.Windows.Forms.ToolStripComboBox cmbDrumChannel2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
+        private VirtualKeyboard vkey;
     }
 }
 

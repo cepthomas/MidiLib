@@ -14,6 +14,7 @@ using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
 
+//TODO test/UI for VirtualKeyboard
 
 namespace MidiLib.Test
 {
@@ -55,8 +56,8 @@ namespace MidiLib.Test
         /// <summary>My midi out.</summary>
         readonly string _midiOutDevice = "VirtualMIDISynth #1";
 
-        /// <summary>My midi in.</summary>
-        readonly string _midiInDevice = "TODO";
+        ///// <summary>My midi in.</summary>
+        //readonly string _midiInDevice = "TODO";
 
         /// <summary>Adjust to taste.</summary>
         readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
@@ -704,6 +705,18 @@ namespace MidiLib.Test
         {
             string s = $"> {msg}";
             txtViewer.AppendLine(s);
+        }
+        #endregion
+
+        #region Piano keyboard
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Vkey_KeyboardEvent(object? sender, VirtualKeyboard.KeyboardEventArgs e)
+        {
+            LogMessage($"INF Vkey C:{e.ChannelNumber} N:{e.NoteId} V:{e.Velocity}");
         }
         #endregion
     }

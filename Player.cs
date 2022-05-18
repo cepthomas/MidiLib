@@ -13,7 +13,7 @@ namespace MidiLib
 {
     #region Types
     /// <summary>Player state.</summary>
-    public enum RunState { Stopped, Playing, Complete }
+    public enum RunState { Stopped = 0, Playing = 1, Complete = 2 }
     #endregion
 
     /// <summary>

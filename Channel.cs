@@ -28,7 +28,7 @@ namespace MidiLib
         readonly Dictionary<int, List<MidiEvent>> _events = new();
 
         ///<summary>Backing.</summary>
-        double _volume = 1.0;
+        double _volume = DEFAULT_VOLUME;
         #endregion
 
         #region Properties
@@ -47,7 +47,7 @@ namespace MidiLib
         /// <summary>Current patch.</summary>
         public int Patch { get; set; } = -1;
 
-        /// <summary>Current volume.</summary>
+        /// <summary>Current volume - between MIN_VOLUME and MAX_VOLUME. Default is DEFAULT_VOLUME.</summary>
         public double Volume
         {
             get { return _volume; }
