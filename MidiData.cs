@@ -80,9 +80,6 @@ namespace MidiLib
 
         /// <summary>All the midi events. This is the verbatim ordered content of the file.</summary>
         public List<EventDesc> AllEvents { get; private set; } = new();
-
-        /// <summary>Where to put output products.</summary>
-        public string ExportPath { get; set; } = "SET_ME!";
         #endregion
 
         #region Public functions
@@ -456,9 +453,10 @@ namespace MidiLib
         /// <summary>
         /// Export the contents in a csv readable form. This is as the events appear in the original file.
         /// </summary>
+        /// <param name="exportPath">Where to boss?</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <returns>File name of dump file.</returns>
-        public string ExportAllEvents(List<int> channels)
+        public string ExportAllEvents(string exportPath, List<int> channels)
         {
             List<string> contentText = new()
             {
@@ -475,7 +473,7 @@ namespace MidiLib
                 $"{evt.PatternName},{evt.ChannelNumber},{evt.MidiEvent}"));
 
             // Export away.
-            var newfn = MakeExportFileName("all", "csv");
+            var newfn = MakeExportFileName(exportPath, "all", "csv");
             File.WriteAllLines(newfn, contentText);
             return newfn;            
         }
@@ -487,7 +485,7 @@ namespace MidiLib
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="includeOther">false if just notes or true if everything.</param>
         /// <returns>File name of dump file.</returns>
-        public string ExportGroupedEvents(string patternName, List<int> channels, bool includeOther)
+        public string ExportGroupedEvents(string exportPath, string patternName, List<int> channels, bool includeOther)
         {
             var pattern = AllPatterns.Where(p => p.PatternName == patternName).First();
 
@@ -595,7 +593,7 @@ namespace MidiLib
             }
 
             // Export away.
-            var newfn = MakeExportFileName(patternName, "csv");
+            var newfn = MakeExportFileName(exportPath, patternName, "csv");
             File.WriteAllLines(newfn, metaText);
             File.AppendAllLines(newfn, notesText);
             if (includeOther)
@@ -609,19 +607,19 @@ namespace MidiLib
         /// <summary>
         /// Export pattern parts to individual midi files. This is as the events appear in the original file.
         /// </summary>
+        /// <param name="exportPath">Where to boss?</param>
         /// <param name="patternName">Specific pattern.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="ppq">Export at this resolution.</param>
-        /// <param name="zip">Export as zip.</param>
         /// <returns>File name of export file.</returns>
-        public string ExportMidi(string patternName, List<int> channels, int ppq, bool zip)
+        public string ExportMidi(string exportPath, string patternName, List<int> channels, int ppq)
         {
-            // TODO export as zip.
+            // TODO export as zip?
 
             string name = Path.GetFileNameWithoutExtension(_fn);
 
             var pattern = AllPatterns.Where(p => p.PatternName == patternName).First();
-            var newfn = MakeExportFileName(patternName, "mid");
+            var newfn = MakeExportFileName(exportPath, patternName, "mid");
 
             // Init output file contents.
             MidiEventCollection outColl = new(1, ppq);
@@ -696,10 +694,11 @@ namespace MidiLib
         /// <summary>
         /// Create a new clean filename for export. Creates path if it doesn't exist.
         /// </summary>
-        /// <param name="mod"></param>
-        /// <param name="ext"></param>
+        /// <param name="path">Export path</param>
+        /// <param name="mod">Modifier</param>
+        /// <param name="ext">File extension</param>
         /// <returns></returns>
-        string MakeExportFileName(string mod, string ext)
+        string MakeExportFileName(string path, string mod, string ext)
         {
             string name = Path.GetFileNameWithoutExtension(_fn);
 
@@ -707,7 +706,7 @@ namespace MidiLib
             name = name.Replace('.', '-').Replace(' ', '_');
             mod = mod.Replace(' ', '_');
 
-            var newfn = Path.Join(ExportPath, $"{name}_{mod}.{ext}");
+            var newfn = Path.Join(path, $"{name}_{mod}.{ext}");
             return newfn;
         }
         #endregion

@@ -46,6 +46,17 @@ namespace MidiLib
         }
 
         /// <summary>
+        /// Clean the channels.
+        /// </summary>
+        public void Reset()
+        {
+            TotalSubdivs = 0;
+
+            // Reset the channel events.
+            _channels.ForEach(ch => ch.Reset());
+        }
+
+        /// <summary>
         /// Opaque binder.
         /// </summary>
         /// <param name="chnum">From this channel...</param>

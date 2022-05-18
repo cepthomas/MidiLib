@@ -84,6 +84,16 @@ namespace MidiLib
         }
 
         /// <summary>
+        /// Clean the events for the channel.
+        /// </summary>
+        public void Reset()
+        {
+            // Reset.
+            _events.Clear();
+            MaxSubdiv = 0;
+        }
+
+        /// <summary>
         /// Get the events for a specific subdiv.
         /// </summary>
         /// <param name="subdiv"></param>

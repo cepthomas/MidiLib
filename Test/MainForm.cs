@@ -328,12 +328,12 @@ namespace MidiLib.Test
 
             try
             {
-                // Reset drums.
+                // Reset stuff.
                 cmbDrumChannel1.SelectedIndex = MidiDefs.DEFAULT_DRUM_CHANNEL;
                 cmbDrumChannel2.SelectedIndex = 0;
+                _allChannels.Reset();
 
                 // Process the file. Set the default tempo from preferences.
-                _mdata = new();
                 _mdata.Read(fn, _defaultTempo, false);
 
                 // Init new stuff with contents of file/pattern.
@@ -631,8 +631,6 @@ namespace MidiLib.Test
         /// </summary>
         void Export_Click(object? sender, EventArgs e)
         {
-            _mdata.ExportPath = _exportPath;
-
             try
             {
                 // Collect filters.
@@ -650,21 +648,21 @@ namespace MidiLib.Test
 
                 if (sender == btnExportAll)
                 {
-                    var s = _mdata.ExportAllEvents(channels);
+                    var s = _mdata.ExportAllEvents(_exportPath, channels);
                     LogMessage($"INF Exported to {s}");
                 }
                 else if (sender == btnExportPattern)
                 {
                     if(_mdata.AllPatterns.Count == 1)
                     {
-                        var s = _mdata.ExportGroupedEvents("", channels, true);
+                        var s = _mdata.ExportGroupedEvents(_exportPath, "", channels, true);
                         LogMessage($"INF Exported default to {s}");
                     }
                     else
                     {
                         foreach (var patternName in patternNames)
                         {
-                            var s = _mdata.ExportGroupedEvents(patternName, channels, true);
+                            var s = _mdata.ExportGroupedEvents(_exportPath, patternName, channels, true);
                             LogMessage($"INF Exported pattern {patternName} to {s}");
                         }
                     }
@@ -674,7 +672,7 @@ namespace MidiLib.Test
                     if (_mdata.AllPatterns.Count == 1)
                     {
                         // Use original ppq.
-                        var s = _mdata.ExportMidi("", channels, _mdata.DeltaTicksPerQuarterNote, false);
+                        var s = _mdata.ExportMidi(_exportPath, "", channels, _mdata.DeltaTicksPerQuarterNote);
                         LogMessage($"INF Export midi to {s}");
                     }
                     else
@@ -682,7 +680,7 @@ namespace MidiLib.Test
                         foreach (var patternName in patternNames)
                         {
                             // Use original ppq.
-                            var s = _mdata.ExportMidi(patternName, channels, _mdata.DeltaTicksPerQuarterNote, false);
+                            var s = _mdata.ExportMidi(_exportPath, patternName, channels, _mdata.DeltaTicksPerQuarterNote);
                             LogMessage($"INF Export midi to {s}");
                         }
                     }
