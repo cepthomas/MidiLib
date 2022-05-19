@@ -31,11 +31,11 @@ namespace MidiLib
         {
             this.components = new System.ComponentModel.Container();
             this.lblChannelNumber = new System.Windows.Forms.Label();
-            //this.sldVolume = new NBagOfUis.Slider();
             this.lblPatch = new System.Windows.Forms.Label();
             this.lblSolo = new System.Windows.Forms.Label();
             this.lblMute = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.sldVolume = new NBagOfUis.Slider();
             this.SuspendLayout();
             // 
             // lblChannelNumber
@@ -47,23 +47,6 @@ namespace MidiLib
             this.lblChannelNumber.TabIndex = 3;
             this.lblChannelNumber.Text = "#";
             this.toolTip1.SetToolTip(this.lblChannelNumber, "Select channel");
-            //// 
-            //// sldVolume
-            //// 
-            //this.sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            //this.sldVolume.DrawColor = System.Drawing.Color.White;
-            //this.sldVolume.Label = "vol";
-            //this.sldVolume.Location = new System.Drawing.Point(195, 2);
-            //this.sldVolume.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            //this.sldVolume.Maximum = 2D;
-            //this.sldVolume.Minimum = 0D;
-            //this.sldVolume.Name = "sldVolume";
-            //this.sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            //this.sldVolume.Resolution = 0.05D;
-            //this.sldVolume.Size = new System.Drawing.Size(80, 30);
-            //this.sldVolume.TabIndex = 43;
-            //this.toolTip1.SetToolTip(this.sldVolume, "Channel volume");
-            //this.sldVolume.Value = 1D;
             // 
             // lblPatch
             // 
@@ -92,14 +75,29 @@ namespace MidiLib
             this.lblMute.Text = "M";
             this.toolTip1.SetToolTip(this.lblMute, "Mute");
             // 
+            // sldVolume
+            // 
+            this.sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sldVolume.DrawColor = System.Drawing.Color.White;
+            this.sldVolume.Label = "";
+            this.sldVolume.Location = new System.Drawing.Point(194, 3);
+            this.sldVolume.Maximum = 10D;
+            this.sldVolume.Minimum = 0D;
+            this.sldVolume.Name = "sldVolume";
+            this.sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.sldVolume.Resolution = 0.1D;
+            this.sldVolume.Size = new System.Drawing.Size(83, 30);
+            this.sldVolume.TabIndex = 47;
+            this.sldVolume.Value = 5D;
+            // 
             // ChannelControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.sldVolume);
             this.Controls.Add(this.lblMute);
             this.Controls.Add(this.lblSolo);
             this.Controls.Add(this.lblPatch);
-            //this.Controls.Add(this.sldVolume);
             this.Controls.Add(this.lblChannelNumber);
             this.Name = "ChannelControl";
             this.Size = new System.Drawing.Size(345, 38);
@@ -116,5 +114,6 @@ namespace MidiLib
         private System.Windows.Forms.Label lblSolo;
         private System.Windows.Forms.Label lblMute;
         private System.Windows.Forms.ToolTip toolTip1;
+        private NBagOfUis.Slider sldVolume;
     }
 }

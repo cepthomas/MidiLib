@@ -614,6 +614,98 @@
             Remove duplicate and invalid file names.
             </summary>
         </member>
+        <member name="T:NBagOfUis.Slider">
+            <summary>
+            Slider control.
+            </summary>
+        </member>
+        <member name="F:NBagOfUis.Slider._value">
+            <summary>Current value.</summary>
+        </member>
+        <member name="F:NBagOfUis.Slider._minimum">
+            <summary>Min value.</summary>
+        </member>
+        <member name="F:NBagOfUis.Slider._maximum">
+            <summary>Max value.</summary>
+        </member>
+        <member name="F:NBagOfUis.Slider._resolution">
+            <summary>Restrict to discrete steps.</summary>
+        </member>
+        <member name="F:NBagOfUis.Slider._resetVal">
+            <summary>If user resets. This is the first value assigned to Value.</summary>
+        </member>
+        <member name="F:NBagOfUis.Slider._brush">
+            <summary>The brush.</summary>
+        </member>
+        <member name="F:NBagOfUis.Slider._format">
+            <summary>For drawing text.</summary>
+        </member>
+        <member name="P:NBagOfUis.Slider.Label">
+            <summary>Optional label.</summary>
+        </member>
+        <member name="P:NBagOfUis.Slider.DrawColor">
+            <summary>For styling.</summary>
+        </member>
+        <member name="P:NBagOfUis.Slider.Orientation">
+            <summary>Fader orientation</summary>
+        </member>
+        <member name="P:NBagOfUis.Slider.Resolution">
+            <summary>Per step resolution of this slider.</summary>
+        </member>
+        <member name="P:NBagOfUis.Slider.Minimum">
+            <summary>Minimum Value of the slider.</summary>
+        </member>
+        <member name="P:NBagOfUis.Slider.Maximum">
+            <summary>Maximum Value of the slider.</summary>
+        </member>
+        <member name="P:NBagOfUis.Slider.Value">
+            <summary>The current value of the slider.</summary>
+        </member>
+        <member name="E:NBagOfUis.Slider.ValueChanged">
+            <summary>Slider value changed event.</summary>
+        </member>
+        <member name="M:NBagOfUis.Slider.#ctor">
+            <summary>
+            Creates a new Slider control.
+            </summary>
+        </member>
+        <member name="M:NBagOfUis.Slider.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+        </member>
+        <member name="M:NBagOfUis.Slider.Rescale">
+            <summary>
+            If min or max or resolution changed by client.
+            </summary>
+        </member>
+        <member name="M:NBagOfUis.Slider.OnPaint(System.Windows.Forms.PaintEventArgs)">
+            <summary>
+            Draw the slider.
+            </summary>
+        </member>
+        <member name="M:NBagOfUis.Slider.OnMouseMove(System.Windows.Forms.MouseEventArgs)">
+            <summary>
+            Handle dragging.
+            </summary>
+        </member>
+        <member name="M:NBagOfUis.Slider.OnMouseDown(System.Windows.Forms.MouseEventArgs)">
+            <summary>
+            Handle dragging.
+            </summary>
+        </member>
+        <member name="M:NBagOfUis.Slider.SetValueFromMouse(System.Windows.Forms.MouseEventArgs)">
+            <summary>
+            ommon updater.
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:NBagOfUis.Slider.OnKeyDown(System.Windows.Forms.KeyEventArgs)">
+            <summary>
+            Handle the nudge key.
+            </summary>
+            <param name="e"></param>
+        </member>
         <member name="P:NBagOfUis.TextViewer.Colors">
             <summary>The colors to display when text is matched.</summary>
         </member>

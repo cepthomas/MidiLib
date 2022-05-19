@@ -40,7 +40,7 @@ namespace MidiLib
         public RunState State { get; set; } = RunState.Stopped;
 
         /// <summary>Current master volume.</summary>
-        public double Volume { get; set; } = Channel.DEFAULT_VOLUME;
+        public double Volume { get; set; } = MidiDefs.DEFAULT_VOLUME;
 
         /// <summary>Current position in subdivs.</summary>
         public int CurrentSubdiv { get { return _currentSubdiv; } set { UpdateCurrent(value); } }

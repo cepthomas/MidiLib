@@ -8,12 +8,14 @@ using System.Windows.Forms;
 using NAudio.Midi;
 
 
+// TODOX min/max tempo? 50/200.
+
 namespace MidiLib
 {
     /// <summary>Readable versions of midi numbers.</summary>
     public class MidiDefs
     {
-        #region Constants
+        #region Constants - midi spec
         /// <summary>Midi caps.</summary>
         public const int MAX_MIDI = 127;
 
@@ -25,6 +27,14 @@ namespace MidiLib
 
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
+        #endregion
+
+        #region Constants - other
+        // These don't really belong here but temp home for now.
+        public const double MIN_VOLUME = 0.0;
+        public const double MAX_VOLUME = 2.0;
+        public const double DEFAULT_VOLUME = 0.8;
+        public const double RESOLUTION = 0.1;
         #endregion
 
         #region API

@@ -17,18 +17,12 @@ namespace MidiLib
     /// <summary>Describes one midi channel.</summary>
     public class Channel
     {
-        #region Constants
-        public const double MIN_VOLUME = 0.0;
-        public const double MAX_VOLUME = 2.0;
-        public const double DEFAULT_VOLUME = 0.8;
-        #endregion
-
         #region Fields
         ///<summary>The collection of playable events for this channel and pattern. The key is the internal subdiv/time.</summary>
         readonly Dictionary<int, List<MidiEvent>> _events = new();
 
         ///<summary>Backing.</summary>
-        double _volume = DEFAULT_VOLUME;
+        double _volume = MidiDefs.DEFAULT_VOLUME;
         #endregion
 
         #region Properties
@@ -51,7 +45,7 @@ namespace MidiLib
         public double Volume
         {
             get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, MIN_VOLUME, MAX_VOLUME, 0.05); }
+            set { _volume = value; }
         }
 
         ///<summary>The duration of the whole channel.</summary>

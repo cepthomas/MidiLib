@@ -481,6 +481,7 @@ namespace MidiLib
         /// <summary>
         /// Makes csv dumps of some events grouped by pattern/channel. This is as the events appear in the original file.
         /// </summary>
+        /// <param name="exportPath">Where to boss?</param>
         /// <param name="patternName">Specific pattern.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="includeOther">false if just notes or true if everything.</param>

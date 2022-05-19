@@ -101,10 +101,11 @@ namespace MidiLib.Test
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
-            sldVolume.Value = Channel.DEFAULT_VOLUME;
-            sldTempo.DrawColor = _controlColor;
-            sldTempo.Value = _defaultTempo;
-            sldPosition.DrawColor = _controlColor;
+            sldVolume.Resolution = MidiDefs.RESOLUTION;
+            sldVolume.Minimum = MidiDefs.MIN_VOLUME;
+            sldVolume.Maximum = MidiDefs.MAX_VOLUME;
+            sldVolume.Value = MidiDefs.DEFAULT_VOLUME;
+            sldVolume.Label = "volume";
 
             // Init channel selectors.
             cmbDrumChannel1.Items.Add("NA");
@@ -120,11 +121,11 @@ namespace MidiLib.Test
             btnRewind.Click += (_, __) => { Rewind(); };
             btnKillMidi.Click += (_, __) => { _player.KillAll(); };
             btnLogMidi.Click += (_, __) => { _player.LogMidi = btnLogMidi.Checked; };
-            sldTempo.ValueChanged += (_, __) => { SetTimer(); };
-            sldPosition.ValueChanged += (_, __) => { GetPosition(); };
+            nudTempo.ValueChanged += (_, __) => { SetTimer(); };
+            sldVolume.ValueChanged += (_, __) => { _player.Volume = sldVolume.Value; };
 
             // Set up timer.
-            sldTempo.Value = _defaultTempo;
+            nudTempo.Value = _defaultTempo;
             SetTimer();
 
             // MidiTimeTest();
@@ -149,7 +150,7 @@ namespace MidiLib.Test
             }
             else
             {
-                OpenFile(@"C:\Dev\repos\MidiLib\Test\test_midifiles\_LoveSong.S474.sty");
+                OpenFile(@"C:\Dev\repos\TestAudioFiles\_LoveSong.S474.sty");
             }
         }
 
@@ -307,7 +308,7 @@ namespace MidiLib.Test
         void Rewind()
         {
             _player.CurrentSubdiv = 0;
-            sldPosition.Value = 0;
+            progPosition.Value = 0;
         }
         #endregion
 
@@ -416,8 +417,8 @@ namespace MidiLib.Test
 
             // Create the new controls.
             int lastSubdiv = 0;
-            int x = sldTempo.Right + 5;
-            int y = sldTempo.Top;
+            int x = lbPatterns.Right + 5;
+            int y = lbPatterns.Top;
 
             // For scaling subdivs to internal.
             MidiTime mt = new()
@@ -557,8 +558,8 @@ namespace MidiLib.Test
         /// </summary>
         void SetPosition()
         {
-            int pos = _player.CurrentSubdiv * (int)sldPosition.Maximum / _allChannels.TotalSubdivs;
-            sldPosition.Value = pos;
+            int pos = _player.CurrentSubdiv * progPosition.Maximum / _allChannels.TotalSubdivs;
+            progPosition.Value = pos;
         }
 
         /// <summary>
@@ -566,7 +567,7 @@ namespace MidiLib.Test
         /// </summary>
         void GetPosition()
         {
-            int pos = _allChannels.TotalSubdivs * (int)sldPosition.Value / (int)sldPosition.Maximum;
+            int pos = _allChannels.TotalSubdivs * progPosition.Value / progPosition.Maximum;
             _player.CurrentSubdiv = pos;
         }
         #endregion
@@ -621,7 +622,7 @@ namespace MidiLib.Test
             {
                 InternalPpq = _sendPPQ,
                 MidiPpq = _mdata.DeltaTicksPerQuarterNote,
-                Tempo = sldTempo.Value
+                Tempo = (double)nudTempo.Value
             };
 
             double period = mt.RoundedInternalPeriod();

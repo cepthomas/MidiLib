@@ -43,14 +43,16 @@ namespace MidiLib.Test
             this.cmbDrumChannel2 = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.txtViewer = new NBagOfUis.TextViewer();
-            this.sldVolume = new NBagOfUis.Slider();
-            this.sldTempo = new NBagOfUis.Slider();
             this.lbPatterns = new System.Windows.Forms.CheckedListBox();
             this.btnAll = new System.Windows.Forms.Button();
             this.btnNone = new System.Windows.Forms.Button();
-            this.sldPosition = new NBagOfUis.Slider();
             this.vkey = new MidiLib.VirtualKeyboard();
+            this.nudTempo = new System.Windows.Forms.NumericUpDown();
+            this.progPosition = new System.Windows.Forms.ProgressBar();
+            this.label1 = new System.Windows.Forms.Label();
+            this.sldVolume = new NBagOfUis.Slider();
             this.toolStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudTempo)).BeginInit();
             this.SuspendLayout();
             // 
             // toolStrip1
@@ -258,44 +260,12 @@ namespace MidiLib.Test
             this.txtViewer.TabIndex = 58;
             this.txtViewer.WordWrap = true;
             // 
-            // sldVolume
-            // 
-            this.sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sldVolume.DrawColor = System.Drawing.Color.Fuchsia;
-            this.sldVolume.Label = "vol";
-            this.sldVolume.Location = new System.Drawing.Point(8, 40);
-            this.sldVolume.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.sldVolume.Maximum = 2D;
-            this.sldVolume.Minimum = 0D;
-            this.sldVolume.Name = "sldVolume";
-            this.sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.sldVolume.Resolution = 0.05D;
-            this.sldVolume.Size = new System.Drawing.Size(138, 50);
-            this.sldVolume.TabIndex = 42;
-            this.sldVolume.Value = 1D;
-            // 
-            // sldTempo
-            // 
-            this.sldTempo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sldTempo.DrawColor = System.Drawing.Color.White;
-            this.sldTempo.Label = "BPM";
-            this.sldTempo.Location = new System.Drawing.Point(8, 99);
-            this.sldTempo.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.sldTempo.Maximum = 200D;
-            this.sldTempo.Minimum = 50D;
-            this.sldTempo.Name = "sldTempo";
-            this.sldTempo.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.sldTempo.Resolution = 5D;
-            this.sldTempo.Size = new System.Drawing.Size(138, 50);
-            this.sldTempo.TabIndex = 80;
-            this.sldTempo.Value = 100D;
-            // 
             // lbPatterns
             // 
             this.lbPatterns.BackColor = System.Drawing.SystemColors.Control;
             this.lbPatterns.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lbPatterns.FormattingEnabled = true;
-            this.lbPatterns.Location = new System.Drawing.Point(8, 251);
+            this.lbPatterns.Location = new System.Drawing.Point(8, 137);
             this.lbPatterns.Name = "lbPatterns";
             this.lbPatterns.Size = new System.Drawing.Size(138, 354);
             this.lbPatterns.TabIndex = 89;
@@ -303,7 +273,7 @@ namespace MidiLib.Test
             // 
             // btnAll
             // 
-            this.btnAll.Location = new System.Drawing.Point(8, 213);
+            this.btnAll.Location = new System.Drawing.Point(8, 99);
             this.btnAll.Name = "btnAll";
             this.btnAll.Size = new System.Drawing.Size(50, 30);
             this.btnAll.TabIndex = 90;
@@ -313,29 +283,13 @@ namespace MidiLib.Test
             // 
             // btnNone
             // 
-            this.btnNone.Location = new System.Drawing.Point(66, 213);
+            this.btnNone.Location = new System.Drawing.Point(66, 99);
             this.btnNone.Name = "btnNone";
             this.btnNone.Size = new System.Drawing.Size(50, 30);
             this.btnNone.TabIndex = 91;
             this.btnNone.Text = "none";
             this.btnNone.UseVisualStyleBackColor = true;
             this.btnNone.Click += new System.EventHandler(this.AllOrNone_Click);
-            // 
-            // sldPosition
-            // 
-            this.sldPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sldPosition.DrawColor = System.Drawing.Color.Fuchsia;
-            this.sldPosition.Label = "pos";
-            this.sldPosition.Location = new System.Drawing.Point(154, 40);
-            this.sldPosition.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.sldPosition.Maximum = 100D;
-            this.sldPosition.Minimum = 0D;
-            this.sldPosition.Name = "sldPosition";
-            this.sldPosition.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.sldPosition.Resolution = 1D;
-            this.sldPosition.Size = new System.Drawing.Size(376, 50);
-            this.sldPosition.TabIndex = 92;
-            this.sldPosition.Value = 10D;
             // 
             // vkey
             // 
@@ -347,20 +301,83 @@ namespace MidiLib.Test
             this.vkey.TabIndex = 93;
             this.vkey.KeyboardEvent += new System.EventHandler<MidiLib.VirtualKeyboard.KeyboardEventArgs>(this.Vkey_KeyboardEvent);
             // 
+            // nudTempo
+            // 
+            this.nudTempo.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.nudTempo.Location = new System.Drawing.Point(159, 63);
+            this.nudTempo.Maximum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
+            this.nudTempo.Minimum = new decimal(new int[] {
+            40,
+            0,
+            0,
+            0});
+            this.nudTempo.Name = "nudTempo";
+            this.nudTempo.Size = new System.Drawing.Size(58, 27);
+            this.nudTempo.TabIndex = 96;
+            this.nudTempo.Value = new decimal(new int[] {
+            40,
+            0,
+            0,
+            0});
+            // 
+            // progPosition
+            // 
+            this.progPosition.ForeColor = System.Drawing.Color.HotPink;
+            this.progPosition.Location = new System.Drawing.Point(223, 40);
+            this.progPosition.Name = "progPosition";
+            this.progPosition.Size = new System.Drawing.Size(308, 50);
+            this.progPosition.Step = 1;
+            this.progPosition.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.progPosition.TabIndex = 97;
+            this.progPosition.Value = 50;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(159, 40);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(39, 20);
+            this.label1.TabIndex = 98;
+            this.label1.Text = "BPM";
+            // 
+            // sldVolume
+            // 
+            this.sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sldVolume.DrawColor = System.Drawing.Color.White;
+            this.sldVolume.Label = "";
+            this.sldVolume.Location = new System.Drawing.Point(8, 40);
+            this.sldVolume.Maximum = 10D;
+            this.sldVolume.Minimum = 0D;
+            this.sldVolume.Name = "sldVolume";
+            this.sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.sldVolume.Resolution = 0.1D;
+            this.sldVolume.Size = new System.Drawing.Size(138, 50);
+            this.sldVolume.TabIndex = 99;
+            this.sldVolume.Value = 5D;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1250, 779);
+            this.Controls.Add(this.sldVolume);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.progPosition);
+            this.Controls.Add(this.nudTempo);
             this.Controls.Add(this.vkey);
-            this.Controls.Add(this.sldPosition);
             this.Controls.Add(this.btnNone);
             this.Controls.Add(this.btnAll);
             this.Controls.Add(this.lbPatterns);
-            this.Controls.Add(this.sldTempo);
             this.Controls.Add(this.txtViewer);
             this.Controls.Add(this.toolStrip1);
-            this.Controls.Add(this.sldVolume);
             this.Location = new System.Drawing.Point(300, 50);
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "MainForm";
@@ -370,6 +387,7 @@ namespace MidiLib.Test
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudTempo)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -380,7 +398,6 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStrip toolStrip1;
         private NBagOfUis.Slider sldVolume;
         private NBagOfUis.TextViewer txtViewer;
-        private NBagOfUis.Slider sldTempo;
         private System.Windows.Forms.ToolStripButton btnAutoplay;
         private System.Windows.Forms.ToolStripButton btnLoop;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
@@ -402,13 +419,16 @@ namespace MidiLib.Test
         private System.Windows.Forms.CheckedListBox lbPatterns;
         private System.Windows.Forms.Button btnAll;
         private System.Windows.Forms.Button btnNone;
-        private NBagOfUis.Slider sldPosition;
+        //private Slider sldPosition;
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
         private System.Windows.Forms.ToolStripComboBox cmbDrumChannel1;
         private System.Windows.Forms.ToolStripLabel toolStripLabel2;
         private System.Windows.Forms.ToolStripComboBox cmbDrumChannel2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
         private VirtualKeyboard vkey;
+        private System.Windows.Forms.NumericUpDown nudTempo;
+        private System.Windows.Forms.ProgressBar progPosition;
+        private System.Windows.Forms.Label label1;
     }
 }
 
