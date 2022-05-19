@@ -16,7 +16,6 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages> <!-- en none -->
-    <!-- <ApplicationIcon>Resources\Morso.ico</ApplicationIcon> -->
   </PropertyGroup>
 
   <ItemGroup>

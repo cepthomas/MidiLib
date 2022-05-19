@@ -98,11 +98,11 @@ namespace MidiLib
         /// <param name="e"></param>
         void ChannelControl_Load(object? sender, EventArgs e)
         {
-            sldVolume.Value = Channel.Volume;
-            sldVolume.DrawColor = SelectedColor;
-            sldVolume.Minimum = Channel.MIN_VOLUME;
-            sldVolume.Maximum = Channel.MAX_VOLUME;
-            sldVolume.ValueChanged += Volume_ValueChanged;
+            //sldVolume.Value = Channel.Volume;
+            //sldVolume.DrawColor = SelectedColor;
+            //sldVolume.Minimum = Channel.MIN_VOLUME;
+            //sldVolume.Maximum = Channel.MAX_VOLUME;
+            //sldVolume.ValueChanged += Volume_ValueChanged;
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;
             lblChannelNumber.Click += ChannelNumber_Click;
@@ -121,7 +121,7 @@ namespace MidiLib
         {
             if (sender is not null)
             {
-                Volume = (sender as NBagOfUis.Slider)!.Value;
+                //Volume = (sender as NBagOfUis.Slider)!.Value;
             }
         }
 

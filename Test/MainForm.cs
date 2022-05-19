@@ -14,7 +14,6 @@ using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
 
-//TODO test/UI for VirtualKeyboard
 
 namespace MidiLib.Test
 {
@@ -25,10 +24,10 @@ namespace MidiLib.Test
         ChannelCollection _allChannels = new();
 
         /// <summary>Midi player.</summary>
-        Player _player;
+        MidiPlayer _player;
 
         /// <summary>Midi input.</summary>
-        Listener _listener;
+        MidiListener _listener;
 
         /// <summary>The fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -57,7 +56,7 @@ namespace MidiLib.Test
         readonly string _midiOutDevice = "VirtualMIDISynth #1";
 
         ///// <summary>My midi in.</summary>
-        //readonly string _midiInDevice = "TODO";
+        //readonly string _midiInDevice = "TODOX";
 
         /// <summary>Adjust to taste.</summary>
         readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
@@ -80,7 +79,7 @@ namespace MidiLib.Test
             DirectoryInfo di = new(_exportPath);
             di.Create();
             _player = new();
-            //TODO test _listener = new(_midiInDevice, _exportPath);
+            //TODOX test _listener = new(_midiInDevice, _exportPath);
         }
 
         /// <summary>
@@ -136,9 +135,11 @@ namespace MidiLib.Test
 
             // Set up midi.
             _player = new(_midiOutDevice, _allChannels, _exportPath);
-            //TODO test _listener = new(_midiInDevice, _exportPath);
+            //TODOX test _listener = new(_midiInDevice, _exportPath);
             //_listener.InputEvent += (object? sender, MidiEventArgs e) => { LogMessage($"RCV {e}"); };
             //_listener.Enable = true;
+
+            vkey.ShowNoteNames = true;
 
             // Look for filename passed in.
             string[] args = Environment.GetCommandLineArgs();

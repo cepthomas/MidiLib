@@ -72,7 +72,7 @@ namespace MidiLib
     /// <summary>
     /// Midi input handler.
     /// </summary>
-    public class Listener
+    public class MidiListener
     {
         #region Fields
         /// <summary>Midi input device.</summary>
@@ -101,7 +101,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="midiDevice">Client supplies name of device.</param>
         /// <param name="midiTracePath">Where to log.</param>
-        public Listener(string midiDevice, string midiTracePath)
+        public MidiListener(string midiDevice, string midiTracePath)
         {
             if (midiTracePath != "")
             {
@@ -131,7 +131,7 @@ namespace MidiLib
         /// <summary>
         /// Empty constructor to satisfy nullability.
         /// </summary>
-        Listener()
+        MidiListener()
         {
         }
 
@@ -145,10 +145,6 @@ namespace MidiLib
             _midiIn = null;
         }
         #endregion
-
-
-
-
 
         #region Private functions
         /// <summary>

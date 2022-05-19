@@ -19,7 +19,7 @@ namespace MidiLib
     /// <summary>
     /// A "good enough" midi player.
     /// </summary>
-    public class Player
+    public class MidiPlayer
     {
         #region Fields
         /// <summary>Midi output device.</summary>
@@ -56,7 +56,7 @@ namespace MidiLib
         /// <param name="midiDevice">Client supplies name of device.</param>
         /// <param name="channels">The actual channels.</param>
         /// <param name="midiLogPath">Where to log wire events (optional).</param>
-        public Player(string midiDevice, ChannelCollection channels, string midiLogPath = "")
+        public MidiPlayer(string midiDevice, ChannelCollection channels, string midiLogPath = "")
         {
             _allChannels = channels;
 
@@ -86,7 +86,7 @@ namespace MidiLib
         /// <summary>
         /// Empty constructor to satisfy nullability.
         /// </summary>
-        public Player()
+        public MidiPlayer()
         {
         }
 
