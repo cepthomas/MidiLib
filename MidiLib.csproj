@@ -12,7 +12,7 @@
     <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
     <OutputPath>bin\</OutputPath>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>CS1591;CA1822</NoWarn>
+    <NoWarn>CS1591;CA1822;CA1816</NoWarn>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages> <!-- en none -->
@@ -25,8 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.0.1" />
-    <PackageReference Include="NAudio.Midi" Version="2.0.1" />
+    <PackageReference Include="NAudio" Version="2.1.0" />
+    <PackageReference Include="NAudio.Midi" Version="2.1.0" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
 

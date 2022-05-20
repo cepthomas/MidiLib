@@ -11,22 +11,17 @@ using NBagOfUis;
 
 namespace MidiLib
 {
-    #region Types
-    /// <summary>Player state.</summary>
-    public enum RunState { Stopped = 0, Playing = 1, Complete = 2 }
-    #endregion
-
     /// <summary>
     /// A "good enough" midi player.
     /// </summary>
-    public class MidiPlayer
+    public class MidiPlayer : IDisposable
     {
         #region Fields
         /// <summary>Midi output device.</summary>
         MidiOut? _midiOut = null;
 
         /// <summary>The internal channel objects.</summary>
-        ChannelCollection _allChannels = new();
+        readonly ChannelCollection _allChannels = new();
 
         /// <summary>Backing.</summary>
         int _currentSubdiv = 0;
@@ -37,10 +32,10 @@ namespace MidiLib
 
         #region Properties
         /// <summary>What are we doing right now.</summary>
-        public RunState State { get; set; } = RunState.Stopped;
+        public MidiState State { get; set; } = MidiState.Stopped;
 
         /// <summary>Current master volume.</summary>
-        public double Volume { get; set; } = MidiDefs.DEFAULT_VOLUME;
+        public double Volume { get; set; } = VolumeDefs.DEFAULT;
 
         /// <summary>Current position in subdivs.</summary>
         public int CurrentSubdiv { get { return _currentSubdiv; } set { UpdateCurrent(value); } }
@@ -95,7 +90,7 @@ namespace MidiLib
         /// </summary>
         public void Dispose()
         {
-            State = RunState.Stopped;
+            State = MidiState.Stopped;
 
             // Resources.
             _midiOut?.Dispose();
@@ -107,7 +102,7 @@ namespace MidiLib
         /// </summary>
         public void Reset()
         {
-            State = RunState.Stopped;
+            State = MidiState.Stopped;
             CurrentSubdiv = 0;
         }
         #endregion
@@ -121,12 +116,12 @@ namespace MidiLib
         {
             if (go)
             {
-                State = RunState.Playing;
+                State = MidiState.Playing;
             }
             else
             {
                 KillAll();
-                State = RunState.Stopped;
+                State = MidiState.Stopped;
             }
         }
 
@@ -146,7 +141,7 @@ namespace MidiLib
         /// <returns></returns>
         public void DoNextStep()
         {
-            if (State == RunState.Playing)
+            if (State == MidiState.Playing)
             {
                 // Any soloes?
                 bool anySolo = _allChannels.AnySolo;
@@ -207,7 +202,7 @@ namespace MidiLib
                 _currentSubdiv++;
                 if (_currentSubdiv >= _allChannels.TotalSubdivs)
                 {
-                    State = RunState.Complete;
+                    State = MidiState.Complete;
                     _currentSubdiv = 0;
                 }
             }

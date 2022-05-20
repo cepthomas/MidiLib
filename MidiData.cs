@@ -15,11 +15,6 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
-    /// <summary>Placeholder to avoid handling null everywhere.</summary>
-    public class NullMidiEvent : MidiEvent
-    {
-    }
-
     /// <summary>
     /// Internal representation of one midi event.
     /// </summary>
@@ -48,7 +43,7 @@ namespace MidiLib
     {
         #region Fields
         /// <summary>The internal channel objects.</summary>
-        ChannelCollection _allChannels = new();
+        readonly ChannelCollection _allChannels = new();
 
         /// <summary>Include events like controller changes, pitch wheel, ...</summary>
         bool _includeNoisy = false;

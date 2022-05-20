@@ -9,11 +9,6 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
-    #region Types
-    /// <summary>Channel state.</summary>
-    public enum ChannelState { Normal = 0, Solo = 1, Mute = 2 }
-    #endregion
-
     /// <summary>Describes one midi channel.</summary>
     public class Channel
     {
@@ -22,7 +17,7 @@ namespace MidiLib
         readonly Dictionary<int, List<MidiEvent>> _events = new();
 
         ///<summary>Backing.</summary>
-        double _volume = MidiDefs.DEFAULT_VOLUME;
+        double _volume = VolumeDefs.DEFAULT;
         #endregion
 
         #region Properties
@@ -41,11 +36,11 @@ namespace MidiLib
         /// <summary>Current patch.</summary>
         public int Patch { get; set; } = -1;
 
-        /// <summary>Current volume - between MIN_VOLUME and MAX_VOLUME. Default is DEFAULT_VOLUME.</summary>
+        /// <summary>Current volume constrained to legal values.</summary>
         public double Volume
         {
             get { return _volume; }
-            set { _volume = value; }
+            set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX, VolumeDefs.RESOLUTION); }
         }
 
         ///<summary>The duration of the whole channel.</summary>

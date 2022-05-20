@@ -10,69 +10,9 @@ using NAudio.Midi;
 namespace MidiLib
 {
     /// <summary>
-    /// Midi has received something. It's up to the client to make sense of it.
-    /// Property value of -1 indicates invalid or not pertinent e.g a controller event doesn't have velocity.
-    /// </summary>
-    public class MidiEventArgs : EventArgs
-    {
-        /// <summary>Channel number.</summary>
-        public int Channel { get; set; } = -1;
-
-        /// <summary>The note number to play.</summary>%
-        public int Note { get; set; } = -1;
-
-        /// <summary>The volume.</summary>
-        public int Velocity { get; set; } = -1;
-
-        /// <summary>Specific controller.</summary>
-        public int ControllerId { get; set; } = -1;
-
-        /// <summary>The controller payload.</summary>
-        public int ControllerValue { get; set; } = -1;
-
-        /// <summary>Something to tell the client.</summary>
-        public string ErrorInfo { get; set; } = "";
-
-        /// <summary>Special id to carry pitch info.</summary>
-        public const int PITCH_CONTROL = 1000;
-
-        /// <summary>Read me.</summary>
-        public override string ToString()
-        {
-            StringBuilder sb = new($"Channel:{Channel} ");
-
-            if (ErrorInfo != "")
-            {
-                sb.Append($"Error:{ErrorInfo} ");
-            }
-            else
-            {
-                if (Note != -1)
-                {
-                    sb.Append($"Note:{Note} ");
-                }
-                if (Velocity != -1)
-                {
-                    sb.Append($"Velocity:{Velocity} ");
-                }
-                if (ControllerId != -1)
-                {
-                    sb.Append($"ControllerId:{ControllerId} ");
-                }
-                if (ControllerValue != -1)
-                {
-                    sb.Append($"ControllerValue:{ControllerValue} ");
-                }
-            }
-
-            return sb.ToString();
-        }
-    }
-
-    /// <summary>
     /// Midi input handler.
     /// </summary>
-    public class MidiListener
+    public class MidiListener : IDisposable
     {
         #region Fields
         /// <summary>Midi input device.</summary>

@@ -49,7 +49,7 @@ namespace MidiLib
             set { Channel.Patch = value; UpdateUi(); }
         }
 
-        /// <summary>Current volume.</summary>
+        /// <summary>Current volume. Channel.Volume performs the constraints.</summary>
         public double Volume
         {
             get { return Channel.Volume; }
@@ -83,38 +83,6 @@ namespace MidiLib
         public Color UnselectedColor { get; set; } = DefaultBackColor;
         #endregion
 
-
-
-        /// <summary>Current value.</summary>
-        double _value = 5.0;
-
-        /// <summary>Min value.</summary>
-        double _minimum = 0.0;
-
-        /// <summary>Max value.</summary>
-        double _maximum = 10.0;
-
-        /// <summary>Restrict to discrete steps.</summary>
-        double _resolution = 0.1;
-
-        /// <summary>The volume brush.</summary>
-        readonly SolidBrush _brush = new(Color.White);
-
-        /// <summary>For drawing text.</summary>
-        readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
-
-        /// <summary>For styling.</summary>
-        public Color DrawColor { get { return _brush.Color; } set { _brush.Color = value; } }
-
-        /// <summary>The current value of the slider.</summary>
-        public double Value
-        {
-            get { return _value; }
-            set { _value = MathUtils.Constrain(value, _minimum, _maximum, _resolution); Invalidate(); }
-        }
-
-
-
         #region Lifecycle
         /// <summary>
         /// Normal constructor.
@@ -133,8 +101,8 @@ namespace MidiLib
         {
             sldVolume.Value = Channel.Volume;
             sldVolume.DrawColor = SelectedColor;
-            sldVolume.Minimum = MidiDefs.MIN_VOLUME;
-            sldVolume.Maximum = MidiDefs.MAX_VOLUME;
+            sldVolume.Minimum = VolumeDefs.MIN;
+            sldVolume.Maximum = VolumeDefs.MAX;
             sldVolume.ValueChanged += Volume_ValueChanged;
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;

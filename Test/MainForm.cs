@@ -27,13 +27,13 @@ namespace MidiLib.Test
         MidiPlayer _player;
 
         /// <summary>Midi input.</summary>
-        MidiListener _listener;
+        readonly MidiListener _listener;
 
         /// <summary>The fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
 
         /// <summary>Midi events from the input file.</summary>
-        MidiData _mdata = new();
+        readonly MidiData _mdata = new();
 
         /// <summary>All the channel controls.</summary>
         readonly List<ChannelControl> _channelControls = new();
@@ -101,10 +101,10 @@ namespace MidiLib.Test
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
-            sldVolume.Resolution = MidiDefs.RESOLUTION;
-            sldVolume.Minimum = MidiDefs.MIN_VOLUME;
-            sldVolume.Maximum = MidiDefs.MAX_VOLUME;
-            sldVolume.Value = MidiDefs.DEFAULT_VOLUME;
+            sldVolume.Resolution = VolumeDefs.RESOLUTION;
+            sldVolume.Minimum = VolumeDefs.MIN;
+            sldVolume.Maximum = VolumeDefs.MAX;
+            sldVolume.Value = VolumeDefs.DEFAULT;
             sldVolume.Label = "volume";
 
             // Init channel selectors.
@@ -202,7 +202,7 @@ namespace MidiLib.Test
 
             switch (_player.State)
             {
-                case RunState.Complete:
+                case MidiState.Complete:
                     Rewind();
 
                     if (btnLoop.Checked)
@@ -217,14 +217,14 @@ namespace MidiLib.Test
                     }
                     break;
 
-                case RunState.Playing:
+                case MidiState.Playing:
                     if (!btnPlay.Checked)
                     {
                         Stop();
                     }
                     break;
 
-                case RunState.Stopped:
+                case MidiState.Stopped:
                     if (btnPlay.Checked)
                     {
                         Play();
