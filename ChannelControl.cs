@@ -90,15 +90,7 @@ namespace MidiLib
         public ChannelControl()
         {
             InitializeComponent();
-        }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ChannelControl_Load(object? sender, EventArgs e)
-        {
             sldVolume.Value = Channel.Volume;
             sldVolume.DrawColor = SelectedColor;
             sldVolume.Minimum = VolumeDefs.MIN;

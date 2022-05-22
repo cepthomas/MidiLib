@@ -66,22 +66,14 @@ namespace MidiLib
             ClientSize = new Size(773, 173);
             Name = "VirtualKeyboard";
             Text = "Virtual Keyboard";
-            Load += Keyboard_Load;
-            Resize += Keyboard_Resize;
-            KeyDown += Keyboard_KeyDown;
-            KeyUp += Keyboard_KeyUp;
-        }
 
-        /// <summary>
-        /// Initialize everything.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Keyboard_Load(object? sender, EventArgs e)
-        {
             CreateKeys();
             CreateKeyMap();
             DrawKeys();
+
+            Resize += Keyboard_Resize;
+            KeyDown += Keyboard_KeyDown;
+            KeyUp += Keyboard_KeyUp;
         }
 
         /// <summary>

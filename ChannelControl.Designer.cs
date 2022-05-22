@@ -101,7 +101,6 @@ namespace MidiLib
             this.Controls.Add(this.lblChannelNumber);
             this.Name = "ChannelControl";
             this.Size = new System.Drawing.Size(345, 38);
-            this.Load += new System.EventHandler(this.ChannelControl_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

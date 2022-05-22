@@ -55,8 +55,8 @@ namespace MidiLib.Test
         /// <summary>My midi out.</summary>
         readonly string _midiOutDevice = "VirtualMIDISynth #1";
 
-        ///// <summary>My midi in.</summary>
-        //readonly string _midiInDevice = "TODOX";
+        /// <summary>My midi in.</summary>
+        readonly string _midiInDevice = "????";
 
         /// <summary>Adjust to taste.</summary>
         readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
@@ -78,15 +78,7 @@ namespace MidiLib.Test
 
             DirectoryInfo di = new(_exportPath);
             di.Create();
-            _player = new();
-            //TODOX test _listener = new(_midiInDevice, _exportPath);
-        }
 
-        /// <summary>
-        /// Initialize form controls.
-        /// </summary>
-        void MainForm_Load(object? sender, EventArgs e)
-        {
             toolStrip1.Renderer = new NBagOfUis.CheckBoxRenderer() { SelectedColor = _controlColor };
 
             // The text output.

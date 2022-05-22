@@ -8,6 +8,8 @@ using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
 
+//TODO Snipping, editing, etc.
+
 
 namespace MidiLib
 {
@@ -62,12 +64,11 @@ namespace MidiLib
             }
 
             // Figure out which midi output device.
-            int devIndex = -1;
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
                 if (midiDevice == MidiOut.DeviceInfo(i).ProductName)
                 {
-                    _midiOut = new MidiOut(devIndex);
+                    _midiOut = new MidiOut(i);
                     break;
                 }
             }

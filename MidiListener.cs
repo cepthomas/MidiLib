@@ -16,7 +16,7 @@ namespace MidiLib
     {
         #region Fields
         /// <summary>Midi input device.</summary>
-        MidiIn? _midiIn = null;
+        readonly MidiIn _midiIn;
 
         /// <summary>Where to log to.</summary>
         readonly string _midiTraceFile = "";
@@ -73,6 +73,7 @@ namespace MidiLib
         /// </summary>
         MidiListener()
         {
+            _midiIn = new MidiIn(0);
         }
 
         /// <summary>
@@ -80,9 +81,8 @@ namespace MidiLib
         /// </summary>
         public void Dispose()
         {
-            _midiIn?.Stop();
-            _midiIn?.Dispose();
-            _midiIn = null;
+            _midiIn.Stop();
+            _midiIn.Dispose();
         }
         #endregion
 
