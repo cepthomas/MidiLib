@@ -75,7 +75,6 @@ namespace MidiLib
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
         protected override void OnResize(EventArgs e)
         {
@@ -196,7 +195,6 @@ namespace MidiLib
         /// <summary>
         /// Use alpha keyboard to drive piano.
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -219,7 +217,6 @@ namespace MidiLib
         /// <summary>
         /// Use alpha keyboard to drive piano.
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
         protected override void OnKeyUp(KeyEventArgs e)
         {

@@ -26,8 +26,8 @@ namespace MidiLib.Test
         /// <summary>Midi player.</summary>
         MidiPlayer _player;
 
-        /// <summary>Midi input.</summary>
-        readonly MidiListener _listener;
+        ///// <summary>Midi input.</summary>
+        //readonly MidiListener _listener;
 
         /// <summary>The fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -76,9 +76,6 @@ namespace MidiLib.Test
         {
             InitializeComponent();
 
-            DirectoryInfo di = new(_exportPath);
-            di.Create();
-
             toolStrip1.Renderer = new NBagOfUis.CheckBoxRenderer() { SelectedColor = _controlColor };
 
             // The text output.
@@ -108,6 +105,12 @@ namespace MidiLib.Test
                 cmbDrumChannel2.Items.Add(i);
             }
 
+            // Set up midi.
+            _player = new(_midiOutDevice, _allChannels, _exportPath);
+            //TODOX test _listener = new(_midiInDevice, _exportPath);
+            //_listener.InputEvent += (object? sender, MidiEventArgs e) => { LogMessage($"RCV {e}"); };
+            //_listener.Enable = true;
+
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(); };
             btnRewind.Click += (_, __) => { Rewind(); };
@@ -125,12 +128,6 @@ namespace MidiLib.Test
             // Make sure out path exists.
             DirectoryInfo di = new(_exportPath);
             di.Create();
-
-            // Set up midi.
-            _player = new(_midiOutDevice, _allChannels, _exportPath);
-            //TODOX test _listener = new(_midiInDevice, _exportPath);
-            //_listener.InputEvent += (object? sender, MidiEventArgs e) => { LogMessage($"RCV {e}"); };
-            //_listener.Enable = true;
 
             vkey.ShowNoteNames = true;
 
@@ -165,7 +162,7 @@ namespace MidiLib.Test
             _mmTimer.Dispose();
 
             _player?.Dispose();
-            _listener?.Dispose();
+            //_listener?.Dispose();
 
             if (disposing && (components is not null))
             {
