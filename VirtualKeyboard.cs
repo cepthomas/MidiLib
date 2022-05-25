@@ -70,10 +70,6 @@ namespace MidiLib
             CreateKeys();
             CreateKeyMap();
             DrawKeys();
-
-            Resize += Keyboard_Resize;
-            KeyDown += Keyboard_KeyDown;
-            KeyUp += Keyboard_KeyUp;
         }
 
         /// <summary>
@@ -81,7 +77,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Keyboard_Resize(object? sender, EventArgs e)
+        protected override void OnResize(EventArgs e)
         {
             DrawKeys();
             Invalidate();
@@ -202,7 +198,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Keyboard_KeyDown(object? sender, KeyEventArgs e)
+        protected override void OnKeyDown(KeyEventArgs e)
         {
             if (!_keyDown)
             {
@@ -225,7 +221,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Keyboard_KeyUp(object? sender, KeyEventArgs e)
+        protected override void OnKeyUp(KeyEventArgs e)
         {
             _keyDown = false;
 

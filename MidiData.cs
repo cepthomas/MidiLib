@@ -10,7 +10,7 @@ using NBagOfTricks;
 
 
 // TODO Handle tracks from origin files?
-// TODO auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
+// TODOX auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
 
 
 namespace MidiLib

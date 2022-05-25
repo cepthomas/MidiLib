@@ -41,13 +41,6 @@
             Creates a new default control.
             </summary>
         </member>
-        <member name="M:NBagOfUis.ClickGrid.ClickGrid_Load(System.Object,System.EventArgs)">
-            <summary>
-            
-            </summary>
-            <param name="sender"></param>
-            <param name="e"></param>
-        </member>
         <member name="M:NBagOfUis.ClickGrid.Dispose(System.Boolean)">
             <summary>
             Clean up any resources being used.
@@ -185,13 +178,6 @@
             Constructor.
             </summary>
         </member>
-        <member name="M:NBagOfUis.CpuMeter.CpuMeter_Load(System.Object,System.EventArgs)">
-            <summary>
-            Initialize everything.
-            </summary>
-            <param name="sender"></param>
-            <param name="e"></param>
-        </member>
         <member name="M:NBagOfUis.CpuMeter.Dispose(System.Boolean)">
             <summary>
             Clean up any resources being used.
@@ -234,7 +220,7 @@
             <summary>Base path(s) for the tree.</summary>
         </member>
         <member name="P:NBagOfUis.FilTree.FilterExts">
-            <summary>Show only these file types.</summary>
+            <summary>Show only these file types. Empty is valid for files without extensions.</summary>
         </member>
         <member name="P:NBagOfUis.FilTree.SingleClickSelect">
             <summary>Generate event with single or double click.</summary>
@@ -246,13 +232,6 @@
             <summary>
             Default constructor.
             </summary>
-        </member>
-        <member name="M:NBagOfUis.FilTree.FilTree_Load(System.Object,System.EventArgs)">
-            <summary>
-            Initialize controls.
-            </summary>
-            <param name="sender"></param>
-            <param name="e"></param>
         </member>
         <member name="M:NBagOfUis.FilTree.Init">
             <summary>
@@ -478,13 +457,6 @@
             <summary>
             Constructor.
             </summary>
-        </member>
-        <member name="M:NBagOfUis.OptionsEditor.OptionsEditor_Load(System.Object,System.EventArgs)">
-            <summary>
-            Initialization. If editing not allowed, adjust the ui.
-            </summary>
-            <param name="sender"></param>
-            <param name="e"></param>
         </member>
         <member name="M:NBagOfUis.OptionsEditor.Add_Click(System.Object,System.EventArgs)">
             <summary>

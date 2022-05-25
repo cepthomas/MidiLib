@@ -80,6 +80,11 @@ namespace MidiLib
             // Reset.
             _events.Clear();
             MaxSubdiv = 0;
+
+            State = ChannelState.Normal;
+            Selected = false;
+            IsDrums = false;
+            Patch = -1;
         }
 
         /// <summary>
