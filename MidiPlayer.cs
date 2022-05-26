@@ -8,7 +8,7 @@ using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
 
-//TODO Snipping, editing, etc.
+// TODO Snipping, editing, etc.
 
 
 namespace MidiLib
@@ -20,7 +20,7 @@ namespace MidiLib
     {
         #region Fields
         /// <summary>Midi output device.</summary>
-        MidiOut? _midiOut = null;
+        readonly MidiOut? _midiOut = null;
 
         /// <summary>The internal channel objects.</summary>
         readonly ChannelCollection _allChannels = new();
@@ -33,6 +33,9 @@ namespace MidiLib
         #endregion
 
         #region Properties
+        /// <summary>Are we ok?</summary>
+        public bool Valid { get { return _midiOut is not null; } }
+
         /// <summary>What are we doing right now.</summary>
         public MidiState State { get; set; } = MidiState.Stopped;
 
@@ -72,18 +75,6 @@ namespace MidiLib
                     break;
                 }
             }
-
-            if (_midiOut is null)
-            {
-                throw new ArgumentException($"Invalid midi device: {midiDevice}");
-            }
-        }
-
-        /// <summary>
-        /// Empty constructor to satisfy nullability.
-        /// </summary>
-        public MidiPlayer()
-        {
         }
 
         /// <summary> 
@@ -95,7 +86,6 @@ namespace MidiLib
 
             // Resources.
             _midiOut?.Dispose();
-            _midiOut = null;
         }
 
         /// <summary>
@@ -213,7 +203,7 @@ namespace MidiLib
         #region Public functions - midi
         public void SendPatch(int channelNumber, int patch)
         {
-            if(patch >= 0)
+            if (patch >= 0)
             {
                 PatchChangeEvent evt = new(0, channelNumber, patch);
                 MidiSend(evt);

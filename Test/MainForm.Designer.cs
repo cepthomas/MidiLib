@@ -48,9 +48,9 @@ namespace MidiLib.Test
             this.btnNone = new System.Windows.Forms.Button();
             this.vkey = new MidiLib.VirtualKeyboard();
             this.nudTempo = new System.Windows.Forms.NumericUpDown();
-            this.progPosition = new System.Windows.Forms.ProgressBar();
             this.label1 = new System.Windows.Forms.Label();
             this.sldVolume = new NBagOfUis.Slider();
+            this.barBar = new MidiLib.BarBar();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTempo)).BeginInit();
             this.SuspendLayout();
@@ -328,17 +328,6 @@ namespace MidiLib.Test
             0,
             0});
             // 
-            // progPosition
-            // 
-            this.progPosition.ForeColor = System.Drawing.Color.HotPink;
-            this.progPosition.Location = new System.Drawing.Point(223, 40);
-            this.progPosition.Name = "progPosition";
-            this.progPosition.Size = new System.Drawing.Size(308, 50);
-            this.progPosition.Step = 1;
-            this.progPosition.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-            this.progPosition.TabIndex = 97;
-            this.progPosition.Value = 50;
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -363,14 +352,30 @@ namespace MidiLib.Test
             this.sldVolume.TabIndex = 99;
             this.sldVolume.Value = 5D;
             // 
+            // barBar
+            // 
+            this.barBar.BeatsPerBar = 4;
+            this.barBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.barBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.barBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.barBar.Location = new System.Drawing.Point(223, 40);
+            this.barBar.MarkerColor = System.Drawing.Color.Black;
+            this.barBar.Name = "barBar";
+            this.barBar.ProgressColor = System.Drawing.Color.White;
+            this.barBar.Size = new System.Drawing.Size(308, 50);
+            this.barBar.Snap = MidiLib.BarBar.SnapType.Subdiv;
+            this.barBar.SubdivsPerBeat = 8;
+            this.barBar.TabIndex = 100;
+            this.barBar.ZeroBased = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1250, 779);
+            this.Controls.Add(this.barBar);
             this.Controls.Add(this.sldVolume);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.progPosition);
             this.Controls.Add(this.nudTempo);
             this.Controls.Add(this.vkey);
             this.Controls.Add(this.btnNone);
@@ -425,8 +430,8 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
         private VirtualKeyboard vkey;
         private System.Windows.Forms.NumericUpDown nudTempo;
-        private System.Windows.Forms.ProgressBar progPosition;
         private System.Windows.Forms.Label label1;
+        private BarBar barBar;
     }
 }
 

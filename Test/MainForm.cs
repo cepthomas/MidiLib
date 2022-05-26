@@ -26,8 +26,8 @@ namespace MidiLib.Test
         /// <summary>Midi player.</summary>
         MidiPlayer _player;
 
-        ///// <summary>Midi input.</summary>
-        //readonly MidiListener _listener;
+        /// <summary>Midi input.</summary>
+        readonly MidiListener _listener;
 
         /// <summary>The fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -42,7 +42,10 @@ namespace MidiLib.Test
         bool _guard = false;
 
         /// <summary>Our internal midi send timer resolution.</summary>
-        readonly int _sendPPQ = 32;
+        const int PPQ = 32;
+
+        /// <summary>4/4 time only.</summary>
+        const int BEATS_PER_BAR = 4;
 
         /// <summary>Current file.</summary>
         string _fn = "";
@@ -56,7 +59,7 @@ namespace MidiLib.Test
         readonly string _midiOutDevice = "VirtualMIDISynth #1";
 
         /// <summary>My midi in.</summary>
-        readonly string _midiInDevice = "????";
+        readonly string _midiInDevice = "TODOX_????";
 
         /// <summary>Adjust to taste.</summary>
         readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
@@ -78,6 +81,10 @@ namespace MidiLib.Test
 
             toolStrip1.Renderer = new NBagOfUis.CheckBoxRenderer() { SelectedColor = _controlColor };
 
+            // Make sure out path exists.
+            DirectoryInfo di = new(_exportPath);
+            di.Create();
+
             // The text output.
             txtViewer.Font = Font;
             txtViewer.WordWrap = true;
@@ -96,6 +103,14 @@ namespace MidiLib.Test
             sldVolume.Value = VolumeDefs.DEFAULT;
             sldVolume.Label = "volume";
 
+            // Time controller.
+            barBar.ZeroBased = true;
+            barBar.BeatsPerBar = BEATS_PER_BAR;
+            barBar.SubdivsPerBeat = PPQ;
+            barBar.Snap = BarBar.SnapType.Beat;
+            barBar.ProgressColor = _controlColor;
+            barBar.CurrentTimeChanged += BarBar_CurrentTimeChanged;
+
             // Init channel selectors.
             cmbDrumChannel1.Items.Add("NA");
             cmbDrumChannel2.Items.Add("NA");
@@ -107,9 +122,24 @@ namespace MidiLib.Test
 
             // Set up midi.
             _player = new(_midiOutDevice, _allChannels, _exportPath);
-            //TODOX test _listener = new(_midiInDevice, _exportPath);
-            //_listener.InputEvent += (object? sender, MidiEventArgs e) => { LogMessage($"RCV {e}"); };
-            //_listener.Enable = true;
+            if (_player.Valid)
+            {
+            }
+            else
+            {
+                LogMessage($"ERR Something wrong with your midi output device:{_midiOutDevice}");
+            }
+
+            _listener = new(_midiInDevice, _exportPath);
+            if(_listener.Valid)
+            {
+                _listener.InputEvent += (object? sender, MidiEventArgs e) => { LogMessage($"RCV {e}"); };
+                _listener.Enable = true;
+            }
+            else
+            {
+                LogMessage($"ERR Something wrong with your midi input device:{_midiInDevice}");
+            }
 
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(); };
@@ -124,10 +154,6 @@ namespace MidiLib.Test
             SetTimer();
 
             // MidiTimeTest();
-
-            // Make sure out path exists.
-            DirectoryInfo di = new(_exportPath);
-            di.Create();
 
             vkey.ShowNoteNames = true;
 
@@ -161,8 +187,8 @@ namespace MidiLib.Test
             _mmTimer.Stop();
             _mmTimer.Dispose();
 
-            _player?.Dispose();
-            //_listener?.Dispose();
+            _player.Dispose();
+            _listener.Dispose();
 
             if (disposing && (components is not null))
             {
@@ -220,9 +246,6 @@ namespace MidiLib.Test
                     }
                     break;
             }
-
-            // Update UI.
-            SetPosition();
 
             _guard = false;
         }
@@ -297,7 +320,17 @@ namespace MidiLib.Test
         void Rewind()
         {
             _player.CurrentSubdiv = 0;
-            progPosition.Value = 0;
+            barBar.Current = BarSpan.Zero;
+        }
+
+        /// <summary>
+        /// User has changed the time.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
+        {
+            _player.CurrentSubdiv = barBar.Current.TotalSubdivs;
         }
         #endregion
 
@@ -412,7 +445,7 @@ namespace MidiLib.Test
             // For scaling subdivs to internal.
             MidiTime mt = new()
             {
-                InternalPpq = _sendPPQ,
+                InternalPpq = PPQ,
                 MidiPpq = _mdata.DeltaTicksPerQuarterNote,
                 Tempo = _defaultTempo
             };
@@ -453,6 +486,12 @@ namespace MidiLib.Test
                     _player.SendPatch(chnum, pinfo.Patches[i]);
                 }
             }
+
+            // Update bar.
+            barBar.Length = new BarSpan(lastSubdiv);
+            barBar.Start = BarSpan.Zero;
+            barBar.End = barBar.Length - BarSpan.OneSubdiv;
+            barBar.Current = BarSpan.Zero;
 
             UpdateDrumChannels();
         }
@@ -508,6 +547,12 @@ namespace MidiLib.Test
 
                 _player.DoNextStep();
 
+                // Bump time. Check for end of play.
+                if (barBar.IncrementCurrent(1))
+                {
+                    //PlaybackCompleted?.Invoke(this, new EventArgs());
+                }
+
                 // Bump over to main thread.
                 this.InvokeIfRequired(_ => UpdateState());
 
@@ -538,26 +583,6 @@ namespace MidiLib.Test
             _channelControls.ForEach(ctl => ctl.IsDrums =
                 (ctl.ChannelNumber == cmbDrumChannel1.SelectedIndex) ||
                 (ctl.ChannelNumber == cmbDrumChannel2.SelectedIndex));
-        }
-        #endregion
-
-        #region Position bar
-        /// <summary>
-        /// Set UI slider value.
-        /// </summary>
-        void SetPosition()
-        {
-            int pos = _player.CurrentSubdiv * progPosition.Maximum / _allChannels.TotalSubdivs;
-            progPosition.Value = pos;
-        }
-
-        /// <summary>
-        /// Get UI slider value.
-        /// </summary>
-        void GetPosition()
-        {
-            int pos = _allChannels.TotalSubdivs * progPosition.Value / progPosition.Maximum;
-            _player.CurrentSubdiv = pos;
         }
         #endregion
 
@@ -609,7 +634,7 @@ namespace MidiLib.Test
         {
             MidiTime mt = new()
             {
-                InternalPpq = _sendPPQ,
+                InternalPpq = PPQ,
                 MidiPpq = _mdata.DeltaTicksPerQuarterNote,
                 Tempo = (double)nudTempo.Value
             };

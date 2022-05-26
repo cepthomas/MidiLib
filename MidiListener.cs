@@ -16,18 +16,30 @@ namespace MidiLib
     {
         #region Fields
         /// <summary>Midi input device.</summary>
-        readonly MidiIn _midiIn;
+        readonly MidiIn? _midiIn = null;
 
         /// <summary>Where to log to.</summary>
         readonly string _midiTraceFile = "";
         #endregion
 
         #region Properties
+        /// <summary>Are we ok?</summary>
+        public bool Valid { get { return _midiIn is not null; } }
+
         /// <summary>Log outbound traffic. Warning - can get busy.</summary>
         public bool LogMidi { get; set; } = false;
 
         /// <summary>Capture on/off.</summary>
-        public bool Enable { set { if (value) _midiIn.Start(); else _midiIn.Stop(); } }
+        public bool Enable 
+        { 
+            set
+            {
+                if(_midiIn is not null)
+                {
+                    if (value) _midiIn.Start(); else _midiIn.Stop();
+                }
+            }
+        }
         #endregion
 
         #region Events
@@ -61,19 +73,6 @@ namespace MidiLib
                     break;
                 }
             }
-
-            if (_midiIn is null)
-            {
-                throw new ArgumentException($"Invalid midi device: {midiDevice}");
-            }
-        }
-
-        /// <summary>
-        /// Empty constructor to satisfy nullability.
-        /// </summary>
-        MidiListener()
-        {
-            _midiIn = new MidiIn(0);
         }
 
         /// <summary>
@@ -81,8 +80,8 @@ namespace MidiLib
         /// </summary>
         public void Dispose()
         {
-            _midiIn.Stop();
-            _midiIn.Dispose();
+            _midiIn?.Stop();
+            _midiIn?.Dispose();
         }
         #endregion
 
@@ -167,7 +166,6 @@ namespace MidiLib
             {
                 File.AppendAllText(_midiTraceFile, $"{DateTime.Now:mm\\:ss\\.fff} {evt}{Environment.NewLine}");
             }
-
         }
         #endregion
     }

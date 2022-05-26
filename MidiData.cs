@@ -9,8 +9,11 @@ using NAudio.Midi;
 using NBagOfTricks;
 
 
-// TODO Handle tracks from origin files?
-// TODOX auto-determine which channels have drums? adjust quiet drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
+// TODO Properly handle tracks from original files?
+// TODO auto-determine which channels have drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
+// This is from the General MIDI 2.0 specification:
+// "Bank Select 78H/xxH followed by a Program Change will cause the Channel to become a Rhythm Channel, using the Drum Set selected by the Program Change."
+// For more details get the GM2 specification here: https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2
 
 
 namespace MidiLib
