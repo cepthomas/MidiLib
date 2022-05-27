@@ -8,19 +8,24 @@ using System.Threading.Tasks;
 namespace MidiLib
 {
     /// <summary>Helpers to translate between midi standard and arbtrary internal representation.</summary>
-    public class MidiTime
+    public class MidiTimeConverter
     {
-        /// <summary>Resolution for midi events aka DeltaTicksPerQuarterNote.</summary>
-        public int MidiPpq { get; set; } = 96;
-
-        /// <summary>Resolution for internal format.</summary>
-        public int InternalPpq { get; set; } = 16;
+        /// <summary>Resolution for midi file events aka DeltaTicksPerQuarterNote.</summary>
+        readonly int _midiPpq;
 
         /// <summary>Tempo aka BPM.</summary>
-        public double Tempo { get; set; } = 0;
+        readonly double _tempo;
 
-        ///// <summary>Time signature Future?</summary>
-        // public string TimeSig { get; set; } = "";
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="midiPpq"></param>
+        /// <param name="tempo"></param>
+        public MidiTimeConverter(int midiPpq, double tempo)
+        {
+            _midiPpq = midiPpq;
+            _tempo = tempo;
+        }
 
         /// <summary>
         /// Conversion function.
@@ -29,7 +34,7 @@ namespace MidiLib
         /// <returns></returns>
         public long InternalToMidi(int t)
         {
-            long mtime = t * MidiPpq / InternalPpq;
+            long mtime = t * _midiPpq / InternalDefs.SUBDIVS_PER_BEAT;
             return mtime;
         }
 
@@ -40,7 +45,7 @@ namespace MidiLib
         /// <returns></returns>
         public int MidiToInternal(long t)
         {
-            long itime = t * InternalPpq / MidiPpq;
+            long itime = t * InternalDefs.SUBDIVS_PER_BEAT / _midiPpq;
             return (int)itime;
         }
 
@@ -72,8 +77,8 @@ namespace MidiLib
         /// <returns></returns>
         public double MidiPeriod()
         {
-            double secPerBeat = 60.0 / Tempo;
-            double msecPerT = 1000 * secPerBeat / MidiPpq;
+            double secPerBeat = 60.0 / _tempo;
+            double msecPerT = 1000 * secPerBeat / _midiPpq;
             return msecPerT;
         }
 
@@ -83,8 +88,8 @@ namespace MidiLib
         /// <returns></returns>
         public double InternalPeriod()
         {
-            double secPerBeat = 60.0 / Tempo;
-            double msecPerT = 1000 * secPerBeat / InternalPpq;
+            double secPerBeat = 60.0 / _tempo;
+            double msecPerT = 1000 * secPerBeat / InternalDefs.SUBDIVS_PER_BEAT;
             return msecPerT;
         }
 

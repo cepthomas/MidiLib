@@ -59,7 +59,7 @@ namespace MidiLib.Test
         readonly string _midiOutDevice = "VirtualMIDISynth #1";
 
         /// <summary>My midi in.</summary>
-        readonly string _midiInDevice = "TODOX_????";
+        readonly string _midiInDevice = "TODOX_debug";
 
         /// <summary>Adjust to taste.</summary>
         readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
@@ -97,17 +97,15 @@ namespace MidiLib.Test
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
-            sldVolume.Resolution = VolumeDefs.RESOLUTION;
-            sldVolume.Minimum = VolumeDefs.MIN;
-            sldVolume.Maximum = VolumeDefs.MAX;
-            sldVolume.Value = VolumeDefs.DEFAULT;
+            sldVolume.Resolution = InternalDefs.VOLUME_RESOLUTION;
+            sldVolume.Minimum = InternalDefs.VOLUME_MIN;
+            sldVolume.Maximum = InternalDefs.VOLUME_MAX;
+            sldVolume.Value = InternalDefs.VOLUME_DEFAULT;
             sldVolume.Label = "volume";
 
             // Time controller.
-            barBar.ZeroBased = true;
-            barBar.BeatsPerBar = BEATS_PER_BAR;
-            barBar.SubdivsPerBeat = PPQ;
-            barBar.Snap = BarBar.SnapType.Beat;
+            LibSettings.Snap = SnapType.Beat;
+            LibSettings.ZeroBased = true;
             barBar.ProgressColor = _controlColor;
             barBar.CurrentTimeChanged += BarBar_CurrentTimeChanged;
 
@@ -320,7 +318,7 @@ namespace MidiLib.Test
         void Rewind()
         {
             _player.CurrentSubdiv = 0;
-            barBar.Current = BarSpan.Zero;
+            barBar.Current = BarTime.Zero;
         }
 
         /// <summary>
@@ -443,12 +441,7 @@ namespace MidiLib.Test
             int y = lbPatterns.Top;
 
             // For scaling subdivs to internal.
-            MidiTime mt = new()
-            {
-                InternalPpq = PPQ,
-                MidiPpq = _mdata.DeltaTicksPerQuarterNote,
-                Tempo = _defaultTempo
-            };
+            MidiTimeConverter mt = new(_mdata.DeltaTicksPerQuarterNote, _defaultTempo);
 
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
@@ -488,10 +481,10 @@ namespace MidiLib.Test
             }
 
             // Update bar.
-            barBar.Length = new BarSpan(lastSubdiv);
-            barBar.Start = BarSpan.Zero;
-            barBar.End = barBar.Length - BarSpan.OneSubdiv;
-            barBar.Current = BarSpan.Zero;
+            barBar.Length = new BarTime(lastSubdiv);
+            barBar.Start = BarTime.Zero;
+            barBar.End = barBar.Length - BarTime.OneSubdiv;
+            barBar.Current = BarTime.Zero;
 
             UpdateDrumChannels();
         }
@@ -596,24 +589,16 @@ namespace MidiLib.Test
             // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
             //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
 
-            MidiTime mt = new()
-            {
-                InternalPpq = 8,
-                MidiPpq = 0,
-                Tempo = 100
-            };
-
+            MidiTimeConverter mt = new(0, 100);
             TestClose(mt.InternalPeriod(), 75.0, 0.001);
 
-            mt.Tempo = 99;
+            mt = new(0, 90);
             TestClose(mt.InternalPeriod(), 75.757, 0.001);
 
-            mt.MidiPpq = 384;
-            mt.Tempo = 100;
+            mt = new(384, 100);
             TestClose(mt.MidiToSec(144000) / 60.0, 3.75, 0.001);
 
-            mt.MidiPpq = 96;
-            mt.Tempo = 100;
+            mt = new(96, 100);
             TestClose(mt.MidiPeriod(), 6.25, 0.001);
 
             void TestClose(double value1, double value2, double tolerance)
@@ -632,13 +617,7 @@ namespace MidiLib.Test
         /// </summary>
         void SetTimer()
         {
-            MidiTime mt = new()
-            {
-                InternalPpq = PPQ,
-                MidiPpq = _mdata.DeltaTicksPerQuarterNote,
-                Tempo = (double)nudTempo.Value
-            };
-
+            MidiTimeConverter mt = new(_mdata.DeltaTicksPerQuarterNote, (double)nudTempo.Value);
             double period = mt.RoundedInternalPeriod();
             _mmTimer.SetTimer((int)Math.Round(period), MmTimerCallback);
         }

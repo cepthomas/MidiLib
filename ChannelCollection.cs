@@ -72,7 +72,7 @@ namespace MidiLib
         /// <param name="channelNumber"></param>
         /// <param name="events"></param>
         /// <param name="mt"></param>
-        public void SetEvents(int channelNumber, IEnumerable<EventDesc> events, MidiTime mt)
+        public void SetEvents(int channelNumber, IEnumerable<EventDesc> events, MidiTimeConverter mt)
         {
             var ch = GetChannel(channelNumber);
 
@@ -81,7 +81,15 @@ namespace MidiLib
 
             ch.SetEvents(events);
 
-            TotalSubdivs = Math.Max(TotalSubdivs, ch.MaxSubdiv);
+            var subdivs = Math.Max(TotalSubdivs, ch.MaxSubdiv);
+
+            // Round up to next beat.
+            BarTime bs = new(subdivs);
+            if(subdivs > 0)
+            {
+                bs.SetRounded(subdivs, SnapType.Beat, true);
+            }
+            TotalSubdivs = bs.TotalSubdivs;
         }
 
         /// <summary>

@@ -40,10 +40,14 @@ namespace MidiLib
         public MidiState State { get; set; } = MidiState.Stopped;
 
         /// <summary>Current master volume.</summary>
-        public double Volume { get; set; } = VolumeDefs.DEFAULT;
+        public double Volume { get; set; } = InternalDefs.VOLUME_DEFAULT;
 
         /// <summary>Current position in subdivs.</summary>
-        public int CurrentSubdiv { get { return _currentSubdiv; } set { UpdateCurrent(value); } }
+        public int CurrentSubdiv
+        {
+            get { return _currentSubdiv; }
+            set { _currentSubdiv = MathUtils.Constrain(value, 0, _allChannels.TotalSubdivs); }
+        }
 
         /// <summary>Log outbound traffic. Warning - can get busy.</summary>
         public bool LogMidi { get; set; } = false;
@@ -114,15 +118,6 @@ namespace MidiLib
                 KillAll();
                 State = MidiState.Stopped;
             }
-        }
-
-        /// <summary>
-        /// Set position.
-        /// </summary>
-        /// <param name="newval"></param>
-        void UpdateCurrent(int newval)
-        {
-            _currentSubdiv = MathUtils.Constrain(newval, 0, _allChannels.TotalSubdivs);
         }
 
         /// <summary>

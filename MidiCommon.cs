@@ -14,17 +14,38 @@ namespace MidiLib
     /// <summary>Channel state.</summary>
     public enum ChannelState { Normal = 0, Solo = 1, Mute = 2 }
 
+    /// <summary>User selection options.</summary>
+    public enum SnapType { Subdiv, Beat, Bar }
+
     /// <summary>Placeholder to avoid handling null everywhere.</summary>
     public class NullMidiEvent : MidiEvent { }
-
-    public class VolumeDefs
-    {
-        public const double MIN = 0.0;
-        public const double MAX = 2.0;
-        public const double DEFAULT = 0.8;
-        public const double RESOLUTION = 0.1;
-    }
     #endregion
+
+    public class InternalDefs
+    {
+        public const double VOLUME_MIN = 0.0;
+        public const double VOLUME_MAX = 2.0;
+        public const double VOLUME_DEFAULT = 0.8;
+        public const double VOLUME_RESOLUTION = 0.1;
+
+        /// <summary>Only 4/4 time supported.</summary>
+        public const int BEATS_PER_BAR = 4;
+
+        /// <summary>Internal time resolution aka ppq or DeltaTicksPerQuarterNote.</summary>
+        public const int SUBDIVS_PER_BEAT = 32;
+
+        /// <summary>Convenience.</summary>
+        public const int SUBDIVS_PER_BAR = SUBDIVS_PER_BEAT * BEATS_PER_BAR;
+    }
+
+    public class LibSettings
+    {
+        /// <summary>Option for engineers instead of musicians.</summary>
+        public static bool ZeroBased { get; set; } = false; //TODOX
+
+        /// <summary>How to snap.</summary>
+        public static SnapType Snap { get; set; } = SnapType.Beat;
+    }
 
     /// <summary>
     /// Midi has received something. It's up to the client to make sense of it.
