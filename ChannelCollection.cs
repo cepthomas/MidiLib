@@ -81,15 +81,10 @@ namespace MidiLib
 
             ch.SetEvents(events);
 
-            var subdivs = Math.Max(TotalSubdivs, ch.MaxSubdiv);
-
-            // Round up to next beat.
-            BarTime bs = new(subdivs);
-            if(subdivs > 0)
-            {
-                bs.SetRounded(subdivs, SnapType.Beat, true);
-            }
-            TotalSubdivs = bs.TotalSubdivs;
+            // Round total up to next beat.
+            BarTime bs = new(0);
+            bs.SetRounded(ch.MaxSubdiv, SnapType.Beat, true);
+            TotalSubdivs = Math.Max(TotalSubdivs, bs.TotalSubdivs);
         }
 
         /// <summary>

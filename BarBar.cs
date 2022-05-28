@@ -14,18 +14,6 @@ namespace MidiLib
     public class BarBar : UserControl
     {
         #region Fields
-        /// <summary>Total length.</summary>
-        BarTime _length = new(0);
-
-        /// <summary>First valid point.</summary>
-        BarTime _start = new(0);
-
-        /// <summary>Last valid point.</summary>
-        BarTime _end = new(0);
-
-        /// <summary>Current time.</summary>
-        BarTime _current = new(0);
-
         /// <summary>For tracking mouse moves.</summary>
         int _lastXPos = 0;
 
@@ -43,21 +31,25 @@ namespace MidiLib
         #endregion
 
         #region Properties
-        /// <summary>Total length.</summary>
+        /// <summary>Total length of the bar.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public BarTime Length { get { return _length; } set { _length = value; Invalidate(); } }
+        BarTime _length = new(0); // backing
 
-        /// <summary>First valid point.</summary>
+        /// <summary>Start of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public BarTime Start { get { return _start; } set { _start = value; Invalidate(); } }
+        BarTime _start = new(0); // backing
 
-        /// <summary>Last valid point.</summary>
+        /// <summary>End of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public BarTime End { get { return _end; } set { _end = value; Invalidate(); } }
+        BarTime _end = new(0); // backing
 
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public BarTime Current { get { return _current; } set { _current = value; Invalidate(); } }
+        BarTime _current = new(0); // backing
 
         /// <summary>For styling.</summary>
         public Color ProgressColor { get { return _brush.Color; } set { _brush.Color = value; } }
@@ -113,9 +105,10 @@ namespace MidiLib
             pe.Graphics.Clear(BackColor);
 
             // Validate times.
-            _start.Constrain(BarTime.Zero, _length);
-            _start.Constrain(BarTime.Zero, _end);
-            _end.Constrain(BarTime.Zero, _length);
+            BarTime zero = new(0);
+            _start.Constrain(zero, _length);
+            _start.Constrain(zero, _end);
+            _end.Constrain(zero, _length);
             _end.Constrain(_start, _length);
             _current.Constrain(_start, _end);
 
@@ -128,7 +121,7 @@ namespace MidiLib
             }
 
             // Draw start/end markers.
-            if (_start != BarTime.Zero || _end != _length)
+            if (_start != zero || _end != _length)
             {
                 int mstart = Scale(_start);
                 int mend = Scale(_end);
@@ -169,13 +162,13 @@ namespace MidiLib
         {
             if (e.Button == MouseButtons.Left)
             {
-                _current.SetRounded(GetSubdivFromMouse(e.X), LibSettings.Snap);
+                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
                 CurrentTimeChanged?.Invoke(this, new EventArgs());
             }
             else if (e.X != _lastXPos)
             {
                 BarTime bs = new(0);
-                bs.SetRounded(GetSubdivFromMouse(e.X), LibSettings.Snap);
+                bs.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
                 _toolTip.SetToolTip(this, bs.Format());
                 _lastXPos = e.X;
             }
@@ -191,15 +184,15 @@ namespace MidiLib
         {
             if (ModifierKeys.HasFlag(Keys.Control))
             {
-                _start.SetRounded(GetSubdivFromMouse(e.X), LibSettings.Snap);
+                _start.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
             }
             else if (ModifierKeys.HasFlag(Keys.Alt))
             {
-                _end.SetRounded(GetSubdivFromMouse(e.X), LibSettings.Snap);
+                _end.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
             }
             else
             {
-                _current.SetRounded(GetSubdivFromMouse(e.X), LibSettings.Snap);
+                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
             }
 
             CurrentTimeChanged?.Invoke(this, new EventArgs());
@@ -219,18 +212,18 @@ namespace MidiLib
 
             _current.Increment(num);
 
-            if(_current < BarTime.Zero)
+            if (_current < new BarTime(0))
             {
-                _current = BarTime.Zero;
+                _current.Reset();
             }
-            else if(_current >= _length)
+            else if (_current < _start)
             {
-                _current = _length - BarTime.OneSubdiv;
+                _current.SetRounded(_start.TotalSubdivs, SnapType.Subdiv);
                 done = true;
             }
-            else if(_current >= _end)
+            else if (_current > _end)
             {
-                _current = _end - BarTime.OneSubdiv;
+                _current.SetRounded(_end.TotalSubdivs, SnapType.Subdiv);
                 done = true;
             }
 

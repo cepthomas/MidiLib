@@ -37,7 +37,9 @@ namespace MidiLib
         public bool Valid { get { return _midiOut is not null; } }
 
         /// <summary>What are we doing right now.</summary>
-        public MidiState State { get; set; } = MidiState.Stopped;
+        //public MidiState State { get; set; } = MidiState.Stopped;
+        public bool Playing { get; private set; }
+
 
         /// <summary>Current master volume.</summary>
         public double Volume { get; set; } = InternalDefs.VOLUME_DEFAULT;
@@ -86,8 +88,6 @@ namespace MidiLib
         /// </summary>
         public void Dispose()
         {
-            State = MidiState.Stopped;
-
             // Resources.
             _midiOut?.Dispose();
         }
@@ -97,7 +97,7 @@ namespace MidiLib
         /// </summary>
         public void Reset()
         {
-            State = MidiState.Stopped;
+            Playing = false;
             CurrentSubdiv = 0;
         }
         #endregion
@@ -109,14 +109,16 @@ namespace MidiLib
         /// <param name="go"></param>
         public void Run(bool go)
         {
+            Playing = go;
+
             if (go)
             {
-                State = MidiState.Playing;
+                Playing = true;
             }
             else
             {
                 KillAll();
-                State = MidiState.Stopped;
+                Playing = false;
             }
         }
 
@@ -124,10 +126,12 @@ namespace MidiLib
         /// Synchronously outputs the next midi events. Does solo/mute.
         /// This is running on the background thread.
         /// </summary>
-        /// <returns></returns>
-        public void DoNextStep()
+        /// <returns>True if sequence completed.</returns>
+        public bool DoNextStep()
         {
-            if (State == MidiState.Playing)
+            bool done = false;
+
+            if (Playing)
             {
                 // Any soloes?
                 bool anySolo = _allChannels.AnySolo;
@@ -184,14 +188,16 @@ namespace MidiLib
                     }
                 }
 
-                // Bump time. Check for end of play.
+                // Bump time. Check for end of play. Client must handle next action.
                 _currentSubdiv++;
                 if (_currentSubdiv >= _allChannels.TotalSubdivs)
                 {
-                    State = MidiState.Complete;
+                    done = true;
                     _currentSubdiv = 0;
                 }
             }
+
+            return done;
         }
         #endregion
 

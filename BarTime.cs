@@ -8,50 +8,13 @@ using System.Windows.Forms;
 using NBagOfTricks;
 
 
-// public const int BEATS_PER_BAR = 4;
-// public const int SUBDIVS_PER_BEAT = 32;
-//
-// bar.beat.subdiv()
-//
-// one-based
-// 1.1.1
-// ...
-// 1.1.32
-// 1.2.1
-// ...
-// 1.2.32
-// ...
-// 4.4.32
-// ...
-// 5.1.1
-// ...
-//
-// zero-based
-// 0.0.0
-// ...
-// 0.0.31
-// 0.1.0
-// ...
-// 0.1.31
-// ...
-// 3.3.31
-// ...
-// 4.0.0
-// ...
-
 
 namespace MidiLib
 {
     /// <summary>Sort of like DateTime but for musical terminlogy.</summary>
-    public class BarTime // TODO some uses should be a BarSpan.
+    public class BarTime : IComparable // TODO some uses should be a BarSpan.
     {
         #region Fields
-        /// <summary>A useful constant.</summary>
-        public static readonly BarTime Zero = new(0);
-
-        /// <summary>A useful constant.</summary>
-        public static readonly BarTime OneSubdiv = new(1);
-
         /// <summary>For hashing.</summary>
         readonly int _id;
 
@@ -137,42 +100,24 @@ namespace MidiLib
         /// <param name="up">To ceiling otherwise closest.</param>
         public void SetRounded(int subdiv, SnapType snapType, bool up = false)
         {
-            BarTime newtime = new(subdiv);
-            int newbar = newtime.Bar;
-            int newbeat = newtime.Beat;
-
-            switch (snapType)
+            if(snapType != SnapType.Subdiv)
             {
-                case SnapType.Bar:
-                    {
-                        if (up || newbeat >= InternalDefs.BEATS_PER_BAR / 2)
-                        {
-                            newbar++;
-                        }
-                    }
-                    TotalSubdivs = newbar * InternalDefs.SUBDIVS_PER_BAR;
-                    break;
+                // res:32   in:27  floor=(in%aim)*aim  ceiling=floor+aim
+                int res = snapType == SnapType.Bar ? InternalDefs.SUBDIVS_PER_BAR : InternalDefs.SUBDIVS_PER_BEAT;
+                int floor = (subdiv / res) * res;
+                int ceiling = floor + res;
 
-                case SnapType.Beat:
-                    {
-                        if (up || newtime.Subdiv >= InternalDefs.SUBDIVS_PER_BEAT / 2)
-                        {
-                            newbeat++;
-                            if (newbeat >= InternalDefs.BEATS_PER_BAR)
-                            {
-                                newbar++;
-                                newbeat = 0;
-                            }
-                        }
-                        TotalSubdivs = (newbar * InternalDefs.SUBDIVS_PER_BAR) + (newbeat * InternalDefs.SUBDIVS_PER_BEAT);
-                    }
-                    break;
-
-                case SnapType.Subdiv:
-                    // Don't change it.
-                    TotalSubdivs = subdiv;
-                    break;
+                if (up || (ceiling - subdiv) >= res / 2)
+                {
+                    subdiv = ceiling;
+                }
+                else
+                {
+                    subdiv = floor;
+                }
             }
+
+            TotalSubdivs = subdiv;
         }
 
         /// <summary>
@@ -205,6 +150,11 @@ namespace MidiLib
         public override int GetHashCode()
         {
             return _id;
+        }
+
+        public int CompareTo(object? obj)
+        {
+            throw new NotImplementedException();//TODOX
         }
 
         public static bool operator ==(BarTime a, BarTime b)

@@ -104,8 +104,8 @@ namespace MidiLib.Test
             sldVolume.Label = "volume";
 
             // Time controller.
-            LibSettings.Snap = SnapType.Beat;
-            LibSettings.ZeroBased = true;
+            MidiSettings.Snap = SnapType.Beat;
+            MidiSettings.ZeroBased = true;
             barBar.ProgressColor = _controlColor;
             barBar.CurrentTimeChanged += BarBar_CurrentTimeChanged;
 
@@ -213,7 +213,7 @@ namespace MidiLib.Test
 
             //LogMessage($"DBG State:{_player.State}  btnLoop{btnLoop.Checked}  TotalSubdivs:{_player.TotalSubdivs}");
 
-            switch (_player.State)
+            switch (_player.State) TODOX broken again
             {
                 case MidiState.Complete:
                     Rewind();

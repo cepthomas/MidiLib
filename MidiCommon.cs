@@ -8,14 +8,11 @@ using System.Threading.Tasks;
 namespace MidiLib
 {
     #region Types
-    /// <summary>Player state.</summary>
-    public enum MidiState { Stopped = 0, Playing = 1, Complete = 2 }
-
     /// <summary>Channel state.</summary>
     public enum ChannelState { Normal = 0, Solo = 1, Mute = 2 }
 
     /// <summary>User selection options.</summary>
-    public enum SnapType { Subdiv, Beat, Bar }
+    public enum SnapType { Bar, Beat, Subdiv }
 
     /// <summary>Placeholder to avoid handling null everywhere.</summary>
     public class NullMidiEvent : MidiEvent { }
@@ -38,7 +35,7 @@ namespace MidiLib
         public const int SUBDIVS_PER_BAR = SUBDIVS_PER_BEAT * BEATS_PER_BAR;
     }
 
-    public class LibSettings
+    public class MidiSettings
     {
         /// <summary>Option for engineers instead of musicians.</summary>
         public static bool ZeroBased { get; set; } = false; //TODOX
