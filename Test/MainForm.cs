@@ -19,6 +19,10 @@ namespace MidiLib.Test
 {
     public partial class MainForm : Form
     {
+        #region Types
+        public enum PlayState { Stop, Play, Rewind, Complete }
+        #endregion
+
         #region Fields - internal
         /// <summary>The internal channel objects.</summary>
         ChannelCollection _allChannels = new();
@@ -66,9 +70,6 @@ namespace MidiLib.Test
 
         /// <summary>Use this if not supplied.</summary>
         readonly int _defaultTempo = 100;
-
-        ///// <summary>Reporting interval.</summary>
-        //int _report = 0;
         #endregion
 
         #region Lifecycle
@@ -90,10 +91,6 @@ namespace MidiLib.Test
             txtViewer.WordWrap = true;
             txtViewer.Colors.Add("ERR", Color.LightPink);
             txtViewer.Colors.Add("WRN", Color.Plum);
-
-            // Toolbar configs. Adjust to taste.
-            btnAutoplay.Checked = false;
-            btnLoop.Checked = true;
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
@@ -140,8 +137,8 @@ namespace MidiLib.Test
             }
 
             // Hook up some simple UI handlers.
-            btnPlay.CheckedChanged += (_, __) => { UpdateState(); };
-            btnRewind.Click += (_, __) => { Rewind(); };
+            btnPlay.CheckedChanged += (_, __) => { UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop); };
+            btnRewind.Click += (_, __) => { UpdateState(PlayState.Rewind); };
             btnKillMidi.Click += (_, __) => { _player.KillAll(); };
             btnLogMidi.Click += (_, __) => { _player.LogMidi = btnLogMidi.Checked; };
             nudTempo.ValueChanged += (_, __) => { SetTimer(); };
@@ -149,7 +146,6 @@ namespace MidiLib.Test
 
             // Set up timer.
             nudTempo.Value = _defaultTempo;
-            SetTimer();
 
             // MidiTimeTest();
 
@@ -201,47 +197,37 @@ namespace MidiLib.Test
         /// <summary>
         /// General state management. Triggered by play button or the player via mm timer function.
         /// </summary>
-        void UpdateState()
+        void UpdateState(PlayState state)
         {
             // Suppress recursive updates caused by manually pressing the play button.
             if (_guard)
             {
                 return;
             }
-
             _guard = true;
 
             //LogMessage($"DBG State:{_player.State}  btnLoop{btnLoop.Checked}  TotalSubdivs:{_player.TotalSubdivs}");
 
-            switch (_player.State) TODOX broken again
+            switch(state)
             {
-                case MidiState.Complete:
+                case PlayState.Complete:
+                    btnPlay.Checked = false;
                     Rewind();
-
-                    if (btnLoop.Checked)
-                    {
-                        btnPlay.Checked = true;
-                        Play();
-                    }
-                    else
-                    {
-                        btnPlay.Checked = false;
-                        Stop();
-                    }
+                    Stop();
                     break;
 
-                case MidiState.Playing:
-                    if (!btnPlay.Checked)
-                    {
-                        Stop();
-                    }
+                case PlayState.Play:
+                    btnPlay.Checked = true;
+                    Play();
                     break;
 
-                case MidiState.Stopped:
-                    if (btnPlay.Checked)
-                    {
-                        Play();
-                    }
+                case PlayState.Stop:
+                    btnPlay.Checked = false;
+                    Stop();
+                    break;
+
+                case PlayState.Rewind:
+                    Rewind();
                     break;
             }
 
@@ -295,11 +281,7 @@ namespace MidiLib.Test
         /// </summary>
         void Play()
         {
-            // Start or restart?
-            if (!_mmTimer.Running)
-            {
-                _mmTimer.Start();
-            }
+            _mmTimer.Start();
             _player.Run(true);
         }
 
@@ -318,7 +300,7 @@ namespace MidiLib.Test
         void Rewind()
         {
             _player.CurrentSubdiv = 0;
-            barBar.Current = BarTime.Zero;
+            barBar.Current = new(0);
         }
 
         /// <summary>
@@ -346,7 +328,7 @@ namespace MidiLib.Test
 
             if(btnPlay.Checked)
             {
-                btnPlay.Checked = false; // ==> Stop()
+                Stop();
             }
 
             try
@@ -401,11 +383,6 @@ namespace MidiLib.Test
                 }
 
                 Rewind();
-
-                if (ok && btnAutoplay.Checked)
-                {
-                    btnPlay.Checked = true; // ==> Start()
-                }
 
                 _fn = fn;
                 Text = $"Midi Lib - {fn}";
@@ -481,10 +458,10 @@ namespace MidiLib.Test
             }
 
             // Update bar.
-            barBar.Length = new BarTime(lastSubdiv);
-            barBar.Start = BarTime.Zero;
-            barBar.End = barBar.Length - BarTime.OneSubdiv;
-            barBar.Current = BarTime.Zero;
+            barBar.Start = new(0);
+            barBar.End = new(_allChannels.TotalSubdivs - 1);
+            barBar.Length = new(_allChannels.TotalSubdivs);
+            barBar.Current = new(0);
 
             UpdateDrumChannels();
         }
@@ -501,11 +478,6 @@ namespace MidiLib.Test
             LoadPattern(pinfo!);
 
             Rewind();
-
-            if (btnAutoplay.Checked)
-            {
-                btnPlay.Checked = true; // ==> Start()
-            }
         }
 
         /// <summary>
@@ -532,23 +504,14 @@ namespace MidiLib.Test
         {
             try
             {
-                // if(--_report <= 0)
-                // {
-                //     this.InvokeIfRequired(_ => LogMessage($"DBG CurrentSubdiv:{_player.CurrentSubdiv}"));
-                //     _report = 100;
-                // }
-
-                _player.DoNextStep();
-
-                // Bump time. Check for end of play.
-                if (barBar.IncrementCurrent(1))
+                // Bump time. Check for end of play. Client will take care of transport control.
+                barBar.IncrementCurrent(1);
+                if (_player.DoNextStep())
                 {
-                    //PlaybackCompleted?.Invoke(this, new EventArgs());
+                    // Done playing.
+                    // Bump over to main thread.
+                    this.InvokeIfRequired(_ => UpdateState(PlayState.Complete));
                 }
-
-                // Bump over to main thread.
-                this.InvokeIfRequired(_ => UpdateState());
-
             }
             catch (Exception ex)
             {

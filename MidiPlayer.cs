@@ -37,9 +37,7 @@ namespace MidiLib
         public bool Valid { get { return _midiOut is not null; } }
 
         /// <summary>What are we doing right now.</summary>
-        //public MidiState State { get; set; } = MidiState.Stopped;
         public bool Playing { get; private set; }
-
 
         /// <summary>Current master volume.</summary>
         public double Volume { get; set; } = InternalDefs.VOLUME_DEFAULT;

@@ -19,10 +19,6 @@ namespace MidiLib.Test
         private void InitializeComponent()
         {
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.btnAutoplay = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnLoop = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.btnLogMidi = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.btnKillMidi = new System.Windows.Forms.ToolStripButton();
@@ -59,10 +55,6 @@ namespace MidiLib.Test
             // 
             this.toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.btnAutoplay,
-            this.toolStripSeparator1,
-            this.btnLoop,
-            this.toolStripSeparator2,
             this.btnLogMidi,
             this.toolStripSeparator3,
             this.btnKillMidi,
@@ -87,36 +79,6 @@ namespace MidiLib.Test
             this.toolStrip1.Size = new System.Drawing.Size(1250, 28);
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
-            // 
-            // btnAutoplay
-            // 
-            this.btnAutoplay.CheckOnClick = true;
-            this.btnAutoplay.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnAutoplay.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnAutoplay.Name = "btnAutoplay";
-            this.btnAutoplay.Size = new System.Drawing.Size(71, 25);
-            this.btnAutoplay.Text = "autoplay";
-            this.btnAutoplay.ToolTipText = "Autoplay the selection";
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 28);
-            // 
-            // btnLoop
-            // 
-            this.btnLoop.CheckOnClick = true;
-            this.btnLoop.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnLoop.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnLoop.Name = "btnLoop";
-            this.btnLoop.Size = new System.Drawing.Size(44, 25);
-            this.btnLoop.Text = "loop";
-            this.btnLoop.ToolTipText = "Loop forever";
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 28);
             // 
             // btnLogMidi
             // 
@@ -397,8 +359,6 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStrip toolStrip1;
         private NBagOfUis.Slider sldVolume;
         private NBagOfUis.TextViewer txtViewer;
-        private System.Windows.Forms.ToolStripButton btnAutoplay;
-        private System.Windows.Forms.ToolStripButton btnLoop;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;
         private System.Windows.Forms.ToolStripButton btnPlay;
@@ -406,8 +366,6 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStripButton btnExportAll;
         private System.Windows.Forms.ToolStripButton btnExportMidi;
         private System.Windows.Forms.ToolStripButton btnExportPattern;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
