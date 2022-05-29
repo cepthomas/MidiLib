@@ -33,23 +33,23 @@ namespace MidiLib
         #region Properties
         /// <summary>Total length of the bar.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public BarTime Length { get { return _length; } set { _length = value; Invalidate(); } }
-        BarTime _length = new(0); // backing
+        public BarSpan Length { get { return _length; } set { _length = value; Invalidate(); } }
+        BarSpan _length = new(0); // backing
 
         /// <summary>Start of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public BarTime Start { get { return _start; } set { _start = value; Invalidate(); } }
-        BarTime _start = new(0); // backing
+        public BarSpan Start { get { return _start; } set { _start = value; Invalidate(); } }
+        BarSpan _start = new(0); // backing
 
         /// <summary>End of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public BarTime End { get { return _end; } set { _end = value; Invalidate(); } }
-        BarTime _end = new(0); // backing
+        public BarSpan End { get { return _end; } set { _end = value; Invalidate(); } }
+        BarSpan _end = new(0); // backing
 
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public BarTime Current { get { return _current; } set { _current = value; Invalidate(); } }
-        BarTime _current = new(0); // backing
+        public BarSpan Current { get { return _current; } set { _current = value; Invalidate(); } }
+        BarSpan _current = new(0); // backing
 
         /// <summary>For styling.</summary>
         public Color ProgressColor { get { return _brush.Color; } set { _brush.Color = value; } }
@@ -105,7 +105,7 @@ namespace MidiLib
             pe.Graphics.Clear(BackColor);
 
             // Validate times.
-            BarTime zero = new(0);
+            BarSpan zero = new(0);
             _start.Constrain(zero, _length);
             _start.Constrain(zero, _end);
             _end.Constrain(zero, _length);
@@ -131,11 +131,11 @@ namespace MidiLib
 
             // Text.
             _format.Alignment = StringAlignment.Center;
-            pe.Graphics.DrawString(_current.Format(), FontLarge, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_current.Format(MidiSettings.ZeroBased), FontLarge, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(_start.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_start.Format(MidiSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(_end.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_end.Format(MidiSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion
 
@@ -167,9 +167,9 @@ namespace MidiLib
             }
             else if (e.X != _lastXPos)
             {
-                BarTime bs = new(0);
+                BarSpan bs = new(0);
                 bs.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
-                _toolTip.SetToolTip(this, bs.Format());
+                _toolTip.SetToolTip(this, bs.Format(MidiSettings.ZeroBased));
                 _lastXPos = e.X;
             }
 
@@ -212,7 +212,7 @@ namespace MidiLib
 
             _current.Increment(num);
 
-            if (_current < new BarTime(0))
+            if (_current < new BarSpan(0))
             {
                 _current.Reset();
             }
@@ -256,7 +256,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public int Scale(BarTime val)
+        public int Scale(BarSpan val)
         {
             return val.TotalSubdivs * Width / _length.TotalSubdivs;
         }

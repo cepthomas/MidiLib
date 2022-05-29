@@ -38,7 +38,7 @@ namespace MidiLib
     public class MidiSettings
     {
         /// <summary>Option for engineers instead of musicians.</summary>
-        public static bool ZeroBased { get; set; } = false; //TODOX
+        public static bool ZeroBased { get; set; } = false;
 
         /// <summary>How to snap.</summary>
         public static SnapType Snap { get; set; } = SnapType.Beat;
