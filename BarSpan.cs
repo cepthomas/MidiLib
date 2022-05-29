@@ -231,7 +231,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Constructor from Beat.Subdiv representation as a double. TODOX this is broken for 32 discrete values.
+        /// Constructor from Beat.Subdiv representation as a double. TODOX this is broken for two digits after the dp.
         /// </summary>
         /// <param name="tts"></param>
         public BarSpan(double tts)
