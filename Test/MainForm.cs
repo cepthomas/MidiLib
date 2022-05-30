@@ -63,7 +63,7 @@ namespace MidiLib.Test
         readonly string _midiOutDevice = "VirtualMIDISynth #1";
 
         /// <summary>My midi in.</summary>
-        readonly string _midiInDevice = "TODOX_debug";
+        readonly string _midiInDevice = "MPK mini";
 
         /// <summary>Adjust to taste.</summary>
         readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
@@ -116,6 +116,8 @@ namespace MidiLib.Test
             }
 
             // Set up midi.
+            DumpMidiDevices();
+
             _player = new(_midiOutDevice, _allChannels, _exportPath);
             if (_player.Valid)
             {
@@ -128,7 +130,7 @@ namespace MidiLib.Test
             _listener = new(_midiInDevice, _exportPath);
             if(_listener.Valid)
             {
-                _listener.InputEvent += (object? sender, MidiEventArgs e) => { LogMessage($"RCV {e}"); };
+                _listener.InputEvent += (object? sender, MidiEventArgs e) => { this.InvokeIfRequired(_ => { LogMessage($"RCV {e}"); }); };
                 _listener.Enable = true;
             }
             else
@@ -663,6 +665,22 @@ namespace MidiLib.Test
         {
             string s = $"> {msg}";
             txtViewer.AppendLine(s);
+        }
+
+        /// <summary>
+        /// Tell me what you have.
+        /// </summary>
+        void DumpMidiDevices()
+        {
+            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            {
+                LogMessage($"Midi In {i} \"{MidiIn.DeviceInfo(i).ProductName}\"");
+            }
+
+            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            {
+                LogMessage($"Midi Out {i} \"{MidiOut.DeviceInfo(i).ProductName}\"");
+            }
         }
         #endregion
 

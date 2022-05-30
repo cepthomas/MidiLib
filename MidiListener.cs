@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NAudio.Midi;
+using NBagOfTricks;
 
 
 namespace MidiLib
@@ -62,12 +63,11 @@ namespace MidiLib
             }
 
             // Figure out which midi output device.
-            int devIndex = -1;
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
                 if (midiDevice == MidiIn.DeviceInfo(i).ProductName)
                 {
-                    _midiIn = new MidiIn(devIndex);
+                    _midiIn = new MidiIn(i);
                     _midiIn.MessageReceived += MidiIn_MessageReceived;
                     _midiIn.ErrorReceived += MidiIn_ErrorReceived;
                     break;
@@ -138,10 +138,10 @@ namespace MidiLib
                     break;
             }
 
-            if (mevt is not null)
+            if (mevt is not null && InputEvent is not null)
             {
                 // Pass it up for client handling.
-                InputEvent?.Invoke(this, mevt);
+                InputEvent.Invoke(this, mevt);
                 Log(mevt);
             }
         }

@@ -210,55 +210,5 @@ namespace MidiLib
             return a.TotalSubdivs >= b.TotalSubdivs;
         }
         #endregion
-
-        // TODOX neb time stuff >>>
-
-        //public Time() - BarTime(0)
-        //public Time(int subdivs) - BarTime(subdivs)
-        //public Time(long subdivs) - BarTime((int)subdivs)
-        //public Time(Time other) - implement?
-        //{
-        //    TotalSubdivs = other.TotalSubdivs;
-        //}
-        //public Time(int beat, int subdiv) - use BarTime(int bar, int beat, int subdiv)
-
-        /// <summary>
-        /// Copy constructor.
-        /// </summary>
-        public BarSpan(BarSpan other)
-        {
-            TotalSubdivs = other.TotalSubdivs;
-        }
-
-        /// <summary>
-        /// Constructor from Beat.Subdiv representation as a double. TODOX this is broken for two digits after the dp.
-        /// </summary>
-        /// <param name="tts"></param>
-        public BarSpan(double tts)
-        {
-            if (tts < 0)
-            {
-                throw new Exception($"Negative value is invalid: {tts}");
-            }
-            var (integral, fractional) = MathUtils.SplitDouble(tts);
-
-            // 1.9 1.10 1.11 ... 1.30 1.31 2.0 2.1
-            var subdivs = (int)Math.Round(fractional * 10.0);
-            var Beat = (int)integral + subdivs / InternalDefs.SUBDIVS_PER_BEAT;
-            var Subdiv = subdivs % InternalDefs.SUBDIVS_PER_BEAT;
-
-            if (Subdiv >= InternalDefs.SUBDIVS_PER_BEAT)
-            {
-                throw new Exception($"Invalid subdiv value: {tts}");
-            }
-        }
-
-        // Public functions
-        // <returns>True if it's a new beat.</returns>
-        //public bool Advance() - probably Increment but return rollover.
-
-        //public void Reset() - use new(0)
-
-        //public void RoundUp() - use SetRounded()
     }
 }
