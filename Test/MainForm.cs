@@ -146,6 +146,10 @@ namespace MidiLib.Test
             nudTempo.ValueChanged += (_, __) => { SetTimer(); };
             sldVolume.ValueChanged += (_, __) => { _player.Volume = sldVolume.Value; };
 
+            channelControl1.ChannelNumber = 7;
+            channelControl1.Volume = 1.2;
+            channelControl1.Patch = 44;
+
             // Set up timer.
             nudTempo.Value = _defaultTempo;
 

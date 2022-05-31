@@ -47,6 +47,7 @@ namespace MidiLib.Test
             this.label1 = new System.Windows.Forms.Label();
             this.sldVolume = new NBagOfUis.Slider();
             this.barBar = new MidiLib.BarBar();
+            this.channelControl1 = new MidiLib.ChannelControl();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTempo)).BeginInit();
             this.SuspendLayout();
@@ -218,7 +219,7 @@ namespace MidiLib.Test
             this.txtViewer.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtViewer.MaxText = 5000;
             this.txtViewer.Name = "txtViewer";
-            this.txtViewer.Size = new System.Drawing.Size(701, 635);
+            this.txtViewer.Size = new System.Drawing.Size(701, 521);
             this.txtViewer.TabIndex = 58;
             this.txtViewer.WordWrap = true;
             // 
@@ -326,11 +327,24 @@ namespace MidiLib.Test
             this.barBar.Size = new System.Drawing.Size(308, 50);
             this.barBar.TabIndex = 100;
             // 
+            // channelControl1
+            // 
+            this.channelControl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.channelControl1.ChannelNumber = 1;
+            this.channelControl1.ControlColor = System.Drawing.Color.MediumOrchid;
+            this.channelControl1.Location = new System.Drawing.Point(786, 587);
+            this.channelControl1.Name = "channelControl1";
+            this.channelControl1.Patch = 0;
+            this.channelControl1.Size = new System.Drawing.Size(292, 45);
+            this.channelControl1.TabIndex = 101;
+            this.channelControl1.Volume = 0.8D;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1250, 779);
+            this.Controls.Add(this.channelControl1);
             this.Controls.Add(this.barBar);
             this.Controls.Add(this.sldVolume);
             this.Controls.Add(this.label1);
@@ -386,6 +400,7 @@ namespace MidiLib.Test
         private System.Windows.Forms.NumericUpDown nudTempo;
         private System.Windows.Forms.Label label1;
         private BarBar barBar;
+        private ChannelControl channelControl1;
     }
 }
 
