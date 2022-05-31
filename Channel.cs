@@ -20,12 +20,6 @@ namespace MidiLib
         double _volume = InternalDefs.VOLUME_DEFAULT;
         #endregion
 
-        ///// added TODOX ///////
-        /// <summary>UI label and script reference.</summary>
-        public string ChannelName { get; set; } = "???"; // Definitions.UNKNOWN_STRING;
-
-
-
         #region Properties
         /// <summary>Actual 1-based midi channel number.</summary>
         public int ChannelNumber { get; set; } = -1;

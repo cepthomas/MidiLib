@@ -40,7 +40,7 @@ namespace MidiLib.Test
         readonly MidiData _mdata = new();
 
         /// <summary>All the channel controls.</summary>
-        readonly List<ChannelControl> _channelControls = new();
+        readonly List<PlayerControl> _playerControls = new();
 
         /// <summary>Prevent button press recursion.</summary>
         bool _guard = false;
@@ -241,9 +241,9 @@ namespace MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Control_ChannelChange(object? sender, ChannelControl.ChannelChangeEventArgs e)
+        void Control_ChannelChange(object? sender, PlayerControl.ChannelChangeEventArgs e)
         {
-            ChannelControl chc = (ChannelControl)sender!;
+            PlayerControl chc = (PlayerControl)sender!;
 
             if (e.StateChange)
             {
@@ -411,8 +411,8 @@ namespace MidiLib.Test
             _player.Reset();
 
             // Clean out our controls collection.
-            _channelControls.ForEach(c => Controls.Remove(c));
-            _channelControls.Clear();
+            _playerControls.ForEach(c => Controls.Remove(c));
+            _playerControls.Clear();
 
             // Create the new controls.
             int lastSubdiv = 0;
@@ -436,7 +436,7 @@ namespace MidiLib.Test
                     _allChannels.SetEvents(chnum, chEvents, mt);
 
                     // Make new control.
-                    ChannelControl control = new() { Location = new(x, y) };
+                    PlayerControl control = new() { Location = new(x, y) };
 
                     // Bind to internal channel object.
                     _allChannels.Bind(chnum, control);
@@ -447,7 +447,7 @@ namespace MidiLib.Test
 
                     control.ChannelChange += Control_ChannelChange;
                     Controls.Add(control);
-                    _channelControls.Add(control);
+                    _playerControls.Add(control);
 
                     lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
 
@@ -538,7 +538,7 @@ namespace MidiLib.Test
         /// </summary>
         void UpdateDrumChannels()
         {
-            _channelControls.ForEach(ctl => ctl.IsDrums =
+            _playerControls.ForEach(ctl => ctl.IsDrums =
                 (ctl.ChannelNumber == cmbDrumChannel1.SelectedIndex) ||
                 (ctl.ChannelNumber == cmbDrumChannel2.SelectedIndex));
         }
@@ -602,7 +602,7 @@ namespace MidiLib.Test
                 }
 
                 List<int> channels = new();
-                foreach (var cc in _channelControls.Where(c => c.Selected))
+                foreach (var cc in _playerControls.Where(c => c.Selected))
                 {
                     channels.Add(cc.ChannelNumber);
                 }

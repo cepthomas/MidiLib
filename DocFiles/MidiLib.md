@@ -31,7 +31,7 @@ MidiListener
 - You supply the handler.
 
 Channel
-- Represents a physical channel in a way usable by ChannelControl UI and MidiPlayer.
+- Represents a physical channel in a way usable by PlayerControl UI and MidiPlayer.
 
 ChannelCollection
 - Container for all the channels.
@@ -47,7 +47,7 @@ MidiData and PatternInfo
 
 ## UI
 
-ChannelControl
+PlayerControl
 - Bound to a Channel object.
 - Provides volume, mute, solo.
 - Patch selection.

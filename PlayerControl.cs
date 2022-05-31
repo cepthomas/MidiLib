@@ -13,7 +13,7 @@ using System.Windows.Forms;
 namespace MidiLib
 {
     /// <summary>Channel events and other properties.</summary>
-    public partial class ChannelControl : UserControl
+    public partial class PlayerControl : UserControl
     {
         #region Events
         /// <summary>Notify host of asynchronous changes from user.</summary>
@@ -87,7 +87,7 @@ namespace MidiLib
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public ChannelControl()
+        public PlayerControl()
         {
             InitializeComponent();
 
@@ -262,7 +262,7 @@ namespace MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            return $"ChannelControl: ChannelNumber:{ChannelNumber} Patch:{Patch} State:{State}";
+            return $"PlayerControl: ChannelNumber:{ChannelNumber} Patch:{Patch} State:{State}";
         }
         #endregion
     }
