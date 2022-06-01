@@ -451,10 +451,10 @@ namespace MidiLib
         /// <summary>
         /// Export the contents in a csv readable form. This is as the events appear in the original file.
         /// </summary>
-        /// <param name="exportPath">Where to boss?</param>
+        /// <param name="outPath">Where to boss?</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <returns>File name of dump file.</returns>
-        public string ExportAllEvents(string exportPath, List<int> channels)
+        public string ExportAllEvents(string outPath, List<int> channels)
         {
             List<string> contentText = new()
             {
@@ -471,7 +471,7 @@ namespace MidiLib
                 $"{evt.PatternName},{evt.ChannelNumber},{evt.MidiEvent}"));
 
             // Export away.
-            var newfn = MakeExportFileName(exportPath, "all", "csv");
+            var newfn = MakeExportFileName(outPath, "all", "csv");
             File.WriteAllLines(newfn, contentText);
             return newfn;            
         }
@@ -479,12 +479,12 @@ namespace MidiLib
         /// <summary>
         /// Makes csv dumps of some events grouped by pattern/channel. This is as the events appear in the original file.
         /// </summary>
-        /// <param name="exportPath">Where to boss?</param>
+        /// <param name="outPath">Where to boss?</param>
         /// <param name="patternName">Specific pattern.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="includeOther">false if just notes or true if everything.</param>
         /// <returns>File name of dump file.</returns>
-        public string ExportGroupedEvents(string exportPath, string patternName, List<int> channels, bool includeOther)
+        public string ExportGroupedEvents(string outPath, string patternName, List<int> channels, bool includeOther)
         {
             var pattern = AllPatterns.Where(p => p.PatternName == patternName).First();
 
@@ -592,7 +592,7 @@ namespace MidiLib
             }
 
             // Export away.
-            var newfn = MakeExportFileName(exportPath, patternName, "csv");
+            var newfn = MakeExportFileName(outPath, patternName, "csv");
             File.WriteAllLines(newfn, metaText);
             File.AppendAllLines(newfn, notesText);
             if (includeOther)
@@ -606,19 +606,19 @@ namespace MidiLib
         /// <summary>
         /// Export pattern parts to individual midi files. This is as the events appear in the original file.
         /// </summary>
-        /// <param name="exportPath">Where to boss?</param>
+        /// <param name="outPath">Where to boss?</param>
         /// <param name="patternName">Specific pattern.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="ppq">Export at this resolution.</param>
         /// <returns>File name of export file.</returns>
-        public string ExportMidi(string exportPath, string patternName, List<int> channels, int ppq)
+        public string ExportMidi(string outPath, string patternName, List<int> channels, int ppq)
         {
             // TODO export as zip?
 
             string name = Path.GetFileNameWithoutExtension(_fn);
 
             var pattern = AllPatterns.Where(p => p.PatternName == patternName).First();
-            var newfn = MakeExportFileName(exportPath, patternName, "mid");
+            var newfn = MakeExportFileName(outPath, patternName, "mid");
 
             // Init output file contents.
             MidiEventCollection outColl = new(1, ppq);

@@ -16,15 +16,15 @@ namespace MidiLib
         #region Properties
         /// <summary>Draw the names on the keys.</summary>
         public bool ShowNoteNames { get; set; } = false;
+
+        /// <summary>Determines the overall size.</summary>
+        public int KeySize { get; set; } = 14;
         #endregion
 
         #region Events
         /// <summary>Device has received something.</summary>
         public class KeyboardEventArgs : EventArgs
         {
-            /// <summary>Channel number. Client can set it.</summary>
-            public int ChannelNumber { get; set; } = 1;
-
             /// <summary>Midi note id.</summary>
             public int NoteId { get; set; } = 0;
 
@@ -35,7 +35,6 @@ namespace MidiLib
         #endregion
 
         #region Constants
-        const int KEY_SIZE = 10;
         const int LOW_NOTE = 21;
         const int HIGH_NOTE = 109;
         const int MIDDLE_C = 60;
@@ -241,7 +240,6 @@ namespace MidiLib
             {
                 KeyboardEvent.Invoke(this, new KeyboardEventArgs()
                 {
-                    ChannelNumber = 1,
                     NoteId = e.NoteId,
                     Velocity = e.Velocity
                 });
@@ -284,7 +282,7 @@ namespace MidiLib
         {
             if(_keys.Count > 0)
             {
-                int whiteKeyWidth = _keys.Count * KEY_SIZE / _keys.Count(k => k.IsNatural);
+                int whiteKeyWidth = _keys.Count * KeySize / _keys.Count(k => k.IsNatural);
                 int blackKeyWidth = (int)(whiteKeyWidth * 0.6);
                 int whiteKeyHeight = (int)(Height); // KeyHeight
                 int blackKeyHeight = (int)(whiteKeyHeight * 0.65);

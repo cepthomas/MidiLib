@@ -59,10 +59,9 @@ namespace MidiLib
             // 
             // lblChannelNumber
             // 
-            this.lblChannelNumber.AutoSize = true;
             this.lblChannelNumber.Location = new System.Drawing.Point(5, 10);
             this.lblChannelNumber.Name = "lblChannelNumber";
-            this.lblChannelNumber.Size = new System.Drawing.Size(18, 20);
+            this.lblChannelNumber.Size = new System.Drawing.Size(36, 20);
             this.lblChannelNumber.TabIndex = 48;
             this.lblChannelNumber.Text = "#";
             // 
@@ -76,7 +75,6 @@ namespace MidiLib
             this.Name = "ChannelControl";
             this.Size = new System.Drawing.Size(285, 41);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 

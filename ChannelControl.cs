@@ -16,7 +16,7 @@ namespace MidiLib
     public partial class ChannelControl : UserControl
     {
         #region Properties
-        /// <summary>Actual 1-based midi channel number for UI.</summary>
+        /// <summary>Actual 1-based midi channel number.</summary>
         public int ChannelNumber
         {
             get
@@ -26,10 +26,25 @@ namespace MidiLib
             set
             {
                 _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS);
-                lblChannelNumber.Text = _channelNumber.ToString();
+                lblChannelNumber.Text = $"{_channelNumber}:{_deviceNumber}";
             }
         }
         int _channelNumber = 0;
+
+        /// <summary>Actual 1-based midi device number. Client responsible.</summary>
+        public int DeviceNumber
+        {
+            get
+            {
+                return _deviceNumber;
+            }
+            set
+            {
+                _deviceNumber = value;
+                lblChannelNumber.Text = $"{_channelNumber}:{_deviceNumber}";
+            }
+        }
+        int _deviceNumber = 1;
 
         /// <summary>Current patch.</summary>
         public int Patch
@@ -61,6 +76,11 @@ namespace MidiLib
 
         /// <summary>Cosmetics.</summary>
         public Color ControlColor { get; set; } = Color.MediumOrchid;
+        #endregion
+
+        #region Events
+        /// <summary>Notify host of asynchronous changes from user.</summary>
+        public event EventHandler? PatchChange;
         #endregion
 
         #region Lifecycle
@@ -127,6 +147,8 @@ namespace MidiLib
         /// <param name="e"></param>
         void Patch_Click(object? sender, EventArgs e)
         {
+            int currentPatch = Patch;
+
             using Form f = new()
             {
                 Text = "Select Patch",
@@ -158,6 +180,12 @@ namespace MidiLib
 
             f.Controls.Add(lv);
             f.ShowDialog();
+
+            // Patch change?
+            if(Patch != currentPatch)
+            {
+                PatchChange?.Invoke(this, EventArgs.Empty);
+            }
         }
         #endregion
     }

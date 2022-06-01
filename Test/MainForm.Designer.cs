@@ -256,11 +256,12 @@ namespace MidiLib.Test
             // 
             // vkey
             // 
-            this.vkey.Location = new System.Drawing.Point(13, 684);
+            this.vkey.KeySize = 14;
+            this.vkey.Location = new System.Drawing.Point(13, 663);
             this.vkey.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.vkey.Name = "vkey";
-            this.vkey.ShowNoteNames = false;
-            this.vkey.Size = new System.Drawing.Size(860, 90);
+            this.vkey.ShowNoteNames = true;
+            this.vkey.Size = new System.Drawing.Size(1084, 111);
             this.vkey.TabIndex = 93;
             this.vkey.KeyboardEvent += new System.EventHandler<MidiLib.VirtualKeyboard.KeyboardEventArgs>(this.Vkey_KeyboardEvent);
             // 

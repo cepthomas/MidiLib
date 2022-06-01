@@ -65,8 +65,8 @@ namespace MidiLib.Test
         /// <summary>My midi in.</summary>
         readonly string _midiInDevice = "MPK mini";
 
-        /// <summary>Adjust to taste.</summary>
-        readonly string _exportPath = @"C:\Dev\repos\MidiLib\out";
+        /// <summary>Where to put things.</summary>
+        readonly string _outPath = @"C:\Dev\repos\MidiLib\out";
 
         /// <summary>Use this if not supplied.</summary>
         readonly int _defaultTempo = 100;
@@ -83,7 +83,7 @@ namespace MidiLib.Test
             toolStrip1.Renderer = new NBagOfUis.CheckBoxRenderer() { SelectedColor = _controlColor };
 
             // Make sure out path exists.
-            DirectoryInfo di = new(_exportPath);
+            DirectoryInfo di = new(_outPath);
             di.Create();
 
             // The text output.
@@ -118,7 +118,7 @@ namespace MidiLib.Test
             // Set up midi.
             DumpMidiDevices();
 
-            _player = new(_midiOutDevice, _allChannels, _exportPath);
+            _player = new(_midiOutDevice, _allChannels, _outPath);
             if (_player.Valid)
             {
             }
@@ -127,7 +127,7 @@ namespace MidiLib.Test
                 LogMessage($"ERR Something wrong with your midi output device:{_midiOutDevice}");
             }
 
-            _listener = new(_midiInDevice, _exportPath);
+            _listener = new(_midiInDevice, _outPath);
             if(_listener.Valid)
             {
                 _listener.InputEvent += (object? sender, MidiEventArgs e) => { this.InvokeIfRequired(_ => { LogMessage($"RCV {e}"); }); };
@@ -154,8 +154,6 @@ namespace MidiLib.Test
             nudTempo.Value = _defaultTempo;
 
             // MidiTimeTest();
-
-            vkey.ShowNoteNames = true;
 
             // Look for filename passed in.
             string[] args = Environment.GetCommandLineArgs();
@@ -613,21 +611,21 @@ namespace MidiLib.Test
 
                 if (sender == btnExportAll)
                 {
-                    var s = _mdata.ExportAllEvents(_exportPath, channels);
+                    var s = _mdata.ExportAllEvents(_outPath, channels);
                     LogMessage($"INF Exported to {s}");
                 }
                 else if (sender == btnExportPattern)
                 {
                     if(_mdata.AllPatterns.Count == 1)
                     {
-                        var s = _mdata.ExportGroupedEvents(_exportPath, "", channels, true);
+                        var s = _mdata.ExportGroupedEvents(_outPath, "", channels, true);
                         LogMessage($"INF Exported default to {s}");
                     }
                     else
                     {
                         foreach (var patternName in patternNames)
                         {
-                            var s = _mdata.ExportGroupedEvents(_exportPath, patternName, channels, true);
+                            var s = _mdata.ExportGroupedEvents(_outPath, patternName, channels, true);
                             LogMessage($"INF Exported pattern {patternName} to {s}");
                         }
                     }
@@ -637,7 +635,7 @@ namespace MidiLib.Test
                     if (_mdata.AllPatterns.Count == 1)
                     {
                         // Use original ppq.
-                        var s = _mdata.ExportMidi(_exportPath, "", channels, _mdata.DeltaTicksPerQuarterNote);
+                        var s = _mdata.ExportMidi(_outPath, "", channels, _mdata.DeltaTicksPerQuarterNote);
                         LogMessage($"INF Export midi to {s}");
                     }
                     else
@@ -645,7 +643,7 @@ namespace MidiLib.Test
                         foreach (var patternName in patternNames)
                         {
                             // Use original ppq.
-                            var s = _mdata.ExportMidi(_exportPath, patternName, channels, _mdata.DeltaTicksPerQuarterNote);
+                            var s = _mdata.ExportMidi(_outPath, patternName, channels, _mdata.DeltaTicksPerQuarterNote);
                             LogMessage($"INF Export midi to {s}");
                         }
                     }
@@ -696,7 +694,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Vkey_KeyboardEvent(object? sender, VirtualKeyboard.KeyboardEventArgs e)
         {
-            LogMessage($"INF Vkey C:{e.ChannelNumber} N:{e.NoteId} V:{e.Velocity}");
+            LogMessage($"INF Vkey N:{e.NoteId} V:{e.Velocity}");
         }
         #endregion
     }
