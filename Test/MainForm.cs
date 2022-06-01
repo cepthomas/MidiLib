@@ -45,12 +45,6 @@ namespace MidiLib.Test
         /// <summary>Prevent button press recursion.</summary>
         bool _guard = false;
 
-        /// <summary>Our internal midi send timer resolution.</summary>
-        const int PPQ = 32;
-
-        /// <summary>4/4 time only.</summary>
-        const int BEATS_PER_BAR = 4;
-
         /// <summary>Current file.</summary>
         string _fn = "";
         #endregion
