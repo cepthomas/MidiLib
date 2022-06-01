@@ -126,13 +126,15 @@ namespace MidiLib
 
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
-                lv.Items.Add((i+1).ToString());
+                lv.Items.Add($"{i + 1} dev1");
+                lv.Items.Add($"{i + 1} dev2");
             }
 
             lv.Click += (object? sender, EventArgs e) =>
             {
                 int ind = lv.SelectedIndices[0];
-                ChannelNumber = ind + 1;
+                ChannelNumber = ind / 2 + 1;
+                DeviceNumber = lv.SelectedItem.ToString()!.Contains("dev1") ? 1 : 2;
                 f.Close();
             };
 
