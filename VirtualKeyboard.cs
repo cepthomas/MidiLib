@@ -6,6 +6,9 @@ using System.Linq;
 using NBagOfTricks;
 
 
+//TODO slow startup - too many sub controls?
+
+
 namespace MidiLib
 {
     /// <summary>
