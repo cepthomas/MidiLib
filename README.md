@@ -17,5 +17,3 @@ This application uses these FOSS components:
 - [NBagOfTricks](https://github.com/cepthomas/NBagOfTricks/blob/main/README.md)
 - [NBagOfUis](https://github.com/cepthomas/NBagOfUis/blob/main/README.md)
 
-
-https://github.com/cepthomas/MidiLib/blob/master/LICENSE
