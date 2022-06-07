@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
+using NBagOfTricks.Slog;
+
 
 // TODO Snipping, editing, etc.
 
@@ -28,8 +30,8 @@ namespace MidiLib
         /// <summary>Backing.</summary>
         int _currentSubdiv = 0;
 
-        /// <summary>Where to log to.</summary>
-        readonly string _midiLogFile = "";
+        /// <summary>Midi send logging.</summary>
+        readonly Logger _loggerSend = LogManager.CreateLogger("MidiPlayer");
         #endregion
 
         #region Properties
@@ -50,7 +52,7 @@ namespace MidiLib
         }
 
         /// <summary>Log outbound traffic. Warning - can get busy.</summary>
-        public bool LogMidi { get; set; } = false;
+        public bool LogMidi { get { return _loggerSend.Enable; } set { _loggerSend.Enable = value; } }
         #endregion
 
         #region Lifecycle
@@ -59,16 +61,9 @@ namespace MidiLib
         /// </summary>
         /// <param name="midiDevice">Client supplies name of device.</param>
         /// <param name="channels">The actual channels.</param>
-        /// <param name="midiLogPath">Where to log wire events (optional).</param>
-        public MidiPlayer(string midiDevice, ChannelCollection channels, string midiLogPath = "")
+        public MidiPlayer(string midiDevice, ChannelCollection channels)
         {
             _allChannels = channels;
-
-            if (midiLogPath != "")
-            {
-                _midiLogFile = Path.Combine(midiLogPath, "midi_out.txt");
-                File.Delete(_midiLogFile);
-            }
 
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
@@ -244,11 +239,10 @@ namespace MidiLib
             if(_midiOut is not null)
             {
                 _midiOut.Send(evt.GetAsShortMessage());
-
-                if (_midiLogFile != "" && LogMidi)
-                {
-                    File.AppendAllText(_midiLogFile, $"{DateTime.Now:mm\\:ss\\.fff} {evt}{Environment.NewLine}");
-                }
+            }
+            if(LogMidi)
+            {
+                _loggerSend.LogTrace(evt.ToString());
             }
         }
         #endregion

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NAudio.Midi;
 using NBagOfTricks;
+using NBagOfTricks.Slog;
 
 
 namespace MidiLib
@@ -19,16 +20,16 @@ namespace MidiLib
         /// <summary>Midi input device.</summary>
         readonly MidiIn? _midiIn = null;
 
-        /// <summary>Where to log to.</summary>
-        readonly string _midiTraceFile = "";
+        /// <summary>Midi send logging.</summary>
+        readonly Logger _loggerListen = LogManager.CreateLogger("MidiListener");
         #endregion
 
         #region Properties
         /// <summary>Are we ok?</summary>
         public bool Valid { get { return _midiIn is not null; } }
 
-        /// <summary>Log outbound traffic. Warning - can get busy.</summary>
-        public bool LogMidi { get; set; } = false;
+        /// <summary>Log inbound traffic.</summary>
+        public bool LogMidi { get { return _loggerListen.Enable; } set { _loggerListen.Enable = value; } }
 
         /// <summary>Capture on/off.</summary>
         public bool Enable 
@@ -53,15 +54,8 @@ namespace MidiLib
         /// Normal constructor.
         /// </summary>
         /// <param name="midiDevice">Client supplies name of device.</param>
-        /// <param name="midiTracePath">Where to log.</param>
-        public MidiListener(string midiDevice, string midiTracePath)
+        public MidiListener(string midiDevice)
         {
-            if (midiTracePath != "")
-            {
-                _midiTraceFile = Path.Combine(midiTracePath, "midi_in.txt");
-                File.Delete(_midiTraceFile);
-            }
-
             // Figure out which midi output device.
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
@@ -162,9 +156,9 @@ namespace MidiLib
         /// <param name="evt"></param>
         void Log(MidiEventArgs evt)
         {
-            if (LogMidi && _midiTraceFile != "")
+            if (LogMidi)
             {
-                File.AppendAllText(_midiTraceFile, $"{DateTime.Now:mm\\:ss\\.fff} {evt}{Environment.NewLine}");
+                _loggerListen.LogTrace(evt.ToString());
             }
         }
         #endregion
