@@ -21,15 +21,15 @@ namespace MidiLib
         readonly MidiIn? _midiIn = null;
 
         /// <summary>Midi send logging.</summary>
-        readonly Logger _loggerListen = LogManager.CreateLogger("MidiListener");
+        readonly Logger _logger = LogManager.CreateLogger("MidiListener");
         #endregion
 
         #region Properties
         /// <summary>Are we ok?</summary>
         public bool Valid { get { return _midiIn is not null; } }
 
-        /// <summary>Log inbound traffic.</summary>
-        public bool LogMidi { get { return _loggerListen.Enable; } set { _loggerListen.Enable = value; } }
+        /// <summary>Log inbound traffic at Trace level.</summary>
+        public bool LogMidi { get { return _logger.Enable; } set { _logger.Enable = value; } }
 
         /// <summary>Capture on/off.</summary>
         public bool Enable 
@@ -56,6 +56,8 @@ namespace MidiLib
         /// <param name="midiDevice">Client supplies name of device.</param>
         public MidiListener(string midiDevice)
         {
+            LogMidi = false;
+            
             // Figure out which midi output device.
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
@@ -158,7 +160,7 @@ namespace MidiLib
         {
             if (LogMidi)
             {
-                _loggerListen.LogTrace(evt.ToString());
+                _logger.LogTrace(evt.ToString());
             }
         }
         #endregion

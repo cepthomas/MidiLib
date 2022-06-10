@@ -22,7 +22,7 @@ namespace MidiLib
         readonly MidiOut? _midiOut = null;
 
         /// <summary>Midi send logging.</summary>
-        readonly Logger _loggerSend = LogManager.CreateLogger("MidiSender");
+        readonly Logger _logger = LogManager.CreateLogger("MidiSender");
         #endregion
 
         #region Properties
@@ -32,8 +32,8 @@ namespace MidiLib
         /// <summary>Current master volume.</summary>
         public double Volume { get; set; } = InternalDefs.VOLUME_DEFAULT;
 
-        /// <summary>Log outbound traffic. Warning - can get busy.</summary>
-        public bool LogMidi { get { return _loggerSend.Enable; } set { _loggerSend.Enable = value; } }
+        /// <summary>Log outbound traffic at Trace level. Warning - can get busy.</summary>
+        public bool LogMidi { get { return _logger.Enable; } set { _logger.Enable = value; } }
         #endregion
 
         #region Lifecycle
@@ -43,6 +43,8 @@ namespace MidiLib
         /// <param name="midiDevice">Client supplies name of device.</param>
         public MidiSender(string midiDevice)
         {
+            LogMidi = false;
+
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
@@ -70,7 +72,7 @@ namespace MidiLib
             if (patch >= 0)
             {
                 PatchChangeEvent evt = new(0, channelNumber, patch);
-                MidiSend(evt);
+                SendMidi(evt);
             }
         }
 
@@ -81,7 +83,7 @@ namespace MidiLib
         public void Kill(int channelNumber)
         {
             ControlChangeEvent nevt = new(0, channelNumber, MidiController.AllNotesOff, 0);
-            MidiSend(nevt);
+            SendMidi(nevt);
         }
 
         /// <summary>
@@ -101,7 +103,7 @@ namespace MidiLib
         /// Send midi.
         /// </summary>
         /// <param name="evt"></param>
-        public void MidiSend(MidiEvent evt)
+        public void SendMidi(MidiEvent evt)
         {
             if(_midiOut is not null)
             {
@@ -109,7 +111,7 @@ namespace MidiLib
             }
             if (LogMidi)
             {
-                _loggerSend.LogTrace(evt.ToString());
+                _logger.LogTrace(evt.ToString());
             }
         }
         #endregion

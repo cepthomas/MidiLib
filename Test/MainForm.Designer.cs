@@ -47,7 +47,8 @@ namespace MidiLib.Test
             this.label1 = new System.Windows.Forms.Label();
             this.sldVolume = new NBagOfUis.Slider();
             this.barBar = new MidiLib.BarBar();
-            this.channelControl1 = new MidiLib.ChannelControl();
+            this.btnStuff = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTempo)).BeginInit();
             this.SuspendLayout();
@@ -74,7 +75,9 @@ namespace MidiLib.Test
             this.cmbDrumChannel1,
             this.toolStripLabel2,
             this.cmbDrumChannel2,
-            this.toolStripSeparator10});
+            this.toolStripSeparator10,
+            this.btnStuff,
+            this.toolStripSeparator1});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1250, 28);
@@ -328,24 +331,25 @@ namespace MidiLib.Test
             this.barBar.Size = new System.Drawing.Size(308, 50);
             this.barBar.TabIndex = 100;
             // 
-            // channelControl1
+            // btnStuff
             // 
-            this.channelControl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.channelControl1.ChannelNumber = 1;
-            this.channelControl1.ControlColor = System.Drawing.Color.MediumOrchid;
-            this.channelControl1.Location = new System.Drawing.Point(786, 587);
-            this.channelControl1.Name = "channelControl1";
-            this.channelControl1.Patch = 0;
-            this.channelControl1.Size = new System.Drawing.Size(292, 45);
-            this.channelControl1.TabIndex = 101;
-            this.channelControl1.Volume = 0.8D;
+            this.btnStuff.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnStuff.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnStuff.Name = "btnStuff";
+            this.btnStuff.Size = new System.Drawing.Size(42, 25);
+            this.btnStuff.Text = "stuff";
+            this.btnStuff.Click += new System.EventHandler(this.Stuff_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 28);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1250, 779);
-            this.Controls.Add(this.channelControl1);
             this.Controls.Add(this.barBar);
             this.Controls.Add(this.sldVolume);
             this.Controls.Add(this.label1);
@@ -401,7 +405,8 @@ namespace MidiLib.Test
         private System.Windows.Forms.NumericUpDown nudTempo;
         private System.Windows.Forms.Label label1;
         private BarBar barBar;
-        private ChannelControl channelControl1;
+        private System.Windows.Forms.ToolStripButton btnStuff;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     }
 }
 

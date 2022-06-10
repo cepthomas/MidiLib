@@ -114,7 +114,7 @@ namespace MidiLib
                     case "Sdec": ReadSdec(br); break;
                     case "Ctab": ReadCtab(br); break;
                     case "Cntt": ReadCntt(br); break;
-                    case "OTSc": ReadOTSc(br); break;// One Touch Setting section
+                    case "OTSc": ReadOTSc(br); break; // One Touch Setting section
                     case "FNRc": ReadFNRc(br); break; // MDB (Music Finder) section
                     default:     done = true;  break;
                 }

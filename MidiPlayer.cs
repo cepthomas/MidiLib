@@ -31,7 +31,7 @@ namespace MidiLib
         int _currentSubdiv = 0;
 
         /// <summary>Midi send logging.</summary>
-        readonly Logger _loggerSend = LogManager.CreateLogger("MidiPlayer");
+        readonly Logger _logger = LogManager.CreateLogger("MidiPlayer");
         #endregion
 
         #region Properties
@@ -51,8 +51,8 @@ namespace MidiLib
             set { _currentSubdiv = MathUtils.Constrain(value, 0, _allChannels.TotalSubdivs); }
         }
 
-        /// <summary>Log outbound traffic. Warning - can get busy.</summary>
-        public bool LogMidi { get { return _loggerSend.Enable; } set { _loggerSend.Enable = value; } }
+        /// <summary>Log outbound traffic at Trace level. Warning - can get busy.</summary>
+        public bool LogMidi { get { return _logger.Enable; } set { _logger.Enable = value; } }
         #endregion
 
         #region Lifecycle
@@ -64,6 +64,7 @@ namespace MidiLib
         public MidiPlayer(string midiDevice, ChannelCollection channels)
         {
             _allChannels = channels;
+            LogMidi = false;
 
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
@@ -157,7 +158,7 @@ namespace MidiLib
                                             Math.Min((int)(evt.Velocity * Volume * ch.Volume), MidiDefs.MAX_MIDI),
                                             evt.OffEvent is null ? 0 : evt.NoteLength); // Fix NAudio NoteLength bug.
 
-                                        MidiSend(ne);
+                                        SendMidi(ne);
                                     }
                                     break;
 
@@ -168,13 +169,13 @@ namespace MidiLib
                                     }
                                     else
                                     {
-                                        MidiSend(evt);
+                                        SendMidi(evt);
                                     }
                                     break;
 
                                 default:
                                     // Everything else as is.
-                                    MidiSend(mevt);
+                                    SendMidi(mevt);
                                     break;
                             }
                         }
@@ -200,7 +201,7 @@ namespace MidiLib
             if (patch >= 0)
             {
                 PatchChangeEvent evt = new(0, channelNumber, patch);
-                MidiSend(evt);
+                SendMidi(evt);
                 _allChannels.SetPatch(channelNumber, patch);
             }
         }
@@ -212,7 +213,7 @@ namespace MidiLib
         public void Kill(int channelNumber)
         {
             ControlChangeEvent nevt = new(0, channelNumber, MidiController.AllNotesOff, 0);
-            MidiSend(nevt);
+            SendMidi(nevt);
         }
 
         /// <summary>
@@ -227,14 +228,12 @@ namespace MidiLib
                 Kill(chnum);
             }
         }
-        #endregion
 
-        #region Private functions
         /// <summary>
         /// Send midi.
         /// </summary>
         /// <param name="evt"></param>
-        void MidiSend(MidiEvent evt)
+        public void SendMidi(MidiEvent evt)
         {
             if(_midiOut is not null)
             {
@@ -242,7 +241,7 @@ namespace MidiLib
             }
             if(LogMidi)
             {
-                _loggerSend.LogTrace(evt.ToString());
+                _logger.LogTrace(evt.ToString());
             }
         }
         #endregion

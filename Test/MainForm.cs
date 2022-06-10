@@ -49,7 +49,7 @@ namespace MidiLib.Test
         string _fn = "";
 
         /// <summary>My logging.</summary>
-        readonly Logger _loggerSend = LogManager.CreateLogger("MainForm");
+        readonly Logger _logger = LogManager.CreateLogger("MainForm");
         #endregion
 
         #region Fields - user custom
@@ -71,7 +71,7 @@ namespace MidiLib.Test
 
         #region Lifecycle
         /// <summary>
-        /// Constructor.
+        /// Constructor. No logging yet!
         /// </summary>
         public MainForm()
         {
@@ -83,11 +83,11 @@ namespace MidiLib.Test
             DirectoryInfo di = new(_outPath);
             di.Create();
 
-            // Logger.
-            LogManager.MinLevelFile = Level.Debug;
-            LogManager.MinLevelNotif = Level.Info;
+            // Logger. Note: you can create this here but don't call any _logger functions until loaded.
+            LogManager.MinLevelFile = Level.Trace;
+            LogManager.MinLevelNotif = Level.Trace;
             LogManager.LogEvent += LogManager_LogEvent;
-            LogManager.Run(_outPath, 100000);
+            LogManager.Run(Path.Join(_outPath, "log.txt"), 5000);
 
             // The text output.
             txtViewer.Font = Font;
@@ -118,25 +118,10 @@ namespace MidiLib.Test
                 cmbDrumChannel2.Items.Add(i);
             }
 
-            // Set up midi.
-            DumpMidiDevices();
-
+            // Set up midi devices.
             _player = new(_midiOutDevice, _allChannels);
-            if (!_player.Valid)
-            {
-                _loggerSend.LogError($"Something wrong with your midi output device:{_midiOutDevice}");
-            }
-
             _listener = new(_midiInDevice);
-            if(!_listener.Valid)
-            {
-                _loggerSend.LogError($"Something wrong with your midi input device:{_midiInDevice}");
-            }
-            else
-            {
-                //_listener.InputEvent += (object? sender, MidiEventArgs e) => { this.InvokeIfRequired(_ => { LogMessage($"RCV {e}"); }); };
-                _listener.Enable = true;
-            }
+            _listener.Enable = _listener.Valid;
 
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop); };
@@ -146,12 +131,25 @@ namespace MidiLib.Test
             nudTempo.ValueChanged += (_, __) => { SetTimer(); };
             sldVolume.ValueChanged += (_, __) => { _player.Volume = sldVolume.Value; };
 
-            channelControl1.ChannelNumber = 7;
-            channelControl1.Volume = 1.2;
-            channelControl1.Patch = 44;
-
             // Set up timer.
             nudTempo.Value = _defaultTempo;
+        }
+
+        /// <summary>
+        /// Window is set up now. OK to log!!
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnLoad(EventArgs e)
+        {
+            if (!_player.Valid)
+            {
+                _logger.LogError($"Something wrong with your midi output device:{_midiOutDevice}");
+            }
+
+            if (!_listener.Valid)
+            {
+                _logger.LogError($"Something wrong with your midi input device:{_midiInDevice}");
+            }
 
             // MidiTimeTest();
 
@@ -161,10 +159,6 @@ namespace MidiLib.Test
             {
                 OpenFile(args[1]);
             }
-            else
-            {
-                OpenFile(@"C:\Dev\repos\TestAudioFiles\_LoveSong.S474.sty");
-            }
         }
 
         /// <summary>
@@ -172,7 +166,9 @@ namespace MidiLib.Test
         /// </summary>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            LogManager.Stop();
             Stop();
+            base.OnFormClosing(e);
         }
 
         /// <summary>
@@ -209,8 +205,6 @@ namespace MidiLib.Test
                 return;
             }
             _guard = true;
-
-            //LogMessage($"DBG State:{_player.State}  btnLoop{btnLoop.Checked}  TotalSubdivs:{_player.TotalSubdivs}");
 
             switch(state)
             {
@@ -328,7 +322,7 @@ namespace MidiLib.Test
             bool ok = true;
             _fn = "";
 
-            _loggerSend.LogInfo($"Reading file: {fn}");
+            _logger.LogInfo($"Reading file: {fn}");
 
             if(btnPlay.Checked)
             {
@@ -348,9 +342,9 @@ namespace MidiLib.Test
                 // Init new stuff with contents of file/pattern.
                 lbPatterns.Items.Clear();
 
-                if(_mdata.AllPatterns.Count == 0)
+                if (_mdata.AllPatterns.Count == 0)
                 {
-                    _loggerSend.LogError($"Something wrong with this file: {fn}");
+                    _logger.LogError($"Something wrong with this file: {fn}");
                     ok = false;
                 }
                 else if(_mdata.AllPatterns.Count == 1) // plain midi
@@ -371,7 +365,7 @@ namespace MidiLib.Test
                                 break;
 
                             case "":
-                                _loggerSend.LogError("Well, this should never happen!");
+                                _logger.LogError("Well, this should never happen!");
                                 break;
 
                             default:
@@ -390,11 +384,10 @@ namespace MidiLib.Test
 
                 _fn = fn;
                 Text = $"Midi Lib - {fn}";
-
             }
             catch (Exception ex)
             {
-                _loggerSend.LogError($"Couldn't open the file: {fn} because: {ex.Message}");
+                _logger.LogError($"Couldn't open the file: {fn} because: {ex.Message}");
                 Text = "Midi Lib";
                 ok = false;
             }
@@ -438,7 +431,7 @@ namespace MidiLib.Test
                     _allChannels.SetEvents(chnum, chEvents, mt);
 
                     // Make new control.
-                    PlayerControl control = new() { Location = new(x, y) };
+                    PlayerControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
 
                     // Bind to internal channel object.
                     _allChannels.Bind(chnum, control);
@@ -546,38 +539,6 @@ namespace MidiLib.Test
         }
         #endregion
 
-        #region MidiTime
-        /// <summary>
-        /// Unit test.
-        /// </summary>
-        void MidiTimeTest()
-        {
-            // If we use ppq of 8 (32nd notes):
-            // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
-            //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
-
-            MidiTimeConverter mt = new(0, 100);
-            TestClose(mt.InternalPeriod(), 75.0, 0.001);
-
-            mt = new(0, 90);
-            TestClose(mt.InternalPeriod(), 75.757, 0.001);
-
-            mt = new(384, 100);
-            TestClose(mt.MidiToSec(144000) / 60.0, 3.75, 0.001);
-
-            mt = new(96, 100);
-            TestClose(mt.MidiPeriod(), 6.25, 0.001);
-
-            void TestClose(double value1, double value2, double tolerance)
-            {
-                if (Math.Abs(value1 - value2) > tolerance)
-                {
-                    _loggerSend.LogError($"[{value1}] not close enough to [{value2}]");
-                }
-            }
-        }
-        #endregion
-
         #region Utilities
         /// <summary>
         /// Convert tempo to period and set mm timer.
@@ -612,21 +573,21 @@ namespace MidiLib.Test
                 if (sender == btnExportAll)
                 {
                     var s = _mdata.ExportAllEvents(_outPath, channels);
-                    _loggerSend.LogInfo($"Exported to {s}");
+                    _logger.LogInfo($"Exported to {s}");
                 }
                 else if (sender == btnExportPattern)
                 {
                     if(_mdata.AllPatterns.Count == 1)
                     {
                         var s = _mdata.ExportGroupedEvents(_outPath, "", channels, true);
-                        _loggerSend.LogInfo($"Exported default to {s}");
+                        _logger.LogInfo($"Exported default to {s}");
                     }
                     else
                     {
                         foreach (var patternName in patternNames)
                         {
                             var s = _mdata.ExportGroupedEvents(_outPath, patternName, channels, true);
-                            _loggerSend.LogInfo($"Exported pattern {patternName} to {s}");
+                            _logger.LogInfo($"Exported pattern {patternName} to {s}");
                         }
                     }
                 }
@@ -636,7 +597,7 @@ namespace MidiLib.Test
                     {
                         // Use original ppq.
                         var s = _mdata.ExportMidi(_outPath, "", channels, _mdata.DeltaTicksPerQuarterNote);
-                        _loggerSend.LogInfo($"Export midi to {s}");
+                        _logger.LogInfo($"Export midi to {s}");
                     }
                     else
                     {
@@ -644,28 +605,19 @@ namespace MidiLib.Test
                         {
                             // Use original ppq.
                             var s = _mdata.ExportMidi(_outPath, patternName, channels, _mdata.DeltaTicksPerQuarterNote);
-                            _loggerSend.LogInfo($"Export midi to {s}");
+                            _logger.LogInfo($"Export midi to {s}");
                         }
                     }
                 }
                 else
                 {
-                    _loggerSend.LogError($"Ooops: {sender}");
+                    _logger.LogError($"Ooops: {sender}");
                 }
             }
             catch (Exception ex)
             {
-                _loggerSend.LogError($"{ex.Message}");
+                _logger.LogError($"{ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// Something you should know.
-        /// </summary>
-        /// <param name="msg"></param>
-        void Tell(string msg)
-        {
-            txtViewer.AppendLine($"> {msg}");
         }
 
         /// <summary>
@@ -675,7 +627,59 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void LogManager_LogEvent(object? sender, LogEventArgs e)
         {
-            Tell(e.Message);
+            // Usually come from a different thread.
+            if(IsHandleCreated)
+            {
+                this.InvokeIfRequired(_ =>
+                {
+                    txtViewer.AppendLine($"> {e.Message}");
+                });
+            }
+        }
+        #endregion
+
+        #region Debug stuff
+        /// <summary>
+        /// Mainly for debug.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Stuff_Click(object sender, EventArgs e)
+        {
+            DumpMidiDevices();
+            MidiTimeTest();
+        }
+
+        /// <summary>
+        /// Unit test.
+        /// </summary>
+        void MidiTimeTest()
+        {
+            // If we use ppq of 8 (32nd notes):
+            // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
+            //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
+
+            MidiTimeConverter mt = new(0, 100);
+            TestClose(mt.InternalPeriod(), 75.0, 0.001);
+
+            mt = new(0, 90);
+            TestClose(mt.InternalPeriod(), 75.757, 0.001);
+
+            mt = new(384, 100);
+            TestClose(mt.MidiToSec(144000) / 60.0, 3.75, 0.001);
+
+            mt = new(96, 100);
+            TestClose(mt.MidiPeriod(), 6.25, 0.001);
+
+            _logger.LogError($"MidiTimeTest done.");
+
+            void TestClose(double value1, double value2, double tolerance)
+            {
+                if (Math.Abs(value1 - value2) > tolerance)
+                {
+                    _logger.LogError($"[{value1}] not close enough to [{value2}]");
+                }
+            }
         }
 
         /// <summary>
@@ -685,15 +689,16 @@ namespace MidiLib.Test
         {
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
-                _loggerSend.LogInfo($"Midi In {i} \"{MidiIn.DeviceInfo(i).ProductName}\"");
+                _logger.LogInfo($"Midi In {i} \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-                _loggerSend.LogInfo($"Midi Out {i} \"{MidiOut.DeviceInfo(i).ProductName}\"");
+                _logger.LogInfo($"Midi Out {i} \"{MidiOut.DeviceInfo(i).ProductName}\"");
             }
         }
         #endregion
+
 
         #region Piano keyboard
         /// <summary>
@@ -703,7 +708,9 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Vkey_KeyboardEvent(object? sender, VirtualKeyboard.KeyboardEventArgs e)
         {
-            _loggerSend.LogDebug($"Vkey N:{e.NoteId} V:{e.Velocity}");
+            _logger.LogDebug($"Vkey N:{e.NoteId} V:{e.Velocity}");
+
+            _player.SendMidi (....)
         }
         #endregion
     }

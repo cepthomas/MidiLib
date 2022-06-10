@@ -1264,7 +1264,7 @@
             <summary>Internal log entry data container.</summary>
         </member>
         <member name="T:NBagOfTricks.Slog.LogEventArgs">
-            <summary>Log event for  log entry data container.</summary>
+            <summary>Log event for notification.</summary>
         </member>
         <member name="F:NBagOfTricks.Slog.Definitions.TIME_FORMAT">
             <summary>Verbose timestamp.</summary>
@@ -1351,9 +1351,6 @@
         <member name="F:NBagOfTricks.Slog.LogManager._instance">
             <summary>Lazy singleton. https://csharpindepth.com/Articles/Singleton.</summary>
         </member>
-        <member name="P:NBagOfTricks.Slog.LogManager.Instance">
-            <summary>Singleton accessor.</summary>
-        </member>
         <member name="F:NBagOfTricks.Slog.LogManager._loggers">
             <summary>All loggers. Key is client supplied name.</summary>
         </member>
@@ -1371,6 +1368,9 @@
         </member>
         <member name="F:NBagOfTricks.Slog.LogManager._tokenSource">
             <summary>Queue management.</summary>
+        </member>
+        <member name="P:NBagOfTricks.Slog.LogManager.Instance">
+            <summary>Singleton accessor.</summary>
         </member>
         <member name="P:NBagOfTricks.Slog.LogManager.MinLevelFile">
             <summary>Event filter for file.</summary>
