@@ -16,6 +16,14 @@ namespace MidiLib
 
     /// <summary>Placeholder to avoid handling null everywhere.</summary>
     public class NullMidiEvent : MidiEvent { }
+
+    /// <summary>Notify host of asynchronous changes from user.</summary>
+    public class ChannelChangeEventArgs : EventArgs
+    {
+        public bool PatchChange { get; set; } = false;
+        public bool StateChange { get; set; } = false;
+        public bool ChannelNumberChange { get; set; } = false;
+    }
     #endregion
 
     public class InternalDefs

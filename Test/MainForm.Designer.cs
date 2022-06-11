@@ -38,6 +38,8 @@ namespace MidiLib.Test
             this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
             this.cmbDrumChannel2 = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnStuff = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.txtViewer = new NBagOfUis.TextViewer();
             this.lbPatterns = new System.Windows.Forms.CheckedListBox();
             this.btnAll = new System.Windows.Forms.Button();
@@ -47,8 +49,7 @@ namespace MidiLib.Test
             this.label1 = new System.Windows.Forms.Label();
             this.sldVolume = new NBagOfUis.Slider();
             this.barBar = new MidiLib.BarBar();
-            this.btnStuff = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.channelControl = new MidiLib.ChannelControl();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTempo)).BeginInit();
             this.SuspendLayout();
@@ -213,6 +214,20 @@ namespace MidiLib.Test
             this.toolStripSeparator10.Name = "toolStripSeparator10";
             this.toolStripSeparator10.Size = new System.Drawing.Size(6, 28);
             // 
+            // btnStuff
+            // 
+            this.btnStuff.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnStuff.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnStuff.Name = "btnStuff";
+            this.btnStuff.Size = new System.Drawing.Size(42, 25);
+            this.btnStuff.Text = "stuff";
+            this.btnStuff.Click += new System.EventHandler(this.Stuff_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 28);
+            // 
             // txtViewer
             // 
             this.txtViewer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -331,25 +346,24 @@ namespace MidiLib.Test
             this.barBar.Size = new System.Drawing.Size(308, 50);
             this.barBar.TabIndex = 100;
             // 
-            // btnStuff
+            // channelControl
             // 
-            this.btnStuff.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnStuff.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnStuff.Name = "btnStuff";
-            this.btnStuff.Size = new System.Drawing.Size(42, 25);
-            this.btnStuff.Text = "stuff";
-            this.btnStuff.Click += new System.EventHandler(this.Stuff_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 28);
+            this.channelControl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.channelControl.ChannelNumber = 1;
+            this.channelControl.ControlColor = System.Drawing.Color.Crimson;
+            this.channelControl.Location = new System.Drawing.Point(25, 585);
+            this.channelControl.Name = "channelControl";
+            this.channelControl.Patch = 0;
+            this.channelControl.Size = new System.Drawing.Size(291, 42);
+            this.channelControl.TabIndex = 101;
+            this.channelControl.Volume = 0.8D;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1250, 779);
+            this.Controls.Add(this.channelControl);
             this.Controls.Add(this.barBar);
             this.Controls.Add(this.sldVolume);
             this.Controls.Add(this.label1);
@@ -407,6 +421,7 @@ namespace MidiLib.Test
         private BarBar barBar;
         private System.Windows.Forms.ToolStripButton btnStuff;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private ChannelControl channelControl;
     }
 }
 

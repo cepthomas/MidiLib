@@ -17,12 +17,7 @@ namespace MidiLib
     {
         #region Events
         /// <summary>Notify host of asynchronous changes from user.</summary>
-        public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
-        public class ChannelChangeEventArgs : EventArgs
-        {
-            public bool PatchChange { get; set; } = false;
-            public bool StateChange { get; set; } = false;
-        }
+        public event EventHandler<ChannelChangeEventArgs>? ChannelChangeEvent;
         #endregion
 
         #region Properties
@@ -167,7 +162,7 @@ namespace MidiLib
                 {
                     State = newState;
                     UpdateUi();
-                    ChannelChange?.Invoke(this, new() { StateChange = true });
+                    ChannelChangeEvent?.Invoke(this, new() { StateChange = true });
                 }
             }
         }
@@ -179,40 +174,14 @@ namespace MidiLib
         /// <param name="e"></param>
         void Patch_Click(object sender, EventArgs e)
         {
-            using Form f = new()
+            PatchPicker pp = new();
+            pp.ShowDialog();
+            if (pp.PatchNumber != -1)
             {
-                Text = "Select Patch",
-                Size = new Size(800, 500),
-                StartPosition = FormStartPosition.Manual,
-                Location = Cursor.Position,
-                FormBorderStyle = FormBorderStyle.FixedToolWindow,
-                ShowIcon = false,
-                ShowInTaskbar = false
-            };
-            ListView lv = new()
-            {
-                Dock = DockStyle.Fill,
-                View = View.List,
-                HideSelection = false
-            };
-
-            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
-            {
-                lv.Items.Add(MidiDefs.GetInstrumentName(i));
-            }
-
-            lv.Click += (object? sender, EventArgs e) =>
-            {
-                int ind = lv.SelectedIndices[0];
-                Channel.Patch = ind;
-
+                Channel.Patch = pp.PatchNumber;
                 UpdateUi();
-                ChannelChange?.Invoke(this, new() { PatchChange = true });
-                f.Close();
-            };
-
-            f.Controls.Add(lv);
-            f.ShowDialog();
+                ChannelChangeEvent?.Invoke(this, new() { PatchChange = true });
+            }
         }
 
         /// <summary>

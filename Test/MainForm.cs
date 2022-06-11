@@ -109,6 +109,8 @@ namespace MidiLib.Test
             sldVolume.Value = InternalDefs.VOLUME_DEFAULT;
             sldVolume.Label = "volume";
 
+            channelControl.ControlColor = _controlColor;
+
             // Time controller.
             MidiSettings.Snap = SnapType.Beat;
             MidiSettings.ZeroBased = true;
@@ -244,7 +246,7 @@ namespace MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Control_ChannelChange(object? sender, PlayerControl.ChannelChangeEventArgs e)
+        void Control_ChannelChange(object? sender, ChannelChangeEventArgs e)
         {
             PlayerControl chc = (PlayerControl)sender!;
 
@@ -447,7 +449,7 @@ namespace MidiLib.Test
                     control.Patch = pinfo.Patches[i];
                     //control.IsDrums = GetDrumChannels().Contains(chnum);
 
-                    control.ChannelChange += Control_ChannelChange;
+                    control.ChannelChangeEvent += Control_ChannelChange;
                     Controls.Add(control);
                     _playerControls.Add(control);
 

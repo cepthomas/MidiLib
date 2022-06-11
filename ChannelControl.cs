@@ -12,75 +12,40 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
-    /// <summary>A simple channel UI component.</summary>
+    /// <summary>A simpler channel UI component.</summary>
     public partial class ChannelControl : UserControl
     {
         #region Properties
         /// <summary>Actual 1-based midi channel number.</summary>
         public int ChannelNumber
         {
-            get
-            {
-                return _channelNumber;
-            }
-            set
-            {
-                _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS);
-                lblChannelNumber.Text = $"{_channelNumber}:{_deviceNumber}";
-            }
+            get { return _channelNumber; }
+            set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); cmbChannel.SelectedIndex = _channelNumber - 1; }
         }
         int _channelNumber = 0;
-
-        /// <summary>Actual 1-based midi device number. Client responsible.</summary>
-        public int DeviceNumber
-        {
-            get
-            {
-                return _deviceNumber;
-            }
-            set
-            {
-                _deviceNumber = value;
-                lblChannelNumber.Text = $"{_channelNumber}:{_deviceNumber}";
-            }
-        }
-        int _deviceNumber = 1;
 
         /// <summary>Current patch.</summary>
         public int Patch
         {
-            get
-            {
-                return _patch;
-            }
-            set
-            {
-                _patch = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI);
-                lblPatch.Text = MidiDefs.GetInstrumentName(_patch);
-            }
+            get { return _patch; }
+            set { _patch = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); lblPatch.Text = MidiDefs.GetInstrumentName(_patch); }
         }
         int _patch = -1;
 
         /// <summary>Current volume.</summary>
         public double Volume
         {
-            get
-            {
-                return sldVolume.Value;
-            }
-            set
-            {
-                sldVolume.Value = MathUtils.Constrain(value, InternalDefs.VOLUME_MIN, InternalDefs.VOLUME_MAX, InternalDefs.VOLUME_RESOLUTION);
-            }
+            get { return sldVolume.Value; }
+            set { sldVolume.Value = value; }
         }
 
         /// <summary>Cosmetics.</summary>
-        public Color ControlColor { get; set; } = Color.MediumOrchid;
+        public Color ControlColor { get; set; } = Color.Crimson;
         #endregion
 
         #region Events
         /// <summary>Notify host of asynchronous changes from user.</summary>
-        public event EventHandler? PatchChange;
+        public event EventHandler<ChannelChangeEventArgs>? ChannelChangeEvent;
         #endregion
 
         #region Lifecycle
@@ -91,57 +56,32 @@ namespace MidiLib
         {
             InitializeComponent();
 
-            sldVolume.DrawColor = ControlColor;
             sldVolume.Minimum = InternalDefs.VOLUME_MIN;
             sldVolume.Maximum = InternalDefs.VOLUME_MAX;
             sldVolume.Value = InternalDefs.VOLUME_DEFAULT;
 
-            lblChannelNumber.Click += ChannelNumber_Click;
             lblPatch.Click += Patch_Click;
+
+            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+            {
+                cmbChannel.Items.Add($"{i + 1}");
+            }
+            cmbChannel.SelectedIndex = ChannelNumber - 1;
+            cmbChannel.SelectedIndexChanged += (_, __) => { _channelNumber = cmbChannel.SelectedIndex + 1; };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnLoad(EventArgs e)
+        {
+            sldVolume.DrawColor = ControlColor;
+            base.OnLoad(e);
         }
         #endregion
 
         #region Handlers for user selections
-        /// <summary>
-        /// Handle selection.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ChannelNumber_Click(object? sender, EventArgs e)
-        {
-            using Form f = new()
-            {
-                Text = "Channel",
-                Size = new Size(50, 400),
-                StartPosition = FormStartPosition.Manual,
-                Location = Cursor.Position,
-                FormBorderStyle = FormBorderStyle.FixedToolWindow,
-                ShowIcon = false,
-                ShowInTaskbar = false
-            };
-            ListBox lv = new()
-            {
-                Dock = DockStyle.Fill,
-            };
-
-            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-            {
-                lv.Items.Add($"{i + 1} dev1");
-                lv.Items.Add($"{i + 1} dev2");
-            }
-
-            lv.Click += (object? sender, EventArgs e) =>
-            {
-                int ind = lv.SelectedIndices[0];
-                ChannelNumber = ind / 2 + 1;
-                DeviceNumber = lv.SelectedItem.ToString()!.Contains("dev1") ? 1 : 2;
-                f.Close();
-            };
-
-            f.Controls.Add(lv);
-            f.ShowDialog();
-        }
-
         /// <summary>
         /// User wants to change the patch.
         /// </summary>
@@ -151,42 +91,12 @@ namespace MidiLib
         {
             int currentPatch = Patch;
 
-            using Form f = new()
+            PatchPicker pp = new();
+            pp.ShowDialog();
+            if (pp.PatchNumber != -1)
             {
-                Text = "Select Patch",
-                Size = new Size(800, 500),
-                StartPosition = FormStartPosition.Manual,
-                Location = Cursor.Position,
-                FormBorderStyle = FormBorderStyle.FixedToolWindow,
-                ShowIcon = false,
-                ShowInTaskbar = false
-            };
-            ListView lv = new()
-            {
-                Dock = DockStyle.Fill,
-                View = View.List,
-                HideSelection = false
-            };
-
-            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
-            {
-                lv.Items.Add(MidiDefs.GetInstrumentName(i));
-            }
-
-            lv.Click += (object? sender, EventArgs e) =>
-            {
-                int ind = lv.SelectedIndices[0];
-                Patch = ind;
-                f.Close();
-            };
-
-            f.Controls.Add(lv);
-            f.ShowDialog();
-
-            // Patch change?
-            if(Patch != currentPatch)
-            {
-                PatchChange?.Invoke(this, EventArgs.Empty);
+                Patch = pp.PatchNumber;
+                ChannelChangeEvent?.Invoke(this, new() { PatchChange = true } );
             }
         }
         #endregion
