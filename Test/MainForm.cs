@@ -52,21 +52,27 @@ namespace MidiLib.Test
         readonly Logger _logger = LogManager.CreateLogger("MainForm");
         #endregion
 
-        #region Fields - user custom
+        #region Fields - adjust to taste
         /// <summary>Cosmetics.</summary>
         readonly Color _controlColor = Color.Aquamarine;
 
         /// <summary>My midi out.</summary>
-        readonly string _midiOutDevice = "VirtualMIDISynth #1";
+        readonly string _midiOutDeviceName = "VirtualMIDISynth #1";
 
         /// <summary>My midi in.</summary>
-        readonly string _midiInDevice = "MPK mini";
+        readonly string _midiInDeviceName = "MPK mini";
 
         /// <summary>Where to put things.</summary>
         readonly string _outPath = @"..\..\out";
 
         /// <summary>Use this if not supplied.</summary>
         readonly int _defaultTempo = 100;
+
+        /// <summary>Actual 1-based midi channel number.</summary>
+        readonly int _kbdChannelNumber = 1;
+
+        /// <summary>Current patch.</summary>
+        readonly int _kbdPatch = 0;
         #endregion
 
         #region Lifecycle
@@ -119,9 +125,10 @@ namespace MidiLib.Test
             }
 
             // Set up midi devices.
-            _player = new(_midiOutDevice, _allChannels);
-            _listener = new(_midiInDevice);
+            _player = new(_midiOutDeviceName, _allChannels);
+            _listener = new(_midiInDeviceName);
             _listener.Enable = _listener.Valid;
+            _player.SendPatch(_kbdChannelNumber, _kbdPatch);
 
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop); };
@@ -143,12 +150,12 @@ namespace MidiLib.Test
         {
             if (!_player.Valid)
             {
-                _logger.LogError($"Something wrong with your midi output device:{_midiOutDevice}");
+                _logger.LogError($"Something wrong with your midi output device:{_midiOutDeviceName}");
             }
 
             if (!_listener.Valid)
             {
-                _logger.LogError($"Something wrong with your midi input device:{_midiInDevice}");
+                _logger.LogError($"Something wrong with your midi input device:{_midiInDeviceName}");
             }
 
             // MidiTimeTest();
@@ -699,7 +706,6 @@ namespace MidiLib.Test
         }
         #endregion
 
-
         #region Piano keyboard
         /// <summary>
         /// 
@@ -710,7 +716,18 @@ namespace MidiLib.Test
         {
             _logger.LogDebug($"Vkey N:{e.NoteId} V:{e.Velocity}");
 
-            _player.SendMidi (....)
+            NoteEvent nevt;
+
+            if (e.Velocity > 0)
+            {
+                nevt = new NoteOnEvent(0, _kbdChannelNumber, e.NoteId, e.Velocity, 0);
+            }
+            else // off
+            {
+                nevt = new NoteEvent(0, _kbdChannelNumber, MidiCommandCode.NoteOff, e.NoteId, 0);
+            }
+
+            _player.SendMidi(nevt);
         }
         #endregion
     }

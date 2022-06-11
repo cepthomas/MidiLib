@@ -25,7 +25,7 @@ namespace MidiLib
         #endregion
 
         #region Events
-        /// <summary>Device has received something.</summary>
+        /// <summary>Key press info.</summary>
         public class KeyboardEventArgs : EventArgs
         {
             /// <summary>Midi note id.</summary>
