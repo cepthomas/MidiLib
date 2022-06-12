@@ -50,6 +50,7 @@ namespace MidiLib.Test
             this.sldVolume = new NBagOfUis.Slider();
             this.barBar = new MidiLib.BarBar();
             this.channelControl = new MidiLib.ChannelControl();
+            this.bb = new MidiLib.BingBong();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTempo)).BeginInit();
             this.SuspendLayout();
@@ -237,7 +238,7 @@ namespace MidiLib.Test
             this.txtViewer.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtViewer.MaxText = 5000;
             this.txtViewer.Name = "txtViewer";
-            this.txtViewer.Size = new System.Drawing.Size(701, 521);
+            this.txtViewer.Size = new System.Drawing.Size(701, 284);
             this.txtViewer.TabIndex = 58;
             this.txtViewer.WordWrap = true;
             // 
@@ -281,7 +282,6 @@ namespace MidiLib.Test
             this.vkey.ShowNoteNames = true;
             this.vkey.Size = new System.Drawing.Size(1084, 111);
             this.vkey.TabIndex = 93;
-            this.vkey.KeyboardEvent += new System.EventHandler<MidiLib.VirtualKeyboard.KeyboardEventArgs>(this.Vkey_KeyboardEvent);
             // 
             // nudTempo
             // 
@@ -358,11 +358,20 @@ namespace MidiLib.Test
             this.channelControl.TabIndex = 101;
             this.channelControl.Volume = 0.8D;
             // 
+            // bb
+            // 
+            this.bb.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.bb.Location = new System.Drawing.Point(537, 332);
+            this.bb.Name = "bb";
+            this.bb.Size = new System.Drawing.Size(300, 300);
+            this.bb.TabIndex = 102;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1250, 779);
+            this.Controls.Add(this.bb);
             this.Controls.Add(this.channelControl);
             this.Controls.Add(this.barBar);
             this.Controls.Add(this.sldVolume);
@@ -409,7 +418,6 @@ namespace MidiLib.Test
         private System.Windows.Forms.CheckedListBox lbPatterns;
         private System.Windows.Forms.Button btnAll;
         private System.Windows.Forms.Button btnNone;
-        //private Slider sldPosition;
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
         private System.Windows.Forms.ToolStripComboBox cmbDrumChannel1;
         private System.Windows.Forms.ToolStripLabel toolStripLabel2;
@@ -422,6 +430,7 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStripButton btnStuff;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private ChannelControl channelControl;
+        private BingBong bb;
     }
 }
 

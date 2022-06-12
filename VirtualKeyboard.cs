@@ -26,15 +26,7 @@ namespace MidiLib
 
         #region Events
         /// <summary>Key press info.</summary>
-        public class KeyboardEventArgs : EventArgs
-        {
-            /// <summary>Midi note id.</summary>
-            public int NoteId { get; set; } = 0;
-
-            /// <summary>Midi velocity. 0 means note off.</summary>
-            public int Velocity { get; set; } = 0;
-        }
-        public event EventHandler<KeyboardEventArgs>? KeyboardEvent;
+        public event EventHandler<DeviceEventArgs>? DeviceEvent;
         #endregion
 
         #region Constants
@@ -239,14 +231,7 @@ namespace MidiLib
         /// <param name="e"></param>
         void Keyboard_VKeyEvent(object? sender, VirtualKey.VKeyEventArgs e)
         {
-            if (KeyboardEvent is not null)
-            {
-                KeyboardEvent.Invoke(this, new KeyboardEventArgs()
-                {
-                    NoteId = e.NoteId,
-                    Velocity = e.Velocity
-                });
-            }
+            DeviceEvent?.Invoke(this, new DeviceEventArgs() { NoteId = e.NoteId, Velocity = e.Velocity });
         }
         #endregion
 

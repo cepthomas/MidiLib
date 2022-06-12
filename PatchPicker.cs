@@ -12,6 +12,9 @@ namespace MidiLib
 {
     public partial class PatchPicker : Form
     {
+        /// <summary>Control.</summary>
+        readonly ListView _lv = new();
+
         /// <summary>User selection.</summary>
         public int PatchNumber { get; private set; } = -1;
 
@@ -20,12 +23,29 @@ namespace MidiLib
         /// </summary>
         public PatchPicker()
         {
-            InitializeComponent();
             Location = Cursor.Position;
+            AutoScaleDimensions = new(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new(782, 453);
+            FormBorderStyle = FormBorderStyle.SizableToolWindow;
+            Name = "PatchPicker";
+            ShowIcon = false;
+            ShowInTaskbar = false;
+            StartPosition = FormStartPosition.Manual;
+            Text = "Select Patch";
+
+            _lv.BorderStyle = BorderStyle.FixedSingle;
+            _lv.Dock = DockStyle.Fill;
+            _lv.HideSelection = false;
+            _lv.Name = "lv";
+            _lv.View = View.List;
+            _lv.SelectedIndexChanged += List_SelectedIndexChanged;
+            _lv.KeyDown += new KeyEventHandler(this.List_KeyDown);
+            Controls.Add(_lv);
 
             for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
             {
-                lv.Items.Add(MidiDefs.GetInstrumentName(i));
+                _lv.Items.Add(MidiDefs.GetInstrumentName(i));
             }
         }
 
@@ -34,9 +54,9 @@ namespace MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void List_SelectedIndexChanged(object sender, EventArgs e)
+        void List_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            int ind = lv.SelectedIndices[0];
+            int ind = _lv.SelectedIndices[0];
             PatchNumber = ind;
             Close();
         }
@@ -46,13 +66,22 @@ namespace MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void List_KeyDown(object sender, KeyEventArgs e)
+        void List_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
             {
                 PatchNumber = -1;
                 Close();
             }
+        }
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
         }
     }
 }

@@ -54,4 +54,15 @@ namespace MidiLib
         /// <summary>How to snap.</summary>
         public static SnapType Snap { get; set; } = SnapType.Beat;
     }
+
+    /// <summary>Virtual device event info.</summary>
+    public class DeviceEventArgs : EventArgs
+    {
+        /// <summary>Midi note id.</summary>
+        public int NoteId { get; set; } = 0;
+
+        /// <summary>Midi velocity. 0 means note off.</summary>
+        public int Velocity { get; set; } = 0;
+    }
+
 }

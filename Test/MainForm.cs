@@ -108,7 +108,6 @@ namespace MidiLib.Test
             sldVolume.Maximum = InternalDefs.VOLUME_MAX;
             sldVolume.Value = InternalDefs.VOLUME_DEFAULT;
             sldVolume.Label = "volume";
-
             channelControl.ControlColor = _controlColor;
 
             // Time controller.
@@ -131,6 +130,10 @@ namespace MidiLib.Test
             _listener = new(_midiInDeviceName);
             _listener.Enable = _listener.Valid;
             _player.SendPatch(_kbdChannelNumber, _kbdPatch);
+
+            // Virtual device events.
+            bb.DeviceEvent += Virtual_DeviceEvent;
+            vkey.DeviceEvent += Virtual_DeviceEvent;
 
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop); };
@@ -708,26 +711,19 @@ namespace MidiLib.Test
         }
         #endregion
 
-        #region Piano keyboard
+        #region Device input
         /// <summary>
         /// 
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Vkey_KeyboardEvent(object? sender, VirtualKeyboard.KeyboardEventArgs e)
+        void Virtual_DeviceEvent(object? sender, DeviceEventArgs e)
         {
-            _logger.LogDebug($"Vkey N:{e.NoteId} V:{e.Velocity}");
+            _logger.LogDebug($"VirtDev N:{e.NoteId} V:{e.Velocity}");
 
-            NoteEvent nevt;
-
-            if (e.Velocity > 0)
-            {
-                nevt = new NoteOnEvent(0, _kbdChannelNumber, e.NoteId, e.Velocity, 0);
-            }
-            else // off
-            {
-                nevt = new NoteEvent(0, _kbdChannelNumber, MidiCommandCode.NoteOff, e.NoteId, 0);
-            }
+            NoteEvent nevt = e.Velocity > 0 ?
+                new NoteOnEvent(0, _kbdChannelNumber, e.NoteId % MidiDefs.MAX_MIDI, e.Velocity % MidiDefs.MAX_MIDI, 0) :
+                new NoteEvent(0, _kbdChannelNumber, MidiCommandCode.NoteOff, e.NoteId, 0);
 
             _player.SendMidi(nevt);
         }
