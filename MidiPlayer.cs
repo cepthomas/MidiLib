@@ -241,7 +241,7 @@ namespace MidiLib
             }
             if(LogMidi)
             {
-                _logger.LogTrace(evt.ToString());
+                _logger.Trace(evt.ToString());
             }
         }
         #endregion

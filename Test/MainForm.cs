@@ -90,8 +90,8 @@ namespace MidiLib.Test
             di.Create();
 
             // Logger. Note: you can create this here but don't call any _logger functions until loaded.
-            LogManager.MinLevelFile = Level.Trace;
-            LogManager.MinLevelNotif = Level.Trace;
+            LogManager.MinLevelFile = LogLevel.Trace;
+            LogManager.MinLevelNotif = LogLevel.Trace;
             LogManager.LogEvent += LogManager_LogEvent;
             LogManager.Run(Path.Join(_outPath, "log.txt"), 5000);
 
@@ -155,12 +155,12 @@ namespace MidiLib.Test
         {
             if (!_player.Valid)
             {
-                _logger.LogError($"Something wrong with your midi output device:{_midiOutDeviceName}");
+                _logger.Error($"Something wrong with your midi output device:{_midiOutDeviceName}");
             }
 
             if (!_listener.Valid)
             {
-                _logger.LogError($"Something wrong with your midi input device:{_midiInDeviceName}");
+                _logger.Error($"Something wrong with your midi input device:{_midiInDeviceName}");
             }
 
             // MidiTimeTest();
@@ -334,7 +334,7 @@ namespace MidiLib.Test
             bool ok = true;
             _fn = "";
 
-            _logger.LogInfo($"Reading file: {fn}");
+            _logger.Info($"Reading file: {fn}");
 
             if(btnPlay.Checked)
             {
@@ -356,7 +356,7 @@ namespace MidiLib.Test
 
                 if (_mdata.AllPatterns.Count == 0)
                 {
-                    _logger.LogError($"Something wrong with this file: {fn}");
+                    _logger.Error($"Something wrong with this file: {fn}");
                     ok = false;
                 }
                 else if(_mdata.AllPatterns.Count == 1) // plain midi
@@ -377,7 +377,7 @@ namespace MidiLib.Test
                                 break;
 
                             case "":
-                                _logger.LogError("Well, this should never happen!");
+                                _logger.Error("Well, this should never happen!");
                                 break;
 
                             default:
@@ -399,7 +399,7 @@ namespace MidiLib.Test
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Couldn't open the file: {fn} because: {ex.Message}");
+                _logger.Error($"Couldn't open the file: {fn} because: {ex.Message}");
                 Text = "Midi Lib";
                 ok = false;
             }
@@ -585,21 +585,21 @@ namespace MidiLib.Test
                 if (sender == btnExportAll)
                 {
                     var s = _mdata.ExportAllEvents(_outPath, channels);
-                    _logger.LogInfo($"Exported to {s}");
+                    _logger.Info($"Exported to {s}");
                 }
                 else if (sender == btnExportPattern)
                 {
                     if(_mdata.AllPatterns.Count == 1)
                     {
                         var s = _mdata.ExportGroupedEvents(_outPath, "", channels, true);
-                        _logger.LogInfo($"Exported default to {s}");
+                        _logger.Info($"Exported default to {s}");
                     }
                     else
                     {
                         foreach (var patternName in patternNames)
                         {
                             var s = _mdata.ExportGroupedEvents(_outPath, patternName, channels, true);
-                            _logger.LogInfo($"Exported pattern {patternName} to {s}");
+                            _logger.Info($"Exported pattern {patternName} to {s}");
                         }
                     }
                 }
@@ -609,7 +609,7 @@ namespace MidiLib.Test
                     {
                         // Use original ppq.
                         var s = _mdata.ExportMidi(_outPath, "", channels, _mdata.DeltaTicksPerQuarterNote);
-                        _logger.LogInfo($"Export midi to {s}");
+                        _logger.Info($"Export midi to {s}");
                     }
                     else
                     {
@@ -617,18 +617,18 @@ namespace MidiLib.Test
                         {
                             // Use original ppq.
                             var s = _mdata.ExportMidi(_outPath, patternName, channels, _mdata.DeltaTicksPerQuarterNote);
-                            _logger.LogInfo($"Export midi to {s}");
+                            _logger.Info($"Export midi to {s}");
                         }
                     }
                 }
                 else
                 {
-                    _logger.LogError($"Ooops: {sender}");
+                    _logger.Error($"Ooops: {sender}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message}");
+                _logger.Error($"{ex.Message}");
             }
         }
 
@@ -644,7 +644,7 @@ namespace MidiLib.Test
             {
                 this.InvokeIfRequired(_ =>
                 {
-                    txtViewer.AppendLine($"> {e.Message}");
+                    txtViewer.AppendLine($"{e.Message}");
                 });
             }
         }
@@ -683,13 +683,13 @@ namespace MidiLib.Test
             mt = new(96, 100);
             TestClose(mt.MidiPeriod(), 6.25, 0.001);
 
-            _logger.LogError($"MidiTimeTest done.");
+            _logger.Error($"MidiTimeTest done.");
 
             void TestClose(double value1, double value2, double tolerance)
             {
                 if (Math.Abs(value1 - value2) > tolerance)
                 {
-                    _logger.LogError($"[{value1}] not close enough to [{value2}]");
+                    _logger.Error($"[{value1}] not close enough to [{value2}]");
                 }
             }
         }
@@ -701,12 +701,12 @@ namespace MidiLib.Test
         {
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
-                _logger.LogInfo($"Midi In {i} \"{MidiIn.DeviceInfo(i).ProductName}\"");
+                _logger.Info($"Midi In {i} \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-                _logger.LogInfo($"Midi Out {i} \"{MidiOut.DeviceInfo(i).ProductName}\"");
+                _logger.Info($"Midi Out {i} \"{MidiOut.DeviceInfo(i).ProductName}\"");
             }
         }
         #endregion
@@ -719,7 +719,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Virtual_DeviceEvent(object? sender, DeviceEventArgs e)
         {
-            _logger.LogDebug($"VirtDev N:{e.NoteId} V:{e.Velocity}");
+            _logger.Debug($"VirtDev N:{e.NoteId} V:{e.Velocity}");
 
             NoteEvent nevt = e.Velocity > 0 ?
                 new NoteOnEvent(0, _kbdChannelNumber, e.NoteId % MidiDefs.MAX_MIDI, e.Velocity % MidiDefs.MAX_MIDI, 0) :

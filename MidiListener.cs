@@ -34,13 +34,7 @@ namespace MidiLib
         /// <summary>Capture on/off.</summary>
         public bool Enable 
         { 
-            set
-            {
-                if(_midiIn is not null)
-                {
-                    if (value) _midiIn.Start(); else _midiIn.Stop();
-                }
-            }
+            set { if (value) _midiIn?.Start(); else _midiIn?.Stop(); }
         }
         #endregion
 
@@ -160,7 +154,7 @@ namespace MidiLib
         {
             if (LogMidi)
             {
-                _logger.LogTrace(evt.ToString());
+                _logger.Trace(evt.ToString());
             }
         }
         #endregion
