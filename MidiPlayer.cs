@@ -18,7 +18,7 @@ namespace MidiLib
     /// <summary>
     /// A "good enough" midi player.
     /// </summary>
-    public class MidiPlayer : IDisposable
+    public sealed class MidiPlayer : IDisposable
     {
         #region Fields
         /// <summary>Midi output device.</summary>

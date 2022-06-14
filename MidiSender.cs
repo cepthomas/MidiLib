@@ -15,7 +15,7 @@ namespace MidiLib
     /// <summary>
     /// A simple midi output device.
     /// </summary>
-    public class MidiSender : IDisposable
+    public sealed class MidiSender : IDisposable
     {
         #region Fields
         /// <summary>Midi output device.</summary>

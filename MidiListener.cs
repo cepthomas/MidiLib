@@ -14,7 +14,7 @@ namespace MidiLib
     /// <summary>
     /// Midi input handler.
     /// </summary>
-    public class MidiListener : IDisposable
+    public sealed class MidiListener : IDisposable
     {
         #region Fields
         /// <summary>Midi input device.</summary>
