@@ -58,11 +58,11 @@ namespace MidiLib
     /// <summary>Virtual device event info.</summary>
     public class DeviceEventArgs : EventArgs
     {
-        /// <summary>Midi note id.</summary>
-        public int NoteId { get; set; } = 0;
+        /// <summary>Midi note number.</summary>
+        public int Note { get; set; } = 0;
 
-        /// <summary>Midi velocity. 0 means note off.</summary>
-        public int Velocity { get; set; } = 0;
+        /// <summary>Midi control value, usually velocity but could be anything.</summary>
+        public int Control { get; set; } = 0;
     }
 
 }

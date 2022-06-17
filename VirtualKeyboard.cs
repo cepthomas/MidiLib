@@ -231,7 +231,7 @@ namespace MidiLib
         /// <param name="e"></param>
         void Keyboard_VKeyEvent(object? sender, VirtualKey.VKeyEventArgs e)
         {
-            DeviceEvent?.Invoke(this, new DeviceEventArgs() { NoteId = e.NoteId, Velocity = e.Velocity });
+            DeviceEvent?.Invoke(this, new DeviceEventArgs() { Note = e.NoteId, Control = e.Velocity });
         }
         #endregion
 

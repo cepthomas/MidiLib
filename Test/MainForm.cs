@@ -719,11 +719,11 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Virtual_DeviceEvent(object? sender, DeviceEventArgs e)
         {
-            _logger.Debug($"VirtDev N:{e.NoteId} V:{e.Velocity}");
+            _logger.Debug($"VirtDev N:{e.Note} V:{e.Control}");
 
-            NoteEvent nevt = e.Velocity > 0 ?
-                new NoteOnEvent(0, _kbdChannelNumber, e.NoteId % MidiDefs.MAX_MIDI, e.Velocity % MidiDefs.MAX_MIDI, 0) :
-                new NoteEvent(0, _kbdChannelNumber, MidiCommandCode.NoteOff, e.NoteId, 0);
+            NoteEvent nevt = e.Control > 0 ?
+                new NoteOnEvent(0, _kbdChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Control % MidiDefs.MAX_MIDI, 0) :
+                new NoteEvent(0, _kbdChannelNumber, MidiCommandCode.NoteOff, e.Note, 0);
 
             _player.SendMidi(nevt);
         }

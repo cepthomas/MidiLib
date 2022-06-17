@@ -21,29 +21,35 @@ namespace MidiLib
     public partial class BingBong : UserControl
     {
         #region Fields
-        /// <summary>Underlying image data.</summary>
+        /// <summary>Background image data.</summary>
         PixelBitmap? _bmp;
 
         /// <summary>Tool tip.</summary>
-        readonly ToolTip toolTip1 = new();
-
-        /// <summary>Lowest piano key.</summary>
-        readonly int _minNote = 21;
-
-        /// <summary>Highest piano key.</summary>
-        readonly int _maxNote = 108;
-
-        /// <summary>Off.</summary>
-        readonly int _minVelocity = 0;
-
-        /// <summary>Loudest.</summary>
-        readonly int _maxVelocity = 127;
-
-        /// <summary>Visibility.</summary>
-        bool _drawGrid = true;
+        readonly ToolTip _toolTip = new();
 
         /// <summary>Last key down.</summary>
         int _lastNote = -1;
+
+        /// <summary>The pen.</summary>
+        readonly Pen _pen = new(Color.LightGray, 1);
+        #endregion
+
+        #region Properties
+
+        /// <summary>Lowest piano key.</summary>
+        public int MinNote { get; set; } = 21;
+
+        /// <summary>Highest piano key.</summary>
+        public int MaxNote { get; set; } = 108;
+
+        /// <summary>Min control value. For velocity = off.</summary>
+        public int MinControl { get; set; } = 0;
+
+        /// <summary>Max control value. For velocity = loudest.</summary>
+        public int MaxControl { get; set; } = 127;
+
+        /// <summary>Visibility.</summary>
+        public bool DrawNoteGrid { get; set; } = true;
         #endregion
 
         #region Events
@@ -68,7 +74,6 @@ namespace MidiLib
         protected override void OnLoad(EventArgs e)
         {
             DrawBitmap();
-
             base.OnLoad(e);
         }
 
@@ -79,30 +84,37 @@ namespace MidiLib
         protected override void Dispose(bool disposing)
         {
             _bmp?.Dispose();
+            _pen.Dispose();
             base.Dispose(disposing);
         }
         #endregion
 
-
-
-
-
-
         #region Event handlers
         /// <summary>
-        /// 
+        /// Paint the surface.
         /// </summary>
-        /// <param name="e"></param>
-        protected override void OnPaint(PaintEventArgs e)
+        /// <param name="pe"></param>
+        protected override void OnPaint(PaintEventArgs pe)
         {
+            // Background?
             if(_bmp is not null)
             {
-                e.Graphics.DrawImage(_bmp.Bitmap, 0, 0, _bmp.Bitmap.Width, _bmp.Bitmap.Height);
+                pe.Graphics.DrawImage(_bmp.Bitmap, 0, 0, _bmp.Bitmap.Width, _bmp.Bitmap.Height);
             }
 
-            // Draw grid
+            // Draw grid? TODO
+            if(DrawNoteGrid)
+            {
+                int num = MaxNote - MinNote;
 
-            base.OnPaint(e);
+                for (int i = 0; i < MaxNote - MinNote; i += 6)
+                {
+                    int px = i * Width / num;
+                    pe.Graphics.DrawLine(_pen, px, 0, px, Height);
+                }
+            }
+
+            base.OnPaint(pe);
         }
 
         /// <summary>
@@ -111,25 +123,29 @@ namespace MidiLib
         /// <param name="e"></param>
         protected override void OnMouseMove(MouseEventArgs e)
         {
+            var mp = PointToClient(MousePosition);
+            var (note, control) = XyToMidi(mp.X, mp.Y);
+
             if (e.Button == MouseButtons.Left)
             {
+                // Dragging. Did it change?
+                if(_lastNote != note)
+                {
+                    _lastNote = note;
+                    DeviceEvent?.Invoke(this, new() { Note = note, Control = control });
+                }
             }
-            else
-            {
-                var mp = PointToClient(MousePosition);
 
-                //toolTip1.SetToolTip(this, $"X:{mp.X} Y:{mp.Y}");
+            //toolTip1.SetToolTip(this, $"X:{mp.X} Y:{mp.Y}");
 
-                //Color clr = _result.GetPixel(mp.X, mp.Y);
-                //toolTip1.SetToolTip(this, $"X:{mp.X} Y:{mp.Y} C:{clr}");
+            //Color clr = _result.GetPixel(mp.X, mp.Y);
+            //toolTip1.SetToolTip(this, $"X:{mp.X} Y:{mp.Y} C:{clr}");
 
-                //var note = MidiDefs.NoteNumberToName(mp.X);
-                //toolTip1.SetToolTip(this, $"{note}({mp.Y})");
+            //var note = MidiDefs.NoteNumberToName(mp.X);
+            //toolTip1.SetToolTip(this, $"{note}({mp.Y})");
 
-                var nv = XyToMidi(mp.X, mp.Y);
-                var note = MidiDefs.NoteNumberToName(nv.note);
-                toolTip1.SetToolTip(this, $"{note} {nv.note} {nv.velocity}");
-            }
+            var snote = MidiDefs.NoteNumberToName(note);
+            _toolTip.SetToolTip(this, $"{snote} {note} {control}");
 
             base.OnMouseMove(e);
         }
@@ -141,10 +157,10 @@ namespace MidiLib
         protected override void OnMouseDown(MouseEventArgs e)
         {
             var mp = PointToClient(MousePosition);
-            var (note, velocity) = XyToMidi(mp.X, mp.Y);
+            var (note, control) = XyToMidi(mp.X, mp.Y);
             _lastNote = note;
 
-            DeviceEvent?.Invoke(this, new() { NoteId = note, Velocity = velocity });
+            DeviceEvent?.Invoke(this, new() { Note = note, Control = control });
 
             base.OnMouseDown(e);
         }
@@ -157,7 +173,7 @@ namespace MidiLib
         {
             if(_lastNote != -1)
             {
-                DeviceEvent?.Invoke(this, new() { NoteId = _lastNote, Velocity = 0 });
+                DeviceEvent?.Invoke(this, new() { Note = _lastNote, Control = 0 });
             }
 
             _lastNote = -1;
@@ -200,15 +216,15 @@ namespace MidiLib
         /// <summary>
         /// Map function.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        (int note, int velocity) XyToMidi(int x, int y)
+        /// <param name="x">UI location.</param>
+        /// <param name="y">UI location.</param>
+        /// <returns>Tuple of note num and control value.</returns>
+        (int note, int control) XyToMidi(int x, int y)
         {
-            int note = MathUtils.Map(x, 0, Width, _minNote, _maxNote);
-            int velocity = MathUtils.Map(y, Height, 0, _minVelocity, _maxVelocity);
+            int note = MathUtils.Map(x, 0, Width, MinNote, MaxNote);
+            int control = MathUtils.Map(y, Height, 0, MinControl, MaxControl);
 
-            return (note, velocity);
+            return (note, control);
         }
         #endregion
     }
