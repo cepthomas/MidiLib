@@ -15,6 +15,46 @@ using NBagOfTricks;
 // "Bank Select 78H/xxH followed by a Program Change will cause the Channel to become a Rhythm Channel, using the Drum Set selected by the Program Change."
 // For more details get the GM2 specification here: https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2
 
+//TODOX merge with Neb StepCollection, Step.
+// public class StepCollection
+//     ///<summary>The main collection of Steps. The key is the time to send the list.</summary>
+//     readonly Dictionary<Time, List<Step>> _steps = new();
+//     public IEnumerable<Time> Times { get { return _steps.Keys.OrderBy(k => k.TotalSubdivs); } }
+//     public int MaxBeat { get; private set; } = 0;
+//     public void AddStep(Time time, Step step)
+//     public void Add(StepCollection stepsToAdd)
+//     public IEnumerable<Step> GetSteps(Time time)
+//     public void DeleteSteps(Time time)
+//     public void Clear()
+//     public string Dump()
+//     public override string ToString()
+// public abstract class Step
+//     public IDevice? Device { get; set; } = null;
+//     public int ChannelNumber { get; set; } = 1;
+//     public override string ToString()
+// public class StepNoteOn : Step
+//     public double NoteNumber { get; set; }
+//     public double Velocity { get; set; } = 0.5;
+//     public double VelocityToPlay { get; set; } = 0.5;
+//     public Time Duration { get; set; } = new Time(0);
+//     public void Adjust(double masterVolume, double channelVolume)
+//     public override string ToString()
+// public class StepNoteOff : Step
+//     public double NoteNumber { get; set; }
+//     public double Velocity { get; set; } = 64; // seems to be standard default.
+//     public int Expiry { get; set; } = -1;
+//     public override string ToString()
+// public class StepControllerChange : Step
+//     public ControllerDef ControllerId { get; set; } = ControllerDef.None;
+//     public double Value { get; set; } = 0;
+//     public override string ToString()
+// public class StepPatch : Step
+//     public InstrumentDef Patch { get; set; } = InstrumentDef.AcousticGrandPiano;
+//     public override string ToString()
+// public class StepFunction : Step
+//     public Action? ScriptFunction { get; set; }
+//     public override string ToString()
+
 
 namespace MidiLib
 {
@@ -61,7 +101,7 @@ namespace MidiLib
         string _fn = "";
         #endregion
 
-        #region Properties gleaned from file
+        #region Properties - midi file
         /// <summary>What is it.</summary>
         public int MidiFileType { get; private set; } = 0;
 

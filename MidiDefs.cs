@@ -15,6 +15,9 @@ namespace MidiLib
     {
         #region Constants - midi spec
         /// <summary>Midi caps.</summary>
+        public const int MIN_MIDI = 0;
+
+        /// <summary>Midi caps.</summary>
         public const int MAX_MIDI = 127;
 
         /// <summary>Midi caps.</summary>

@@ -64,5 +64,4 @@ namespace MidiLib
         /// <summary>Midi control value, usually velocity but could be anything.</summary>
         public int Control { get; set; } = 0;
     }
-
 }

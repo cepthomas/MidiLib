@@ -35,18 +35,17 @@ namespace MidiLib
         #endregion
 
         #region Properties
+        /// <summary>Lowest note. Adjust to taste.</summary>
+        public int MinNote { get; set; } = 24;
 
-        /// <summary>Lowest piano key.</summary>
-        public int MinNote { get; set; } = 21;
-
-        /// <summary>Highest piano key.</summary>
-        public int MaxNote { get; set; } = 108;
+        /// <summary>Highest note. Adjust to taste.</summary>
+        public int MaxNote { get; set; } = 95;
 
         /// <summary>Min control value. For velocity = off.</summary>
-        public int MinControl { get; set; } = 0;
+        public int MinControl { get; set; } = MidiDefs.MIN_MIDI;
 
         /// <summary>Max control value. For velocity = loudest.</summary>
-        public int MaxControl { get; set; } = 127;
+        public int MaxControl { get; set; } = MidiDefs.MAX_MIDI;
 
         /// <summary>Visibility.</summary>
         public bool DrawNoteGrid { get; set; } = true;
@@ -102,7 +101,7 @@ namespace MidiLib
                 pe.Graphics.DrawImage(_bmp.Bitmap, 0, 0, _bmp.Bitmap.Width, _bmp.Bitmap.Height);
             }
 
-            // Draw grid? TODO
+            // Draw grid?
             if(DrawNoteGrid)
             {
                 int num = MaxNote - MinNote;
