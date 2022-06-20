@@ -31,7 +31,7 @@ namespace MidiLib
         int _lastNote = -1;
 
         /// <summary>The pen.</summary>
-        readonly Pen _pen = new(Color.LightGray, 1);
+        readonly Pen _pen = new(Color.WhiteSmoke, 1);
         #endregion
 
         #region Properties

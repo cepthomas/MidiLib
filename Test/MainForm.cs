@@ -354,19 +354,19 @@ namespace MidiLib.Test
                 // Init new stuff with contents of file/pattern.
                 lbPatterns.Items.Clear();
 
-                if (_mdata.AllPatterns.Count == 0)
+                if (_mdata.Patterns.Count == 0)
                 {
                     _logger.Error($"Something wrong with this file: {fn}");
                     ok = false;
                 }
-                else if(_mdata.AllPatterns.Count == 1) // plain midi
+                else if(_mdata.Patterns.Count == 1) // plain midi
                 {
-                    var pinfo = _mdata.AllPatterns[0];
+                    var pinfo = _mdata.Patterns[0];
                     LoadPattern(pinfo);
                 }
                 else // style - multiple patterns.
                 {
-                    foreach (var p in _mdata.AllPatterns)
+                    foreach (var p in _mdata.Patterns)
                     {
                         switch (p.PatternName)
                         {
@@ -433,8 +433,8 @@ namespace MidiLib.Test
             {
                 int chnum = i + 1;
 
-                var chEvents = _mdata.AllEvents.
-                    Where(e => e.PatternName == pinfo.PatternName && e.ChannelNumber == chnum && (e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent)).
+                var chEvents = pinfo.Events.
+                    Where(e => e.ChannelNumber == chnum && (e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent)).
                     OrderBy(e => e.AbsoluteTime);
 
                 // Is this channel pertinent?
@@ -482,7 +482,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Patterns_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            var pinfo = _mdata.AllPatterns.Where(p => p.PatternName == lbPatterns.SelectedItem.ToString()).First();
+            var pinfo = _mdata.Patterns.Where(p => p.PatternName == lbPatterns.SelectedItem.ToString()).First();
 
             LoadPattern(pinfo!);
 
@@ -589,7 +589,7 @@ namespace MidiLib.Test
                 }
                 else if (sender == btnExportPattern)
                 {
-                    if(_mdata.AllPatterns.Count == 1)
+                    if(_mdata.Patterns.Count == 1)
                     {
                         var s = _mdata.ExportGroupedEvents(_outPath, "", channels, true);
                         _logger.Info($"Exported default to {s}");
@@ -605,7 +605,7 @@ namespace MidiLib.Test
                 }
                 else if (sender == btnExportMidi)
                 {
-                    if (_mdata.AllPatterns.Count == 1)
+                    if (_mdata.Patterns.Count == 1)
                     {
                         // Use original ppq.
                         var s = _mdata.ExportMidi(_outPath, "", channels, _mdata.DeltaTicksPerQuarterNote);

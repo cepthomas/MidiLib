@@ -28,13 +28,14 @@ namespace MidiLib
         /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
         public int[] Patches { get; set; } = new int[MidiDefs.NUM_CHANNELS];
 
-        ///// <summary>All the pattern midi events, (usually) ordered by time.</summary>
+        /// <summary>All the pattern midi events, (usually) ordered by time.</summary>
         // TODOX Consider PatternInfo holding the events. _patternDefaults holds the all set + default pattern. Remove EventDesc.PatternName.
-        //public List<EventDesc> AllEvents { get; private set; } = new();
+        public List<EventDesc> Events { get; private set; } = new();
 
         /// <summary>Normal constructor.</summary>
         public PatternInfo()
         {
+            // Init fixed length arrays.
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
                 Patches[i] = -1;
