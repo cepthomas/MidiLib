@@ -53,7 +53,7 @@ namespace MidiLib
 
         #region Events
         /// <summary>Click press info.</summary>
-        public event EventHandler<DeviceEventArgs>? DeviceEvent;
+        public event EventHandler<InputEventArgs>? InputEvent;
         #endregion
 
         #region Lifecycle
@@ -123,7 +123,7 @@ namespace MidiLib
         protected override void OnMouseMove(MouseEventArgs e)
         {
             var mp = PointToClient(MousePosition);
-            var (note, control) = XyToMidi(mp.X, mp.Y);
+            var (note, value) = XyToMidi(mp.X, mp.Y);
 
             if (e.Button == MouseButtons.Left)
             {
@@ -131,7 +131,7 @@ namespace MidiLib
                 if(_lastNote != note)
                 {
                     _lastNote = note;
-                    DeviceEvent?.Invoke(this, new() { Note = note, Control = control });
+                    InputEvent?.Invoke(this, new() { Note = note, Value = value });
                 }
             }
 
@@ -144,7 +144,7 @@ namespace MidiLib
             //toolTip1.SetToolTip(this, $"{note}({mp.Y})");
 
             var snote = MidiDefs.NoteNumberToName(note);
-            _toolTip.SetToolTip(this, $"{snote} {note} {control}");
+            _toolTip.SetToolTip(this, $"{snote} {note} {value}");
 
             base.OnMouseMove(e);
         }
@@ -156,10 +156,10 @@ namespace MidiLib
         protected override void OnMouseDown(MouseEventArgs e)
         {
             var mp = PointToClient(MousePosition);
-            var (note, control) = XyToMidi(mp.X, mp.Y);
+            var (note, value) = XyToMidi(mp.X, mp.Y);
             _lastNote = note;
 
-            DeviceEvent?.Invoke(this, new() { Note = note, Control = control });
+            InputEvent?.Invoke(this, new() { Note = note, Value = value });
 
             base.OnMouseDown(e);
         }
@@ -172,7 +172,7 @@ namespace MidiLib
         {
             if(_lastNote != -1)
             {
-                DeviceEvent?.Invoke(this, new() { Note = _lastNote, Control = 0 });
+                InputEvent?.Invoke(this, new() { Note = _lastNote, Value = 0 });
             }
 
             _lastNote = -1;
@@ -217,13 +217,13 @@ namespace MidiLib
         /// </summary>
         /// <param name="x">UI location.</param>
         /// <param name="y">UI location.</param>
-        /// <returns>Tuple of note num and control value.</returns>
+        /// <returns>Tuple of note num and vertical value.</returns>
         (int note, int control) XyToMidi(int x, int y)
         {
             int note = MathUtils.Map(x, 0, Width, MinNote, MaxNote);
-            int control = MathUtils.Map(y, Height, 0, MinControl, MaxControl);
+            int value = MathUtils.Map(y, Height, 0, MinControl, MaxControl);
 
-            return (note, control);
+            return (note, value);
         }
         #endregion
     }

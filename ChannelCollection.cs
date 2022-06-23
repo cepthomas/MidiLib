@@ -72,7 +72,7 @@ namespace MidiLib
         /// <param name="channelNumber"></param>
         /// <param name="events"></param>
         /// <param name="mt"></param>
-        public void SetEvents(int channelNumber, IEnumerable<EventDesc> events, MidiTimeConverter mt)
+        public void SetEvents(int channelNumber, IEnumerable<MidiEventDesc> events, MidiTimeConverter mt)
         {
             var ch = GetChannel(channelNumber);
 

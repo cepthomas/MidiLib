@@ -30,6 +30,28 @@ namespace MidiLib
         public const int DEFAULT_DRUM_CHANNEL = 10;
         #endregion
 
+        // TODOX for neb to lib
+        public static int GetInstrumentNumber(string which) //TODOX
+        {
+            return -1;
+        }
+
+        public static int GetDrumNumber(string which) //TODOX
+        {
+            return -1;
+        }
+
+        public static int GetControllerNumber(string which) //TODOX
+        {
+            return -1;
+        }
+
+        public static int GetDrumKitNumber(string which) //TODOX
+        {
+            return -1;
+        }
+
+
         #region API
         /// <summary>
         /// Get patch name.
@@ -72,7 +94,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="which"></param>
         /// <returns></returns>
-        public static string GetDrumKit(int which)
+        public static string GetDrumKitName(int which)
         {
             return _drumKits.ContainsKey(which) ? _drumKits[which] : $"KIT_{which}";
         }

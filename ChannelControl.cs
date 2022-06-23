@@ -57,7 +57,7 @@ namespace MidiLib
             InitializeComponent();
 
             sldVolume.Minimum = InternalDefs.VOLUME_MIN;
-            sldVolume.Maximum = InternalDefs.VOLUME_MAX;
+            sldVolume.Maximum = InternalDefs.GAIN_MAX;
             sldVolume.Value = InternalDefs.VOLUME_DEFAULT;
 
             lblPatch.Click += Patch_Click;

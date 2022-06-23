@@ -9,7 +9,7 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
-    /// <summary>Describes one midi channel.</summary>
+    /// <summary>Describes one midi output channel.</summary>
     public class Channel
     {
         #region Fields
@@ -19,6 +19,18 @@ namespace MidiLib
         ///<summary>Backing.</summary>
         double _volume = InternalDefs.VOLUME_DEFAULT;
         #endregion
+
+        // TODOX from neb:
+        /// <summary>Optional label/reference.</summary>
+        public string ChannelName { get; set; } = "";
+        ///// <summary>The device type for this channel. Used to find and bind the device at runtime.</summary>
+        /// <summary>How wobbly. 0 to disable.</summary>
+        public double VolumeWobbleRange { get; set; } = 0.0;
+        /// <summary>Wobbler for volume (optional).</summary>
+        public Wobbler? VolWobbler { get; set; } = null;
+
+
+
 
         #region Properties
         /// <summary>Actual 1-based midi channel number.</summary>
@@ -47,12 +59,24 @@ namespace MidiLib
         public int MaxSubdiv { get; private set; } = 0;
         #endregion
 
+
+        /// <summary>Get the next volume.</summary>
+        /// <param name="def"></param>
+        /// <returns></returns>
+        public double NextVol(double def)
+        {
+            var vel = VolWobbler is null ? def : VolWobbler.Next(def);
+            vel *= _volume;
+            return vel;
+        }
+
+
         #region Functions
         /// <summary>
         /// Set the events for the channel.
         /// </summary>
         /// <param name="events"></param>
-        public void SetEvents(IEnumerable<EventDesc> events)
+        public void SetEvents(IEnumerable<MidiEventDesc> events)
         {
             // Reset.
             _events.Clear();

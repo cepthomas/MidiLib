@@ -15,15 +15,16 @@ using NBagOfTricks;
 // "Bank Select 78H/xxH followed by a Program Change will cause the Channel to become a Rhythm Channel, using the Drum Set selected by the Program Change."
 // For more details get the GM2 specification here: https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2
 
+
 namespace MidiLib
 {
     /// <summary>
     /// Internal representation of one midi event.
     /// </summary>
-    public class EventDesc
+    public class MidiEventDesc
     {
         /// <summary>One-based channel number.</summary>
-        public int ChannelNumber { get; set; }
+        public int ChannelNumber { get { return MidiEvent.Channel; } }
 
         /// <summary>Time (subdivs) from original file.</summary>
         public long AbsoluteTime { get; set; }
@@ -31,12 +32,14 @@ namespace MidiLib
         /// <summary>Time (subdivs) scaled to internal units using send PPQ.</summary>
         public int ScaledTime { get; set; }
 
-        /// <summary>The raw event.</summary>
+        /// <summary>The raw midi event.</summary>
         public MidiEvent MidiEvent { get; set; } = new NullMidiEvent();
     }
 
     /// <summary>
-    /// Reads in and processes standard midi or yamaha style files.
+    /// Represents one complete collection of midi events.
+    /// Reads and processes standard midi or yamaha style files.
+    /// Writes subsets to various output formats.
     /// </summary>
     public class MidiData
     {
@@ -62,7 +65,7 @@ namespace MidiLib
         public int MidiFileType { get; private set; } = 0;
 
         /// <summary>How many tracks.</summary>
-        public int Tracks { get; private set; } = 0;
+        public int NumTracks { get; private set; } = 0;
 
         /// <summary>Original resolution for all events.</summary>
         public int DeltaTicksPerQuarterNote { get; private set; } = 0;
@@ -70,7 +73,34 @@ namespace MidiLib
 
         #region Properties for client use
         /// <summary>All file pattern sections. Plain midi files will have only one, unnamed.</summary>
-        public List<PatternInfo> Patterns { get; private set; } = new();
+        List<PatternInfo> Patterns = new();
+        //public List<PatternInfo> Patterns { get; private set; } = new();
+
+        public int NumPatterns { get { return Patterns.Count; } }
+
+        public PatternInfo? GetPattern(int index)
+        {
+            PatternInfo? ret = null;
+
+            if (index < Patterns.Count)
+            {
+                ret = Patterns[index];
+            }
+            return ret;
+        }
+
+        public PatternInfo? GetPattern(string name)
+        {
+            PatternInfo? ret = null;
+
+            var pinfo = Patterns.Where(p => p.PatternName == name);
+            if (pinfo is not null && pinfo.Any())
+            {
+                ret = pinfo.First();
+            }
+            return ret;
+        }
+
 
         ///// <summary>All the midi events. This is the verbatim ordered content of the file.</summary>
         //public List<EventDesc> AllEvents { get; private set; } = new();
@@ -139,7 +169,7 @@ namespace MidiLib
             MidiFileType = (int)ReadStream(br, 2);
 
             // Number of tracks.
-            Tracks = (int)ReadStream(br, 2);
+            NumTracks = (int)ReadStream(br, 2);
 
             // Resolution.
             DeltaTicksPerQuarterNote = (int)ReadStream(br, 2);
@@ -275,10 +305,10 @@ namespace MidiLib
             void AddMidiEvent(MidiEvent evt)
             {
                 var pi = Patterns.Last();
-                pi.Events.Add(new EventDesc()
+                pi.Events.Add(new MidiEventDesc()
                 {
 //                    PatternName = pi.PatternName,
-                    ChannelNumber = evt.Channel,
+//                    ChannelNumber = evt.Channel,
                     AbsoluteTime = evt.AbsoluteTime,
                     ScaledTime = -1, // scale later
                     MidiEvent = evt
@@ -368,7 +398,7 @@ namespace MidiLib
             _patternDefaults = new();
 
             MidiFileType = 0;
-            Tracks = 0;
+            NumTracks = 0;
             DeltaTicksPerQuarterNote = 0;
 
             Patterns.Clear();
@@ -457,7 +487,7 @@ namespace MidiLib
                 $"Meta,Value",
                 $"MidiFileType,{MidiFileType}",
                 $"DeltaTicksPerQuarterNote,{DeltaTicksPerQuarterNote}",
-                $"Tracks,{Tracks}",
+                $"Tracks,{NumTracks}",
             };
 
             contentText.Add("AbsoluteTime,Event,Pattern,Channel,Content");
@@ -505,7 +535,7 @@ namespace MidiLib
                 $"Meta,Value",
                 $"MidiFileType,{MidiFileType}",
                 $"DeltaTicksPerQuarterNote,{DeltaTicksPerQuarterNote}",
-                $"Tracks,{Tracks}",
+                $"Tracks,{NumTracks}",
                 $"Pattern,{pattern.PatternName}",
                 $"Tempo,{pattern.Tempo}",
                 $"TimeSig,{pattern.TimeSig}",
@@ -562,7 +592,7 @@ namespace MidiLib
 
                     case PatchChangeEvent evt:
                         string pname = _allChannels.IsDrums(me.MidiEvent.Channel) ?
-                           $"{MidiDefs.GetDrumKit(evt.Patch)}" :
+                           $"{MidiDefs.GetDrumKitName(evt.Patch)}" :
                            $"{MidiDefs.GetInstrumentName(evt.Patch)}";
                         otherText.Add($"{sc},{evt.Patch},{pname},");
                         break;
@@ -676,9 +706,9 @@ namespace MidiLib
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="sortTime">Optional sort.</param>
         /// <returns>Enumerator or null if invalid.</returns>
-        IEnumerable<EventDesc>? GetFilteredEvents(string patternName, List<int> channels, bool sortTime)
+        IEnumerable<MidiEventDesc>? GetFilteredEvents(string patternName, List<int> channels, bool sortTime)
         {
-            IEnumerable<EventDesc>? descs = null;
+            IEnumerable<MidiEventDesc>? descs = null;
 
             var pi = Patterns.Where(p => p.PatternName == patternName).First();
 

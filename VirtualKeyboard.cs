@@ -26,7 +26,7 @@ namespace MidiLib
 
         #region Events
         /// <summary>Key press info.</summary>
-        public event EventHandler<DeviceEventArgs>? DeviceEvent;
+        public event EventHandler<InputEventArgs>? InputEvent;
         #endregion
 
         #region Constants
@@ -231,7 +231,7 @@ namespace MidiLib
         /// <param name="e"></param>
         void Keyboard_VKeyEvent(object? sender, VirtualKey.VKeyEventArgs e)
         {
-            DeviceEvent?.Invoke(this, new DeviceEventArgs() { Note = e.NoteId, Control = e.Velocity });
+            InputEvent?.Invoke(this, new() { Note = e.NoteId, Value = e.Velocity });
         }
         #endregion
 

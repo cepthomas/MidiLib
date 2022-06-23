@@ -29,8 +29,7 @@ namespace MidiLib
         public int[] Patches { get; set; } = new int[MidiDefs.NUM_CHANNELS];
 
         /// <summary>All the pattern midi events, (usually) ordered by time.</summary>
-        // TODOX Consider PatternInfo holding the events. _patternDefaults holds the all set + default pattern. Remove EventDesc.PatternName.
-        public List<EventDesc> Events { get; private set; } = new();
+        public List<MidiEventDesc> Events { get; private set; } = new();
 
         /// <summary>Normal constructor.</summary>
         public PatternInfo()

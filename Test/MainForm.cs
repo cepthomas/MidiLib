@@ -128,12 +128,12 @@ namespace MidiLib.Test
             // Set up midi devices.
             _player = new(_midiOutDeviceName, _allChannels);
             _listener = new(_midiInDeviceName);
-            _listener.Enable = _listener.Valid;
+            _listener.CaptureEnable = _listener.Valid;
             _player.SendPatch(_kbdChannelNumber, _kbdPatch);
 
             // Virtual device events.
-            bb.DeviceEvent += Virtual_DeviceEvent;
-            vkey.DeviceEvent += Virtual_DeviceEvent;
+            bb.InputEvent += Virtual_InputEvent;
+            vkey.InputEvent += Virtual_InputEvent;
 
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop); };
@@ -354,21 +354,23 @@ namespace MidiLib.Test
                 // Init new stuff with contents of file/pattern.
                 lbPatterns.Items.Clear();
 
-                if (_mdata.Patterns.Count == 0)
+                if (_mdata.NumPatterns == 0)
                 {
                     _logger.Error($"Something wrong with this file: {fn}");
                     ok = false;
                 }
-                else if(_mdata.Patterns.Count == 1) // plain midi
+                else if(_mdata.NumPatterns == 1) // plain midi
                 {
-                    var pinfo = _mdata.Patterns[0];
+                    var pinfo = _mdata.GetPattern(0);
                     LoadPattern(pinfo);
                 }
-                else // style - multiple patterns.
+                else // style has multiple patterns.
                 {
-                    foreach (var p in _mdata.Patterns)
+                    for (int i = 0; i < _mdata.NumPatterns; i++)
                     {
-                        switch (p.PatternName)
+                        var p = _mdata.GetPattern(i);
+
+                        switch (p!.PatternName)
                         {
                             // These don't contain a pattern.
                             case "SFF1": // initial patches are in here
@@ -413,7 +415,7 @@ namespace MidiLib.Test
         /// Load the requested pattern and create controls.
         /// </summary>
         /// <param name="pinfo"></param>
-        void LoadPattern(PatternInfo pinfo)
+        void LoadPattern(PatternInfo? pinfo)
         {
             _player.Reset();
 
@@ -421,48 +423,55 @@ namespace MidiLib.Test
             _playerControls.ForEach(c => Controls.Remove(c));
             _playerControls.Clear();
 
-            // Create the new controls.
-            int lastSubdiv = 0;
-            int x = lbPatterns.Right + 5;
-            int y = lbPatterns.Top;
-
-            // For scaling subdivs to internal.
-            MidiTimeConverter mt = new(_mdata.DeltaTicksPerQuarterNote, _defaultTempo);
-
-            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+            if (pinfo is null)
             {
-                int chnum = i + 1;
+                _logger.Error($"Invalid pattern!");
+            }
+            else
+            {
+                // Create the new controls.
+                int lastSubdiv = 0;
+                int x = lbPatterns.Right + 5;
+                int y = lbPatterns.Top;
 
-                var chEvents = pinfo.Events.
-                    Where(e => e.ChannelNumber == chnum && (e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent)).
-                    OrderBy(e => e.AbsoluteTime);
+                // For scaling subdivs to internal.
+                MidiTimeConverter mt = new(_mdata.DeltaTicksPerQuarterNote, _defaultTempo);
 
-                // Is this channel pertinent?
-                if (chEvents.Any())
+                for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
                 {
-                    _allChannels.SetEvents(chnum, chEvents, mt);
+                    int chnum = i + 1;
 
-                    // Make new control.
-                    PlayerControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
+                    var chEvents = pinfo.Events.
+                        Where(e => e.ChannelNumber == chnum && (e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent)).
+                        OrderBy(e => e.AbsoluteTime);
 
-                    // Bind to internal channel object.
-                    _allChannels.Bind(chnum, control);
+                    // Is this channel pertinent?
+                    if (chEvents.Any())
+                    {
+                        _allChannels.SetEvents(chnum, chEvents, mt);
 
-                    // Now init the control - after binding!
-                    control.Patch = pinfo.Patches[i];
-                    //control.IsDrums = GetDrumChannels().Contains(chnum);
+                        // Make new control.
+                        PlayerControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
 
-                    control.ChannelChangeEvent += Control_ChannelChange;
-                    Controls.Add(control);
-                    _playerControls.Add(control);
+                        // Bind to internal channel object.
+                        _allChannels.Bind(chnum, control);
 
-                    lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
+                        // Now init the control - after binding!
+                        control.Patch = pinfo.Patches[i];
+                        //control.IsDrums = GetDrumChannels().Contains(chnum);
 
-                    // Adjust positioning.
-                    y += control.Height + 5;
+                        control.ChannelChangeEvent += Control_ChannelChange;
+                        Controls.Add(control);
+                        _playerControls.Add(control);
 
-                    // Send patch maybe. These can change per pattern.
-                    _player.SendPatch(chnum, pinfo.Patches[i]);
+                        lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
+
+                        // Adjust positioning.
+                        y += control.Height + 5;
+
+                        // Send patch maybe. These can change per pattern.
+                        _player.SendPatch(chnum, pinfo.Patches[i]);
+                    }
                 }
             }
 
@@ -482,9 +491,9 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Patterns_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            var pinfo = _mdata.Patterns.Where(p => p.PatternName == lbPatterns.SelectedItem.ToString()).First();
+            var pinfo = _mdata.GetPattern(lbPatterns.SelectedItem.ToString()!);
 
-            LoadPattern(pinfo!);
+            LoadPattern(pinfo);
 
             Rewind();
         }
@@ -589,7 +598,7 @@ namespace MidiLib.Test
                 }
                 else if (sender == btnExportPattern)
                 {
-                    if(_mdata.Patterns.Count == 1)
+                    if(_mdata.NumPatterns == 1)
                     {
                         var s = _mdata.ExportGroupedEvents(_outPath, "", channels, true);
                         _logger.Info($"Exported default to {s}");
@@ -605,7 +614,7 @@ namespace MidiLib.Test
                 }
                 else if (sender == btnExportMidi)
                 {
-                    if (_mdata.Patterns.Count == 1)
+                    if (_mdata.NumPatterns == 1)
                     {
                         // Use original ppq.
                         var s = _mdata.ExportMidi(_outPath, "", channels, _mdata.DeltaTicksPerQuarterNote);
@@ -717,12 +726,12 @@ namespace MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Virtual_DeviceEvent(object? sender, DeviceEventArgs e)
+        void Virtual_InputEvent(object? sender, InputEventArgs e)
         {
-            _logger.Debug($"VirtDev N:{e.Note} V:{e.Control}");
+            _logger.Debug($"VirtDev N:{e.Note} V:{e.Value}");
 
-            NoteEvent nevt = e.Control > 0 ?
-                new NoteOnEvent(0, _kbdChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Control % MidiDefs.MAX_MIDI, 0) :
+            NoteEvent nevt = e.Value > 0 ?
+                new NoteOnEvent(0, _kbdChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Value % MidiDefs.MAX_MIDI, 0) :
                 new NoteEvent(0, _kbdChannelNumber, MidiCommandCode.NoteOff, e.Note, 0);
 
             _player.SendMidi(nevt);

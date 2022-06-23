@@ -15,7 +15,7 @@ namespace MidiLib
     /// <summary>
     /// A simple midi output device.
     /// </summary>
-    public sealed class MidiSender : IDisposable
+    public sealed class MidiSender : IMidiOutputDevice
     {
         #region Fields
         /// <summary>Midi output device.</summary>
@@ -26,29 +26,39 @@ namespace MidiLib
         #endregion
 
         #region Properties
-        /// <summary>Are we ok?</summary>
+        /// <inheritdoc />
+        public string DeviceName { get; }
+
+        /// <inheritdoc />
         public bool Valid { get { return _midiOut is not null; } }
 
-        /// <summary>Current master volume.</summary>
-        public double Volume { get; set; } = InternalDefs.VOLUME_DEFAULT;
+        /// <inheritdoc />
+        public bool LogEnable { get { return _logger.Enable; } set { _logger.Enable = value; } }
 
-        /// <summary>Log outbound traffic at Trace level. Warning - can get busy.</summary>
-        public bool LogMidi { get { return _logger.Enable; } set { _logger.Enable = value; } }
+
+
+
+
+        ///// <summary>Current master volume.</summary>
+        //public double Volume { get; set; } = InternalDefs.VOLUME_DEFAULT;
+
         #endregion
 
         #region Lifecycle
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        /// <param name="midiDevice">Client supplies name of device.</param>
-        public MidiSender(string midiDevice)
+        /// <param name="deviceName">Client must supply name of device.</param>
+        public MidiSender(string deviceName)
         {
-            LogMidi = false;
+            DeviceName = deviceName;
+
+            LogEnable = false;
 
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-                if (midiDevice == MidiOut.DeviceInfo(i).ProductName)
+                if (deviceName == MidiOut.DeviceInfo(i).ProductName)
                 {
                     _midiOut = new MidiOut(i);
                     break;
@@ -67,28 +77,24 @@ namespace MidiLib
         #endregion
 
         #region Public functions - midi
-        public void SendPatch(int channelNumber, int patch)
-        {
-            if (patch >= 0)
-            {
-                PatchChangeEvent evt = new(0, channelNumber, patch);
-                SendMidi(evt);
-            }
-        }
+        ///// <inheritdoc />
+        //public void SendPatch(int channelNumber, int patch)
+        //{
+        //    if (patch >= 0)
+        //    {
+        //        PatchChangeEvent evt = new(0, channelNumber, patch);
+        //        SendEvent(evt);
+        //    }
+        //}
 
-        /// <summary>
-        /// Send all notes off.
-        /// </summary>
-        /// <param name="channelNumber">1-based channel</param>
+        /// <inheritdoc />
         public void Kill(int channelNumber)
         {
             ControlChangeEvent nevt = new(0, channelNumber, MidiController.AllNotesOff, 0);
-            SendMidi(nevt);
+            SendEvent(nevt);
         }
 
-        /// <summary>
-        /// Send all notes off.
-        /// </summary>
+        /// <inheritdoc />
         public void KillAll()
         {
             // Send midi stop all notes just in case.
@@ -99,20 +105,27 @@ namespace MidiLib
             }
         }
 
-        /// <summary>
-        /// Send midi.
-        /// </summary>
-        /// <param name="evt"></param>
-        public void SendMidi(MidiEvent evt)
+        /// <inheritdoc />
+        public void SendEvent(MidiEvent evt)
         {
             if(_midiOut is not null)
             {
                 _midiOut.Send(evt.GetAsShortMessage());
             }
-            if (LogMidi)
+            if (LogEnable)
             {
                 _logger.Trace(evt.ToString());
             }
+        }
+
+        /// <inheritdoc />
+        public void Housekeep()// TODOX?
+        {
+            //// Send any stops due.
+            //_stops.ForEach(s => { s.Expiry--; if (s.Expiry < 0) Send(s); });
+
+            //// Reset.
+            //_stops.RemoveAll(s => s.Expiry < 0);
         }
         #endregion
     }
