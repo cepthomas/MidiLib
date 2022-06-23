@@ -17,6 +17,11 @@ namespace MidiLib
     /// <summary>Custom default type to avoid handling null everywhere.</summary>
     public class NullMidiEvent : MidiEvent
     {
+        /// <summary>Single constructor.</summary>
+        public NullMidiEvent() : base(0, 0, MidiCommandCode.MetaEvent)
+        {
+        }
+
         public override string ToString()
         {
             return $"NullMidiEvent: {base.ToString()}";

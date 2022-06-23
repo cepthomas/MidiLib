@@ -41,6 +41,20 @@ namespace MidiLib
             }
         }
 
+
+
+
+
+        public IEnumerable<MidiEventDesc> GetEvents(int when)
+        {
+            var evts = Events.Where(e => e.ScaledTime == when);
+
+            return evts.Any() ? evts : Enumerable.Empty<MidiEventDesc>();
+        }
+
+
+
+
         /// <summary>Readable version.</summary>
         /// <returns></returns>
         public override string ToString()
