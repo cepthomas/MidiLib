@@ -9,7 +9,7 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
-    /// <summary>Describes one midi output channel.</summary>
+    /// <summary>Describes one midi output channel. Some properties are optional.</summary>
     public class Channel
     {
         #region Fields
@@ -20,27 +20,15 @@ namespace MidiLib
         double _volume = InternalDefs.VOLUME_DEFAULT;
         #endregion
 
-        // TODOX from neb:
+        #region Properties - required
         /// <summary>Optional label/reference.</summary>
         public string ChannelName { get; set; } = "";
-        ///// <summary>The device type for this channel. Used to find and bind the device at runtime.</summary>
-        /// <summary>How wobbly. 0 to disable.</summary>
-        public double VolumeWobbleRange { get; set; } = 0.0;
-        /// <summary>Wobbler for volume (optional).</summary>
-        public Wobbler? VolWobbler { get; set; } = null;
 
-
-
-
-        #region Properties
         /// <summary>Actual 1-based midi channel number.</summary>
         public int ChannelNumber { get; set; } = -1;
 
         /// <summary>For muting/soloing.</summary>
         public ChannelState State { get; set; } = ChannelState.Normal;
-
-        /// <summary>For user selection.</summary>
-        public bool Selected { get; set; } = false;
 
         /// <summary>Drums are handled differently.</summary>
         public bool IsDrums { get; set; } = false;
@@ -59,17 +47,13 @@ namespace MidiLib
         public int MaxSubdiv { get; private set; } = 0;
         #endregion
 
+        #region Properties - optional
+        ///// <summary>The device used by this channel. Used to find and bind the device at runtime.</summary>
+        public string DeviceName { get; set; } = "";
 
-        /// <summary>Get the next volume.</summary>
-        /// <param name="def"></param>
-        /// <returns></returns>
-        public double NextVol(double def)
-        {
-            var vel = VolWobbler is null ? def : VolWobbler.Next(def);
-            vel *= _volume;
-            return vel;
-        }
-
+        /// <summary>For user selection.</summary>
+        public bool Selected { get; set; } = false;
+        #endregion
 
         #region Functions
         /// <summary>
@@ -119,6 +103,17 @@ namespace MidiLib
         public List<MidiEvent> GetEvents(int subdiv)
         {
             return _events.ContainsKey(subdiv) ? _events[subdiv] : new List<MidiEvent>();
+        }
+
+        /// <summary>Get the next volume.</summary>
+        /// <param name="def"></param>
+        /// <returns></returns>
+        public double NextVol(double def)
+        {
+            //var vel = _volWobbler is null ? def : _volWobbler.Next(def);
+            //vel *= _volume;
+            //return vel;
+            return _volume;
         }
         #endregion
     }

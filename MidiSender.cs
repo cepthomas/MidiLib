@@ -117,16 +117,6 @@ namespace MidiLib
                 _logger.Trace(evt.ToString());
             }
         }
-
-        /// <inheritdoc />
-        public void Housekeep()// TODOX?
-        {
-            //// Send any stops due.
-            //_stops.ForEach(s => { s.Expiry--; if (s.Expiry < 0) Send(s); });
-
-            //// Reset.
-            //_stops.RemoveAll(s => s.Expiry < 0);
-        }
         #endregion
     }
 }

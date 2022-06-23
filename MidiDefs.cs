@@ -30,23 +30,23 @@ namespace MidiLib
         public const int DEFAULT_DRUM_CHANNEL = 10;
         #endregion
 
-        // TODOX for neb to lib
-        public static int GetInstrumentNumber(string which) //TODOX
+        // TODO1 for neb to lib
+        public static int GetInstrumentNumber(string which)
         {
             return -1;
         }
 
-        public static int GetDrumNumber(string which) //TODOX
+        public static int GetDrumNumber(string which)
         {
             return -1;
         }
 
-        public static int GetControllerNumber(string which) //TODOX
+        public static int GetControllerNumber(string which)
         {
             return -1;
         }
 
-        public static int GetDrumKitNumber(string which) //TODOX
+        public static int GetDrumKitNumber(string which)
         {
             return -1;
         }

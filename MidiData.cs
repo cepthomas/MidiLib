@@ -18,10 +18,13 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
+
+
+
     /// <summary>
     /// Internal representation of one midi event.
     /// </summary>
-    public class MidiEventDesc //TODOX clean up/simplify.
+    public class MidiEventDesc //TODO0 clean up/simplify.
     {
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get { return MidiEvent.Channel; } }
@@ -52,6 +55,10 @@ namespace MidiLib
     /// </summary>
     public class MidiData
     {
+
+        ///// <summary>All the midi events. This is the verbatim ordered content of the file.</summary>
+        //public List<EventDesc> AllEvents { get; private set; } = new();
+
         #region Fields
         /// <summary>The internal channel objects.</summary>
         readonly ChannelCollection _allChannels = new();
@@ -87,12 +94,6 @@ namespace MidiLib
         /// <summary>Number of patterns contained.</summary>
         public int NumPatterns { get { return _patterns.Count; } }
         #endregion
-
-
-
-        ///// <summary>All the midi events. This is the verbatim ordered content of the file.</summary>
-        //public List<EventDesc> AllEvents { get; private set; } = new();
-
 
         #region Public functions
         /// <summary>
@@ -136,6 +137,22 @@ namespace MidiLib
 
             // Last one.
             CleanUpPattern();
+        }
+
+        /// <summary>
+        /// Clean up.
+        /// </summary>
+        public void Reset()
+        {
+            _lastStreamPos = 0;
+            _patternDefaults = new();
+
+            MidiFileType = 0;
+            NumTracks = 0;
+            DeltaTicksPerQuarterNote = 0;
+
+            _patterns.Clear();
+            //AllEvents.Clear();
         }
 
         /// <summary>
@@ -411,22 +428,6 @@ namespace MidiLib
             br.ReadBytes((int)chunkSize);
         }
         #endregion
-
-        /// <summary>
-        /// Clean up.
-        /// </summary>
-        public void Reset()
-        {
-            _lastStreamPos = 0;
-            _patternDefaults = new();
-
-            MidiFileType = 0;
-            NumTracks = 0;
-            DeltaTicksPerQuarterNote = 0;
-
-            _patterns.Clear();
-            //AllEvents.Clear();
-        }
 
         #region Private functions
         /// <summary>

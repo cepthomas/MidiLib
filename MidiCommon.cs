@@ -28,6 +28,30 @@ namespace MidiLib
         }
     }
 
+    /// <summary>Custom type to support runtime functions.</summary>
+    public class FunctionMidiEvent : MidiEvent
+    {
+        /// <summary>The function to call.</summary>
+        public Action ScriptFunction { get; init; }
+
+        /// <summary>
+        /// Single constructor.
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="channel"></param>
+        /// <param name="scriptFunc"></param>
+        public FunctionMidiEvent(int time, int channel, Action scriptFunc) : base(time, channel, MidiCommandCode.MetaEvent)
+        {
+            ScriptFunction = scriptFunc;
+        }
+
+        /// <summary>For viewing pleasure.</summary>
+        public override string ToString()
+        {
+            return $"FunctionMidiEvent: {base.ToString()} function:{ScriptFunction}";
+        }
+    }
+
     /// <summary>Notify host of asynchronous changes from user.</summary>
     public class ChannelChangeEventArgs : EventArgs
     {
@@ -35,17 +59,6 @@ namespace MidiLib
         public bool StateChange { get; set; } = false;
         public bool ChannelNumberChange { get; set; } = false;
     }
-
-    // /// <summary>Virtual device event info.</summary>
-    // public class DeviceEventArgs : EventArgs // TODOX use MidiEventArgs? combine into InputEventArgs?
-    // {
-    //     /// <summary>Midi note number.</summary>
-    //     public int Note { get; set; } = 0;
-
-    //     /// <summary>Midi control value, usually velocity but could be anything.</summary>
-    //     public int Control { get; set; } = 0;
-    // }
-
 
     /// <summary>
     /// Midi (real or sim) has received something. It's up to the client to make sense of it.
@@ -88,7 +101,6 @@ namespace MidiLib
             return sb.ToString();
         }
     }
-
     #endregion
 
     /// <summary>Global things.</summary>
@@ -100,7 +112,6 @@ namespace MidiLib
         /// <summary>How to snap.</summary>
         public static SnapType Snap { get; set; } = SnapType.Beat;
     }
-
 
     #region Interfaces
     /// <summary>Abstraction layer to support other midi-like devices e.g. OSC.</summary>
@@ -124,18 +135,6 @@ namespace MidiLib
         /// <summary>Handler for message arrived.</summary>
         event EventHandler<InputEventArgs>? InputEvent;
         #endregion
-
-        #region Functions
-        // /// <summary>Interfaces don't allow constructors so do this instead.</summary>
-        // /// <returns></returns>
-        // bool Init();
-
-        ///// <summary>Start listening.</summary>
-        //void Start();
-
-        ///// <summary>Stop listening.</summary>
-        //void Stop();
-        #endregion
     }
 
     /// <summary>Abstraction layer to support other midi-like devices e.g. OSC.</summary>
@@ -153,15 +152,6 @@ namespace MidiLib
         #endregion
 
         #region Functions
-        // /// <summary>Interfaces don't allow constructors so do this instead.</summary>
-        // /// <returns></returns>
-        // bool Init();
-
-        ///// <summary>Send patch.</summary>
-        ///// <param name="channelNumber">1-based channel</param>
-        ///// <param name="patch">Which.</param>
-        //void SendPatch(int channelNumber, int patch);
-
         /// <summary>Send all notes off.</summary>
         /// <param name="channelNumber">1-based channel</param>
         void Kill(int channelNumber);
@@ -172,9 +162,6 @@ namespace MidiLib
         /// <summary>Send midi event.</summary>
         /// <param name="evt"></param>
         void SendEvent(MidiEvent evt);
-
-        /// <summary>Background operations such as process any stop notes.</summary>
-        void Housekeep();
         #endregion
     }
     #endregion
