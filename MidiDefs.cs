@@ -23,34 +23,34 @@ namespace MidiLib
         /// <summary>Midi caps.</summary>
         public const int NUM_CHANNELS = 16;
 
-        /// <summary>all the notes.</summary>
-        public const int NOTES_PER_OCTAVE = 12;
-
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
         #endregion
 
-        // TODO1 for neb to lib
-        public static int GetInstrumentNumber(string which)
-        {
-            return -1;
-        }
+        #region Fields
+        /// <summary>Reverse lookup.</summary>
+        static readonly Dictionary<string, int> _instrumentNumbers = new();
 
-        public static int GetDrumNumber(string which)
-        {
-            return -1;
-        }
+        /// <summary>Reverse lookup.</summary>
+        static readonly Dictionary<string, int> _drumKitNumbers = new();
 
-        public static int GetControllerNumber(string which)
-        {
-            return -1;
-        }
+        /// <summary>Reverse lookup.</summary>
+        static readonly Dictionary<string, int> _drumNumbers = new();
 
-        public static int GetDrumKitNumber(string which)
-        {
-            return -1;
-        }
+        /// <summary>Reverse lookup.</summary>
+        static readonly Dictionary<string, int> _controllerNumbers = new();
+        #endregion
 
+        /// <summary>
+        /// Initialize some collections.
+        /// </summary>
+        static MidiDefs()
+        {
+            _instrumentNumbers = _instruments.ToDictionary(x => x, x => _instruments.IndexOf(x));
+            _drumKitNumbers = _drumKits.ToDictionary(x => x.Value, x => x.Key);
+            _drumNumbers = _drums.ToDictionary(x => x.Value, x => x.Key);
+            _controllerNumbers = _controllers.ToDictionary(x => x.Value, x => x.Key);
+        }
 
         #region API
         /// <summary>
@@ -63,10 +63,24 @@ namespace MidiLib
             string ret = which switch
             {
                 -1 => "NoPatch",
-                >= 0 and < MAX_MIDI => _instrumentNames[which],
+                >= 0 and < MAX_MIDI => _instruments[which],
                 _ => throw new ArgumentOutOfRangeException(nameof(which)),
             };
             return ret;
+        }
+
+        /// <summary>
+        /// Get the instrument/patch number.
+        /// </summary>
+        /// <param name="which"></param>
+        /// <returns></returns>
+        public static int GetInstrumentNumber(string which)
+        {
+            if (_instrumentNumbers.ContainsKey(which))
+            {
+                return _instrumentNumbers[which];
+            }
+            throw new ArgumentException($"Invalid instrument {which}");
         }
 
         /// <summary>
@@ -76,7 +90,21 @@ namespace MidiLib
         /// <returns></returns>
         public static string GetDrumName(int which)
         {
-            return _drumNames.ContainsKey(which) ? _drumNames[which] : $"DRUM_{which}";
+            return _drums.ContainsKey(which) ? _drums[which] : $"DRUM_{which}";
+        }
+
+        /// <summary>
+        /// Get drum number.
+        /// </summary>
+        /// <param name="which"></param>
+        /// <returns></returns>
+        public static int GetDrumNumber(string which)
+        {
+            if (_drumNumbers.ContainsKey(which))
+            {
+                return _drumNumbers[which];
+            }
+            throw new ArgumentException($"Invalid drum {which}");
         }
 
         /// <summary>
@@ -86,7 +114,21 @@ namespace MidiLib
         /// <returns></returns>
         public static string GetControllerName(int which)
         {
-            return _controllerNames.ContainsKey(which) ? _controllerNames[which] : $"CTLR_{which}";
+            return _controllers.ContainsKey(which) ? _controllers[which] : $"CTLR_{which}";
+        }
+
+        /// <summary>
+        /// Get the controller number.
+        /// </summary>
+        /// <param name="which"></param>
+        /// <returns></returns>
+        public static int GetControllerNumber(string which)
+        {
+            if (_controllerNumbers.ContainsKey(which))
+            {
+                return _controllerNumbers[which];
+            }
+            throw new ArgumentException($"Invalid controller {which}");
         }
 
         /// <summary>
@@ -100,25 +142,23 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Convert note number into name.
+        /// Get GM drum kit number.
         /// </summary>
-        /// <param name="notenum"></param>
+        /// <param name="which"></param>
         /// <returns></returns>
-        public static string NoteNumberToName(int notenum)
+        public static int GetDrumKitNumber(string which)
         {
-            int root = notenum % NOTES_PER_OCTAVE;
-            int octave = (notenum / NOTES_PER_OCTAVE) - 1;
-            string s = $"{noteNames[root]}{octave}";
-            return s;
+            if(_drumKitNumbers.ContainsKey(which))
+            {
+                return _drumKitNumbers[which];
+            }
+            throw new ArgumentException($"Invalid drum kit {which}");
         }
         #endregion
 
-        #region The names
-        /// <summary>All the root notes.</summary>
-        static readonly string[] noteNames = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-
+        #region All the names
         /// <summary>The GM midi instrument definitions.</summary>
-        static readonly string[] _instrumentNames = new string[]
+        static readonly List<string> _instruments = new()
         {
             "AcousticGrandPiano", "BrightAcousticPiano", "ElectricGrandPiano", "HonkyTonkPiano", "ElectricPiano1", "ElectricPiano2", "Harpsichord",
             "Clavinet", "Celesta", "Glockenspiel", "MusicBox", "Vibraphone", "Marimba", "Xylophone", "TubularBells", "Dulcimer", "DrawbarOrgan",
@@ -145,7 +185,7 @@ namespace MidiLib
         };
 
         /// <summary>The GM midi drum definitions.</summary>
-        static readonly Dictionary<int, string> _drumNames = new()
+        static readonly Dictionary<int, string> _drums = new()
         {
             { 035, "AcousticBassDrum" }, { 036, "BassDrum1" }, { 037, "SideStick" }, { 038, "AcousticSnare" }, { 039, "HandClap" }, 
             { 040, "ElectricSnare" }, { 041, "LowFloorTom" }, { 042, "ClosedHiHat" }, { 043, "HighFloorTom" }, { 044, "PedalHiHat" }, 
@@ -160,7 +200,7 @@ namespace MidiLib
         };
 
         /// <summary>The midi controller definitions.</summary>
-        static readonly Dictionary<int, string> _controllerNames = new()
+        static readonly Dictionary<int, string> _controllers = new()
         {
             { 000, "BankSelect" }, { 001, "Modulation" }, { 002, "BreathController" }, { 004, "FootController" }, { 005, "PortamentoTime" }, 
             { 007, "Volume" }, { 008, "Balance" }, { 010, "Pan" }, { 011, "Expression" }, { 032, "BankSelectLSB" }, { 033, "ModulationLSB" }, 

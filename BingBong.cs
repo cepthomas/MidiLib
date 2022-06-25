@@ -143,7 +143,7 @@ namespace MidiLib
             //var note = MidiDefs.NoteNumberToName(mp.X);
             //toolTip1.SetToolTip(this, $"{note}({mp.Y})");
 
-            var snote = MidiDefs.NoteNumberToName(note);
+            var snote = MusicDefinitions.NoteNumberToName(note);
             _toolTip.SetToolTip(this, $"{snote} {note} {value}");
 
             base.OnMouseMove(e);

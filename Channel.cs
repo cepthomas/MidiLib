@@ -48,11 +48,14 @@ namespace MidiLib
         #endregion
 
         #region Properties - optional
-        ///// <summary>The device used by this channel. Used to find and bind the device at runtime.</summary>
+        /// <summary>The device used by this channel. Used to find and bind the device at runtime.</summary>
         public string DeviceName { get; set; } = "";
 
         /// <summary>For user selection.</summary>
         public bool Selected { get; set; } = false;
+
+        /// <summary>For nefarious purposes.</summary>
+        public object? Tag { get; set; } = null;
         #endregion
 
         #region Functions

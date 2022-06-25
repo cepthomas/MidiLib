@@ -18,13 +18,10 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
-
-
-
     /// <summary>
     /// Internal representation of one midi event.
     /// </summary>
-    public class MidiEventDesc //TODO0 clean up/simplify.
+    public class MidiEventDesc //TODO1 clean up/simplify.
     {
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get { return MidiEvent.Channel; } }
@@ -45,9 +42,6 @@ namespace MidiLib
         }
     }
 
-
-
-
     /// <summary>
     /// Represents one complete collection of midi events.
     /// Reads and processes standard midi or yamaha style files.
@@ -55,10 +49,6 @@ namespace MidiLib
     /// </summary>
     public class MidiData
     {
-
-        ///// <summary>All the midi events. This is the verbatim ordered content of the file.</summary>
-        //public List<EventDesc> AllEvents { get; private set; } = new();
-
         #region Fields
         /// <summary>The internal channel objects.</summary>
         readonly ChannelCollection _allChannels = new();
@@ -79,7 +69,7 @@ namespace MidiLib
         string _fn = "";
         #endregion
 
-        #region Properties - midi file
+        #region Properties
         /// <summary>What is it.</summary>
         public int MidiFileType { get; private set; } = 0;
 
@@ -88,9 +78,7 @@ namespace MidiLib
 
         /// <summary>Original resolution for all events.</summary>
         public int DeltaTicksPerQuarterNote { get; private set; } = 0;
-        #endregion
 
-        #region Properties for client use
         /// <summary>Number of patterns contained.</summary>
         public int NumPatterns { get { return _patterns.Count; } }
         #endregion
@@ -152,7 +140,6 @@ namespace MidiLib
             DeltaTicksPerQuarterNote = 0;
 
             _patterns.Clear();
-            //AllEvents.Clear();
         }
 
         /// <summary>
@@ -468,26 +455,17 @@ namespace MidiLib
         /// <returns></returns>
         uint ReadStream(BinaryReader br, int size)
         {
-            uint i;
-
             _lastStreamPos = br.BaseStream.Position;
+            uint i;
 
             switch (size)
             {
                 case 2:
-                    i = br.ReadUInt16();
-                    if (BitConverter.IsLittleEndian)
-                    {
-                        i = (UInt16)(((i & 0xFF00) >> 8) | ((i & 0x00FF) << 8));
-                    }
+                    i = MiscUtils.FixEndian(br.ReadUInt16());
                     break;
 
                 case 4:
-                    i = br.ReadUInt32();
-                    if (BitConverter.IsLittleEndian)
-                    {
-                        i = ((i & 0xFF000000) >> 24) | ((i & 0x00FF0000) >> 8) | ((i & 0x0000FF00) << 8) | ((i & 0x000000FF) << 24);
-                    }
+                    i = MiscUtils.FixEndian(br.ReadUInt32());
                     break;
 
                 default:
@@ -594,7 +572,7 @@ namespace MidiLib
 
                         string nname = _allChannels.IsDrums(me.MidiEvent.Channel) ?
                            $"{MidiDefs.GetDrumName(evt.NoteNumber)}" :
-                           $"{MidiDefs.NoteNumberToName(evt.NoteNumber)}";
+                           $"{MusicDefinitions.NoteNumberToName(evt.NoteNumber)}";
                         notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
                         break;
 
