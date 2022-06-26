@@ -14,6 +14,9 @@ namespace MidiLib
     /// <summary>User selection options.</summary>
     public enum SnapType { Bar, Beat, Subdiv }
 
+    /// <summary>Resolution.</summary>
+    public enum PPQ { PPQ_4 = 4, PPQ_8 = 8, PPQ_16 = 16, PPQ_32 = 32 }
+
     /// <summary>Custom default type to avoid handling null everywhere.</summary>
     public class NullMidiEvent : MidiEvent
     {
@@ -103,69 +106,6 @@ namespace MidiLib
     }
     #endregion
 
-    /// <summary>Global things.</summary>
-    public class MidiSettings
-    {
-        /// <summary>Option for engineers instead of musicians.</summary>
-        public static bool ZeroBased { get; set; } = false;
-
-        /// <summary>How to snap.</summary>
-        public static SnapType Snap { get; set; } = SnapType.Beat;
-    }
-
-    #region Interfaces
-    /// <summary>Abstraction layer to support other midi-like devices e.g. OSC.</summary>
-    public interface IMidiInputDevice : IDisposable
-    {
-        #region Properties
-        /// <summary>Device name as defined by the system.</summary>
-        string DeviceName { get; }
-
-        /// <summary>Are we ok?</summary>
-        bool Valid { get; }
-
-        /// <summary>Log inbound traffic at Trace level.</summary>
-        bool LogEnable { get; set; }
-
-        /// <summary>Capture on/off.</summary>
-        bool CaptureEnable { set; }
-        #endregion
-
-        #region Events
-        /// <summary>Handler for message arrived.</summary>
-        event EventHandler<InputEventArgs>? InputEvent;
-        #endregion
-    }
-
-    /// <summary>Abstraction layer to support other midi-like devices e.g. OSC.</summary>
-    public interface IMidiOutputDevice : IDisposable
-    {
-        #region Properties
-        /// <summary>Device name as defined by the system.</summary>
-        string DeviceName { get; }
-
-        /// <summary>Are we ok?</summary>
-        bool Valid { get; }
-
-        /// <summary>Log outbound traffic at Trace level.</summary>
-        bool LogEnable { get; set; }
-        #endregion
-
-        #region Functions
-        /// <summary>Send all notes off.</summary>
-        /// <param name="channelNumber">1-based channel</param>
-        void Kill(int channelNumber);
-
-        /// <summary>Send all notes off.</summary>
-        void KillAll();
-
-        /// <summary>Send midi event.</summary>
-        /// <param name="evt"></param>
-        void SendEvent(MidiEvent evt);
-        #endregion
-    }
-    #endregion
-
     #region Definitions
     public class InternalDefs
     {
@@ -183,15 +123,6 @@ namespace MidiLib
 
         /// <summary>UI control smoothness.</summary>
         public const double VOLUME_RESOLUTION = 0.05;
-
-        /// <summary>Only 4/4 time supported.</summary>
-        public const int BEATS_PER_BAR = 4;
-
-        /// <summary>Internal time resolution aka ppq or DeltaTicksPerQuarterNote.</summary>
-        public const int SUBDIVS_PER_BEAT = 32;
-
-        /// <summary>Convenience.</summary>
-        public const int SUBDIVS_PER_BAR = SUBDIVS_PER_BEAT * BEATS_PER_BAR;
     }
     #endregion
 }

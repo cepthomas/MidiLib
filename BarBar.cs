@@ -33,23 +33,23 @@ namespace MidiLib
         #region Properties
         /// <summary>Total length of the bar.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public BarSpan Length { get { return _length; } set { _length = value; Invalidate(); } }
-        BarSpan _length = new(0); // backing
+        public BarTime Length { get { return _length; } set { _length = value; Invalidate(); } }
+        BarTime _length = new(); // backing
 
         /// <summary>Start of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public BarSpan Start { get { return _start; } set { _start = value; Invalidate(); } }
-        BarSpan _start = new(0); // backing
+        public BarTime Start { get { return _start; } set { _start = value; Invalidate(); } }
+        BarTime _start = new(); // backing
 
         /// <summary>End of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public BarSpan End { get { return _end; } set { _end = value; Invalidate(); } }
-        BarSpan _end = new(0); // backing
+        public BarTime End { get { return _end; } set { _end = value; Invalidate(); } }
+        BarTime _end = new(); // backing
 
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public BarSpan Current { get { return _current; } set { _current = value; Invalidate(); } }
-        BarSpan _current = new(0); // backing
+        public BarTime Current { get { return _current; } set { _current = value; Invalidate(); } }
+        BarTime _current = new(); // backing
 
         /// <summary>For styling.</summary>
         public Color ProgressColor { get { return _brush.Color; } set { _brush.Color = value; } }
@@ -62,6 +62,10 @@ namespace MidiLib
 
         /// <summary>Baby font.</summary>
         public Font FontSmall { get; set; } = new("Microsoft Sans Serif", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
+
+        /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+        public Dictionary<int, string> TimeDefs { get; set; } = new Dictionary<int, string>();
         #endregion
 
         #region Events
@@ -105,7 +109,7 @@ namespace MidiLib
             pe.Graphics.Clear(BackColor);
 
             // Validate times.
-            BarSpan zero = new(0);
+            BarTime zero = new();
             _start.Constrain(zero, _length);
             _start.Constrain(zero, _end);
             _end.Constrain(zero, _length);
@@ -131,11 +135,11 @@ namespace MidiLib
 
             // Text.
             _format.Alignment = StringAlignment.Center;
-            pe.Graphics.DrawString(_current.Format(MidiSettings.ZeroBased), FontLarge, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_current.Format(MidiSettings.TheSettings.ZeroBased), FontLarge, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(_start.Format(MidiSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_start.Format(MidiSettings.TheSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(_end.Format(MidiSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_end.Format(MidiSettings.TheSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion
 
@@ -162,14 +166,16 @@ namespace MidiLib
         {
             if (e.Button == MouseButtons.Left)
             {
-                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
+                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
                 CurrentTimeChanged?.Invoke(this, new EventArgs());
             }
             else if (e.X != _lastXPos)
             {
-                BarSpan bs = new(0);
-                bs.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
-                _toolTip.SetToolTip(this, bs.Format(MidiSettings.ZeroBased));
+                BarTime bs = new();
+                bs.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
+                string sdef = GetTimeDef(e.X);
+                string stime = bs.Format(MidiSettings.TheSettings.ZeroBased);
+                _toolTip.SetToolTip(this, $"{stime} {sdef}");
                 _lastXPos = e.X;
             }
 
@@ -184,15 +190,15 @@ namespace MidiLib
         {
             if (ModifierKeys.HasFlag(Keys.Control))
             {
-                _start.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
+                _start.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
             }
             else if (ModifierKeys.HasFlag(Keys.Alt))
             {
-                _end.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
+                _end.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
             }
             else
             {
-                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.Snap);
+                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
             }
 
             CurrentTimeChanged?.Invoke(this, new EventArgs());
@@ -212,7 +218,7 @@ namespace MidiLib
 
             _current.Increment(num);
 
-            if (_current < new BarSpan(0))
+            if (_current < new BarTime(0))
             {
                 _current.Reset();
             }
@@ -230,6 +236,30 @@ namespace MidiLib
             Invalidate();
 
             return done;
+        }
+
+        /// <summary>
+        /// Gets the time def string associated with val.
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        private string GetTimeDef(int val)
+        {
+            string s = "";
+
+            foreach (KeyValuePair<int, string> kv in TimeDefs)
+            {
+                if (kv.Key > val)
+                {
+                    break;
+                }
+                else
+                {
+                    s = kv.Value;
+                }
+            }
+
+            return s;
         }
         #endregion
 
@@ -256,7 +286,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public int Scale(BarSpan val)
+        public int Scale(BarTime val)
         {
             return val.TotalSubdivs * Width / _length.TotalSubdivs;
         }

@@ -21,9 +21,6 @@ namespace MidiLib
         #endregion
 
         #region Properties - required
-        /// <summary>Optional label/reference.</summary>
-        public string ChannelName { get; set; } = "";
-
         /// <summary>Actual 1-based midi channel number.</summary>
         public int ChannelNumber { get; set; } = -1;
 
@@ -48,6 +45,9 @@ namespace MidiLib
         #endregion
 
         #region Properties - optional
+        /// <summary>Optional label/reference.</summary>
+        public string ChannelName { get; set; } = "";
+
         /// <summary>The device used by this channel. Used to find and bind the device at runtime.</summary>
         public string DeviceName { get; set; } = "";
 

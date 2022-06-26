@@ -82,7 +82,7 @@ namespace MidiLib
             ch.SetEvents(events);
 
             // Round total up to next beat.
-            BarSpan bs = new(0);
+            BarTime bs = new();
             bs.SetRounded(ch.MaxSubdiv, SnapType.Beat, true);
             TotalSubdivs = Math.Max(TotalSubdivs, bs.TotalSubdivs);
         }

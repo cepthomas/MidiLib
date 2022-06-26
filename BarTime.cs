@@ -11,8 +11,8 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
-    /// <summary>Sort of like DateTime but for musical terminlogy.</summary>
-    public class BarSpan : IComparable
+    /// <summary>Sort of like DateTime but for musical terminology.</summary>
+    public class BarTime : IComparable
     {
         #region Fields
         /// <summary>For hashing.</summary>
@@ -27,36 +27,73 @@ namespace MidiLib
         public int TotalSubdivs { get; private set; }
 
         /// <summary>The bar number.</summary>
-        public int Bar { get { return TotalSubdivs / InternalDefs.SUBDIVS_PER_BAR; } }
+        public int Bar { get { return TotalSubdivs / MidiSettings.TheSettings.SubdivsPerBar; } }
 
         /// <summary>The beat number in the bar.</summary>
-        public int Beat { get { return TotalSubdivs / InternalDefs.SUBDIVS_PER_BEAT % InternalDefs.BEATS_PER_BAR; } }
+        public int Beat { get { return TotalSubdivs / MidiSettings.TheSettings.SubdivsPerBeat % MidiSettings.TheSettings.SubdivsPerBar; } }
 
         /// <summary>The subdiv in the beat.</summary>
-        public int Subdiv { get { return TotalSubdivs % InternalDefs.SUBDIVS_PER_BEAT; } }
+        public int Subdiv { get { return TotalSubdivs % MidiSettings.TheSettings.SubdivsPerBeat; } }
         #endregion
 
         #region Lifecycle
         /// <summary>
-        /// Constructor from args.
+        /// Default constructor.
         /// </summary>
-        /// <param name="bar"></param>
-        /// <param name="beat"></param>
-        /// <param name="subdiv"></param>
-        public BarSpan(int bar, int beat, int subdiv)
+        public BarTime()
         {
-            TotalSubdivs = (bar * InternalDefs.SUBDIVS_PER_BAR) + (beat * InternalDefs.SUBDIVS_PER_BEAT) + subdiv;
+            TotalSubdivs = 0;
             _id = _all_ids++;
         }
 
         /// <summary>
-        /// Constructor from args.
+        /// Constructor from bar/beat/subdiv.
+        /// </summary>
+        /// <param name="bar"></param>
+        /// <param name="beat"></param>
+        /// <param name="subdiv"></param>
+        public BarTime(int bar, int beat, int subdiv)
+        {
+            TotalSubdivs = (bar * MidiSettings.TheSettings.SubdivsPerBar) + (beat * MidiSettings.TheSettings.SubdivsPerBeat) + subdiv;
+            _id = _all_ids++;
+        }
+
+        /// <summary>
+        /// Constructor from subdivs.
         /// </summary>
         /// <param name="subdivs">Number of subdivs.</param>
-        public BarSpan(int subdivs)
+        public BarTime(int subdivs)
         {
+            if (subdivs < 0)
+            {
+                throw new ArgumentException("Negative value is invalid");
+            }
+
             TotalSubdivs = subdivs;
             _id = _all_ids++;
+        }
+
+        /// <summary>
+        /// Constructor from Beat.Subdiv representation as a double. TODO1 a bit crude but other ways (e.g. string) clutter the syntax.
+        /// </summary>
+        /// <param name="tts"></param>
+        public BarTime(double tts)
+        {
+            if (tts < 0)
+            {
+                throw new ArgumentException($"Negative value is invalid");
+            }
+
+            var (integral, fractional) = MathUtils.SplitDouble(tts);
+            int subdivs = (int)Math.Round(fractional * 10.0);
+
+            int Beat = (int)integral + subdivs / MidiSettings.TheSettings.SubdivsPerBeat;
+            int Subdiv = subdivs % MidiSettings.TheSettings.SubdivsPerBeat;
+
+            if (Subdiv >= MidiSettings.TheSettings.SubdivsPerBeat)
+            {
+                throw new ArgumentException($"Invalid subdiv value");
+            }
         }
         #endregion
 
@@ -74,7 +111,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="lower"></param>
         /// <param name="upper"></param>
-        public void Constrain(BarSpan lower, BarSpan upper)
+        public void Constrain(BarTime lower, BarTime upper)
         {
             TotalSubdivs = MathUtils.Constrain(TotalSubdivs, lower.TotalSubdivs, upper.TotalSubdivs);
         }
@@ -103,7 +140,7 @@ namespace MidiLib
             if(snapType != SnapType.Subdiv)
             {
                 // res:32   in:27  floor=(in%aim)*aim  ceiling=floor+aim
-                int res = snapType == SnapType.Bar ? InternalDefs.SUBDIVS_PER_BAR : InternalDefs.SUBDIVS_PER_BEAT;
+                int res = snapType == SnapType.Bar ? MidiSettings.TheSettings.SubdivsPerBar : MidiSettings.TheSettings.SubdivsPerBeat;
                 int floor = (subdiv / res) * res;
                 int ceiling = floor + res;
 
@@ -144,7 +181,7 @@ namespace MidiLib
         #region Standard IComparable stuff
         public override bool Equals(object? obj)
         {
-            return obj is not null && obj is BarSpan tm && tm.TotalSubdivs == TotalSubdivs;
+            return obj is not null && obj is BarTime tm && tm.TotalSubdivs == TotalSubdivs;
         }
 
         public override int GetHashCode()
@@ -159,53 +196,53 @@ namespace MidiLib
                 throw new ArgumentException("Object is null");
             }
 
-            BarSpan? other = obj as BarSpan;
+            BarTime? other = obj as BarTime;
             if (other is not null)
             {
                 return TotalSubdivs.CompareTo(other.TotalSubdivs);
             }
             else
             {
-                throw new ArgumentException("Object is not a BarTime");
+                throw new ArgumentException("Object is not a BarSpan");
             }
         }
 
-        public static bool operator ==(BarSpan a, BarSpan b)
+        public static bool operator ==(BarTime a, BarTime b)
         {
             return a.TotalSubdivs == b.TotalSubdivs;
         }
 
-        public static bool operator !=(BarSpan a, BarSpan b)
+        public static bool operator !=(BarTime a, BarTime b)
         {
             return !(a == b);
         }
 
-        public static BarSpan operator +(BarSpan a, BarSpan b)
+        public static BarTime operator +(BarTime a, BarTime b)
         {
-            return new BarSpan(a.TotalSubdivs + b.TotalSubdivs);
+            return new BarTime(a.TotalSubdivs + b.TotalSubdivs);
         }
 
-        public static BarSpan operator -(BarSpan a, BarSpan b)
+        public static BarTime operator -(BarTime a, BarTime b)
         {
-            return new BarSpan(a.TotalSubdivs - b.TotalSubdivs);
+            return new BarTime(a.TotalSubdivs - b.TotalSubdivs);
         }
 
-        public static bool operator <(BarSpan a, BarSpan b)
+        public static bool operator <(BarTime a, BarTime b)
         {
             return a.TotalSubdivs < b.TotalSubdivs;
         }
 
-        public static bool operator >(BarSpan a, BarSpan b)
+        public static bool operator >(BarTime a, BarTime b)
         {
             return a.TotalSubdivs > b.TotalSubdivs;
         }
 
-        public static bool operator <=(BarSpan a, BarSpan b)
+        public static bool operator <=(BarTime a, BarTime b)
         {
             return a.TotalSubdivs <= b.TotalSubdivs;
         }
 
-        public static bool operator >=(BarSpan a, BarSpan b)
+        public static bool operator >=(BarTime a, BarTime b)
         {
             return a.TotalSubdivs >= b.TotalSubdivs;
         }

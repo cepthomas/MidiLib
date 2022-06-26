@@ -77,15 +77,15 @@ namespace MidiLib
         #endregion
 
         #region Public functions - midi
-        ///// <inheritdoc />
-        //public void SendPatch(int channelNumber, int patch)
-        //{
-        //    if (patch >= 0)
-        //    {
-        //        PatchChangeEvent evt = new(0, channelNumber, patch);
-        //        SendEvent(evt);
-        //    }
-        //}
+        /// <inheritdoc />
+        public void SendPatch(int channelNumber, int patch)
+        {
+            if (patch >= 0)
+            {
+                PatchChangeEvent evt = new(0, channelNumber, patch);
+                SendEvent(evt);
+            }
+        }
 
         /// <inheritdoc />
         public void Kill(int channelNumber)

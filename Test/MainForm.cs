@@ -667,7 +667,6 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Stuff_Click(object sender, EventArgs e)
         {
-            DumpMidiDevices();
             MidiTimeTest();
         }
 
@@ -717,6 +716,22 @@ namespace MidiLib.Test
             {
                 _logger.Info($"Midi Out {i} \"{MidiOut.DeviceInfo(i).ProductName}\"");
             }
+        }
+
+        /// <summary>
+        /// Generate human info.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Docs_Click(object sender, EventArgs e)
+        {
+            DumpMidiDevices();
+
+            var docs = MusicDefinitions.FormatDoc();
+            Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("tahoma", 16), true);
+
+            docs = MidiDefs.FormatDoc();
+            Tools.MarkdownToHtml(docs, Color.LightGreen, new Font("Lucida Sans Unicode", 16), true);
         }
         #endregion
 

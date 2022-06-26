@@ -19,8 +19,8 @@ namespace MidiLib
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="midiPpq"></param>
-        /// <param name="tempo"></param>
+        /// <param name="midiPpq">The file resolution.</param>
+        /// <param name="tempo">BPM may be needed for some calcs.</param>
         public MidiTimeConverter(int midiPpq, double tempo)
         {
             _midiPpq = midiPpq;
@@ -34,7 +34,7 @@ namespace MidiLib
         /// <returns></returns>
         public long InternalToMidi(int t)
         {
-            long mtime = t * _midiPpq / InternalDefs.SUBDIVS_PER_BEAT;
+            long mtime = t * _midiPpq / MidiSettings.TheSettings.SubdivsPerBeat;
             return mtime;
         }
 
@@ -45,7 +45,7 @@ namespace MidiLib
         /// <returns></returns>
         public int MidiToInternal(long t)
         {
-            long itime = t * InternalDefs.SUBDIVS_PER_BEAT / _midiPpq;
+            long itime = t * MidiSettings.TheSettings.SubdivsPerBeat / _midiPpq;
             return (int)itime;
         }
 
@@ -89,7 +89,7 @@ namespace MidiLib
         public double InternalPeriod()
         {
             double secPerBeat = 60.0 / _tempo;
-            double msecPerT = 1000 * secPerBeat / InternalDefs.SUBDIVS_PER_BEAT;
+            double msecPerT = 1000 * secPerBeat / MidiSettings.TheSettings.SubdivsPerBeat;
             return msecPerT;
         }
 

@@ -6,6 +6,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 using NAudio.Midi;
+using NBagOfTricks;
 
 
 namespace MidiLib
@@ -52,6 +53,46 @@ namespace MidiLib
             _controllerNumbers = _controllers.ToDictionary(x => x.Value, x => x.Key);
         }
 
+        /// <summary>
+        /// Make markdown content from the definitions.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> FormatDoc()
+        {
+            List<string> docs = new();
+
+            docs.Add("# GM Instruments");
+            docs.Add("");
+            docs.Add("Instrument          | Number");
+            docs.Add("----------          | ------");
+            Enumerable.Range(0, _instruments.Count).ForEach(i => docs.Add($"{_instruments[i]}|{i}"));
+            docs.Add("");
+            docs.Add("# GM Drums");
+            docs.Add("");
+            docs.Add("Drum                | Number");
+            docs.Add("----                | ------");
+            _drums.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
+            docs.Add("");
+            docs.Add("# GM Controllers");
+            docs.Add("- http://www.nortonmusic.com/midi_cc.html");
+            docs.Add("- Undefined MIDI CCs: 3, 9, 14-15, 20-31, 85-90, 102-119");
+            docs.Add("- For most controllers marked on/off, on=127 and off=0");
+            docs.Add("");
+            docs.Add("Controller          | Number");
+            docs.Add("----------          | ------");
+            _controllers.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
+            docs.Add("");
+            docs.Add("# GM Drum Kits");
+            docs.Add("");
+            docs.Add("Note that these will vary depending on your Soundfont file.");
+            docs.Add("");
+            docs.Add("Kit        | Number");
+            docs.Add("-----------| ------");
+            _drumKits.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
+
+            return docs;
+        }
+
         #region API
         /// <summary>
         /// Get patch name.
@@ -80,7 +121,7 @@ namespace MidiLib
             {
                 return _instrumentNumbers[which];
             }
-            throw new ArgumentException($"Invalid instrument {which}");
+            throw new ArgumentException($"Invalid instrument: {which}");
         }
 
         /// <summary>
@@ -104,7 +145,7 @@ namespace MidiLib
             {
                 return _drumNumbers[which];
             }
-            throw new ArgumentException($"Invalid drum {which}");
+            throw new ArgumentException($"Invalid drum: {which}");
         }
 
         /// <summary>
@@ -128,7 +169,7 @@ namespace MidiLib
             {
                 return _controllerNumbers[which];
             }
-            throw new ArgumentException($"Invalid controller {which}");
+            throw new ArgumentException($"Invalid controller: {which}");
         }
 
         /// <summary>
@@ -152,7 +193,25 @@ namespace MidiLib
             {
                 return _drumKitNumbers[which];
             }
-            throw new ArgumentException($"Invalid drum kit {which}");
+            throw new ArgumentException($"Invalid drum kit: {which}");
+        }
+
+        /// <summary>
+        /// Get the instrument/patch or drum number.
+        /// </summary>
+        /// <param name="which"></param>
+        /// <returns></returns>
+        public static int GetInstrumentOrDrumKitNumber(string which)
+        {
+            if (_instrumentNumbers.ContainsKey(which))
+            {
+                return _instrumentNumbers[which];
+            }
+            else if (_drumKitNumbers.ContainsKey(which))
+            {
+                return _drumKitNumbers[which];
+            }
+            throw new ArgumentException($"Invalid instrument or drum: {which}");
         }
         #endregion
 
