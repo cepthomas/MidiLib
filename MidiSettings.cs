@@ -23,24 +23,28 @@ namespace MidiLib
         #region Properties - persisted editable
         [DisplayName("Midi Input 1")]
         [Description("Valid device if handling midi input.")]
+        [Category("Devices")]
         [Browsable(true)]
         [TypeConverter(typeof(MidiDeviceTypeConverter))]
         public string MidiIn1 { get; set; } = "";
 
         [DisplayName("Midi Input 2")]
         [Description("Valid device if handling midi input.")]
+        [Category("Devices")]
         [Browsable(true)]
         [TypeConverter(typeof(MidiDeviceTypeConverter))]
         public string MidiIn2 { get; set; } = "";
 
         [DisplayName("Midi Output 1")]
         [Description("Valid device if sending midi output.")]
+        [Category("Devices")]
         [Browsable(true)]
         [TypeConverter(typeof(MidiDeviceTypeConverter))]
         public string MidiOut1 { get; set; } = "";
 
         [DisplayName("Midi Output 2")]
         [Description("Valid device if sending midi output.")]
+        [Category("Devices")]
         [Browsable(true)]
         [TypeConverter(typeof(MidiDeviceTypeConverter))]
         public string MidiOut2 { get; set; } = "";
@@ -101,7 +105,8 @@ namespace MidiLib
 
             switch (context.PropertyDescriptor.Name)
             {
-                case "MidiIn":
+                case "MidiIn1":
+                case "MidiIn2":
                     rec = new() { "" };
                     for (int devindex = 0; devindex < MidiIn.NumberOfDevices; devindex++)
                     {
@@ -109,7 +114,8 @@ namespace MidiLib
                     }
                     break;
 
-                case "MidiOut":
+                case "MidiOut1":
+                case "MidiOut2":
                     rec = new() { "" };
                     for (int devindex = 0; devindex < MidiOut.NumberOfDevices; devindex++)
                     {

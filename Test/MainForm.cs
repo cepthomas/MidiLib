@@ -111,8 +111,8 @@ namespace MidiLib.Test
             channelControl.ControlColor = _controlColor;
 
             // Time controller.
-            MidiSettings.Snap = SnapType.Beat;
-            MidiSettings.ZeroBased = true;
+            MidiSettings.TheSettings.Snap = SnapType.Beat;
+            MidiSettings.TheSettings.ZeroBased = true;
             barBar.ProgressColor = _controlColor;
             barBar.CurrentTimeChanged += BarBar_CurrentTimeChanged;
 
@@ -127,7 +127,7 @@ namespace MidiLib.Test
 
             // Set up midi devices.
             _player = new(_midiOutDeviceName, _allChannels);
-            _listener = new(_midiInDeviceName);
+            _listener = new(_midiInDeviceName, "MidiIn1");
             _listener.CaptureEnable = _listener.Valid;
             _player.SendPatch(_kbdChannelNumber, _kbdPatch);
 
@@ -732,6 +732,16 @@ namespace MidiLib.Test
 
             docs = MidiDefs.FormatDoc();
             Tools.MarkdownToHtml(docs, Color.LightGreen, new Font("Lucida Sans Unicode", 16), true);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Settings_Click(object sender, EventArgs e)
+        {
+            MidiSettings.TheSettings.Edit("howdy!");
         }
         #endregion
 

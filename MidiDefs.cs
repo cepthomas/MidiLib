@@ -56,7 +56,7 @@ namespace MidiLib
         /// <summary>
         /// Make markdown content from the definitions.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Markdown content.</returns>
         public static List<string> FormatDoc()
         {
             List<string> docs = new();
@@ -98,7 +98,7 @@ namespace MidiLib
         /// Get patch name.
         /// </summary>
         /// <param name="which"></param>
-        /// <returns></returns>
+        /// <returns>The name.</returns>
         public static string GetInstrumentName(int which)
         {
             string ret = which switch
@@ -114,21 +114,22 @@ namespace MidiLib
         /// Get the instrument/patch number.
         /// </summary>
         /// <param name="which"></param>
-        /// <returns></returns>
+        /// <returns>The midi number or -1 if invalid.</returns>
         public static int GetInstrumentNumber(string which)
         {
             if (_instrumentNumbers.ContainsKey(which))
             {
                 return _instrumentNumbers[which];
             }
-            throw new ArgumentException($"Invalid instrument: {which}");
+            //throw new ArgumentException($"Invalid instrument: {which}");
+            return -1;
         }
 
         /// <summary>
         /// Get drum name.
         /// </summary>
         /// <param name="which"></param>
-        /// <returns></returns>
+        /// <returns>The drum name or a fabricated one if unknown.</returns>
         public static string GetDrumName(int which)
         {
             return _drums.ContainsKey(which) ? _drums[which] : $"DRUM_{which}";
@@ -138,21 +139,22 @@ namespace MidiLib
         /// Get drum number.
         /// </summary>
         /// <param name="which"></param>
-        /// <returns></returns>
+        /// <returns>The midi number or -1 if invalid.</returns>
         public static int GetDrumNumber(string which)
         {
             if (_drumNumbers.ContainsKey(which))
             {
                 return _drumNumbers[which];
             }
-            throw new ArgumentException($"Invalid drum: {which}");
+            //throw new ArgumentException($"Invalid drum: {which}");
+            return -1;
         }
 
         /// <summary>
         /// Get controller name.
         /// </summary>
         /// <param name="which"></param>
-        /// <returns></returns>
+        /// <returns>The controller name or a fabricated one if unknown.</returns>
         public static string GetControllerName(int which)
         {
             return _controllers.ContainsKey(which) ? _controllers[which] : $"CTLR_{which}";
@@ -162,21 +164,22 @@ namespace MidiLib
         /// Get the controller number.
         /// </summary>
         /// <param name="which"></param>
-        /// <returns></returns>
+        /// <returns>The midi number or -1 if invalid.</returns>
         public static int GetControllerNumber(string which)
         {
             if (_controllerNumbers.ContainsKey(which))
             {
                 return _controllerNumbers[which];
             }
-            throw new ArgumentException($"Invalid controller: {which}");
+            //throw new ArgumentException($"Invalid controller: {which}");
+            return -1;
         }
 
         /// <summary>
         /// Get GM drum kit name.
         /// </summary>
         /// <param name="which"></param>
-        /// <returns></returns>
+        /// <returns>The drumkit name or a fabricated one if unknown.</returns>
         public static string GetDrumKitName(int which)
         {
             return _drumKits.ContainsKey(which) ? _drumKits[which] : $"KIT_{which}";
@@ -186,21 +189,22 @@ namespace MidiLib
         /// Get GM drum kit number.
         /// </summary>
         /// <param name="which"></param>
-        /// <returns></returns>
+        /// <returns>The midi number or -1 if invalid.</returns>
         public static int GetDrumKitNumber(string which)
         {
             if(_drumKitNumbers.ContainsKey(which))
             {
                 return _drumKitNumbers[which];
             }
-            throw new ArgumentException($"Invalid drum kit: {which}");
+            //throw new ArgumentException($"Invalid drum kit: {which}");
+            return -1;
         }
 
         /// <summary>
         /// Get the instrument/patch or drum number.
         /// </summary>
         /// <param name="which"></param>
-        /// <returns></returns>
+        /// <returns>The midi number or -1 if invalid.</returns>
         public static int GetInstrumentOrDrumKitNumber(string which)
         {
             if (_instrumentNumbers.ContainsKey(which))
@@ -211,7 +215,8 @@ namespace MidiLib
             {
                 return _drumKitNumbers[which];
             }
-            throw new ArgumentException($"Invalid instrument or drum: {which}");
+            //throw new ArgumentException($"Invalid instrument or drum: {which}");
+            return -1;
         }
         #endregion
 

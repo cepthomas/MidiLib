@@ -55,7 +55,15 @@ namespace MidiLib
         public ChannelControl()
         {
             InitializeComponent();
+        }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnLoad(EventArgs e)
+        {
+            sldVolume.DrawColor = ControlColor;
             sldVolume.Minimum = InternalDefs.VOLUME_MIN;
             sldVolume.Maximum = InternalDefs.GAIN_MAX;
             sldVolume.Value = InternalDefs.VOLUME_DEFAULT;
@@ -68,15 +76,7 @@ namespace MidiLib
             }
             cmbChannel.SelectedIndex = ChannelNumber - 1;
             cmbChannel.SelectedIndexChanged += (_, __) => { _channelNumber = cmbChannel.SelectedIndex + 1; };
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnLoad(EventArgs e)
-        {
-            sldVolume.DrawColor = ControlColor;
+            
             base.OnLoad(e);
         }
         #endregion

@@ -49,7 +49,7 @@ namespace MidiLib
         public string ChannelName { get; set; } = "";
 
         /// <summary>The device used by this channel. Used to find and bind the device at runtime.</summary>
-        public string DeviceName { get; set; } = "";
+        public string DeviceId { get; set; } = "";
 
         /// <summary>For user selection.</summary>
         public bool Selected { get; set; } = false;

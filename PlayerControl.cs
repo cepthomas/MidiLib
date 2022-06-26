@@ -94,8 +94,25 @@ namespace MidiLib
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;
             lblChannelNumber.Click += ChannelNumber_Click;
+            sldVolume.Value = Channel.Volume;
+            sldVolume.DrawColor = SelectedColor;
+            sldVolume.Minimum = InternalDefs.VOLUME_MIN;
+            sldVolume.Maximum = InternalDefs.GAIN_MAX;
+            sldVolume.ValueChanged += Volume_ValueChanged;
+            lblSolo.Click += SoloMute_Click;
+            lblMute.Click += SoloMute_Click;
+            lblChannelNumber.Click += ChannelNumber_Click;
+        }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnLoad(EventArgs e)
+        {
             UpdateUi();
+
+            base.OnLoad(e);
         }
         #endregion
 
