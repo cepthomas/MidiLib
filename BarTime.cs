@@ -27,13 +27,13 @@ namespace MidiLib
         public int TotalSubdivs { get; private set; }
 
         /// <summary>The bar number.</summary>
-        public int Bar { get { return TotalSubdivs / MidiSettings.TheSettings.SubdivsPerBar; } }
+        public int Bar { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBar; } }
 
         /// <summary>The beat number in the bar.</summary>
-        public int Beat { get { return TotalSubdivs / MidiSettings.TheSettings.SubdivsPerBeat % MidiSettings.TheSettings.SubdivsPerBar; } }
+        public int Beat { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat % MidiSettings.LibSettings.SubdivsPerBar; } }
 
         /// <summary>The subdiv in the beat.</summary>
-        public int Subdiv { get { return TotalSubdivs % MidiSettings.TheSettings.SubdivsPerBeat; } }
+        public int Subdiv { get { return TotalSubdivs % MidiSettings.LibSettings.SubdivsPerBeat; } }
         #endregion
 
         #region Lifecycle
@@ -54,7 +54,7 @@ namespace MidiLib
         /// <param name="subdiv"></param>
         public BarTime(int bar, int beat, int subdiv)
         {
-            TotalSubdivs = (bar * MidiSettings.TheSettings.SubdivsPerBar) + (beat * MidiSettings.TheSettings.SubdivsPerBeat) + subdiv;
+            TotalSubdivs = (bar * MidiSettings.LibSettings.SubdivsPerBar) + (beat * MidiSettings.LibSettings.SubdivsPerBeat) + subdiv;
             _id = _all_ids++;
         }
 
@@ -74,7 +74,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Constructor from Beat.Subdiv representation as a double. TODO1 a bit crude but other ways (e.g. string) clutter the syntax.
+        /// Constructor from Beat.Subdiv representation as a double. TODO1 a bit crude but other ways (e.g. string) clutter the syntax. !!
         /// </summary>
         /// <param name="tts"></param>
         public BarTime(double tts)
@@ -87,10 +87,10 @@ namespace MidiLib
             var (integral, fractional) = MathUtils.SplitDouble(tts);
             int subdivs = (int)Math.Round(fractional * 10.0);
 
-            int Beat = (int)integral + subdivs / MidiSettings.TheSettings.SubdivsPerBeat;
-            int Subdiv = subdivs % MidiSettings.TheSettings.SubdivsPerBeat;
+            int Beat = (int)integral + subdivs / MidiSettings.LibSettings.SubdivsPerBeat;
+            int Subdiv = subdivs % MidiSettings.LibSettings.SubdivsPerBeat;
 
-            if (Subdiv >= MidiSettings.TheSettings.SubdivsPerBeat)
+            if (Subdiv >= MidiSettings.LibSettings.SubdivsPerBeat)
             {
                 throw new ArgumentException($"Invalid subdiv value");
             }
@@ -140,7 +140,7 @@ namespace MidiLib
             if(snapType != SnapType.Subdiv)
             {
                 // res:32   in:27  floor=(in%aim)*aim  ceiling=floor+aim
-                int res = snapType == SnapType.Bar ? MidiSettings.TheSettings.SubdivsPerBar : MidiSettings.TheSettings.SubdivsPerBeat;
+                int res = snapType == SnapType.Bar ? MidiSettings.LibSettings.SubdivsPerBar : MidiSettings.LibSettings.SubdivsPerBeat;
                 int floor = (subdiv / res) * res;
                 int ceiling = floor + res;
 

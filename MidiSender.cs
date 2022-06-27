@@ -37,14 +37,6 @@ namespace MidiLib
 
         /// <inheritdoc />
         public bool LogEnable { get { return _logger.Enable; } set { _logger.Enable = value; } }
-
-
-
-
-
-        ///// <summary>Current master volume.</summary>
-        //public double Volume { get; set; } = InternalDefs.VOLUME_DEFAULT;
-
         #endregion
 
         #region Lifecycle
@@ -53,7 +45,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
         /// <param name="deviceId">Client must supply id of device.</param>
-        public MidiSender(string deviceName, string deviceId)
+        public MidiSender(string deviceName, string deviceId) //TODO1 ID???
         {
             DeviceName = deviceName;
             DeviceId = deviceId;

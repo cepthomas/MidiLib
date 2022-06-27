@@ -15,39 +15,34 @@ using NBagOfUis;
 namespace MidiLib
 {
     [Serializable]
-    public class MidiSettings : Settings
+    public class MidiSettings
     {
-        /// <summary>Current midi user settings.</summary>
-        public static MidiSettings TheSettings { get; set; } = new();
+        /// <summary>Current midi settings. Client must set this before accessing!</summary>
+        [Browsable(false)]
+        public static MidiSettings LibSettings
+        {
+            get { if (_settings is null) throw new InvalidOperationException("Client must set this property before accessing"); return _settings; }
+            set { _settings = value; }
+        }
+        static MidiSettings? _settings = null;
 
         #region Properties - persisted editable
-        [DisplayName("Midi Input 1")]
+        [DisplayName("Midi Input")]
         [Description("Valid device if handling midi input.")]
-        [Category("Devices")]
         [Browsable(true)]
         [TypeConverter(typeof(MidiDeviceTypeConverter))]
-        public string MidiIn1 { get; set; } = "";
+        public string MidiInDevice { get; set; } = "";
 
-        [DisplayName("Midi Input 2")]
-        [Description("Valid device if handling midi input.")]
-        [Category("Devices")]
-        [Browsable(true)]
-        [TypeConverter(typeof(MidiDeviceTypeConverter))]
-        public string MidiIn2 { get; set; } = "";
-
-        [DisplayName("Midi Output 1")]
+        [DisplayName("Midi Output")]
         [Description("Valid device if sending midi output.")]
-        [Category("Devices")]
         [Browsable(true)]
         [TypeConverter(typeof(MidiDeviceTypeConverter))]
-        public string MidiOut1 { get; set; } = "";
+        public string MidiOutDevice { get; set; } = "";
 
-        [DisplayName("Midi Output 2")]
-        [Description("Valid device if sending midi output.")]
-        [Category("Devices")]
+        [DisplayName("Default Tempo")]
+        [Description("Use this tempo if it's not in the file.")]
         [Browsable(true)]
-        [TypeConverter(typeof(MidiDeviceTypeConverter))]
-        public string MidiOut2 { get; set; } = "";
+        public int DefaultTempo { get; set; } = 100;
 
         [DisplayName("Internal Time Resolution")]
         [Description("PPQ or DeltaTicksPerQuarterNote or subdivisions per beat.")]
@@ -64,21 +59,13 @@ namespace MidiLib
         [Description("How to snap to grid.")]
         [Browsable(true)]
         public SnapType Snap { get; set; } = SnapType.Beat;
-
-        //[DisplayName("OSC Input")]
-        //[Description("Valid port number if handling OSC input.")]
-        //[Browsable(true)]
-        //public string OscIn { get; set; } = "None";
-
-        //[DisplayName("OSC Output")]
-        //[Description("Valid url:port if sending OSC output.")]
-        //[Browsable(true)]
-        //public string OscOut { get; set; } = "None";
         #endregion
 
         #region Properties - internal
         /// <summary>Only 4/4 time supported.</summary>
-        public const int BeatsPerBar = 4;
+        [Browsable(false)]
+        [JsonIgnore()]
+        public int BeatsPerBar { get { return 4; } }
 
         /// <summary>Convenience.</summary>
         [Browsable(false)]
@@ -105,8 +92,7 @@ namespace MidiLib
 
             switch (context.PropertyDescriptor.Name)
             {
-                case "MidiIn1":
-                case "MidiIn2":
+                case "MidiInDevice":
                     rec = new() { "" };
                     for (int devindex = 0; devindex < MidiIn.NumberOfDevices; devindex++)
                     {
@@ -114,8 +100,7 @@ namespace MidiLib
                     }
                     break;
 
-                case "MidiOut1":
-                case "MidiOut2":
+                case "MidiOutDevice":
                     rec = new() { "" };
                     for (int devindex = 0; devindex < MidiOut.NumberOfDevices; devindex++)
                     {

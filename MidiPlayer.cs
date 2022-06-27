@@ -42,7 +42,7 @@ namespace MidiLib
         public bool Playing { get; private set; }
 
         /// <summary>Current master volume.</summary>
-        public double Volume { get; set; } = InternalDefs.VOLUME_DEFAULT;
+        public double Volume { get; set; } = VolumeDefs.DEFAULT;
 
         /// <summary>Current position in subdivs.</summary>
         public int CurrentSubdiv

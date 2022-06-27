@@ -64,9 +64,9 @@ namespace MidiLib
         protected override void OnLoad(EventArgs e)
         {
             sldVolume.DrawColor = ControlColor;
-            sldVolume.Minimum = InternalDefs.VOLUME_MIN;
-            sldVolume.Maximum = InternalDefs.GAIN_MAX;
-            sldVolume.Value = InternalDefs.VOLUME_DEFAULT;
+            sldVolume.Minimum = VolumeDefs.MIN;
+            sldVolume.Maximum = VolumeDefs.MAX_GAIN;
+            sldVolume.Value = VolumeDefs.DEFAULT;
 
             lblPatch.Click += Patch_Click;
 

@@ -135,11 +135,11 @@ namespace MidiLib
 
             // Text.
             _format.Alignment = StringAlignment.Center;
-            pe.Graphics.DrawString(_current.Format(MidiSettings.TheSettings.ZeroBased), FontLarge, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_current.Format(MidiSettings.LibSettings.ZeroBased), FontLarge, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(_start.Format(MidiSettings.TheSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_start.Format(MidiSettings.LibSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(_end.Format(MidiSettings.TheSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_end.Format(MidiSettings.LibSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion
 
@@ -166,15 +166,15 @@ namespace MidiLib
         {
             if (e.Button == MouseButtons.Left)
             {
-                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
+                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
                 CurrentTimeChanged?.Invoke(this, new EventArgs());
             }
             else if (e.X != _lastXPos)
             {
                 BarTime bs = new();
-                bs.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
+                bs.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
                 string sdef = GetTimeDef(e.X);
-                string stime = bs.Format(MidiSettings.TheSettings.ZeroBased);
+                string stime = bs.Format(MidiSettings.LibSettings.ZeroBased);
                 _toolTip.SetToolTip(this, $"{stime} {sdef}");
                 _lastXPos = e.X;
             }
@@ -190,15 +190,15 @@ namespace MidiLib
         {
             if (ModifierKeys.HasFlag(Keys.Control))
             {
-                _start.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
+                _start.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
             }
             else if (ModifierKeys.HasFlag(Keys.Alt))
             {
-                _end.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
+                _end.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
             }
             else
             {
-                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.TheSettings.Snap);
+                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
             }
 
             CurrentTimeChanged?.Invoke(this, new EventArgs());

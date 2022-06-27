@@ -34,7 +34,7 @@ namespace MidiLib
         /// <returns></returns>
         public long InternalToMidi(int t)
         {
-            long mtime = t * _midiPpq / MidiSettings.TheSettings.SubdivsPerBeat;
+            long mtime = t * _midiPpq / MidiSettings.LibSettings.SubdivsPerBeat;
             return mtime;
         }
 
@@ -45,7 +45,7 @@ namespace MidiLib
         /// <returns></returns>
         public int MidiToInternal(long t)
         {
-            long itime = t * MidiSettings.TheSettings.SubdivsPerBeat / _midiPpq;
+            long itime = t * MidiSettings.LibSettings.SubdivsPerBeat / _midiPpq;
             return (int)itime;
         }
 
@@ -89,7 +89,7 @@ namespace MidiLib
         public double InternalPeriod()
         {
             double secPerBeat = 60.0 / _tempo;
-            double msecPerT = 1000 * secPerBeat / MidiSettings.TheSettings.SubdivsPerBeat;
+            double msecPerT = 1000 * secPerBeat / MidiSettings.LibSettings.SubdivsPerBeat;
             return msecPerT;
         }
 

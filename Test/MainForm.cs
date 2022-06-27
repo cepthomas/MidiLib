@@ -45,9 +45,6 @@ namespace MidiLib.Test
         /// <summary>Prevent button press recursion.</summary>
         bool _guard = false;
 
-        /// <summary>Current file.</summary>
-        string _fn = "";
-
         /// <summary>My logging.</summary>
         readonly Logger _logger = LogManager.CreateLogger("MainForm");
         #endregion
@@ -103,16 +100,16 @@ namespace MidiLib.Test
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
-            sldVolume.Resolution = InternalDefs.VOLUME_RESOLUTION;
-            sldVolume.Minimum = InternalDefs.VOLUME_MIN;
-            sldVolume.Maximum = InternalDefs.VOLUME_MAX;
-            sldVolume.Value = InternalDefs.VOLUME_DEFAULT;
+            sldVolume.Resolution = VolumeDefs.STEP;
+            sldVolume.Minimum = VolumeDefs.MIN;
+            sldVolume.Maximum = VolumeDefs.MAX;
+            sldVolume.Value = VolumeDefs.DEFAULT;
             sldVolume.Label = "volume";
             channelControl.ControlColor = _controlColor;
 
             // Time controller.
-            MidiSettings.TheSettings.Snap = SnapType.Beat;
-            MidiSettings.TheSettings.ZeroBased = true;
+            MidiSettings.LibSettings.Snap = SnapType.Beat;
+            MidiSettings.LibSettings.ZeroBased = true;
             barBar.ProgressColor = _controlColor;
             barBar.CurrentTimeChanged += BarBar_CurrentTimeChanged;
 
@@ -332,7 +329,6 @@ namespace MidiLib.Test
         public bool OpenFile(string fn)
         {
             bool ok = true;
-            _fn = "";
 
             _logger.Info($"Reading file: {fn}");
 
@@ -396,7 +392,6 @@ namespace MidiLib.Test
 
                 Rewind();
 
-                _fn = fn;
                 Text = $"Midi Lib - {fn}";
             }
             catch (Exception ex)
@@ -741,7 +736,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Settings_Click(object sender, EventArgs e)
         {
-            MidiSettings.TheSettings.Edit("howdy!");
+//TODO1            MidiSettings.TheSettings.Edit("howdy!");
         }
         #endregion
 

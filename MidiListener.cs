@@ -55,7 +55,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
         /// <param name="deviceId">Client must supply id of device.</param>
-        public MidiListener(string deviceName, string deviceId)
+        public MidiListener(string deviceName, string deviceId) //TODO1 ID???
         {
             DeviceName = deviceName;
             DeviceId = deviceId;

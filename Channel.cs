@@ -17,7 +17,7 @@ namespace MidiLib
         readonly Dictionary<int, List<MidiEvent>> _events = new();
 
         ///<summary>Backing.</summary>
-        double _volume = InternalDefs.VOLUME_DEFAULT;
+        double _volume = VolumeDefs.DEFAULT;
         #endregion
 
         #region Properties - required
@@ -37,7 +37,7 @@ namespace MidiLib
         public double Volume
         {
             get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, InternalDefs.VOLUME_MIN, InternalDefs.VOLUME_MAX, InternalDefs.VOLUME_RESOLUTION); }
+            set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX, VolumeDefs.STEP); }
         }
 
         ///<summary>The duration of the whole channel.</summary>
