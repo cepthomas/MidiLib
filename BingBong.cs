@@ -130,6 +130,10 @@ namespace MidiLib
                 // Dragging. Did it change?
                 if(_lastNote != note)
                 {
+                    // Turn off last note.
+                    InputEvent?.Invoke(this, new() { Note = _lastNote, Value = 0 });
+
+                    // Start the new note.
                     _lastNote = note;
                     InputEvent?.Invoke(this, new() { Note = note, Value = value });
                 }

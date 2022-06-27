@@ -75,6 +75,7 @@ VirtualKeyboard
 - MidiDefs: The GM definitions.
 - MidiTimeConverter: Used for mapping between data sets using different resolutions.
 - MidiCommon: All the other stuff.
+- Settings container/editor for use by clients.
 
 # Example
 
