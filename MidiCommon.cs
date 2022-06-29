@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MidiLib
 {
-    #region Types
+    #region Enums
     /// <summary>Channel state.</summary>
     public enum ChannelState { Normal = 0, Solo = 1, Mute = 2 }
 
@@ -16,7 +16,9 @@ namespace MidiLib
 
     /// <summary>Resolution.</summary>
     public enum PPQ { PPQ_4 = 4, PPQ_8 = 8, PPQ_16 = 16, PPQ_32 = 32 }
+    #endregion
 
+    #region Special event types
     /// <summary>Custom default type to avoid handling null everywhere.</summary>
     public class NullMidiEvent : MidiEvent
     {
@@ -54,7 +56,9 @@ namespace MidiLib
             return $"FunctionMidiEvent: {base.ToString()} function:{ScriptFunction}";
         }
     }
+    #endregion
 
+    #region Event args
     /// <summary>Notify host of asynchronous changes from user.</summary>
     public class ChannelChangeEventArgs : EventArgs
     {
