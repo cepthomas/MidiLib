@@ -22,53 +22,53 @@ namespace MidiLib
 
         #region Properties
         /// <summary>Bound object.</summary>
-        public Channel Channel { get; set; } = new();
+        public Channel BoundChannel { get; set; } = new();
 
         /// <summary>Actual 1-based midi channel number for UI.</summary>
         public int ChannelNumber
         {
-            get { return Channel.ChannelNumber; }
+            get { return BoundChannel.ChannelNumber; }
         }
 
         /// <summary>For muting/soloing.</summary>
         public ChannelState State
         {
-            get { return Channel.State; }
-            set { Channel.State = value; UpdateUi(); }
+            get { return BoundChannel.State; }
+            set { BoundChannel.State = value; UpdateUi(); }
         }
 
         /// <summary>Current patch.</summary>
         public int Patch
         {
-            get { return Channel.Patch; }
-            set { Channel.Patch = value; UpdateUi(); }
+            get { return BoundChannel.Patch; }
+            set { BoundChannel.Patch = value; UpdateUi(); }
         }
 
         /// <summary>Current volume. Channel.Volume performs the constraints.</summary>
         public double Volume
         {
-            get { return Channel.Volume; }
-            set { Channel.Volume = value; }
+            get { return BoundChannel.Volume; }
+            set { BoundChannel.Volume = value; }
         }
 
         ///<summary>The duration of the whole channel.</summary>
         public int MaxSubdiv
         {
-            get { return Channel.MaxSubdiv; }
+            get { return BoundChannel.MaxSubdiv; }
         }
 
         /// <summary>Drum channel changed.</summary>
         public bool IsDrums
         {
-            get { return Channel.IsDrums; }
-            set { Channel.IsDrums = value; UpdateUi(); }
+            get { return BoundChannel.IsDrums; }
+            set { BoundChannel.IsDrums = value; UpdateUi(); }
         }
 
         /// <summary>User has selected this channel.</summary>
         public bool Selected
         {
-            get { return Channel.Selected; }
-            set { Channel.Selected = value; UpdateUi(); }
+            get { return BoundChannel.Selected; }
+            set { BoundChannel.Selected = value; UpdateUi(); }
         }
 
         /// <summary>Indicate user selected.</summary>
@@ -86,15 +86,7 @@ namespace MidiLib
         {
             InitializeComponent();
 
-            sldVolume.Value = Channel.Volume;
-            sldVolume.DrawColor = SelectedColor;
-            sldVolume.Minimum = VolumeDefs.MIN;
-            sldVolume.Maximum = VolumeDefs.MAX_GAIN;
-            sldVolume.ValueChanged += Volume_ValueChanged;
-            lblSolo.Click += SoloMute_Click;
-            lblMute.Click += SoloMute_Click;
-            lblChannelNumber.Click += ChannelNumber_Click;
-            sldVolume.Value = Channel.Volume;
+            sldVolume.Value = BoundChannel.Volume;
             sldVolume.DrawColor = SelectedColor;
             sldVolume.Minimum = VolumeDefs.MIN;
             sldVolume.Maximum = VolumeDefs.MAX_GAIN;
@@ -195,7 +187,7 @@ namespace MidiLib
             pp.ShowDialog();
             if (pp.PatchNumber != -1)
             {
-                Channel.Patch = pp.PatchNumber;
+                BoundChannel.Patch = pp.PatchNumber;
                 UpdateUi();
                 ChannelChangeEvent?.Invoke(this, new() { PatchChange = true });
             }
@@ -239,7 +231,7 @@ namespace MidiLib
             // General.
             lblChannelNumber.Text = $"Ch{ChannelNumber}";
             lblChannelNumber.BackColor = Selected ? SelectedColor : UnselectedColor;
-            lblPatch.Text = IsDrums ? "Drums" : MidiDefs.GetInstrumentName(Channel.Patch);
+            lblPatch.Text = IsDrums ? "Drums" : MidiDefs.GetInstrumentName(BoundChannel.Patch);
         }
 
         /// <summary>

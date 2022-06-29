@@ -65,22 +65,29 @@ namespace MidiLib
         /// </summary>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="sortTime">Optional sort.</param>
-        /// <returns>Enumerator or null if invalid.</returns>
-        public IEnumerable<MidiEventDesc>? GetFilteredEvents(List<int> channels, bool sortTime)
+        /// <returns>Enumerator.</returns>
+        public IEnumerable<MidiEventDesc> GetFilteredEvents(List<int> channels, bool sortTime)
         {
-            IEnumerable<MidiEventDesc>? descs = _events.Where(e => channels.Contains(e.ChannelNumber));
+            IEnumerable<MidiEventDesc> descs = _events.Where(e => channels.Contains(e.ChannelNumber));
 
             // Always time order.
-            if (descs is not null && sortTime)
+            if (descs is not null)
             {
-                descs = descs.OrderBy(e => e.AbsoluteTime);
+                if (sortTime)
+                {
+                    descs = descs.OrderBy(e => e.AbsoluteTime);
+                }
+            }
+            else
+            {
+                descs = Enumerable.Empty<MidiEventDesc>();
             }
 
             return descs;
         }
 
         /// <summary>
-        /// 
+        /// Get all events at a specific time.
         /// </summary>
         /// <param name="when"></param>
         /// <returns></returns>

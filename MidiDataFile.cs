@@ -35,7 +35,7 @@ namespace MidiLib
         /// <summary>The raw midi event.</summary>
         public MidiEvent MidiEvent { get; init; }
 
-        /// <summary>Normal constructor.</summary>
+        /// <summary>Normal constructor from NAudio event.</summary>
         public MidiEventDesc(MidiEvent evt)
         {
             MidiEvent = evt;
@@ -47,7 +47,7 @@ namespace MidiLib
     /// Reads and processes standard midi or yamaha style files.
     /// Writes subsets to various output formats.
     /// </summary>
-    public class MidiData
+    public class MidiDataFile
     {
         #region Fields
         ///// <summary>The internal channel objects.</summary>

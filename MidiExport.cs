@@ -30,11 +30,11 @@ namespace MidiLib
             List<string> contentText = new();
             if (meta.Any())
             {
-                contentText.Add($"Meta,Value");
+                contentText.Add($"Meta,==================");
                 meta.ForEach(m => contentText.Add($"{m.Key},{m.Value}"));
             }
 
-            contentText.Add("AbsoluteTime,Event,Pattern,Channel,Content");
+            contentText.Add("AbsoluteTime,Event,Pattern,Channel,Content,==================");
             foreach(PatternInfo pi in patterns)
             {
                 var descs = pi.GetFilteredEvents(channelNumbers, false);
@@ -60,12 +60,8 @@ namespace MidiLib
             var drumChannelNumbers = channels.Where(ch => ch.IsDrums).Select(ch => ch.ChannelNumber).ToHashSet();
 
             // Build meta info.
-            List<string> metaText = new()
-            {
-                $"Meta,=================="
-            };
+            List<string> metaText = new() { $"Meta,==================" };
             meta.ForEach(m => metaText.Add($"{m.Key},{m.Value}"));
-
             metaText.Add($"Pattern,{pattern.PatternName}");
             metaText.Add($"Tempo,{pattern.Tempo}");
             metaText.Add($"TimeSig,{pattern.TimeSig}");
@@ -221,6 +217,7 @@ namespace MidiLib
             var endt = new MetaEvent(MetaEventType.EndTrack, 0, ltime);
             outEvents.Add(endt);
 
+            // Use NAudio function to create out file.
             MidiFile.Export(outFileName, outColl);
         }
 

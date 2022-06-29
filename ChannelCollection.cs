@@ -10,7 +10,7 @@ using NBagOfTricks;
 namespace MidiLib
 {
     /// <summary>Contains all the midi channel descriptors and properties related to the full set.</summary>
-    public class ChannelCollection : IEnumerable<Channel>//TODO1 still useful?
+    public class ChannelCollection : IEnumerable<Channel> // TODO1 still useful?
     {
         #region Fields
         /// <summary>All the channels. Index is 0-based, not channel number.</summary>
@@ -63,7 +63,7 @@ namespace MidiLib
         /// <param name="control">...to this control.</param>
         public void Bind(int chnum, PlayerControl control)
         {
-            control.Channel = GetChannel(chnum);
+            control.BoundChannel = GetChannel(chnum);
         }
 
         /// <summary>

@@ -73,6 +73,8 @@ namespace MidiLib
         public event EventHandler? CurrentTimeChanged;
         #endregion
 
+        string fn = @"C:\Dev\repos\MidiLib\Test\dump.txt";
+
         #region Lifecycle
         /// <summary>
         /// Normal constructor.
@@ -134,12 +136,25 @@ namespace MidiLib
             }
 
             // Text.
-            _format.Alignment = StringAlignment.Center;
-            pe.Graphics.DrawString(_current.Format(MidiSettings.LibSettings.ZeroBased), FontLarge, Brushes.Black, ClientRectangle, _format);
-            _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(_start.Format(MidiSettings.LibSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
-            _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(_end.Format(MidiSettings.LibSettings.ZeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
+            if(DesignMode) // Can't access LibSettings yet.
+            {
+                _format.Alignment = StringAlignment.Center;
+                pe.Graphics.DrawString("CENTER", FontLarge, Brushes.Black, ClientRectangle, _format);
+                _format.Alignment = StringAlignment.Near;
+                pe.Graphics.DrawString("NEAR", FontSmall, Brushes.Black, ClientRectangle, _format);
+                _format.Alignment = StringAlignment.Far;
+                pe.Graphics.DrawString("FAR", FontSmall, Brushes.Black, ClientRectangle, _format);
+            }
+            else
+            {
+                bool zeroBased = MidiSettings.LibSettings.ZeroBased;
+                _format.Alignment = StringAlignment.Center;
+                pe.Graphics.DrawString(_current.Format(zeroBased), FontLarge, Brushes.Black, ClientRectangle, _format);
+                _format.Alignment = StringAlignment.Near;
+                pe.Graphics.DrawString(_start.Format(zeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
+                _format.Alignment = StringAlignment.Far;
+                pe.Graphics.DrawString(_end.Format(zeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
+            }
         }
         #endregion
 

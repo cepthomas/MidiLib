@@ -14,6 +14,7 @@ using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
 using NBagOfTricks.Slog;
+using System.Text.Json.Serialization;
 
 namespace MidiLib.Test
 {
@@ -37,7 +38,7 @@ namespace MidiLib.Test
         readonly MmTimerEx _mmTimer = new();
 
         /// <summary>Midi events from the input file.</summary>
-        readonly MidiData _mdata = new();
+        readonly MidiDataFile _mdata = new();
 
         /// <summary>All the channel controls.</summary>
         readonly List<PlayerControl> _playerControls = new();
@@ -47,6 +48,9 @@ namespace MidiLib.Test
 
         /// <summary>My logging.</summary>
         readonly Logger _logger = LogManager.CreateLogger("MainForm");
+
+        /// <summary>Test stuff.</summary>
+        readonly TestSettings _settings = new();
         #endregion
 
         #region Fields - adjust to taste
@@ -86,6 +90,9 @@ namespace MidiLib.Test
             DirectoryInfo di = new(_outPath);
             di.Create();
 
+            // Must do this.
+            MidiLib.MidiSettings.LibSettings = _settings.MidiSettings;
+
             // Logger. Note: you can create this here but don't call any _logger functions until loaded.
             LogManager.MinLevelFile = LogLevel.Trace;
             LogManager.MinLevelNotif = LogLevel.Trace;
@@ -105,7 +112,6 @@ namespace MidiLib.Test
             sldVolume.Maximum = VolumeDefs.MAX;
             sldVolume.Value = VolumeDefs.DEFAULT;
             sldVolume.Label = "volume";
-            channelControl.ControlColor = _controlColor;
 
             // Time controller.
             MidiSettings.LibSettings.Snap = SnapType.Beat;
@@ -124,7 +130,7 @@ namespace MidiLib.Test
 
             // Set up midi devices.
             _player = new(_midiOutDeviceName, _allChannels);
-            _listener = new(_midiInDeviceName, "MidiIn1");
+            _listener = new(_midiInDeviceName);
             _listener.CaptureEnable = _listener.Valid;
             _player.SendPatch(_kbdChannelNumber, _kbdPatch);
 
@@ -431,14 +437,12 @@ namespace MidiLib.Test
 
                 // For scaling subdivs to internal.
                 MidiTimeConverter mt = new(_mdata.DeltaTicksPerQuarterNote, _defaultTempo);
-
+                    
                 for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
                 {
                     int chnum = i + 1;
 
-                    var chEvents = pinfo.Events.
-                        Where(e => e.ChannelNumber == chnum && (e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent)).
-                        OrderBy(e => e.AbsoluteTime);
+                    var chEvents = pinfo.GetFilteredEvents(new() { chnum }, true).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
 
                     // Is this channel pertinent?
                     if (chEvents.Any())
@@ -575,15 +579,27 @@ namespace MidiLib.Test
             {
                 // Collect filters.
                 List<string> patternNames = new();
-                foreach(var p in lbPatterns.CheckedItems)
+                if(lbPatterns.Items.Count > 1)
                 {
-                    patternNames.Add(p.ToString()!);
+                    foreach (var p in lbPatterns.CheckedItems)
+                    {
+                        patternNames.Add(p.ToString()!);
+                    }
+                    if (!patternNames.Any())
+                    {
+                        _logger.Warn("Please select at least one pattern");
+                    }
+                }
+                else // just one
+                {
+                    patternNames.Add(lbPatterns.CheckedItems[0].ToString()!);
                 }
 
-                List<int> channels = new();
-                foreach (var cc in _playerControls.Where(c => c.Selected))
+                List<Channel> channels = new();
+                _playerControls.Where(cc => cc.Selected).ForEach(cc => channels.Add(cc.BoundChannel));
+                if(!channels.Any()) // grab them all.
                 {
-                    channels.Add(cc.ChannelNumber);
+                    _playerControls.ForEach(cc => channels.Add(cc.BoundChannel));
                 }
 
                 if (sender == btnExportAll)
@@ -736,7 +752,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Settings_Click(object sender, EventArgs e)
         {
-            MidiSettings.TheSettings.Edit("howdy!");
+            _settings.Edit("howdy!", 300);
         }
         #endregion
 
@@ -757,5 +773,25 @@ namespace MidiLib.Test
             _player.SendMidi(nevt);
         }
         #endregion
+    }
+
+    public class TestSettings : Settings
+    {
+        [DisplayName("Background Color")]
+        [Description("The color used for overall background.")]
+        [Browsable(true)]
+        [JsonConverter(typeof(JsonColorConverter))]
+        public Color BackColor { get; set; } = Color.AliceBlue;
+
+        [DisplayName("Ignore Warnings")]
+        [Description("Ignore compiler warnings otherwise treat them as errors.")]
+        [Browsable(true)]
+        public bool IgnoreWarnings { get; set; } = true;
+
+        [DisplayName("Midi Settings")]
+        [Description("Edit midi settings.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public MidiSettings MidiSettings { get; set; } = new();
     }
 }
