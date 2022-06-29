@@ -736,7 +736,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Settings_Click(object sender, EventArgs e)
         {
-//TODO1            MidiSettings.TheSettings.Edit("howdy!");
+            MidiSettings.TheSettings.Edit("howdy!");
         }
         #endregion
 

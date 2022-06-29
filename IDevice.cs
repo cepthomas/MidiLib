@@ -14,9 +14,6 @@ namespace MidiLib
         /// <summary>Device name as defined by the system.</summary>
         string DeviceName { get; }
 
-        /// <summary>Device id for internal use.</summary>
-        string DeviceId { get; }
-
         /// <summary>Are we ok?</summary>
         bool Valid { get; }
 
@@ -39,9 +36,6 @@ namespace MidiLib
         #region Properties
         /// <summary>Device name as defined by the system.</summary>
         string DeviceName { get; }
-
-        /// <summary>Device id for internal use.</summary>
-        string DeviceId { get; }
 
         /// <summary>Are we ok?</summary>
         bool Valid { get; }

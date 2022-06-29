@@ -28,8 +28,11 @@ namespace MidiLib
         /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
         public int[] Patches { get; set; } = new int[MidiDefs.NUM_CHANNELS];
 
-        /// <summary>All the pattern midi events, (usually) ordered by time.</summary>
-        public List<MidiEventDesc> Events { get; private set; } = new();
+        /// <summary>All the pattern midi events.</summary>
+        List<MidiEventDesc> _events = new();
+
+        /// <summary>All the pattern midi events, key is when to play (scaled time).</summary>
+        Dictionary<int, List<MidiEventDesc>> _eventsByTime = new();
 
         /// <summary>Normal constructor.</summary>
         public PatternInfo()
@@ -41,19 +44,51 @@ namespace MidiLib
             }
         }
 
-
-
-
-
-        public IEnumerable<MidiEventDesc> GetEvents(int when)
+        /// <summary>
+        /// Add an event to the collection.
+        /// </summary>
+        /// <param name="evt"></param>
+        public void AddEvent(MidiEventDesc evt)
         {
-            var evts = Events.Where(e => e.ScaledTime == when);
+            _events.Add(evt);
 
-            return evts.Any() ? evts : Enumerable.Empty<MidiEventDesc>();
+            if(!_eventsByTime.ContainsKey(evt.ScaledTime))
+            {
+                _eventsByTime.Add(evt.ScaledTime, new());
+            }
+
+            _eventsByTime[evt.ScaledTime].Add(evt);
         }
 
+        /// <summary>
+        /// Get enumerator for events using supplied filters.
+        /// </summary>
+        /// <param name="channels">Specific channnels or all if empty.</param>
+        /// <param name="sortTime">Optional sort.</param>
+        /// <returns>Enumerator or null if invalid.</returns>
+        public IEnumerable<MidiEventDesc>? GetFilteredEvents(List<int> channels, bool sortTime)
+        {
+            IEnumerable<MidiEventDesc>? descs = _events.Where(e => channels.Contains(e.ChannelNumber));
 
+            // Always time order.
+            if (descs is not null && sortTime)
+            {
+                descs = descs.OrderBy(e => e.AbsoluteTime);
+            }
 
+            return descs;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="when"></param>
+        /// <returns></returns>
+        public List<MidiEventDesc> GetEvents(int when)
+        {
+            var evts = _eventsByTime.ContainsKey(when) ? _eventsByTime[when] : new();
+            return evts;
+        }
 
         /// <summary>Readable version.</summary>
         /// <returns></returns>

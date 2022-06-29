@@ -18,7 +18,7 @@ namespace MidiLib
     /// <summary>
     /// A "good enough" midi player.
     /// </summary>
-    public sealed class MidiPlayer : IDisposable //TODO2 should use MidiSender
+    public sealed class MidiPlayer : IDisposable //TODO1-1 should use MidiSender
     {
         #region Fields
         /// <summary>Midi output device.</summary>

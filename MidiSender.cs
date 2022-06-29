@@ -30,9 +30,6 @@ namespace MidiLib
         public string DeviceName { get; }
 
         /// <inheritdoc />
-        public string DeviceId { get; }
-
-        /// <inheritdoc />
         public bool Valid { get { return _midiOut is not null; } }
 
         /// <inheritdoc />
@@ -44,11 +41,9 @@ namespace MidiLib
         /// Normal constructor.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
-        /// <param name="deviceId">Client must supply id of device.</param>
-        public MidiSender(string deviceName, string deviceId) //TODO1 ID???
+        public MidiSender(string deviceName)
         {
             DeviceName = deviceName;
-            DeviceId = deviceId;
 
             LogEnable = false;
 

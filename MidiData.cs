@@ -21,7 +21,7 @@ namespace MidiLib
     /// <summary>
     /// Internal representation of one midi event.
     /// </summary>
-    public class MidiEventDesc //TODO1 clean up/simplify.
+    public class MidiEventDesc
     {
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get { return MidiEvent.Channel; } }
@@ -43,7 +43,7 @@ namespace MidiLib
     }
 
     /// <summary>
-    /// Represents one complete collection of midi events.
+    /// Represents one complete collection of midi events, usually from a midi file.
     /// Reads and processes standard midi or yamaha style files.
     /// Writes subsets to various output formats.
     /// </summary>
@@ -340,7 +340,7 @@ namespace MidiLib
             void AddMidiEvent(MidiEvent evt)
             {
                 var pi = _patterns.Last();
-                pi.Events.Add(new MidiEventDesc(evt));
+                pi.AddEvent(new MidiEventDesc(evt));
             }
 
             return absoluteTime;
@@ -493,18 +493,21 @@ namespace MidiLib
                 $"Tracks,{NumTracks}",
             };
 
-            contentText.Add("AbsoluteTime,Event,Pattern,Channel,Content");
+            var newfn = MidiExport.ExportAllEvents(outPath, _fn, _patterns, channels);
+            //        public static string ExportAllEvents(string outPath, string baseFn, List<PatternInfo> patterns, List<int> channels)
 
-            foreach(PatternInfo pi in _patterns)
-            {
-                var descs = GetFilteredEvents(pi.PatternName, channels, false);
-                descs?.ForEach(evt => contentText.Add($"{evt.AbsoluteTime},{evt.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "")}," +
-                    $"{pi.PatternName},{evt.ChannelNumber},{evt.MidiEvent}"));
-            }
 
-            // Export away.
-            var newfn = MakeExportFileName(outPath, "all", "csv");
-            File.WriteAllLines(newfn, contentText);
+            //contentText.Add("AbsoluteTime,Event,Pattern,Channel,Content");
+            //foreach(PatternInfo pi in _patterns)
+            //{
+            //    var descs = pi.GetFilteredEvents(channels, false);
+            //    descs?.ForEach(evt => contentText.Add($"{evt.AbsoluteTime},{evt.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "")}," +
+            //        $"{pi.PatternName},{evt.ChannelNumber},{evt.MidiEvent}"));
+            //}
+            //// Export away.
+            //var newfn = MakeExportFileName(outPath, "all", "csv");
+            //File.WriteAllLines(newfn, contentText);
+
             return newfn;            
         }
 
@@ -520,118 +523,122 @@ namespace MidiLib
         {
             var pattern = _patterns.Where(p => p.PatternName == patternName).First();
 
-            StringBuilder patches = new();
-            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-            {
-                int chnum = i + 1;
+            var newfn = MidiExport.ExportGroupedEvents();
+            //        public static string ExportGroupedEvents(string outPath, string baseFn, PatternInfo pattern, ChannelCollection allChannels, List<int> channels, bool includeOther)
 
-                if (pattern.Patches[i] >= 0)
-                {
-                    var sp = _allChannels.IsDrums(chnum) ? "Drums" : MidiDefs.GetInstrumentName(pattern.Patches[i]);
-                    patches.Append($"{chnum}:{sp} ");
-                }
-            }
 
-            List<string> metaText = new()
-            {
-                $"Meta,======",
-                $"Meta,Value",
-                $"MidiFileType,{MidiFileType}",
-                $"DeltaTicksPerQuarterNote,{DeltaTicksPerQuarterNote}",
-                $"Tracks,{NumTracks}",
-                $"Pattern,{pattern.PatternName}",
-                $"Tempo,{pattern.Tempo}",
-                $"TimeSig,{pattern.TimeSig}",
-                $"KeySig,{pattern.KeySig}",
-                $"Patches,{patches}",
-            };
+            //StringBuilder patches = new();
+            //for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+            //{
+            //    int chnum = i + 1;
 
-            List<string> notesText = new()
-            {
-                "Notes,======",
-                "AbsoluteTime,Channel,Event,NoteNum,NoteName,Velocity,Duration",
-            };
+            //    if (pattern.Patches[i] >= 0)
+            //    {
+            //        var sp = _allChannels.IsDrums(chnum) ? "Drums" : MidiDefs.GetInstrumentName(pattern.Patches[i]);
+            //        patches.Append($"{chnum}:{sp} ");
+            //    }
+            //}
 
-            List<string> otherText = new()
-            {
-                "Other,======",
-                "AbsoluteTime,Channel,Event,Val1,Val2,Val3",
-            };
+            //List<string> metaText = new()
+            //{
+            //    $"Meta,======",
+            //    $"Meta,Value",
+            //    $"MidiFileType,{MidiFileType}",
+            //    $"DeltaTicksPerQuarterNote,{DeltaTicksPerQuarterNote}",
+            //    $"Tracks,{NumTracks}",
+            //    $"Pattern,{pattern.PatternName}",
+            //    $"Tempo,{pattern.Tempo}",
+            //    $"TimeSig,{pattern.TimeSig}",
+            //    $"KeySig,{pattern.KeySig}",
+            //    $"Patches,{patches}",
+            //};
 
-            var descs = GetFilteredEvents(patternName, channels, true);
-            descs?.ForEach(me =>
-            {
-                // Boilerplate.
-                string ntype = me.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "");
-                string sc = $"{me.MidiEvent.AbsoluteTime},{me.MidiEvent.Channel},{ntype}";
+            //List<string> notesText = new()
+            //{
+            //    "Notes,======",
+            //    "AbsoluteTime,Channel,Event,NoteNum,NoteName,Velocity,Duration",
+            //};
 
-                switch (me.MidiEvent)
-                {
-                    case NoteOnEvent evt:
-                        int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
+            //List<string> otherText = new()
+            //{
+            //    "Other,======",
+            //    "AbsoluteTime,Channel,Event,Val1,Val2,Val3",
+            //};
 
-                        string nname = _allChannels.IsDrums(me.MidiEvent.Channel) ?
-                           $"{MidiDefs.GetDrumName(evt.NoteNumber)}" :
-                           $"{MusicDefinitions.NoteNumberToName(evt.NoteNumber)}";
-                        notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
-                        break;
+            //var descs = pattern.GetFilteredEvents(channels, true);
+            //descs?.ForEach(me =>
+            //{
+            //    // Boilerplate.
+            //    string ntype = me.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "");
+            //    string sc = $"{me.MidiEvent.AbsoluteTime},{me.MidiEvent.Channel},{ntype}";
 
-                    case NoteEvent evt: // aka NoteOff
-                        notesText.Add($"{sc},{evt.NoteNumber},,{evt.Velocity},");
-                        break;
+            //    switch (me.MidiEvent)
+            //    {
+            //        case NoteOnEvent evt:
+            //            int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
 
-                    case TempoEvent evt:
-                        metaText.Add($"Tempo,{evt.Tempo}");
-                        otherText.Add($"{sc},{evt.Tempo},{evt.MicrosecondsPerQuarterNote}");
-                        break;
+            //            string nname = _allChannels.IsDrums(me.MidiEvent.Channel) ?
+            //               $"{MidiDefs.GetDrumName(evt.NoteNumber)}" :
+            //               $"{MusicDefinitions.NoteNumberToName(evt.NoteNumber)}";
+            //            notesText.Add($"{sc},{evt.NoteNumber},{nname},{evt.Velocity},{len}");
+            //            break;
 
-                    case TimeSignatureEvent evt:
-                        otherText.Add($"{sc},{evt.TimeSignature},,");
-                        break;
+            //        case NoteEvent evt: // aka NoteOff
+            //            notesText.Add($"{sc},{evt.NoteNumber},,{evt.Velocity},");
+            //            break;
 
-                    case KeySignatureEvent evt:
-                        otherText.Add($"{sc},{evt.SharpsFlats},{evt.MajorMinor},");
-                        break;
+            //        case TempoEvent evt:
+            //            metaText.Add($"Tempo,{evt.Tempo}");
+            //            otherText.Add($"{sc},{evt.Tempo},{evt.MicrosecondsPerQuarterNote}");
+            //            break;
 
-                    case PatchChangeEvent evt:
-                        string pname = _allChannels.IsDrums(me.MidiEvent.Channel) ?
-                           $"{MidiDefs.GetDrumKitName(evt.Patch)}" :
-                           $"{MidiDefs.GetInstrumentName(evt.Patch)}";
-                        otherText.Add($"{sc},{evt.Patch},{pname},");
-                        break;
+            //        case TimeSignatureEvent evt:
+            //            otherText.Add($"{sc},{evt.TimeSignature},,");
+            //            break;
 
-                    case ControlChangeEvent evt:
-                        otherText.Add($"{sc},{(int)evt.Controller},{MidiDefs.GetControllerName((int)evt.Controller)},{evt.ControllerValue}");
-                        break;
+            //        case KeySignatureEvent evt:
+            //            otherText.Add($"{sc},{evt.SharpsFlats},{evt.MajorMinor},");
+            //            break;
 
-                    case PitchWheelChangeEvent evt:
-                        otherText.Add($"{sc},{evt.Pitch},,");
-                        break;
+            //        case PatchChangeEvent evt:
+            //            string pname = _allChannels.IsDrums(me.MidiEvent.Channel) ?
+            //               $"{MidiDefs.GetDrumKitName(evt.Patch)}" :
+            //               $"{MidiDefs.GetInstrumentName(evt.Patch)}";
+            //            otherText.Add($"{sc},{evt.Patch},{pname},");
+            //            break;
 
-                    case TextEvent evt:
-                        otherText.Add($"{sc},{evt.Text},,,");
-                        break;
+            //        case ControlChangeEvent evt:
+            //            otherText.Add($"{sc},{(int)evt.Controller},{MidiDefs.GetControllerName((int)evt.Controller)},{evt.ControllerValue}");
+            //            break;
 
-                    //case ChannelAfterTouchEvent:
-                    //case SysexEvent:
-                    //case MetaEvent:
-                    //case RawMetaEvent:
-                    //case SequencerSpecificEvent:
-                    //case SmpteOffsetEvent:
-                    //case TrackSequenceNumberEvent:
-                    default:
-                        break;
-                }
-            });
+            //        case PitchWheelChangeEvent evt:
+            //            otherText.Add($"{sc},{evt.Pitch},,");
+            //            break;
 
-            // Export away.
-            var newfn = MakeExportFileName(outPath, patternName, "csv");
-            File.WriteAllLines(newfn, metaText);
-            File.AppendAllLines(newfn, notesText);
-            if (includeOther)
-            {
-                File.AppendAllLines(newfn, otherText);
-            }
+            //        case TextEvent evt:
+            //            otherText.Add($"{sc},{evt.Text},,,");
+            //            break;
+
+            //        //case ChannelAfterTouchEvent:
+            //        //case SysexEvent:
+            //        //case MetaEvent:
+            //        //case RawMetaEvent:
+            //        //case SequencerSpecificEvent:
+            //        //case SmpteOffsetEvent:
+            //        //case TrackSequenceNumberEvent:
+            //        default:
+            //            break;
+            //    }
+            //});
+
+            //// Export away.
+            //var newfn = MakeExportFileName(outPath, patternName, "csv");
+            //File.WriteAllLines(newfn, metaText);
+            //File.AppendAllLines(newfn, notesText);
+            //if (includeOther)
+            //{
+            //    File.AppendAllLines(newfn, otherText);
+            //}
 
             return newfn;
         }
@@ -646,93 +653,63 @@ namespace MidiLib
         /// <returns>File name of export file.</returns>
         public string ExportMidi(string outPath, string patternName, List<int> channels, int ppq)
         {
-            // TODO export as zip?
+            var newfn = MidiExport.ExportMidi();
+            //        public static string ExportMidi(string outPath, string baseFn, PatternInfo pattern, List<int> channels, int ppq)
 
-            string name = Path.GetFileNameWithoutExtension(_fn);
 
-            var pattern = _patterns.Where(p => p.PatternName == patternName).First();
-            var newfn = MakeExportFileName(outPath, patternName, "mid");
 
-            // Init output file contents.
-            MidiEventCollection outColl = new(1, ppq);
-            IList<MidiEvent> outEvents = outColl.AddTrack();
+            //string name = Path.GetFileNameWithoutExtension(_fn);
 
-            // Tempo.
-            outEvents.Add(new TempoEvent(0, 0) { Tempo = pattern.Tempo });
+            //var pattern = _patterns.Where(p => p.PatternName == patternName).First();
+            //var newfn = MakeExportFileName(outPath, patternName, "mid");
 
-            // General info.
-            var info = $"Export {patternName}";
-            outEvents.Add(new TextEvent(info, MetaEventType.TextEvent, 0));
+            //// Init output file contents.
+            //MidiEventCollection outColl = new(1, ppq);
+            //IList<MidiEvent> outEvents = outColl.AddTrack();
 
-            // Optional.
-            if (pattern.TimeSig != "")
-            {
-                // TODO figure out TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, ppq).
-            }
+            //// Tempo.
+            //outEvents.Add(new TempoEvent(0, 0) { Tempo = pattern.Tempo });
 
-            if (pattern.KeySig != "")
-            {
-                outEvents.Add(new KeySignatureEvent(0, 0, 0));
-            }
+            //// General info.
+            //var info = $"Export {patternName}";
+            //outEvents.Add(new TextEvent(info, MetaEventType.TextEvent, 0));
 
-            // Patches.
-            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-            {
-                int chnum = i + 1;
-                if (pattern.Patches[i] >= 0)
-                {
-                    outEvents.Add(new PatchChangeEvent(0, chnum, pattern.Patches[i]));
-                }
-            }
+            //// Optional.
+            //if (pattern.TimeSig != "")
+            //{
+            //    // TODO figure out TimeSignatureEvent(0, 4, 2, (int)ticksPerClick, ppq).
+            //}
 
-            // Gather the midi events for the pattern ordered by timestamp.
-            var events = GetFilteredEvents(patternName, channels, true);
-            events?.ForEach(e =>
-            {
-                outEvents.Add(e.MidiEvent);
-            });
+            //if (pattern.KeySig != "")
+            //{
+            //    outEvents.Add(new KeySignatureEvent(0, 0, 0));
+            //}
 
-            // Add end track.
-            long ltime = outEvents.Last().AbsoluteTime;
-            var endt = new MetaEvent(MetaEventType.EndTrack, 0, ltime);
-            outEvents.Add(endt);
+            //// Patches.
+            //for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+            //{
+            //    int chnum = i + 1;
+            //    if (pattern.Patches[i] >= 0)
+            //    {
+            //        outEvents.Add(new PatchChangeEvent(0, chnum, pattern.Patches[i]));
+            //    }
+            //}
 
-            MidiFile.Export(newfn, outColl);
+            //// Gather the midi events for the pattern ordered by timestamp.
+            //var events = pattern.GetFilteredEvents(channels, true);
+            //events?.ForEach(e =>
+            //{
+            //    outEvents.Add(e.MidiEvent);
+            //});
+
+            //// Add end track.
+            //long ltime = outEvents.Last().AbsoluteTime;
+            //var endt = new MetaEvent(MetaEventType.EndTrack, 0, ltime);
+            //outEvents.Add(endt);
+
+            //MidiFile.Export(newfn, outColl);
 
             return newfn;
-        }
-
-        /// <summary>
-        /// Get enumerator for events using supplied filters.
-        /// </summary>
-        /// <param name="patternName">Specific pattern or all if empty.</param>
-        /// <param name="channels">Specific channnels or all if empty.</param>
-        /// <param name="sortTime">Optional sort.</param>
-        /// <returns>Enumerator or null if invalid.</returns>
-        IEnumerable<MidiEventDesc>? GetFilteredEvents(string patternName, List<int> channels, bool sortTime)
-        {
-            IEnumerable<MidiEventDesc>? descs = null;
-
-            var pi = _patterns.Where(p => p.PatternName == patternName).First();
-
-            if(pi is not null)
-            {
-                descs = ((uint)patternName.Length, (uint)channels.Count) switch
-                {
-                    ( 0,  0) => pi.Events.AsEnumerable(),
-                    ( 0, >0) => pi.Events.Where(e => channels.Contains(e.ChannelNumber)),
-                    (>0,  0) => pi.Events.Where(e => patternName == pi.PatternName),
-                    (>0, >0) => pi.Events.Where(e => patternName == pi.PatternName && channels.Contains(e.ChannelNumber))
-                };
-            }
-
-            // Always time order.
-            if (descs is not null && sortTime)
-            {
-                descs = descs.OrderBy(e => e.AbsoluteTime);
-            }
-
-            return descs;
         }
 
         /// <summary>

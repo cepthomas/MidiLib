@@ -74,10 +74,10 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Constructor from Beat.Subdiv representation as a double. TODO1 a bit crude but other ways (e.g. string) clutter the syntax. !!
+        /// Constructor from Beat.Subdiv representation as a double.
         /// </summary>
         /// <param name="tts"></param>
-        public BarTime(double tts)
+        public BarTime(double tts) // TODO1-1 fix - 1/2 digit resolutions!
         {
             if (tts < 0)
             {
