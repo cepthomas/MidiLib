@@ -73,8 +73,6 @@ namespace MidiLib
         public event EventHandler? CurrentTimeChanged;
         #endregion
 
-        string fn = @"C:\Dev\repos\MidiLib\Test\dump.txt";
-
         #region Lifecycle
         /// <summary>
         /// Normal constructor.

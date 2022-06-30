@@ -19,30 +19,6 @@ using NBagOfTricks;
 namespace MidiLib
 {
     /// <summary>
-    /// Internal representation of one midi event.
-    /// </summary>
-    public class MidiEventDesc
-    {
-        /// <summary>One-based channel number.</summary>
-        public int ChannelNumber { get { return MidiEvent.Channel; } }
-
-        /// <summary>Time (subdivs) from original file.</summary>
-        public long AbsoluteTime { get { return MidiEvent.AbsoluteTime; } }
-
-        /// <summary>Time (subdivs) scaled to internal units using send PPQ.</summary>
-        public int ScaledTime { get; set; } = -1;
-
-        /// <summary>The raw midi event.</summary>
-        public MidiEvent MidiEvent { get; init; }
-
-        /// <summary>Normal constructor from NAudio event.</summary>
-        public MidiEventDesc(MidiEvent evt)
-        {
-            MidiEvent = evt;
-        }
-    }
-
-    /// <summary>
     /// Represents one complete collection of midi events, usually from a midi file.
     /// Reads and processes standard midi or yamaha style files.
     /// Writes subsets to various output formats.
@@ -62,14 +38,17 @@ namespace MidiLib
         /// <summary>All file pattern sections. Plain midi files will have only one, unnamed.</summary>
         readonly List<PatternInfo> _patterns = new();
 
-        /// <summary>Default values if not supplied in pattern. Mainly for managing patches.</summary>
-        PatternInfo _patternDefaults = new();
+        /// <summary>Currently collecting this pattern.</summary>
+        PatternInfo? _currentPattern = new("", 0);
 
-        /// <summary>Current loaded file.</summary>
-        string _fn = "";
+        /// <summary>Default values if not supplied in pattern. Mainly for managing patches.</summary>
+        readonly PatternInfo _patternDefaults = new("defaults", 0);
         #endregion
 
         #region Properties
+        /// <summary>Current loaded file.</summary>
+        public string FileName { get; private set; } = "";
+
         /// <summary>What is it.</summary>
         public int MidiFileType { get; private set; } = 0;
 
@@ -92,14 +71,14 @@ namespace MidiLib
         /// <param name="includeNoisy"></param>
         public void Read(string fn, int defaultTempo, bool includeNoisy)
         {
-            Reset();
+            if(_patterns.Any())
+            {
+                throw new InvalidOperationException($"Already processed - delete me");
+            }
 
-            _fn = fn;
+            FileName = fn;
             _patternDefaults.Tempo = defaultTempo;
             _includeNoisy = includeNoisy;
-
-            // Always at least one pattern - for plain midi.
-            _patterns.Add(new PatternInfo() { PatternName = "" });
 
             using var br = new BinaryReader(File.OpenRead(fn));
             bool done = false;
@@ -110,36 +89,47 @@ namespace MidiLib
 
                 switch (sectionName)
                 {
-                    case "MThd": ReadMThd(br); break;
-                    case "MTrk": ReadMTrk(br); break;
-                    case "CASM": ReadCASM(br); break;
-                    case "CSEG": ReadCSEG(br); break;
-                    case "Sdec": ReadSdec(br); break;
-                    case "Ctab": ReadCtab(br); break;
-                    case "Cntt": ReadCntt(br); break;
-                    case "OTSc": ReadOTSc(br); break; // One Touch Setting section
-                    case "FNRc": ReadFNRc(br); break; // MDB (Music Finder) section
-                    default:     done = true;  break;
+                    case "MThd":
+                        ReadMThd(br);
+                        // Always at least one pattern - for plain midi. Safe to init now.
+                        _currentPattern = new("", DeltaTicksPerQuarterNote);
+                        _patterns.Add(new PatternInfo("", DeltaTicksPerQuarterNote));
+                        break;
+                    case "MTrk":
+                        ReadMTrk(br);
+                        break;
+                    case "CASM":
+                        ReadCASM(br);
+                        break;
+                    case "CSEG":
+                        ReadCSEG(br);
+                        break;
+                    case "Sdec":
+                        ReadSdec(br);
+                        break;
+                    case "Ctab":
+                        ReadCtab(br);
+                        break;
+                    case "Cntt":
+                        ReadCntt(br);
+                        break;
+                    case "OTSc":
+                        // One Touch Setting section
+                        ReadOTSc(br);
+                        break;
+                    case "FNRc":
+                        // MDB (Music Finder) section
+                        ReadFNRc(br);
+                        break;
+                    default:
+                        done = true;
+                        break;
                 }
             }
 
             // Last one.
             CleanUpPattern();
-        }
-
-        /// <summary>
-        /// Clean up.
-        /// </summary>
-        public void Reset()
-        {
-            _lastStreamPos = 0;
-            _patternDefaults = new();
-
-            MidiFileType = 0;
-            NumTracks = 0;
-            DeltaTicksPerQuarterNote = 0;
-
-            _patterns.Clear();
+            _patterns.Add(_currentPattern);
         }
 
         /// <summary>
@@ -259,7 +249,7 @@ namespace MidiLib
                     case PatchChangeEvent evt:
                         var index = evt.Channel - 1;
                         _patternDefaults.Patches[index] = evt.Patch;
-                        _patterns.Last().Patches[index] = evt.Patch;
+                        _currentPattern.Patches[index] = evt.Patch;
                         AddMidiEvent(evt);
                         break;
 
@@ -278,21 +268,21 @@ namespace MidiLib
                     case TempoEvent evt:
                         var tempo = (int)Math.Round(evt.Tempo);
                         _patternDefaults.Tempo = tempo;
-                        _patterns.Last().Tempo = tempo;
+                        _currentPattern.Tempo = tempo;
                         AddMidiEvent(evt);
                         break;
 
                     case TimeSignatureEvent evt:
                         var tsig = evt.TimeSignature;
                         _patternDefaults.TimeSig = tsig;
-                        _patterns.Last().TimeSig = tsig;
+                        _currentPattern.TimeSig = tsig;
                         AddMidiEvent(evt);
                         break;
 
                     case KeySignatureEvent evt:
                         var ksig = evt.ToString();
                         _patternDefaults.KeySig = ksig;
-                        _patterns.Last().KeySig = ksig;
+                        _currentPattern.KeySig = ksig;
                         AddMidiEvent(evt);
                         break;
 
@@ -302,20 +292,12 @@ namespace MidiLib
 
                     case TextEvent evt when evt.MetaEventType == MetaEventType.Marker:
                         // Indicates start of a new midi pattern.
-                        if(_patterns.Last().PatternName == "")
-                        {
-                            // It's the default/single pattern so update its name.
-                            _patterns.Last().PatternName = evt.Text;
-                        }
-                        else
-                        {
-                            // Tidy up missing parts of current info.
-                            CleanUpPattern();
+                        // Tidy up any missing parts of current info.
+                        CleanUpPattern();
+                        _patterns.Add(_currentPattern);
 
-                            // Add a new pattern with defaults set to previous one.
-                            _patterns.Add(new PatternInfo() { PatternName = evt.Text });
-                        }
-
+                        // Add a new pattern.
+                        _currentPattern = new PatternInfo(evt.Text, DeltaTicksPerQuarterNote);
                         absoluteTime = 0;
                         AddMidiEvent(evt);
                         break;
@@ -339,8 +321,7 @@ namespace MidiLib
             ///// Local function. /////
             void AddMidiEvent(MidiEvent evt)
             {
-                var pi = _patterns.Last();
-                pi.AddEvent(new MidiEventDesc(evt));
+                _currentPattern.AddEvent(new MidiEventDesc(evt));
             }
 
             return absoluteTime;
@@ -422,27 +403,26 @@ namespace MidiLib
         /// </summary>
         void CleanUpPattern()
         {
-            var pi = _patterns.Last();
-            if (pi.Tempo == 0)
+            if (_currentPattern.Tempo == 0)
             {
-                pi.Tempo = _patternDefaults.Tempo;
+                _currentPattern.Tempo = _patternDefaults.Tempo;
             }
 
-            if (pi.TimeSig == "")
+            if (_currentPattern.TimeSig == "")
             {
-                pi.TimeSig = _patternDefaults.TimeSig;
+                _currentPattern.TimeSig = _patternDefaults.TimeSig;
             }
 
-            if (pi.KeySig == "")
+            if (_currentPattern.KeySig == "")
             {
-                pi.KeySig = _patternDefaults.KeySig;
+                _currentPattern.KeySig = _patternDefaults.KeySig;
             }
 
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
-                if (pi.Patches[i] < 0)
+                if (_currentPattern.Patches[i] < 0)
                 {
-                    pi.Patches[i] = _patternDefaults.Patches[i];
+                    _currentPattern.Patches[i] = _patternDefaults.Patches[i];
                 }
             }
         }
@@ -476,67 +456,67 @@ namespace MidiLib
         }
         #endregion
 
-        #region Export functions
-        /// <summary>
-        /// Export the contents in a csv readable form. This is as the events appear in the original file.
-        /// </summary>
-        /// <param name="outPath">Where to boss?</param>
-        /// <param name="channels">Specific channnels or all if empty.</param>
-        /// <returns>File name of dump file.</returns>
-        public string ExportAllEvents(string outPath, List<Channel> channels)
-        {
-            var newfn = MidiExport.MakeExportFileName(outPath, _fn, "all", "csv");
-            MidiExport.ExportAllEvents(newfn, _patterns, channels, MakeMeta());
-            return newfn;            
-        }
+        //#region Export functions TODO1 probably should be in main form.
+        ///// <summary>
+        ///// Export the contents in a csv readable form. This is as the events appear in the original file.
+        ///// </summary>
+        ///// <param name="outPath">Where to boss?</param>
+        ///// <param name="channels">Specific channnels or all if empty.</param>
+        ///// <returns>File name of dump file.</returns>
+        //public string ExportAllEvents(string outPath, List<Channel> channels)
+        //{
+        //    var newfn = MidiExport.MakeExportFileName(outPath, _fn, "all", "csv");
+        //    MidiExport.ExportAllEvents(newfn, _patterns, channels, MakeMeta());
+        //    return newfn;            
+        //}
 
-        /// <summary>
-        /// Makes csv dumps of some events grouped by pattern/channel. This is as the events appear in the original file.
-        /// </summary>
-        /// <param name="outPath">Where to boss?</param>
-        /// <param name="patternName">Specific pattern.</param>
-        /// <param name="channels">Specific channnels or all if empty.</param>
-        /// <param name="includeAll">False if just notes or true if everything.</param>
-        /// <returns>File name of dump file.</returns>
-        public string ExportGroupedEvents(string outPath, string patternName, List<Channel> channels, bool includeAll)
-        {
-            var pattern = _patterns.Where(p => p.PatternName == patternName).First();
-            var newfn = MidiExport.MakeExportFileName(outPath, _fn, patternName, "csv");
-            MidiExport.ExportGroupedEvents(newfn, pattern, channels, MakeMeta(), includeAll);
-            return newfn;
-        }
+        ///// <summary>
+        ///// Makes csv dumps of some events grouped by pattern/channel. This is as the events appear in the original file.
+        ///// </summary>
+        ///// <param name="outPath">Where to boss?</param>
+        ///// <param name="patternName">Specific pattern.</param>
+        ///// <param name="channels">Specific channnels or all if empty.</param>
+        ///// <param name="includeAll">False if just notes or true if everything.</param>
+        ///// <returns>File name of dump file.</returns>
+        //public string ExportGroupedEvents(string outPath, string patternName, List<Channel> channels, bool includeAll)
+        //{
+        //    var pattern = _patterns.Where(p => p.PatternName == patternName).First();
+        //    var newfn = MidiExport.MakeExportFileName(outPath, _fn, patternName, "csv");
+        //    MidiExport.ExportGroupedEvents(newfn, pattern, channels, MakeMeta(), includeAll);
+        //    return newfn;
+        //}
 
-        /// <summary>
-        /// Export pattern parts to individual midi files. This is as the events appear in the original file. TODO export as zip?
-        /// </summary>
-        /// <param name="outPath">Where to boss?</param>
-        /// <param name="patternName">Specific pattern.</param>
-        /// <param name="channels">Specific channnels or all if empty.</param>
-        /// <param name="ppq">Export at this resolution.</param>
-        /// <returns>File name of export file.</returns>
-        public string ExportMidi(string outPath, string patternName, List<Channel> channels, int ppq)
-        {
-            var pattern = _patterns.Where(p => p.PatternName == patternName).First();
-            var newfn = MidiExport.MakeExportFileName(outPath, _fn, patternName, "mid");
-            MidiExport.ExportMidi(newfn, pattern, channels, MakeMeta());
-            return newfn;
-        }
+        ///// <summary>
+        ///// Export pattern parts to individual midi files. This is as the events appear in the original file. TODO export as zip?
+        ///// </summary>
+        ///// <param name="outPath">Where to boss?</param>
+        ///// <param name="patternName">Specific pattern.</param>
+        ///// <param name="channels">Specific channnels or all if empty.</param>
+        ///// <param name="ppq">Export at this resolution.</param>
+        ///// <returns>File name of export file.</returns>
+        //public string ExportMidi(string outPath, string patternName, List<Channel> channels, int ppq)
+        //{
+        //    var pattern = _patterns.Where(p => p.PatternName == patternName).First();
+        //    var newfn = MidiExport.MakeExportFileName(outPath, _fn, patternName, "mid");
+        //    MidiExport.ExportMidi(newfn, pattern, channels, MakeMeta());
+        //    return newfn;
+        //}
 
-        /// <summary>
-        /// Common utility.
-        /// </summary>
-        /// <returns></returns>
-        Dictionary<string, int> MakeMeta()
-        {
-            Dictionary<string, int> meta = new()
-            {
-                { "MidiFileType", MidiFileType },
-                { "DeltaTicksPerQuarterNote", DeltaTicksPerQuarterNote },
-                { "NumTracks", NumTracks }
-            };
+        ///// <summary>
+        ///// Common utility.
+        ///// </summary>
+        ///// <returns></returns>
+        //Dictionary<string, int> MakeMeta()
+        //{
+        //    Dictionary<string, int> meta = new()
+        //    {
+        //        { "MidiFileType", MidiFileType },
+        //        { "DeltaTicksPerQuarterNote", DeltaTicksPerQuarterNote },
+        //        { "NumTracks", NumTracks }
+        //    };
 
-            return meta;
-        }
-        #endregion
+        //    return meta;
+        //}
+        //#endregion
     }
 }

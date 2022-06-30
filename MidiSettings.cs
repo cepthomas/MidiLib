@@ -45,9 +45,9 @@ namespace MidiLib
         public int DefaultTempo { get; set; } = 100;
 
         [DisplayName("Internal Time Resolution")]
-        [Description("PPQ or DeltaTicksPerQuarterNote or subdivisions per beat.")]
+        [Description("aka DeltaTicksPerQuarterNote or subdivisions per beat.")]
         [Browsable(true)]
-        public PPQ InternalTimeResolution { get; set; } = PPQ.PPQ_8;
+        public PPQ InternalPPQ { get; set; } = PPQ.PPQ_8;
 
         [DisplayName("Zero Based Time")]
         [Description("Use 0:0:0 time instead of 1:1:1.")]
@@ -70,12 +70,12 @@ namespace MidiLib
         /// <summary>Convenience.</summary>
         [Browsable(false)]
         [JsonIgnore()]
-        public int SubdivsPerBeat { get { return (int)InternalTimeResolution; } }
+        public int SubdivsPerBeat { get { return (int)InternalPPQ; } }
 
         /// <summary>Convenience.</summary>
         [Browsable(false)]
         [JsonIgnore()]
-        public int SubdivsPerBar { get { return (int)InternalTimeResolution * BeatsPerBar; } }
+        public int SubdivsPerBar { get { return (int)InternalPPQ * BeatsPerBar; } }
         #endregion
     }
 

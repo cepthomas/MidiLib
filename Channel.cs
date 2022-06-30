@@ -63,7 +63,7 @@ namespace MidiLib
         /// Set the events for the channel.
         /// </summary>
         /// <param name="events"></param>
-        public void SetEvents(IEnumerable<MidiEventDesc> events)
+        public void SetEvents(IEnumerable<MidiEventDesc> events) //TODO1 should be PatternInfo
         {
             // Reset.
             _events.Clear();

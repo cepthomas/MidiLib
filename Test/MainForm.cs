@@ -435,9 +435,6 @@ namespace MidiLib.Test
                 int x = lbPatterns.Right + 5;
                 int y = lbPatterns.Top;
 
-                // For scaling subdivs to internal.
-                MidiTimeConverter mt = new(_mdata.DeltaTicksPerQuarterNote, _defaultTempo);
-                    
                 for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
                 {
                     int chnum = i + 1;
@@ -447,7 +444,7 @@ namespace MidiLib.Test
                     // Is this channel pertinent?
                     if (chEvents.Any())
                     {
-                        _allChannels.SetEvents(chnum, chEvents, mt);
+                        _allChannels.SetEvents(chnum, chEvents);
 
                         // Make new control.
                         PlayerControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
@@ -559,17 +556,7 @@ namespace MidiLib.Test
         }
         #endregion
 
-        #region Utilities
-        /// <summary>
-        /// Convert tempo to period and set mm timer.
-        /// </summary>
-        void SetTimer()
-        {
-            MidiTimeConverter mt = new(_mdata.DeltaTicksPerQuarterNote, (double)nudTempo.Value);
-            double period = mt.RoundedInternalPeriod();
-            _mmTimer.SetTimer((int)Math.Round(period), MmTimerCallback);
-        }
-
+        #region Export
         /// <summary>
         /// Export current file to human readable or midi.
         /// </summary>
@@ -577,68 +564,58 @@ namespace MidiLib.Test
         {
             try
             {
-                // Collect filters.
+                // Get selected patters.
                 List<string> patternNames = new();
-                if(lbPatterns.Items.Count > 1)
+                if (lbPatterns.Items.Count == 1)
+                {
+                    patternNames.Add(lbPatterns.Items[0].ToString()!);
+                }
+                else if (lbPatterns.CheckedItems.Count > 0)
                 {
                     foreach (var p in lbPatterns.CheckedItems)
                     {
                         patternNames.Add(p.ToString()!);
                     }
-                    if (!patternNames.Any())
-                    {
-                        _logger.Warn("Please select at least one pattern");
-                    }
                 }
-                else // just one
+                else
                 {
-                    patternNames.Add(lbPatterns.CheckedItems[0].ToString()!);
+                    _logger.Warn("Please select at least one pattern");
+                    return;
                 }
+                List<PatternInfo> patterns = new();
+                patternNames.ForEach(p => patterns.Add(_mdata.GetPattern(p)!));
 
+                // Get selected channels.
                 List<Channel> channels = new();
                 _playerControls.Where(cc => cc.Selected).ForEach(cc => channels.Add(cc.BoundChannel));
-                if(!channels.Any()) // grab them all.
+                if (!channels.Any()) // grab them all.
                 {
                     _playerControls.ForEach(cc => channels.Add(cc.BoundChannel));
                 }
 
+                // Execute the requested export function.
                 if (sender == btnExportAll)
                 {
-                    var s = _mdata.ExportAllEvents(_outPath, channels);
-                    _logger.Info($"Exported to {s}");
+                    var newfn = MakeExportFileName(_outPath, _mdata.FileName, "all", "csv");
+                    MidiExport.ExportAllEvents(newfn, patterns, channels, MakeMeta());
+                    _logger.Info($"Exported to {newfn}");
                 }
                 else if (sender == btnExportPattern)
                 {
-                    if(_mdata.NumPatterns == 1)
+                    foreach (var pattern in patterns)
                     {
-                        var s = _mdata.ExportGroupedEvents(_outPath, "", channels, true);
-                        _logger.Info($"Exported default to {s}");
-                    }
-                    else
-                    {
-                        foreach (var patternName in patternNames)
-                        {
-                            var s = _mdata.ExportGroupedEvents(_outPath, patternName, channels, true);
-                            _logger.Info($"Exported pattern {patternName} to {s}");
-                        }
+                        var newfn = MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "csv");
+                        MidiExport.ExportGroupedEvents(newfn, pattern, channels, MakeMeta(), false); //includeAll
+                        _logger.Info($"Exported pattern {pattern.PatternName} to {newfn}");
                     }
                 }
                 else if (sender == btnExportMidi)
                 {
-                    if (_mdata.NumPatterns == 1)
+                    foreach (var pattern in patterns)
                     {
-                        // Use original ppq.
-                        var s = _mdata.ExportMidi(_outPath, "", channels, _mdata.DeltaTicksPerQuarterNote);
-                        _logger.Info($"Export midi to {s}");
-                    }
-                    else
-                    {
-                        foreach (var patternName in patternNames)
-                        {
-                            // Use original ppq.
-                            var s = _mdata.ExportMidi(_outPath, patternName, channels, _mdata.DeltaTicksPerQuarterNote);
-                            _logger.Info($"Export midi to {s}");
-                        }
+                        var newfn = MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "mid");
+                        MidiExport.ExportMidi(newfn, pattern, channels, MakeMeta());
+                        _logger.Info($"Export midi to {newfn}");
                     }
                 }
                 else
@@ -650,6 +627,54 @@ namespace MidiLib.Test
             {
                 _logger.Error($"{ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Create a new clean filename for export. Creates path if it doesn't exist.
+        /// </summary>
+        /// <param name="path">Export path</param>
+        /// <param name="baseFn">Root of the new file name</param>
+        /// <param name="mod">Modifier</param>
+        /// <param name="ext">File extension</param>
+        /// <returns></returns>
+        public string MakeExportFileName(string path, string baseFn, string mod, string ext)
+        {
+            string name = Path.GetFileNameWithoutExtension(baseFn);
+
+            // Clean the file name.
+            name = name.Replace('.', '-').Replace(' ', '_');
+            mod = mod.Replace(' ', '_');
+
+            var newfn = Path.Join(path, $"{name}_{mod}.{ext}");
+            return newfn;
+        }
+
+        /// <summary>
+        /// Common utility.
+        /// </summary>
+        /// <returns></returns>
+        Dictionary<string, int> MakeMeta()
+        {
+            Dictionary<string, int> meta = new()
+            {
+                { "MidiFileType", _mdata.MidiFileType },
+                { "DeltaTicksPerQuarterNote", _mdata.DeltaTicksPerQuarterNote },
+                { "NumTracks", _mdata.NumTracks }
+            };
+
+            return meta;
+        }
+        #endregion
+
+        #region Utilities
+        /// <summary>
+        /// Convert tempo to period and set mm timer.
+        /// </summary>
+        void SetTimer()
+        {
+            MidiTimeConverter mt = new(_mdata.DeltaTicksPerQuarterNote, (double)nudTempo.Value);
+            double period = mt.RoundedInternalPeriod();
+            _mmTimer.SetTimer((int)Math.Round(period), MmTimerCallback);
         }
 
         /// <summary>

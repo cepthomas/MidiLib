@@ -220,25 +220,5 @@ namespace MidiLib
             // Use NAudio function to create out file.
             MidiFile.Export(outFileName, outColl);
         }
-
-        /// <summary>
-        /// Create a new clean filename for export. Creates path if it doesn't exist.
-        /// </summary>
-        /// <param name="path">Export path</param>
-        /// <param name="baseFn">Root of the new file name</param>
-        /// <param name="mod">Modifier</param>
-        /// <param name="ext">File extension</param>
-        /// <returns></returns>
-        public static string MakeExportFileName(string path, string baseFn, string mod, string ext)
-        {
-            string name = Path.GetFileNameWithoutExtension(baseFn);
-
-            // Clean the file name.
-            name = name.Replace('.', '-').Replace(' ', '_');
-            mod = mod.Replace(' ', '_');
-
-            var newfn = Path.Join(path, $"{name}_{mod}.{ext}");
-            return newfn;
-        }
     }
 }

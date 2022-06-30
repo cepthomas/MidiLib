@@ -10,11 +10,11 @@ using NAudio.Midi;
 
 namespace MidiLib
 {
-    /// <summary>Properties associated with a pattern.</summary>
+    /// <summary>Represents the contents of a midi file pattern. If it is a plain midi file (not style) there will be one only.</summary>
     public class PatternInfo
     {
         /// <summary>Pattern name. Empty indicates single pattern aka plain midi file.</summary>
-        public string PatternName { get; set; } = "";
+        public string PatternName { get; init; } = "";
 
         /// <summary>Tempo, if supplied by file. Default indicates invalid which will be filled in during read.</summary>
         public int Tempo { get; set; } = 0;
@@ -34,9 +34,17 @@ namespace MidiLib
         /// <summary>All the pattern midi events, key is when to play (scaled time).</summary>
         Dictionary<int, List<MidiEventDesc>> _eventsByTime = new();
 
-        /// <summary>Normal constructor.</summary>
-        public PatternInfo()
+        /// <summary>For scaling subdivs to internal.</summary>
+        MidiTimeConverter? _mt = null;
+
+        /// <summary>
+        /// Normal constructor.
+        /// </summary>
+        public PatternInfo(string name, int ppq)
         {
+            PatternName = name;
+            _mt = new(ppq, MidiSettings.LibSettings.DefaultTempo);
+
             // Init fixed length arrays.
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
@@ -45,11 +53,24 @@ namespace MidiLib
         }
 
         /// <summary>
+        /// Constructor from existing data.
+        /// </summary>
+        public PatternInfo(string name, int ppq, List<MidiEventDesc> events, List<Channel> channels, int tempo) : this(name, ppq)
+        {
+            _events.ForEach(e => AddEvent(e));
+            Tempo = tempo;
+            channels.ForEach(ch => Patches[ch.ChannelNumber] = ch.Patch);
+        }
+
+        /// <summary>
         /// Add an event to the collection.
         /// </summary>
-        /// <param name="evt"></param>
+        /// <param name="evt">The event with properly scaled time.</param>
         public void AddEvent(MidiEventDesc evt)
         {
+            // First scale time.
+            _events.ForEach(e => e.ScaledTime = _mt!.MidiToInternal(e.AbsoluteTime));
+
             _events.Add(evt);
 
             if(!_eventsByTime.ContainsKey(evt.ScaledTime))
@@ -64,16 +85,16 @@ namespace MidiLib
         /// Get enumerator for events using supplied filters.
         /// </summary>
         /// <param name="channels">Specific channnels or all if empty.</param>
-        /// <param name="sortTime">Optional sort.</param>
+        /// <param name="sortByTime">Optional sort.</param>
         /// <returns>Enumerator.</returns>
-        public IEnumerable<MidiEventDesc> GetFilteredEvents(List<int> channels, bool sortTime)
+        public IEnumerable<MidiEventDesc> GetFilteredEvents(List<int> channels, bool sortByTime)
         {
             IEnumerable<MidiEventDesc> descs = _events.Where(e => channels.Contains(e.ChannelNumber));
 
             // Always time order.
             if (descs is not null)
             {
-                if (sortTime)
+                if (sortByTime)
                 {
                     descs = descs.OrderBy(e => e.AbsoluteTime);
                 }
