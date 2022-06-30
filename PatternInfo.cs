@@ -29,13 +29,13 @@ namespace MidiLib
         public int[] Patches { get; set; } = new int[MidiDefs.NUM_CHANNELS];
 
         /// <summary>All the pattern midi events.</summary>
-        List<MidiEventDesc> _events = new();
+        readonly List<MidiEventDesc> _events = new();
 
         /// <summary>All the pattern midi events, key is when to play (scaled time).</summary>
-        Dictionary<int, List<MidiEventDesc>> _eventsByTime = new();
+        readonly Dictionary<int, List<MidiEventDesc>> _eventsByTime = new();
 
         /// <summary>For scaling subdivs to internal.</summary>
-        MidiTimeConverter? _mt = null;
+        readonly MidiTimeConverter? _mt = null;
 
         /// <summary>
         /// Normal constructor.
@@ -91,7 +91,6 @@ namespace MidiLib
         {
             IEnumerable<MidiEventDesc> descs = _events.Where(e => channels.Contains(e.ChannelNumber));
 
-            // Always time order.
             if (descs is not null)
             {
                 if (sortByTime)

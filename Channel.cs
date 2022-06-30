@@ -60,10 +60,10 @@ namespace MidiLib
 
         #region Functions
         /// <summary>
-        /// Set the events for the channel.
+        /// Set the time-ordered events for the channel.
         /// </summary>
         /// <param name="events"></param>
-        public void SetEvents(IEnumerable<MidiEventDesc> events) //TODO1 should be PatternInfo
+        public void SetEvents(IEnumerable<MidiEventDesc> events)
         {
             // Reset.
             _events.Clear();

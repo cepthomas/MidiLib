@@ -39,7 +39,7 @@ namespace MidiLib
         readonly List<PatternInfo> _patterns = new();
 
         /// <summary>Currently collecting this pattern.</summary>
-        PatternInfo? _currentPattern = new("", 0);
+        PatternInfo _currentPattern = new("", 0);
 
         /// <summary>Default values if not supplied in pattern. Mainly for managing patches.</summary>
         readonly PatternInfo _patternDefaults = new("defaults", 0);
@@ -436,87 +436,14 @@ namespace MidiLib
         uint ReadStream(BinaryReader br, int size)
         {
             _lastStreamPos = br.BaseStream.Position;
-            uint i;
-
-            switch (size)
+            var i = size switch
             {
-                case 2:
-                    i = MiscUtils.FixEndian(br.ReadUInt16());
-                    break;
-
-                case 4:
-                    i = MiscUtils.FixEndian(br.ReadUInt32());
-                    break;
-
-                default:
-                    throw new FormatException("Unsupported read size");
-            }
-
+                2 => MiscUtils.FixEndian(br.ReadUInt16()),
+                4 => MiscUtils.FixEndian(br.ReadUInt32()),
+                _ => throw new FormatException("Unsupported read size"),
+            };
             return i;
         }
         #endregion
-
-        //#region Export functions TODO1 probably should be in main form.
-        ///// <summary>
-        ///// Export the contents in a csv readable form. This is as the events appear in the original file.
-        ///// </summary>
-        ///// <param name="outPath">Where to boss?</param>
-        ///// <param name="channels">Specific channnels or all if empty.</param>
-        ///// <returns>File name of dump file.</returns>
-        //public string ExportAllEvents(string outPath, List<Channel> channels)
-        //{
-        //    var newfn = MidiExport.MakeExportFileName(outPath, _fn, "all", "csv");
-        //    MidiExport.ExportAllEvents(newfn, _patterns, channels, MakeMeta());
-        //    return newfn;            
-        //}
-
-        ///// <summary>
-        ///// Makes csv dumps of some events grouped by pattern/channel. This is as the events appear in the original file.
-        ///// </summary>
-        ///// <param name="outPath">Where to boss?</param>
-        ///// <param name="patternName">Specific pattern.</param>
-        ///// <param name="channels">Specific channnels or all if empty.</param>
-        ///// <param name="includeAll">False if just notes or true if everything.</param>
-        ///// <returns>File name of dump file.</returns>
-        //public string ExportGroupedEvents(string outPath, string patternName, List<Channel> channels, bool includeAll)
-        //{
-        //    var pattern = _patterns.Where(p => p.PatternName == patternName).First();
-        //    var newfn = MidiExport.MakeExportFileName(outPath, _fn, patternName, "csv");
-        //    MidiExport.ExportGroupedEvents(newfn, pattern, channels, MakeMeta(), includeAll);
-        //    return newfn;
-        //}
-
-        ///// <summary>
-        ///// Export pattern parts to individual midi files. This is as the events appear in the original file. TODO export as zip?
-        ///// </summary>
-        ///// <param name="outPath">Where to boss?</param>
-        ///// <param name="patternName">Specific pattern.</param>
-        ///// <param name="channels">Specific channnels or all if empty.</param>
-        ///// <param name="ppq">Export at this resolution.</param>
-        ///// <returns>File name of export file.</returns>
-        //public string ExportMidi(string outPath, string patternName, List<Channel> channels, int ppq)
-        //{
-        //    var pattern = _patterns.Where(p => p.PatternName == patternName).First();
-        //    var newfn = MidiExport.MakeExportFileName(outPath, _fn, patternName, "mid");
-        //    MidiExport.ExportMidi(newfn, pattern, channels, MakeMeta());
-        //    return newfn;
-        //}
-
-        ///// <summary>
-        ///// Common utility.
-        ///// </summary>
-        ///// <returns></returns>
-        //Dictionary<string, int> MakeMeta()
-        //{
-        //    Dictionary<string, int> meta = new()
-        //    {
-        //        { "MidiFileType", MidiFileType },
-        //        { "DeltaTicksPerQuarterNote", DeltaTicksPerQuarterNote },
-        //        { "NumTracks", NumTracks }
-        //    };
-
-        //    return meta;
-        //}
-        //#endregion
     }
 }
