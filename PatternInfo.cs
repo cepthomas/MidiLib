@@ -13,6 +13,7 @@ namespace MidiLib
     /// <summary>Represents the contents of a midi file pattern. If it is a plain midi file (not style) there will be one only.</summary>
     public class PatternInfo
     {
+        #region Properties
         /// <summary>Pattern name. Empty indicates single pattern aka plain midi file.</summary>
         public string PatternName { get; init; } = "";
 
@@ -26,8 +27,13 @@ namespace MidiLib
         public string KeySig { get; set; } = "";
 
         /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
-        public int[] Patches { get; set; } = new int[MidiDefs.NUM_CHANNELS];
+        public int[] Patches { get; } = new int[MidiDefs.NUM_CHANNELS];
 
+        /// <summary>All channel numbers in the pattern.</summary>
+        public HashSet<int> ChannelNumbers { get; } = new();
+        #endregion
+
+        #region Fields
         /// <summary>All the pattern midi events.</summary>
         readonly List<MidiEventDesc> _events = new();
 
@@ -36,6 +42,7 @@ namespace MidiLib
 
         /// <summary>For scaling subdivs to internal.</summary>
         readonly MidiTimeConverter? _mt = null;
+        #endregion
 
         /// <summary>
         /// Default constructor. Use only for initialization!
@@ -74,6 +81,8 @@ namespace MidiLib
         /// <param name="evt">The event with properly scaled time.</param>
         public void AddEvent(MidiEventDesc evt)
         {
+            ChannelNumbers.Add(evt.ChannelNumber);
+
             // First scale time.
             _events.ForEach(e => e.ScaledTime = _mt!.MidiToInternal(e.AbsoluteTime));
 

@@ -607,7 +607,7 @@ namespace MidiLib.Test
                     foreach (var pattern in patterns)
                     {
                         var newfn = MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "csv");
-                        MidiExport.ExportGroupedEvents(newfn, pattern, channels, MakeMeta(), false); //includeAll
+                        MidiExport.ExportGroupedEvents(newfn, pattern, channels, MakeMeta(), true); //includeAll
                         _logger.Info($"Exported pattern {pattern.PatternName} to {newfn}");
                     }
                 }

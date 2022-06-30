@@ -7,7 +7,7 @@ This library contains a bunch of components and controls accumulated over the ye
 - Various export functions including specific style patterns.
 - Midi input handler.
 
-Requires VS2019 and .NET5.
+Requires VS2019 and .NET6.
 
 ![logo](felixui.png)
 

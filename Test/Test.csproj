@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net5.0-windows</TargetFramework>
+        <TargetFramework>net6.0-windows</TargetFramework>
         <UseWindowsForms>true</UseWindowsForms>
         <RootNamespace>MidiLib.Test</RootNamespace>
         <AssemblyName>MidiLib.Test</AssemblyName>
@@ -16,6 +16,9 @@
         <Nullable>enable</Nullable>
         <!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+        <StartupObject>MidiLib.Test.Program</StartupObject>
+        <NoWin32Manifest>true</NoWin32Manifest>
+        <IsPublishable>False</IsPublishable>
         <!-- en none -->
     </PropertyGroup>
 

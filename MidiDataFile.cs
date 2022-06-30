@@ -247,6 +247,7 @@ namespace MidiLib
                         _patternDefaults.Patches[index] = evt.Patch;
                         _currentPattern.Patches[index] = evt.Patch;
                         AddMidiEvent(evt);
+                        //Debug.WriteLine($"{evt}");
                         break;
 
                     case SysexEvent evt:
@@ -418,13 +419,14 @@ namespace MidiLib
                 _currentPattern.KeySig = _patternDefaults.KeySig;
             }
 
-            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+            _currentPattern.ChannelNumbers.ForEach(ch =>
             {
-                if (_currentPattern.Patches[i] < 0)
+                int index = ch - 1;
+                if (_currentPattern.Patches[index] < 0)
                 {
-                    _currentPattern.Patches[i] = _patternDefaults.Patches[i];
+                    _currentPattern.Patches[index] = _patternDefaults.Patches[index];
                 }
-            }
+            });
         }
 
         /// <summary>
