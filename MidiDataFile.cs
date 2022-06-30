@@ -26,9 +26,6 @@ namespace MidiLib
     public class MidiDataFile
     {
         #region Fields
-        ///// <summary>The internal channel objects.</summary>
-        //readonly ChannelCollection _allChannels = new();
-
         /// <summary>Include events like controller changes, pitch wheel, ...</summary>
         bool _includeNoisy = false;
 
@@ -39,10 +36,10 @@ namespace MidiLib
         readonly List<PatternInfo> _patterns = new();
 
         /// <summary>Currently collecting this pattern.</summary>
-        PatternInfo _currentPattern = new("", 0);
+        PatternInfo _currentPattern = new();
 
         /// <summary>Default values if not supplied in pattern. Mainly for managing patches.</summary>
-        readonly PatternInfo _patternDefaults = new("defaults", 0);
+        readonly PatternInfo _patternDefaults = new();
         #endregion
 
         #region Properties
@@ -93,7 +90,6 @@ namespace MidiLib
                         ReadMThd(br);
                         // Always at least one pattern - for plain midi. Safe to init now.
                         _currentPattern = new("", DeltaTicksPerQuarterNote);
-                        _patterns.Add(new PatternInfo("", DeltaTicksPerQuarterNote));
                         break;
                     case "MTrk":
                         ReadMTrk(br);
@@ -294,7 +290,11 @@ namespace MidiLib
                         // Indicates start of a new midi pattern.
                         // Tidy up any missing parts of current info.
                         CleanUpPattern();
-                        _patterns.Add(_currentPattern);
+
+                        if(_currentPattern.PatternName != "")
+                        {
+                            _patterns.Add(_currentPattern);
+                        }
 
                         // Add a new pattern.
                         _currentPattern = new PatternInfo(evt.Text, DeltaTicksPerQuarterNote);

@@ -79,6 +79,12 @@ namespace MidiLib
         /// <param name="tts"></param>
         public BarTime(double tts) // TODO1-1 fix - 1/2 digit resolutions!
         {
+            // ppq = 4/8
+            // 1.0 1.1 ... 1.7 2.0
+            // ppq = 16/32
+            // 1.0 1.1 ... 1.7 1.8 ... 1.15 2.0
+            // 1.00 1.01 ... 1.07 1.08 ... 1.15 2.00
+
             if (tts < 0)
             {
                 throw new ArgumentException($"Negative value is invalid");

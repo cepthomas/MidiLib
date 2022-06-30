@@ -18,11 +18,11 @@ namespace MidiLib
     /// <summary>
     /// A "good enough" midi player.
     /// </summary>
-    public sealed class MidiPlayer : IDisposable //TODO1-1 should use MidiSender
+    public sealed class MidiPlayer : IDisposable
     {
         #region Fields
         /// <summary>Midi output device.</summary>
-        readonly MidiOut? _midiOut = null;
+        readonly MidiSender? _midiOut = null;
 
         /// <summary>The internal channel objects.</summary>
         readonly ChannelCollection _allChannels = new();
@@ -65,15 +65,11 @@ namespace MidiLib
         {
             _allChannels = channels;
             LogMidi = false;
+            _midiOut = new MidiSender(midiDevice);
 
-            // Figure out which midi output device.
-            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            if(!_midiOut.Valid)
             {
-                if (midiDevice == MidiOut.DeviceInfo(i).ProductName)
-                {
-                    _midiOut = new MidiOut(i);
-                    break;
-                }
+                throw new ArgumentException($"Invalid midi out device: {midiDevice}");
             }
         }
 
@@ -237,7 +233,7 @@ namespace MidiLib
         {
             if(_midiOut is not null)
             {
-                _midiOut.Send(evt.GetAsShortMessage());
+                _midiOut.SendEvent(evt);
             }
             if(LogMidi)
             {

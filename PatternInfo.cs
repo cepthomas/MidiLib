@@ -38,18 +38,24 @@ namespace MidiLib
         readonly MidiTimeConverter? _mt = null;
 
         /// <summary>
-        /// Normal constructor.
+        /// Default constructor. Use only for initialization!
         /// </summary>
-        public PatternInfo(string name, int ppq)
+        public PatternInfo()
         {
-            PatternName = name;
-            _mt = new(ppq, MidiSettings.LibSettings.DefaultTempo);
-
             // Init fixed length arrays.
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {
                 Patches[i] = -1;
             }
+        }
+
+        /// <summary>
+        /// Normal constructor.
+        /// </summary>
+        public PatternInfo(string name, int ppq) : this()
+        {
+            PatternName = name;
+            _mt = new(ppq, MidiSettings.LibSettings.DefaultTempo);
         }
 
         /// <summary>

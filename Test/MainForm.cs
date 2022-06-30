@@ -90,8 +90,10 @@ namespace MidiLib.Test
             DirectoryInfo di = new(_outPath);
             di.Create();
 
+            _settings = (TestSettings)Settings.Load(".", typeof(TestSettings));
+
             // Must do this.
-            MidiLib.MidiSettings.LibSettings = _settings.MidiSettings;
+            MidiSettings.LibSettings = _settings.MidiSettings;
 
             // Logger. Note: you can create this here but don't call any _logger functions until loaded.
             LogManager.MinLevelFile = LogLevel.Trace;
@@ -777,7 +779,9 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Settings_Click(object sender, EventArgs e)
         {
-            _settings.Edit("howdy!", 300);
+            _settings.Edit("howdy!", 400);
+            _settings.Save();
+            _logger.Warn("You better restart!");
         }
         #endregion
 
