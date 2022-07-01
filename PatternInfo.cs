@@ -76,9 +76,9 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Add an event to the collection.
+        /// Add an event to the collection. This function does the scaling.
         /// </summary>
-        /// <param name="evt">The event with properly scaled time.</param>
+        /// <param name="evt">The event to add.</param>
         public void AddEvent(MidiEventDesc evt)
         {
             ChannelNumbers.Add(evt.ChannelNumber);
@@ -99,40 +99,28 @@ namespace MidiLib
         /// <summary>
         /// Get enumerator for events using supplied filters.
         /// </summary>
-        /// <param name="channels">Specific channnels or all if empty.</param>
-        /// <param name="sortByTime">Optional sort.</param>
-        /// <returns>Enumerator.</returns>
-        public IEnumerable<MidiEventDesc> GetFilteredEvents(List<int> channels, bool sortByTime)
+        /// <param name="channels">Specific channnels.</param>
+        /// <returns>Enumerator sorted by scaled time.</returns>
+        public IEnumerable<MidiEventDesc> GetFilteredEvents(List<int> channels)
         {
-            IEnumerable<MidiEventDesc> descs = _events.Where(e => channels.Contains(e.ChannelNumber));
-
-            if (descs is not null)
-            {
-                if (sortByTime)
-                {
-                    descs = descs.OrderBy(e => e.AbsoluteTime);
-                }
-            }
-            else
-            {
-                descs = Enumerable.Empty<MidiEventDesc>();
-            }
-
-            return descs;
+            IEnumerable<MidiEventDesc> descs = _events.Where(e => channels.Contains(e.ChannelNumber)) ?? Enumerable.Empty<MidiEventDesc>();
+            return descs.OrderBy(e => e.ScaledTime);
         }
 
         /// <summary>
-        /// Get all events at a specific time.
+        /// Get all events at a specific scaled time.
         /// </summary>
         /// <param name="when"></param>
         /// <returns></returns>
-        public List<MidiEventDesc> GetEvents(int when)
+        public List<MidiEventDesc> GetEventsWhen(int when)
         {
             var evts = _eventsByTime.ContainsKey(when) ? _eventsByTime[when] : new();
             return evts;
         }
 
-        /// <summary>Readable version.</summary>
+        /// <summary>
+        /// Readable version.
+        /// </summary>
         /// <returns></returns>
         public override string ToString()
         {

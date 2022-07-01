@@ -20,17 +20,20 @@ namespace MidiLib
 
         /// <summary>Increment for unique value.</summary>
         static int _all_ids = 1;
+
+        /// <summary>Adjustment for 1/0-based.</summary>
+        int _base = 0;
         #endregion
 
         #region Properties
-        /// <summary>The length.</summary>
+        /// <summary>The time in subdivs. Always zero-based.</summary>
         public int TotalSubdivs { get; private set; }
 
-        /// <summary>The bar number.</summary>
-        public int Bar { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBar; } }
+        /// <summary>The bar number.//TODO1 also zero-based</summary>
+        public int Bar { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBar + _base; } }
 
-        /// <summary>The beat number in the bar.</summary>
-        public int Beat { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat % MidiSettings.LibSettings.SubdivsPerBar; } }
+        /// <summary>The beat number in the bar.//TODO1 also zero-based</summary>
+        public int Beat { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat % MidiSettings.LibSettings.SubdivsPerBar + _base; } }
 
         /// <summary>The subdiv in the beat.</summary>
         public int Subdiv { get { return TotalSubdivs % MidiSettings.LibSettings.SubdivsPerBeat; } }
@@ -44,6 +47,7 @@ namespace MidiLib
         {
             TotalSubdivs = 0;
             _id = _all_ids++;
+            _base = MidiSettings.LibSettings.ZeroBased ? 0 : 1;
         }
 
         /// <summary>
@@ -52,9 +56,9 @@ namespace MidiLib
         /// <param name="bar"></param>
         /// <param name="beat"></param>
         /// <param name="subdiv"></param>
-        public BarTime(int bar, int beat, int subdiv)
+        public BarTime(int bar, int beat, int subdiv)//TODO1 also zero-based
         {
-            TotalSubdivs = (bar * MidiSettings.LibSettings.SubdivsPerBar) + (beat * MidiSettings.LibSettings.SubdivsPerBeat) + subdiv;
+            TotalSubdivs = ((bar - _base) * MidiSettings.LibSettings.SubdivsPerBar) + ((beat - _base) * MidiSettings.LibSettings.SubdivsPerBeat) + subdiv;
             _id = _all_ids++;
         }
 
@@ -77,29 +81,20 @@ namespace MidiLib
         /// Constructor from Beat.Subdiv representation as a double.
         /// </summary>
         /// <param name="tts"></param>
-        public BarTime(double tts) // TODO1-1 fix - 1/2 digit resolutions!
+        public BarTime(double tts)
         {
-            // ppq = 4/8
-            // 1.0 1.1 ... 1.7 2.0
-            // ppq = 16/32
-            // 1.0 1.1 ... 1.7 1.8 ... 1.15 2.0
-            // 1.00 1.01 ... 1.07 1.08 ... 1.15 2.00
-
             if (tts < 0)
             {
                 throw new ArgumentException($"Negative value is invalid");
             }
 
+            // TODO1-1 fix - 1/2 digit resolutions! //TODO1 also zero-based
             var (integral, fractional) = MathUtils.SplitDouble(tts);
-            int subdivs = (int)Math.Round(fractional * 10.0);
 
-            int Beat = (int)integral + subdivs / MidiSettings.LibSettings.SubdivsPerBeat;
-            int Subdiv = subdivs % MidiSettings.LibSettings.SubdivsPerBeat;
+            int beat = (int)Math.Round(integral) - _base;
+            int subdiv = (int)Math.Round(fractional * 10.0);
 
-            if (Subdiv >= MidiSettings.LibSettings.SubdivsPerBeat)
-            {
-                throw new ArgumentException($"Invalid subdiv value");
-            }
+            TotalSubdivs = (beat * MidiSettings.LibSettings.SubdivsPerBeat) + subdiv;
         }
         #endregion
 
@@ -166,12 +161,10 @@ namespace MidiLib
         /// <summary>
         /// Format a readable string.
         /// </summary>
-        /// <param name="zeroBased"></param>
         /// <returns></returns>
-        public string Format(bool zeroBased)
+        public string Format()
         {
-            int inc = zeroBased ? 0 : 1;
-            return $"{Bar + inc}.{Beat + inc}.{Subdiv + inc:00}";
+           return $"{Bar + _base}.{Beat + _base}.{Subdiv:00}";
         }
 
         /// <summary>
@@ -180,7 +173,7 @@ namespace MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            return Format(true);
+            return Format();
         }
         #endregion
 

@@ -10,7 +10,7 @@ using NBagOfTricks;
 namespace MidiLib
 {
     /// <summary>Contains all the midi channel descriptors and properties related to the full set.</summary>
-    public class ChannelCollection : IEnumerable<Channel> // TODO still useful?
+    public class ChannelManager : IEnumerable<Channel>
     {
         #region Fields
         /// <summary>All the channels. Index is 0-based, not channel number.</summary>
@@ -32,7 +32,7 @@ namespace MidiLib
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public ChannelCollection()
+        public ChannelManager()
         {
             TotalSubdivs = 0;
 
@@ -67,7 +67,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Set events for channel.
+        /// Set events for the channel.
         /// </summary>
         /// <param name="channelNumber"></param>
         /// <param name="events"></param>

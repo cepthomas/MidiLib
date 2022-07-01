@@ -145,13 +145,12 @@ namespace MidiLib
             }
             else
             {
-                bool zeroBased = MidiSettings.LibSettings.ZeroBased;
                 _format.Alignment = StringAlignment.Center;
-                pe.Graphics.DrawString(_current.Format(zeroBased), FontLarge, Brushes.Black, ClientRectangle, _format);
+                pe.Graphics.DrawString(_current.Format(), FontLarge, Brushes.Black, ClientRectangle, _format);
                 _format.Alignment = StringAlignment.Near;
-                pe.Graphics.DrawString(_start.Format(zeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
+                pe.Graphics.DrawString(_start.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
                 _format.Alignment = StringAlignment.Far;
-                pe.Graphics.DrawString(_end.Format(zeroBased), FontSmall, Brushes.Black, ClientRectangle, _format);
+                pe.Graphics.DrawString(_end.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
             }
         }
         #endregion
@@ -187,7 +186,7 @@ namespace MidiLib
                 BarTime bs = new();
                 bs.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
                 string sdef = GetTimeDef(e.X);
-                string stime = bs.Format(MidiSettings.LibSettings.ZeroBased);
+                string stime = bs.Format();
                 _toolTip.SetToolTip(this, $"{stime} {sdef}");
                 _lastXPos = e.X;
             }

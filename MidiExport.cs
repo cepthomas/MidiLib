@@ -37,7 +37,7 @@ namespace MidiLib
             contentText.Add("AbsoluteTime,Event,Pattern,Channel,Content,==================");
             foreach(PatternInfo pi in patterns)
             {
-                var descs = pi.GetFilteredEvents(channelNumbers, false);
+                var descs = pi.GetFilteredEvents(channelNumbers);
                 descs?.ForEach(evt => contentText.Add($"{evt.AbsoluteTime},{evt.MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "")}," +
                     $"{pi.PatternName},{evt.ChannelNumber},{evt.MidiEvent}"));
             }
@@ -88,7 +88,7 @@ namespace MidiLib
                 "AbsoluteTime,Channel,Event,Val1,Val2,Val3",
             };
 
-            var descs = pattern.GetFilteredEvents(channelNumbers, true);
+            var descs = pattern.GetFilteredEvents(channelNumbers);
             descs?.ForEach(me =>
             {
                 // Boilerplate.
@@ -205,8 +205,8 @@ namespace MidiLib
                 }
             }
 
-            // Gather the midi events for the pattern ordered by timestamp.
-            var events = pattern.GetFilteredEvents(channelNumbers, true);
+            // Gather the midi events for the pattern ordered by time.
+            var events = pattern.GetFilteredEvents(channelNumbers);
             events?.ForEach(e =>
             {
                 outEvents.Add(e.MidiEvent);

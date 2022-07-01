@@ -26,7 +26,7 @@ namespace MidiLib.Test
 
         #region Fields - internal
         /// <summary>The internal channel objects.</summary>
-        readonly ChannelCollection _allChannels = new();
+        readonly ChannelManager _channelManager = new();
 
         /// <summary>Midi player.</summary>
         readonly MidiPlayer _player;
@@ -38,9 +38,9 @@ namespace MidiLib.Test
         readonly MmTimerEx _mmTimer = new();
 
         /// <summary>Midi events from the input file.</summary>
-        readonly MidiDataFile _mdata = new();
+        MidiDataFile _mdata = new();
 
-        /// <summary>All the channel controls.</summary>
+        /// <summary>All the channel play controls.</summary>
         readonly List<PlayerControl> _playerControls = new();
 
         /// <summary>Prevent button press recursion.</summary>
@@ -82,6 +82,9 @@ namespace MidiLib.Test
         /// </summary>
         public MainForm()
         {
+            // Must do this first before initializing.
+            MidiSettings.LibSettings = _settings.MidiSettings;
+
             InitializeComponent();
 
             toolStrip1.Renderer = new NBagOfUis.CheckBoxRenderer() { SelectedColor = _controlColor };
@@ -91,9 +94,6 @@ namespace MidiLib.Test
             di.Create();
 
             _settings = (TestSettings)Settings.Load(".", typeof(TestSettings));
-
-            // Must do this.
-            MidiSettings.LibSettings = _settings.MidiSettings;
 
             // Logger. Note: you can create this here but don't call any _logger functions until loaded.
             LogManager.MinLevelFile = LogLevel.Trace;
@@ -131,7 +131,7 @@ namespace MidiLib.Test
             }
 
             // Set up midi devices.
-            _player = new(_midiOutDeviceName, _allChannels);
+            _player = new(_midiOutDeviceName, _channelManager);
             _listener = new(_midiInDeviceName);
             _listener.CaptureEnable = _listener.Valid;
             _player.SendPatch(_kbdChannelNumber, _kbdPatch);
@@ -350,57 +350,55 @@ namespace MidiLib.Test
                 // Reset stuff.
                 cmbDrumChannel1.SelectedIndex = MidiDefs.DEFAULT_DRUM_CHANNEL;
                 cmbDrumChannel2.SelectedIndex = 0;
-                _allChannels.Reset();
+                _channelManager.Reset();
+                _mdata = new MidiDataFile();
 
                 // Process the file. Set the default tempo from preferences.
                 _mdata.Read(fn, _defaultTempo, false);
 
                 // Init new stuff with contents of file/pattern.
                 lbPatterns.Items.Clear();
+                var pnames = _mdata.GetPatternNames();
 
-                if (_mdata.NumPatterns == 0)
+                switch(pnames.Count)
                 {
-                    _logger.Error($"Something wrong with this file: {fn}");
-                    ok = false;
-                }
-                else if(_mdata.NumPatterns == 1) // plain midi
-                {
-                    var pinfo = _mdata.GetPattern(0);
-                    LoadPattern(pinfo);
-                }
-                else // style has multiple patterns.
-                {
-                    for (int i = 0; i < _mdata.NumPatterns; i++)
-                    {
-                        var p = _mdata.GetPattern(i);
+                    case 0:
+                        _logger.Error($"Something wrong with this file: {fn}");
+                        ok = false;
+                        break;
 
-                        switch (p!.PatternName)
+                    case 1:
+                        var pinfo = _mdata.GetPattern(pnames[0]);
+                        LoadPattern(pinfo);
+                        break;
+
+                    default: // style has multiple patterns.
+                        pnames.ForEach(pn =>
                         {
-                            // These don't contain a pattern.
-                            case "SFF1": // initial patches are in here
-                            case "SFF2":
-                            case "SInt":
-                                break;
+                            var p = _mdata.GetPattern(pn);
+                            switch (p!.PatternName)
+                            {
+                                // These don't contain a pattern.
+                                case "SFF1":
+                                case "SFF2":
+                                case "SInt": // Initial patches are in here.
+                                    break;
 
-                            case "":
-                                _logger.Error("Well, this should never happen!");
-                                break;
+                                case "":
+                                    _logger.Error("Well, this should never happen!");
+                                    break;
 
-                            default:
-                                lbPatterns.Items.Add(p.PatternName);
-                                break;
-                        }
-                    }
-
-                    if (lbPatterns.Items.Count > 0)
-                    {
-                        lbPatterns.SelectedIndex = 0;
-                    }
+                                default:
+                                    lbPatterns.Items.Add(p.PatternName);
+                                    break;
+                            }
+                        });
+                        break;
                 }
 
                 Rewind();
 
-                Text = $"Midi Lib - {fn}";
+                Text = $"Midi Lib Test - {fn}";
             }
             catch (Exception ex)
             {
@@ -441,18 +439,18 @@ namespace MidiLib.Test
                 {
                     int chnum = i + 1;
 
-                    var chEvents = pinfo.GetFilteredEvents(new() { chnum }, true).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
+                    var chEvents = pinfo.GetFilteredEvents(new() { chnum }).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
 
                     // Is this channel pertinent?
                     if (chEvents.Any())
                     {
-                        _allChannels.SetEvents(chnum, chEvents);
+                        _channelManager.SetEvents(chnum, chEvents);
 
                         // Make new control.
                         PlayerControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
 
                         // Bind to internal channel object.
-                        _allChannels.Bind(chnum, control);
+                        _channelManager.Bind(chnum, control);
 
                         // Now init the control - after binding!
                         control.Patch = pinfo.Patches[i];
@@ -475,8 +473,8 @@ namespace MidiLib.Test
 
             // Update bar.
             barBar.Start = new(0);
-            barBar.End = new(_allChannels.TotalSubdivs - 1);
-            barBar.Length = new(_allChannels.TotalSubdivs);
+            barBar.End = new(_channelManager.TotalSubdivs - 1);
+            barBar.Length = new(_channelManager.TotalSubdivs);
             barBar.Current = new(0);
 
             UpdateDrumChannels();
@@ -566,7 +564,7 @@ namespace MidiLib.Test
         {
             try
             {
-                // Get selected patters.
+                // Get selected patterns.
                 List<string> patternNames = new();
                 if (lbPatterns.Items.Count == 1)
                 {
@@ -645,14 +643,13 @@ namespace MidiLib.Test
 
             // Clean the file name.
             name = name.Replace('.', '-').Replace(' ', '_');
-            mod = mod.Replace(' ', '_');
-
+            mod = mod == "" ? "default" : mod.Replace(' ', '_');
             var newfn = Path.Join(path, $"{name}_{mod}.{ext}");
             return newfn;
         }
 
         /// <summary>
-        /// Common utility.
+        /// Utility to contain midi file meta info.
         /// </summary>
         /// <returns></returns>
         Dictionary<string, int> MakeMeta()
@@ -706,6 +703,33 @@ namespace MidiLib.Test
         void Stuff_Click(object sender, EventArgs e)
         {
             MidiTimeTest();
+
+            var def = _settings.MidiSettings.InternalPPQ;
+
+            // ppq = 4/8
+            // 1.0 1.1 ... 1.7 2.0
+            _settings.MidiSettings.InternalPPQ = PPQ.PPQ_8;
+
+            var b1 = new BarTime(1.0);
+            var b2 = new BarTime(1.7);
+            var b3 = new BarTime(1.8);
+            var b4 = new BarTime(2.0);
+            var b5 = new BarTime(2.1);
+
+            // ppq = 16/32
+            // 1.0 1.1 ... 1.7 1.8 ... 1.15 2.0
+            // 1.00 1.01 ... 1.07 1.08 ... 1.15 2.00
+            _settings.MidiSettings.InternalPPQ = PPQ.PPQ_32;
+            var b11 = new BarTime(1.0);
+            var b12 = new BarTime(1.7);
+            var b13 = new BarTime(1.8);
+            var b14 = new BarTime(1.31);
+            var b15 = new BarTime(1.32);
+            var b16 = new BarTime(2.0);
+            var b17 = new BarTime(2.1);
+
+            // Restore.
+            _settings.MidiSettings.InternalPPQ = def;
         }
 
         /// <summary>

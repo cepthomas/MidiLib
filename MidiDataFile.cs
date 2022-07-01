@@ -54,9 +54,6 @@ namespace MidiLib
 
         /// <summary>Original resolution for all events.</summary>
         public int DeltaTicksPerQuarterNote { get; private set; } = 0;
-
-        /// <summary>Number of patterns contained.</summary>
-        public int NumPatterns { get { return _patterns.Count; } }
         #endregion
 
         #region Public functions
@@ -126,22 +123,6 @@ namespace MidiLib
             // Last one.
             CleanUpPattern();
             _patterns.Add(_currentPattern);
-        }
-
-        /// <summary>
-        /// Get the pattern by index.
-        /// </summary>
-        /// <param name="index">Which</param>
-        /// <returns>The pattern or null if invalid request.</returns>
-        public PatternInfo? GetPattern(int index)
-        {
-            PatternInfo? ret = null;
-
-            if (index < _patterns.Count)
-            {
-                ret = _patterns[index];
-            }
-            return ret;
         }
 
         /// <summary>

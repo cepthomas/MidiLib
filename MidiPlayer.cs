@@ -25,7 +25,7 @@ namespace MidiLib
         readonly MidiSender? _midiOut = null;
 
         /// <summary>The internal channel objects.</summary>
-        readonly ChannelCollection _allChannels = new();
+        readonly ChannelManager _channelManager = new();
 
         /// <summary>Backing.</summary>
         int _currentSubdiv = 0;
@@ -48,7 +48,7 @@ namespace MidiLib
         public int CurrentSubdiv
         {
             get { return _currentSubdiv; }
-            set { _currentSubdiv = MathUtils.Constrain(value, 0, _allChannels.TotalSubdivs); }
+            set { _currentSubdiv = MathUtils.Constrain(value, 0, _channelManager.TotalSubdivs); }
         }
 
         /// <summary>Log outbound traffic at Trace level. Warning - can get busy.</summary>
@@ -61,9 +61,9 @@ namespace MidiLib
         /// </summary>
         /// <param name="midiDevice">Client supplies name of device.</param>
         /// <param name="channels">The actual channels.</param>
-        public MidiPlayer(string midiDevice, ChannelCollection channels)
+        public MidiPlayer(string midiDevice, ChannelManager channels)
         {
-            _allChannels = channels;
+            _channelManager = channels;
             LogMidi = false;
             _midiOut = new MidiSender(midiDevice);
 
@@ -124,11 +124,11 @@ namespace MidiLib
             if (Playing)
             {
                 // Any soloes?
-                bool anySolo = _allChannels.AnySolo;
-                int numSelected = _allChannels.NumSelected;
+                bool anySolo = _channelManager.AnySolo;
+                int numSelected = _channelManager.NumSelected;
 
                 // Process each channel.
-                foreach (var ch in _allChannels)
+                foreach (var ch in _channelManager)
                 {
                     // Look for events to send. Any explicit solos?
                     if ((numSelected == 0 || ch.Selected) && (ch.State == ChannelState.Solo || (!anySolo && ch.State == ChannelState.Normal)))
@@ -180,7 +180,7 @@ namespace MidiLib
 
                 // Bump time. Check for end of play. Client must handle next action.
                 _currentSubdiv++;
-                if (_currentSubdiv >= _allChannels.TotalSubdivs)
+                if (_currentSubdiv >= _channelManager.TotalSubdivs)
                 {
                     done = true;
                     _currentSubdiv = 0;
@@ -198,7 +198,7 @@ namespace MidiLib
             {
                 PatchChangeEvent evt = new(0, channelNumber, patch);
                 SendMidi(evt);
-                _allChannels.SetPatch(channelNumber, patch);
+                _channelManager.SetPatch(channelNumber, patch);
             }
         }
 
