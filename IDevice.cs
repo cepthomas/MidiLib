@@ -51,9 +51,9 @@ namespace MidiLib
 
         /// <summary>Send all notes off.</summary>
         /// <param name="channelNumber">1-based channel</param>
-        void Kill(int channelNumber);
+        void Kill(int channelNumber);//TODO0 also needs DeviceId - or use the whole channel?
 
-        /// <summary>Send all notes off.</summary>
+        /// <summary>Send all notes off to everyone.</summary>
         void KillAll();
 
         /// <summary>Send midi event.</summary>

@@ -38,7 +38,7 @@ namespace MidiLib
         }
 
         /// <summary>Associated device.</summary>
-        public IMidiOutputDevice? Device { get; set; } = null;
+        public IMidiOutputDevice Device { get; set; } = null;
         #endregion
 
         #region Client Properties - optional
