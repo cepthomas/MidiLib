@@ -6,6 +6,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 using NAudio.Midi;
+using NBagOfTricks;
 
 
 namespace MidiLib
@@ -68,9 +69,9 @@ namespace MidiLib
         /// <summary>
         /// Constructor from existing data.
         /// </summary>
-        public PatternInfo(string name, int ppq, List<MidiEventDesc> events, List<Channel> channels, int tempo) : this(name, ppq)
+        public PatternInfo(string name, int ppq, IEnumerable<MidiEventDesc> events, IEnumerable<Channel> channels, int tempo) : this(name, ppq)
         {
-            _events.ForEach(e => AddEvent(e));
+            events.ForEach(e => AddEvent(e));
             Tempo = tempo;
             channels.ForEach(ch => Patches[ch.ChannelNumber] = ch.Patch);
         }
@@ -101,7 +102,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="channels">Specific channnels.</param>
         /// <returns>Enumerator sorted by scaled time.</returns>
-        public IEnumerable<MidiEventDesc> GetFilteredEvents(List<int> channels)
+        public IEnumerable<MidiEventDesc> GetFilteredEvents(IEnumerable<int> channels)
         {
             IEnumerable<MidiEventDesc> descs = _events.Where(e => channels.Contains(e.ChannelNumber)) ?? Enumerable.Empty<MidiEventDesc>();
             return descs.OrderBy(e => e.ScaledTime);
@@ -112,7 +113,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="when"></param>
         /// <returns></returns>
-        public List<MidiEventDesc> GetEventsWhen(int when)
+        public IEnumerable<MidiEventDesc> GetEventsWhen(int when)
         {
             var evts = _eventsByTime.ContainsKey(when) ? _eventsByTime[when] : new();
             return evts;

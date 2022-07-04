@@ -60,10 +60,10 @@ namespace MidiLib
         /// Normal constructor.
         /// </summary>
         /// <param name="midiDevice">Client supplies name of device.</param>
-        /// <param name="channels">The actual channels.</param>
-        public MidiPlayer(string midiDevice, ChannelManager channels)
+        /// <param name="channelManager">The actual channels.</param>
+        public MidiPlayer(string midiDevice, ChannelManager channelManager)
         {
-            _channelManager = channels;
+            _channelManager = channelManager;
             LogMidi = false;
             _midiOut = new MidiSender(midiDevice);
 

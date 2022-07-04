@@ -14,7 +14,7 @@ namespace MidiLib
     /// <summary>
     /// Virtual keyboard control borrowed from Leslie Sanford with extras.
     /// </summary>
-    public partial class VirtualKeyboard : UserControl
+    public partial class VirtualKeyboard : UserControl, IMidiInputDevice
     {
         #region Properties
         /// <summary>Draw the names on the keys.</summary>
@@ -22,6 +22,19 @@ namespace MidiLib
 
         /// <summary>Determines the overall size.</summary>
         public int KeySize { get; set; } = 14;
+
+        /// <inheritdoc />
+        public bool CaptureEnable { get; set; }
+
+        /// <inheritdoc />
+        public string DeviceName { get; init; }
+//        public string DeviceName { get { return "VirtualKeyboard"; } }
+
+        /// <inheritdoc />
+        public bool Valid { get { return true; } }
+
+        /// <inheritdoc />
+        public bool LogEnable { get; set; }
         #endregion
 
         #region Events
@@ -48,12 +61,14 @@ namespace MidiLib
 
         #region Lifecycle
         /// <summary>
-        /// Constructor.
+        /// Normal constructor with name.
         /// </summary>
-        public VirtualKeyboard()
+        public VirtualKeyboard(string devName)
         {
             // Intercept all keyboard events.
             // KeyPreview = true;
+
+            DeviceName = devName;
 
             AutoScaleDimensions = new SizeF(6F, 13F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -64,6 +79,13 @@ namespace MidiLib
             CreateKeys();
             CreateKeyMap();
             DrawKeys();
+        }
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public VirtualKeyboard() : this("VirtualKeyboard")
+        {
         }
 
         /// <summary>

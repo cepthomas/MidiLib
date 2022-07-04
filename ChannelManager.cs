@@ -9,11 +9,11 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
-    /// <summary>Contains all the midi channel descriptors and properties related to the full set.</summary>
-    public class ChannelManager : IEnumerable<Channel>
+    /// <summary>Manages all the current channels. Does status/state. Does not send midi messages.</summary>
+    public class ChannelManager : IEnumerable<Channel> //TODOX need to be iterable?
     {
         #region Fields
-        /// <summary>All the channels. Index is 0-based, not channel number.</summary>
+        /// <summary>All the channels. Index is 0-based, not channel number. TODOX new model will be sparse ch number + device.</summary>
         readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];
         #endregion
 
@@ -23,6 +23,9 @@ namespace MidiLib
 
         /// <summary>Has at least one solo channel.</summary>
         public bool AnySolo { get { return _channels.Where(c => c.State == ChannelState.Solo).Any(); } }
+
+        /// <summary>Has at least one muted channel.</summary>
+        public bool AnyMute { get { return _channels.Where(c => c.State == ChannelState.Mute).Any(); } }
 
         /// <summary>How many selected.</summary>
         public int NumSelected { get { return _channels.Where(c => c.Selected).Count(); } }
@@ -59,11 +62,11 @@ namespace MidiLib
         /// <summary>
         /// Opaque binder.
         /// </summary>
-        /// <param name="chnum">From this channel...</param>
+        /// <param name="channelNumber">From this channel...</param>
         /// <param name="control">...to this control.</param>
-        public void Bind(int chnum, PlayerControl control)
+        public void Bind(int channelNumber, PlayerControl control)
         {
-            control.BoundChannel = GetChannel(chnum);
+            control.BoundChannel = GetChannel(channelNumber);
         }
 
         /// <summary>

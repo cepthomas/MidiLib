@@ -20,15 +20,12 @@ namespace MidiLib
         double _volume = VolumeDefs.DEFAULT;
         #endregion
 
-        #region Properties - required
+        #region Client Properties - required
         /// <summary>Actual 1-based midi channel number.</summary>
         public int ChannelNumber { get; set; } = -1;
 
         /// <summary>For muting/soloing.</summary>
         public ChannelState State { get; set; } = ChannelState.Normal;
-
-        /// <summary>Drums are handled differently.</summary>
-        public bool IsDrums { get; set; } = false;
 
         /// <summary>Current patch.</summary>
         public int Patch { get; set; } = -1;
@@ -40,22 +37,30 @@ namespace MidiLib
             set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX, VolumeDefs.STEP); }
         }
 
-        ///<summary>The duration of the whole channel.</summary>
-        public int MaxSubdiv { get; private set; } = 0;
+        /// <summary>Associated device.</summary>
+        public IMidiOutputDevice? Device { get; set; } = null;
         #endregion
 
-        #region Properties - optional
+        #region Client Properties - optional
         /// <summary>Optional label/reference.</summary>
         public string ChannelName { get; set; } = "";
+
+        /// <summary>Drums may be handled differently.</summary>
+        public bool IsDrums { get; set; } = false;
 
         /// <summary>The device used by this channel. Used to find and bind the device at runtime.</summary>
         public string DeviceId { get; set; } = "";
 
         /// <summary>For user selection.</summary>
         public bool Selected { get; set; } = false;
+        #endregion
 
-        /// <summary>For nefarious purposes.</summary>
-        public object? Tag { get; set; } = null;
+        #region Client Properties - calculated
+        ///<summary>The duration of the whole channel.</summary>
+        public int MaxSubdiv { get; private set; } = 0;
+
+        /// <summary>Get the number of events.</summary>
+        public int NumEvents { get { return _events.Count; } }
         #endregion
 
         #region Functions
@@ -103,9 +108,18 @@ namespace MidiLib
         /// </summary>
         /// <param name="subdiv"></param>
         /// <returns></returns>
-        public List<MidiEvent> GetEvents(int subdiv)
+        public IEnumerable<MidiEvent> GetEvents(int subdiv)
         {
             return _events.ContainsKey(subdiv) ? _events[subdiv] : new List<MidiEvent>();
+        }
+
+        /// <summary>
+        /// Get all events.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<List<MidiEvent>> GetAllEvents()
+        {
+            return _events.Values;
         }
 
         /// <summary>Get the next volume.</summary>

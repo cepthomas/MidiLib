@@ -170,7 +170,7 @@ namespace MidiLib
         /// <param name="pattern">Specific pattern.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="meta">File meta data to include.</param>
-        public static void ExportMidi(string outFileName, PatternInfo pattern, List<Channel> channels, Dictionary<string, int> meta)
+        public static void ExportMidi(string outFileName, PatternInfo pattern, IEnumerable<Channel> channels, Dictionary<string, int> meta)
         {
             var channelNumbers = channels.Select(ch => ch.ChannelNumber).ToList();
 

@@ -22,6 +22,9 @@ namespace MidiLib
 
         /// <summary>Midi send logging.</summary>
         readonly Logger _logger = LogManager.CreateLogger("MidiListener");
+
+        /// <summary>Control.</summary>
+        bool _capturing = false;
         #endregion
 
         #region Properties
@@ -37,7 +40,8 @@ namespace MidiLib
         /// <summary>Capture on/off.</summary>
         public bool CaptureEnable
         {
-            set { if (value) _midiIn?.Start(); else _midiIn?.Stop(); }
+            get { return _capturing; }
+            set { if (value) _midiIn?.Start(); else _midiIn?.Stop(); _capturing = value; }
         }
         #endregion
 

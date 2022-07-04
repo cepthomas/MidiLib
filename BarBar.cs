@@ -251,6 +251,19 @@ namespace MidiLib
         }
 
         /// <summary>
+        /// Clear everything.
+        /// </summary>
+        public void Reset()
+        {
+            _lastXPos = 0;
+            _length.Reset();
+            _current.Reset();
+            _start.Reset();
+            _end.Reset();
+
+            Invalidate();
+        }
+        /// <summary>
         /// Gets the time def string associated with val.
         /// </summary>
         /// <param name="val"></param>

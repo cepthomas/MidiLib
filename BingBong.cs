@@ -18,7 +18,7 @@ namespace MidiLib
     /// <summary>
     /// Experimental midi controller.
     /// </summary>
-    public partial class BingBong : UserControl
+    public partial class BingBong : UserControl, IMidiInputDevice
     {
         #region Fields
         /// <summary>Background image data.</summary>
@@ -49,6 +49,18 @@ namespace MidiLib
 
         /// <summary>Visibility.</summary>
         public bool DrawNoteGrid { get; set; } = true;
+
+        /// <inheritdoc />
+        public bool CaptureEnable { get; set; }
+
+        /// <inheritdoc />
+        public string DeviceName { get; init; }
+
+        /// <inheritdoc />
+        public bool Valid { get { return true; } }
+
+        /// <inheritdoc />
+        public bool LogEnable { get; set; }
         #endregion
 
         #region Events
@@ -58,12 +70,19 @@ namespace MidiLib
 
         #region Lifecycle
         /// <summary>
-        /// Constructor. Creates the color gradations.
+        /// Normal constructor with name.
         /// </summary>
-        public BingBong()
+        public BingBong(string devName)
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-            Text = "Bing Bong";
+            DeviceName = devName;
+        }
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public BingBong() : this("BingBong")
+        {
         }
 
         /// <summary>

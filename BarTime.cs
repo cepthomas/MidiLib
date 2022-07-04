@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using NBagOfTricks;
 
 
-
 namespace MidiLib
 {
     /// <summary>Sort of like DateTime but for musical terminology.</summary>
@@ -21,7 +20,7 @@ namespace MidiLib
         /// <summary>Increment for unique value.</summary>
         static int _all_ids = 1;
 
-        /// <summary>Adjustment for 1/0-based.</summary>
+        /// <summary>Adjustment for 0/1-based.</summary>
         int _base = 0;
         #endregion
 
@@ -29,10 +28,10 @@ namespace MidiLib
         /// <summary>The time in subdivs. Always zero-based.</summary>
         public int TotalSubdivs { get; private set; }
 
-        /// <summary>The bar number.//TODO1 also zero-based</summary>
+        /// <summary>The bar number.</summary>
         public int Bar { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBar + _base; } }
 
-        /// <summary>The beat number in the bar.//TODO1 also zero-based</summary>
+        /// <summary>The beat number in the bar.</summary>
         public int Beat { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat % MidiSettings.LibSettings.SubdivsPerBar + _base; } }
 
         /// <summary>The subdiv in the beat.</summary>
@@ -47,7 +46,7 @@ namespace MidiLib
         {
             TotalSubdivs = 0;
             _id = _all_ids++;
-            _base = MidiSettings.LibSettings.ZeroBased ? 0 : 1;
+            //TODO0 get the fancy way working? _base = MidiSettings.LibSettings.ZeroBased ? 0 : 1;
         }
 
         /// <summary>
@@ -56,7 +55,7 @@ namespace MidiLib
         /// <param name="bar"></param>
         /// <param name="beat"></param>
         /// <param name="subdiv"></param>
-        public BarTime(int bar, int beat, int subdiv)//TODO1 also zero-based
+        public BarTime(int bar, int beat, int subdiv)
         {
             TotalSubdivs = ((bar - _base) * MidiSettings.LibSettings.SubdivsPerBar) + ((beat - _base) * MidiSettings.LibSettings.SubdivsPerBeat) + subdiv;
             _id = _all_ids++;
@@ -78,23 +77,12 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Constructor from Beat.Subdiv representation as a double.
+        /// Constructor from floating point beat.
         /// </summary>
-        /// <param name="tts"></param>
-        public BarTime(double tts)
+        /// <param name="beat"></param>
+        public BarTime(double beat)
         {
-            if (tts < 0)
-            {
-                throw new ArgumentException($"Negative value is invalid");
-            }
-
-            // TODO1-1 fix - 1/2 digit resolutions! //TODO1 also zero-based
-            var (integral, fractional) = MathUtils.SplitDouble(tts);
-
-            int beat = (int)Math.Round(integral) - _base;
-            int subdiv = (int)Math.Round(fractional * 10.0);
-
-            TotalSubdivs = (beat * MidiSettings.LibSettings.SubdivsPerBeat) + subdiv;
+            TotalSubdivs = (int)((beat - _base) * MidiSettings.LibSettings.SubdivsPerBeat);
         }
         #endregion
 
@@ -138,9 +126,9 @@ namespace MidiLib
         /// <param name="up">To ceiling otherwise closest.</param>
         public void SetRounded(int subdiv, SnapType snapType, bool up = false)
         {
-            if(snapType != SnapType.Subdiv)
+            if(subdiv > 0 && snapType != SnapType.Subdiv)
             {
-                // res:32   in:27  floor=(in%aim)*aim  ceiling=floor+aim
+                // res:32 in:27 floor=(in%aim)*aim  ceiling=floor+aim
                 int res = snapType == SnapType.Bar ? MidiSettings.LibSettings.SubdivsPerBar : MidiSettings.LibSettings.SubdivsPerBeat;
                 int floor = (subdiv / res) * res;
                 int ceiling = floor + res;

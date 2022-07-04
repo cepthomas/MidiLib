@@ -16,9 +16,9 @@ Requires VS2022 and .NET6.
 - Since midi files and NAudio use 1-based channel numbers, so does this application, except when used as an array index.
 - Because the windows multimedia timer has inadequate accuracy for midi notes, resolution is limited to 32nd notes.
 - If midi file type is `1`, all tracks are combined. Because.
-- `NoteEvent` is used to represent Note Off and Key After Touch messages. It is also the base class for `NoteOnEvent`.
+- NAudio `NoteEvent` is used to represent Note Off and Key After Touch messages. It is also the base class for `NoteOnEvent`.
 - Tons of styles and technical info at https://psrtutorial.com/.
-- Midi devices are limited to the ones available on your box. (Hint- VirtualMidiSynth).
+- Midi devices are limited to the ones available on your box. (Hint - VirtualMidiSynth).
 - Some midi files are sloppy with channel numbers so there are a couple of options for simple remapping.
 
 # Components
@@ -62,6 +62,7 @@ ChannelControl
 
 BarBar
 - Shows progress in musical bars and beats.
+- User has option to show bars and beats as one-based or zero-based.
 - User can select time.
 
 PatchPicker
@@ -72,7 +73,7 @@ VirtualKeyboard
 
 ## Other
 
-- MidiDefs: The GM definitions.
+- MidiDefs: The GM definitions plus conversion functions.
 - MidiTimeConverter: Used for mapping between data sets using different resolutions.
 - MidiCommon: All the other stuff.
 - Settings container/editor for use by clients.

@@ -16,6 +16,7 @@ using NBagOfUis;
 using NBagOfTricks.Slog;
 using System.Text.Json.Serialization;
 
+
 namespace MidiLib.Test
 {
     public partial class MainForm : Form
@@ -411,7 +412,7 @@ namespace MidiLib.Test
         }
         #endregion
 
-        #region Process patterns
+        #region Process pattern info into executable.
         /// <summary>
         /// Load the requested pattern and create controls.
         /// </summary>
@@ -439,7 +440,7 @@ namespace MidiLib.Test
                 {
                     int chnum = i + 1;
 
-                    var chEvents = pinfo.GetFilteredEvents(new() { chnum }).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
+                    var chEvents = pinfo.GetFilteredEvents(new List<int>() { chnum }).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
 
                     // Is this channel pertinent?
                     if (chEvents.Any())
@@ -704,32 +705,32 @@ namespace MidiLib.Test
         {
             MidiTimeTest();
 
-            var def = _settings.MidiSettings.InternalPPQ;
+            // var def = _settings.MidiSettings.InternalPPQ;
 
-            // ppq = 4/8
-            // 1.0 1.1 ... 1.7 2.0
-            _settings.MidiSettings.InternalPPQ = PPQ.PPQ_8;
+            // // ppq = 4/8
+            // // 1.0 1.1 ... 1.7 2.0
+            // _settings.MidiSettings.InternalPPQ = PPQ.PPQ_8;
 
-            var b1 = new BarTime(1.0);
-            var b2 = new BarTime(1.7);
-            var b3 = new BarTime(1.8);
-            var b4 = new BarTime(2.0);
-            var b5 = new BarTime(2.1);
+            // var b1 = new BarTime(1.0);
+            // var b2 = new BarTime(1.7);
+            // var b3 = new BarTime(1.8);
+            // var b4 = new BarTime(2.0);
+            // var b5 = new BarTime(2.1);
 
-            // ppq = 16/32
-            // 1.0 1.1 ... 1.7 1.8 ... 1.15 2.0
-            // 1.00 1.01 ... 1.07 1.08 ... 1.15 2.00
-            _settings.MidiSettings.InternalPPQ = PPQ.PPQ_32;
-            var b11 = new BarTime(1.0);
-            var b12 = new BarTime(1.7);
-            var b13 = new BarTime(1.8);
-            var b14 = new BarTime(1.31);
-            var b15 = new BarTime(1.32);
-            var b16 = new BarTime(2.0);
-            var b17 = new BarTime(2.1);
+            // // ppq = 16/32
+            // // 1.0 1.1 ... 1.7 1.8 ... 1.15 2.0
+            // // 1.00 1.01 ... 1.07 1.08 ... 1.15 2.00
+            // _settings.MidiSettings.InternalPPQ = PPQ.PPQ_32;
+            // var b11 = new BarTime(1.0);
+            // var b12 = new BarTime(1.7);
+            // var b13 = new BarTime(1.8);
+            // var b14 = new BarTime(1.31);
+            // var b15 = new BarTime(1.32);
+            // var b16 = new BarTime(2.0);
+            // var b17 = new BarTime(2.1);
 
-            // Restore.
-            _settings.MidiSettings.InternalPPQ = def;
+            // // Restore.
+            // _settings.MidiSettings.InternalPPQ = def;
         }
 
         /// <summary>
