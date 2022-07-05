@@ -13,7 +13,7 @@ using NBagOfTricks;
 namespace MidiLib
 {
     /// <summary>A simpler channel UI component.</summary>
-    public partial class ChannelControl : UserControl
+    public partial class SimpleChannelControl : UserControl
     {
         #region Properties
         /// <summary>Actual 1-based midi channel number.</summary>
@@ -52,7 +52,7 @@ namespace MidiLib
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public ChannelControl()
+        public SimpleChannelControl()
         {
             InitializeComponent();
         }

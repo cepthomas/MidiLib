@@ -56,7 +56,7 @@ PlayerControl
 - Provides volume, mute, solo.
 - Patch selection.
 
-ChannelControl
+SimpleChannelControl
 - Simple/dumb UI control.
 - Provides volume, channel, patch selection.
 

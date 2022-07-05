@@ -521,12 +521,19 @@ namespace MidiLib.Test
             {
                 // Bump time. Check for end of play. Client will take care of transport control.
                 barBar.IncrementCurrent(1);
-                if (_player.DoNextStep())
+
+                // Kick over to main UI thread.
+                this.InvokeIfRequired(_ =>
                 {
-                    // Done playing.
-                    // Bump over to main thread.
-                    this.InvokeIfRequired(_ => UpdateState(PlayState.Complete));
-                }
+                    if (_script is not null && !Disposing && !IsDisposed)
+                    {
+                        if (_player.DoNextStep())
+                        {
+                            // Done playing.
+                            UpdateState(PlayState.Complete);
+                        }
+                    }
+                });
             }
             catch (Exception ex)
             {

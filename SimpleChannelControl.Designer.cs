@@ -1,7 +1,7 @@
 ﻿
 namespace MidiLib
 {
-    partial class ChannelControl
+    partial class SimpleChannelControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -72,14 +72,14 @@ namespace MidiLib
             this.cmbChannel.TabIndex = 51;
             this.toolTip1.SetToolTip(this.cmbChannel, "Midi Channel Number");
             // 
-            // ChannelControl
+            // SimpleChannelControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.cmbChannel);
             this.Controls.Add(this.sldVolume);
             this.Controls.Add(this.lblPatch);
-            this.Name = "ChannelControl";
+            this.Name = "SimpleChannelControl";
             this.Size = new System.Drawing.Size(309, 41);
             this.ResumeLayout(false);
 
