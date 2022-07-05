@@ -33,5 +33,11 @@ namespace MidiLib
         {
             MidiEvent = evt;
         }
+
+        /// <summary>Read me.</summary>
+        public override string ToString()
+        {
+            return $"Ch:{ChannelNumber} Atime:{AbsoluteTime} Stime:{ScaledTime} Evt:{MidiEvent}";
+        }
     }
 }

@@ -64,7 +64,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="channelNumber">From this channel...</param>
         /// <param name="control">...to this control.</param>
-        public void Bind(int channelNumber, PlayerControl control)
+        public void Bind(int channelNumber, ChannelControl control)
         {
             control.BoundChannel = GetChannel(channelNumber);
         }

@@ -42,7 +42,7 @@ namespace MidiLib.Test
         MidiDataFile _mdata = new();
 
         /// <summary>All the channel play controls.</summary>
-        readonly List<PlayerControl> _playerControls = new();
+        readonly List<ChannelControl> _channelControls = new();
 
         /// <summary>Prevent button press recursion.</summary>
         bool _guard = false;
@@ -257,7 +257,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Control_ChannelChange(object? sender, ChannelChangeEventArgs e)
         {
-            PlayerControl chc = (PlayerControl)sender!;
+            ChannelControl chc = (ChannelControl)sender!;
 
             if (e.StateChange)
             {
@@ -422,8 +422,8 @@ namespace MidiLib.Test
             _player.Reset();
 
             // Clean out our controls collection.
-            _playerControls.ForEach(c => Controls.Remove(c));
-            _playerControls.Clear();
+            _channelControls.ForEach(c => Controls.Remove(c));
+            _channelControls.Clear();
 
             if (pinfo is null)
             {
@@ -448,7 +448,7 @@ namespace MidiLib.Test
                         _channelManager.SetEvents(chnum, chEvents);
 
                         // Make new control.
-                        PlayerControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
+                        ChannelControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
 
                         // Bind to internal channel object.
                         _channelManager.Bind(chnum, control);
@@ -459,7 +459,7 @@ namespace MidiLib.Test
 
                         control.ChannelChangeEvent += Control_ChannelChange;
                         Controls.Add(control);
-                        _playerControls.Add(control);
+                        _channelControls.Add(control);
 
                         lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
 
@@ -558,7 +558,7 @@ namespace MidiLib.Test
         /// </summary>
         void UpdateDrumChannels()
         {
-            _playerControls.ForEach(ctl => ctl.IsDrums =
+            _channelControls.ForEach(ctl => ctl.IsDrums =
                 (ctl.ChannelNumber == cmbDrumChannel1.SelectedIndex) ||
                 (ctl.ChannelNumber == cmbDrumChannel2.SelectedIndex));
         }
@@ -595,10 +595,10 @@ namespace MidiLib.Test
 
                 // Get selected channels.
                 List<Channel> channels = new();
-                _playerControls.Where(cc => cc.Selected).ForEach(cc => channels.Add(cc.BoundChannel));
+                _channelControls.Where(cc => cc.Selected).ForEach(cc => channels.Add(cc.BoundChannel));
                 if (!channels.Any()) // grab them all.
                 {
-                    _playerControls.ForEach(cc => channels.Add(cc.BoundChannel));
+                    _channelControls.ForEach(cc => channels.Add(cc.BoundChannel));
                 }
 
                 // Execute the requested export function.

@@ -1,7 +1,7 @@
 ﻿
 namespace MidiLib
 {
-    partial class PlayerControl
+    partial class ChannelControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -90,7 +90,7 @@ namespace MidiLib
             this.sldVolume.TabIndex = 47;
             this.sldVolume.Value = 5D;
             // 
-            // PlayerControl
+            // ChannelControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -99,7 +99,7 @@ namespace MidiLib
             this.Controls.Add(this.lblSolo);
             this.Controls.Add(this.lblPatch);
             this.Controls.Add(this.lblChannelNumber);
-            this.Name = "PlayerControl";
+            this.Name = "ChannelControl";
             this.Size = new System.Drawing.Size(345, 38);
             this.ResumeLayout(false);
             this.PerformLayout();

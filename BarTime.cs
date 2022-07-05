@@ -46,7 +46,6 @@ namespace MidiLib
         {
             TotalSubdivs = 0;
             _id = _all_ids++;
-            //TODO0 get the fancy way working? _base = MidiSettings.LibSettings.ZeroBased ? 0 : 1;
         }
 
         /// <summary>
@@ -75,34 +74,6 @@ namespace MidiLib
             TotalSubdivs = subdivs;
             _id = _all_ids++;
         }
-
-        ///// <summary>
-        ///// Constructor from floating point beat.
-        ///// </summary>
-        ///// <param name="beat"></param>
-        //public BarTime(double beat)
-        //{
-        //    TotalSubdivs = (int)((beat - _base) * MidiSettings.LibSettings.SubdivsPerBeat);
-        //}
-
-        /// <summary>
-        /// Constructor from Beat.Subdiv representation as a double. Note subdiv part is fixed at PPQ=8.
-        /// </summary>
-        /// <param name="beat"></param>
-        public BarTime(double beat)
-        {
-            var (integral, fractional) = MathUtils.SplitDouble(beat);
-            var beats = (int)integral;
-            var subdivs = (int)Math.Round(fractional * 10.0);
-
-            if (subdivs >= (int)PPQ.PPQ_8)
-            {
-                throw new Exception($"Invalid subdiv value: {beat}");
-            }
-
-            TotalSubdivs = beats * MidiSettings.LibSettings.SubdivsPerBeat + subdivs;
-        }
-
         #endregion
 
         #region Public functions
