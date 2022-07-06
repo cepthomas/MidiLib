@@ -110,15 +110,15 @@ namespace MidiLib.Test
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
-            sldVolume.Resolution = VolumeDefs.STEP;
             sldVolume.Minimum = VolumeDefs.MIN;
             sldVolume.Maximum = VolumeDefs.MAX;
+            sldVolume.Resolution = VolumeDefs.MAX / 50;
             sldVolume.Value = VolumeDefs.DEFAULT;
             sldVolume.Label = "volume";
 
             // Time controller.
             MidiSettings.LibSettings.Snap = SnapType.Beat;
-            MidiSettings.LibSettings.ZeroBased = true;
+            //MidiSettings.LibSettings.ZeroBased = true;
             barBar.ProgressColor = _controlColor;
             barBar.CurrentTimeChanged += BarBar_CurrentTimeChanged;
 
@@ -198,6 +198,9 @@ namespace MidiLib.Test
             // Resources.
             _mmTimer.Stop();
             _mmTimer.Dispose();
+
+            // Wait a bit in case there are some lingering events.
+            System.Threading.Thread.Sleep(100);
 
             _player.Dispose();
             _listener.Dispose();
@@ -522,18 +525,11 @@ namespace MidiLib.Test
                 // Bump time. Check for end of play. Client will take care of transport control.
                 barBar.IncrementCurrent(1);
 
-                // Kick over to main UI thread.
-                this.InvokeIfRequired(_ =>
+                if (_player.DoNextStep())
                 {
-                    if (_script is not null && !Disposing && !IsDisposed)
-                    {
-                        if (_player.DoNextStep())
-                        {
-                            // Done playing.
-                            UpdateState(PlayState.Complete);
-                        }
-                    }
-                });
+                    // Done playing. Bump over to main thread.
+                    this.InvokeIfRequired(_ => UpdateState(PlayState.Complete));
+                }
             }
             catch (Exception ex)
             {

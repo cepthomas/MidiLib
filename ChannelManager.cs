@@ -10,10 +10,10 @@ using NBagOfTricks;
 namespace MidiLib
 {
     /// <summary>Manages all the current channels. Does status/state. Does not send midi messages.</summary>
-    public class ChannelManager : IEnumerable<Channel> //TODOX need to be iterable?
+    public class ChannelManager : IEnumerable<Channel> //TODOX2 Maybe eliminate this?
     {
         #region Fields
-        /// <summary>All the channels. Index is 0-based, not channel number. TODOX new model will be sparse ch number + device.</summary>
+        /// <summary>All the channels. Index is 0-based, not channel number.</summary>
         readonly Channel[] _channels = new Channel[MidiDefs.NUM_CHANNELS];
         #endregion
 
