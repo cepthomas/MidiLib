@@ -34,7 +34,7 @@ namespace MidiLib
         public double Volume
         {
             get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX, VolumeDefs.STEP); }
+            set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX); }
         }
 
         /// <summary>Associated device.</summary>
