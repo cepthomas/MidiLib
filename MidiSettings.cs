@@ -44,15 +44,15 @@ namespace MidiLib
         [Browsable(true)]
         public int DefaultTempo { get; set; } = 100;
 
-        [DisplayName("Internal Time Resolution")]
-        [Description("aka DeltaTicksPerQuarterNote or subdivisions per beat.")]
-        [Browsable(true)]
-        public PPQ InternalPPQ { get; set; } = PPQ.PPQ_8;
+        //[DisplayName("Internal Time Resolution")]
+        //[Description("aka DeltaTicksPerQuarterNote or subdivisions per beat.")]
+        //[Browsable(true)]
+        //public PPQ InternalPPQ { get; set; } = PPQ.PPQ_32;// TODO Implement later maybe.
 
-        [DisplayName("Zero Based Time")]
-        [Description("Use 0:0:0 time instead of 1:1:1.")]
-        [Browsable(true)]
-        public bool ZeroBased { get; set; } = false;
+        //[DisplayName("Zero Based Time")]
+        //[Description("Use 0:0:0 time instead of 1:1:1.")]
+        //[Browsable(true)]
+        //public bool ZeroBased { get; set; } = false; // TODO Implement later maybe. For now it's always true.
 
         /// <summary>How to snap.</summary>
         [DisplayName("Snap Type")]
@@ -70,12 +70,12 @@ namespace MidiLib
         /// <summary>Convenience.</summary>
         [Browsable(false)]
         [JsonIgnore()]
-        public int SubdivsPerBeat { get { return (int)InternalPPQ; } }
+        public int SubdivsPerBeat { get { return Definitions.InternalPPQ; } }
 
         /// <summary>Convenience.</summary>
         [Browsable(false)]
         [JsonIgnore()]
-        public int SubdivsPerBar { get { return (int)InternalPPQ * BeatsPerBar; } }
+        public int SubdivsPerBar { get { return Definitions.InternalPPQ * BeatsPerBar; } }
         #endregion
     }
 
