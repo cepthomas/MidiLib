@@ -131,13 +131,11 @@ namespace MidiLib.Test
                 cmbDrumChannel2.Items.Add(i);
             }
 
-            // Set up midi devices.
+            // Set up midi devices. TODOX2 should get from settings, and create vk and bb.
             _player = new(_midiOutDeviceName, _channelManager);
             _listener = new(_midiInDeviceName);
             _listener.CaptureEnable = _listener.Valid;
             _player.SendPatch(_kbdChannelNumber, _kbdPatch);
-
-            // Virtual device events.
             bb.InputEvent += Virtual_InputEvent;
             vkey.InputEvent += Virtual_InputEvent;
 

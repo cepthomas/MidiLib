@@ -27,17 +27,41 @@ namespace MidiLib
         static MidiSettings? _settings = null;
 
         #region Properties - persisted editable
-        [DisplayName("Midi Input")]
+        [DisplayName("Input Device 1")]
         [Description("Valid device if handling midi input.")]
         [Browsable(true)]
         [TypeConverter(typeof(MidiDeviceTypeConverter))]
-        public string MidiInDevice { get; set; } = "";
+        public string InputDevice1 { get; set; } = "";
 
-        [DisplayName("Midi Output")]
+        [DisplayName("Input Device 2")]
+        [Description("Valid device if handling midi input.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(MidiDeviceTypeConverter))]
+        public string InputDevice2 { get; set; } = "";
+
+        [DisplayName("Input Device 3")]
+        [Description("Valid device if handling midi input.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(MidiDeviceTypeConverter))]
+        public string InputDevice3 { get; set; } = "";
+
+        [DisplayName("Input Device 4")]
+        [Description("Valid device if handling midi input.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(MidiDeviceTypeConverter))]
+        public string InputDevice4 { get; set; } = "";
+
+        [DisplayName("Output Device 1")]
         [Description("Valid device if sending midi output.")]
         [Browsable(true)]
         [TypeConverter(typeof(MidiDeviceTypeConverter))]
-        public string MidiOutDevice { get; set; } = "";
+        public string OutputDevice1 { get; set; } = "";
+
+        [DisplayName("Output Device 2")]
+        [Description("Valid device if sending midi output.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(MidiDeviceTypeConverter))]
+        public string OutputDevice2 { get; set; } = "";
 
         [DisplayName("Default Tempo")]
         [Description("Use this tempo if it's not in the file.")]
@@ -77,6 +101,53 @@ namespace MidiLib
         [JsonIgnore()]
         public int SubdivsPerBar { get { return Definitions.InternalPPQ * BeatsPerBar; } }
         #endregion
+
+        /// <summary>
+        /// Utility function to make client's life easier.
+        /// </summary>
+        /// <returns></returns>
+        public List<(string id, string name)> GetInputDevices()
+        {
+            var devs = new List<(string, string)>();
+            if (InputDevice1 != "")
+            {
+                devs.Add(("InputDevice1", InputDevice1));
+            }
+            if (InputDevice2 != "")
+            {
+                devs.Add(("InputDevice2", InputDevice2));
+            }
+            if (InputDevice3 != "")
+            {
+                devs.Add(("InputDevice3", InputDevice3));
+            }
+            if (InputDevice4 != "")
+            {
+                devs.Add(("InputDevice4", InputDevice4));
+            }
+
+            return devs;
+        }
+
+        /// <summary>
+        /// Utility function to make client's life easier.
+        /// </summary>
+        /// <returns></returns>
+        public List<(string id, string name)> GetOutputDevices()
+        {
+            var devs = new List<(string, string)>();
+            if (OutputDevice1 != "")
+            {
+                devs.Add(("OutputDevice1", OutputDevice1));
+            }
+            if (OutputDevice2 != "")
+            {
+                devs.Add(("OutputDevice2", OutputDevice2));
+            }
+
+            return devs;
+        }
+
     }
 
     /// <summary>Converter for selecting property value from known lists.</summary>
@@ -92,15 +163,21 @@ namespace MidiLib
 
             switch (context!.PropertyDescriptor.Name)
             {
-                case "MidiInDevice":
+                case "InputDevice1":
+                case "InputDevice2":
+                case "InputDevice3":
+                case "InputDevice4":
                     rec = new() { "" };
                     for (int devindex = 0; devindex < MidiIn.NumberOfDevices; devindex++)
                     {
                         rec.Add(MidiIn.DeviceInfo(devindex).ProductName);
                     }
+                    rec.Add("VirtualKeyboard");
+                    rec.Add("BingBong");
                     break;
 
-                case "MidiOutDevice":
+                case "OutputDevice1":
+                case "OutputDevice2":
                     rec = new() { "" };
                     for (int devindex = 0; devindex < MidiOut.NumberOfDevices; devindex++)
                     {
