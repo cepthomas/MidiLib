@@ -14,8 +14,8 @@ namespace MidiLib
     /// <summary>User selection options.</summary>
     public enum SnapType { Bar, Beat, Subdiv }
 
-    /// <summary>Resolution.</summary>
-    public enum PPQ { PPQ_4 = 4, PPQ_8 = 8, PPQ_16 = 16, PPQ_32 = 32 }
+    ///// <summary>Resolution.</summary>
+    //public enum PPQ { PPQ_4 = 4, PPQ_8 = 8, PPQ_16 = 16, PPQ_32 = 32 }
     #endregion
 
     #region Special event types
@@ -111,6 +111,12 @@ namespace MidiLib
     #endregion
 
     #region Definitions
+    public class Definitions
+    {
+        /// <summary>Internal resolution.</summary>
+        public const int InternalPPQ = 32;
+    }
+
     public class VolumeDefs
     {
         /// <summary>Corresponds to midi velocity = 0.</summary>
@@ -121,9 +127,6 @@ namespace MidiLib
 
         /// <summary>Default value.</summary>
         public const double DEFAULT = 0.8;
-
-        /// <summary>UI control smoothness.</summary>
-        public const double STEP = 0.05;
 
         /// <summary>Allow UI controls some more headroom.</summary>
         public const double MAX_GAIN = 2.0;
