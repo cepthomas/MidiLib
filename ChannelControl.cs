@@ -24,7 +24,7 @@ namespace MidiLib
         /// <summary>Bound object.</summary>
         public Channel BoundChannel { get; set; } = new();
 
-        /// <summary>Actual 1-based midi channel number for UI.</summary>
+        /// <summary>Actual 1-based midi channel number for UI. TODOX1 also needs device id.</summary>
         public int ChannelNumber
         {
             get { return BoundChannel.ChannelNumber; }
