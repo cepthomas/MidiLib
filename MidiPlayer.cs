@@ -217,6 +217,8 @@ namespace MidiLib
         /// </summary>
         public void KillAll()
         {
+            //Playing = false; // TODOX2 also stop playing
+
             // Send midi stop all notes just in case.
             for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
             {

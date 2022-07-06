@@ -10,7 +10,7 @@ using NBagOfTricks;
 namespace MidiLib
 {
     /// <summary>Manages all the current channels. Does status/state. Does not send midi messages.</summary>
-    public class ChannelManager : IEnumerable<Channel> //TODOX2 Maybe eliminate this?
+    public class ChannelManager : IEnumerable<Channel> //TODOX1 Maybe eliminate this?
     {
         #region Fields
         /// <summary>All the channels. Index is 0-based, not channel number.</summary>

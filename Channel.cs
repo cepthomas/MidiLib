@@ -37,7 +37,7 @@ namespace MidiLib
             set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX); }
         }
 
-        /// <summary>Associated device - TODOX1 required??.</summary>
+        /// <summary>Associated device.</summary>
         public IMidiOutputDevice? Device { get; set; } = null;
 
         /// <summary>Optional UI label/reference.</summary>
