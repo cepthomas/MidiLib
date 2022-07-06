@@ -415,7 +415,7 @@ namespace MidiLib.Test
         }
         #endregion
 
-        #region Process pattern info into executable.
+        #region Process pattern info into executable
         /// <summary>
         /// Load the requested pattern and create controls.
         /// </summary>

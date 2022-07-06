@@ -20,8 +20,8 @@ namespace MidiLib
         double _volume = VolumeDefs.DEFAULT;
         #endregion
 
-        #region Client Properties - required
-        /// <summary>Actual 1-based midi channel number.</summary>
+        #region Properties
+        /// <summary>Actual 1-based midi channel number - required.</summary>
         public int ChannelNumber { get; set; } = -1;
 
         /// <summary>For muting/soloing.</summary>
@@ -37,12 +37,10 @@ namespace MidiLib
             set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX); }
         }
 
-        /// <summary>Associated device.</summary>
-        public IMidiOutputDevice Device { get; set; } = null;
-        #endregion
+        /// <summary>Associated device - TODOX1 required??.</summary>
+        public IMidiOutputDevice? Device { get; set; } = null;
 
-        #region Client Properties - optional
-        /// <summary>Optional label/reference.</summary>
+        /// <summary>Optional UI label/reference.</summary>
         public string ChannelName { get; set; } = "";
 
         /// <summary>Drums may be handled differently.</summary>
@@ -51,15 +49,13 @@ namespace MidiLib
         /// <summary>The device used by this channel. Used to find and bind the device at runtime.</summary>
         public string DeviceId { get; set; } = "";
 
-        /// <summary>For user selection.</summary>
+        /// <summary>For UI user selection.</summary>
         public bool Selected { get; set; } = false;
-        #endregion
 
-        #region Client Properties - calculated
-        ///<summary>The duration of the whole channel.</summary>
+        ///<summary>The duration of the whole channel - calculated.</summary>
         public int MaxSubdiv { get; private set; } = 0;
 
-        /// <summary>Get the number of events.</summary>
+        /// <summary>Get the number of events - calculated.</summary>
         public int NumEvents { get { return _events.Count; } }
         #endregion
 
@@ -133,5 +129,31 @@ namespace MidiLib
             return _volume;
         }
         #endregion
+
+
+
+        public void SendPatch()
+        {
+            PatchChangeEvent evt = new(0, ChannelNumber, Patch);
+            SendEvent(evt);
+        }
+
+        public void Kill()
+        {
+            ControlChangeEvent nevt = new(0, ChannelNumber, MidiController.AllNotesOff, 0);
+            SendEvent(nevt);
+        }
+
+
+        public void SendEvent(MidiEvent evt)
+        {
+            if(Device is null)
+            {
+                throw new InvalidOperationException("Device not set");
+            }
+
+            Device.SendEvent(evt);
+        }
+
     }
 }

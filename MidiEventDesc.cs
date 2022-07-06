@@ -19,6 +19,9 @@ namespace MidiLib
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get { return MidiEvent.Channel; } }
 
+        /// <summary>Associated channel name.</summary>
+        public string ChannelName { get; }
+
         /// <summary>Time (subdivs) from original file.</summary>
         public long AbsoluteTime { get { return MidiEvent.AbsoluteTime; } }
 
@@ -29,15 +32,16 @@ namespace MidiLib
         public MidiEvent MidiEvent { get; init; }
 
         /// <summary>Normal constructor from NAudio event.</summary>
-        public MidiEventDesc(MidiEvent evt)
+        public MidiEventDesc(MidiEvent evt, string channelName)
         {
             MidiEvent = evt;
+            ChannelName = channelName;
         }
 
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"Ch:{ChannelNumber} Atime:{AbsoluteTime} Stime:{ScaledTime} Evt:{MidiEvent}";
+            return $"Ch:{ChannelName}({ChannelNumber}) Atime:{AbsoluteTime} Stime:{ScaledTime} Evt:{MidiEvent}";
         }
     }
 }

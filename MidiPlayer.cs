@@ -16,7 +16,7 @@ using NBagOfTricks.Slog;
 namespace MidiLib
 {
     /// <summary>
-    /// A "good enough" midi player.
+    /// A "good enough" midi player. Single output device.
     /// </summary>
     public sealed class MidiPlayer : IDisposable
     {
@@ -191,7 +191,7 @@ namespace MidiLib
         }
         #endregion
 
-        #region Public functions - midi
+        #region Public functions - midi TODOX1 - this is messed up, send using Channel: breaks ChannelManager
         public void SendPatch(int channelNumber, int patch)
         {
             if (patch >= 0)
@@ -226,7 +226,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Send midi.
+        /// Send midi event.
         /// </summary>
         /// <param name="evt"></param>
         public void SendMidi(MidiEvent evt)

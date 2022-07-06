@@ -303,7 +303,7 @@ namespace MidiLib
             ///// Local function. /////
             void AddMidiEvent(MidiEvent evt)
             {
-                _currentPattern.AddEvent(new MidiEventDesc(evt));
+                _currentPattern.AddEvent(new MidiEventDesc(evt, $"chan{evt.Channel}"));
             }
 
             return absoluteTime;

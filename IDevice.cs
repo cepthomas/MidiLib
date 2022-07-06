@@ -44,18 +44,6 @@ namespace MidiLib
         #endregion
 
         #region Functions
-        /// <summary>Send a patch.</summary>
-        /// <param name="channelNumber"></param>
-        /// <param name="patch"></param>
-        void SendPatch(int channelNumber, int patch);
-
-        /// <summary>Send all notes off.</summary>
-        /// <param name="channelNumber">1-based channel</param>
-        void Kill(int channelNumber);//TODOX1 also needs DeviceId - or use the whole channel?
-
-        /// <summary>Send all notes off to everyone.</summary>
-        void KillAll();
-
         /// <summary>Send midi event.</summary>
         /// <param name="evt"></param>
         void SendEvent(MidiEvent evt);

@@ -13,12 +13,12 @@ using NBagOfTricks.Slog;
 namespace MidiLib
 {
     /// <summary>
-    /// A simple midi output device.
+    /// A midi output layer - associated with a single device.
     /// </summary>
     public sealed class MidiSender : IMidiOutputDevice
     {
         #region Fields
-        /// <summary>Midi output device.</summary>
+        /// <summary>Low level midi output device.</summary>
         readonly MidiOut? _midiOut = null;
 
         /// <summary>Midi send logging.</summary>
@@ -69,34 +69,6 @@ namespace MidiLib
         #endregion
 
         #region Public functions - midi
-        /// <inheritdoc />
-        public void SendPatch(int channelNumber, int patch)
-        {
-            if (patch >= 0)
-            {
-                PatchChangeEvent evt = new(0, channelNumber, patch);
-                SendEvent(evt);
-            }
-        }
-
-        /// <inheritdoc />
-        public void Kill(int channelNumber)
-        {
-            ControlChangeEvent nevt = new(0, channelNumber, MidiController.AllNotesOff, 0);
-            SendEvent(nevt);
-        }
-
-        /// <inheritdoc />
-        public void KillAll()
-        {
-            // Send midi stop all notes just in case.
-            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-            {
-                int chnum = i + 1;
-                Kill(chnum);
-            }
-        }
-
         /// <inheritdoc />
         public void SendEvent(MidiEvent evt)
         {
