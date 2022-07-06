@@ -11,7 +11,7 @@ using NBagOfTricks;
 namespace MidiLib
 {
     /// <summary>Sort of like DateTime but for musical terminology.</summary>
-    public class BarTime : IComparable
+    public class BarTime : IComparable // TODO probably nice to split out a BarTimeSpan class.
     {
         #region Fields
         /// <summary>For hashing.</summary>
@@ -32,7 +32,7 @@ namespace MidiLib
         public int Bar { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBar + _base; } }
 
         /// <summary>The beat number in the bar.</summary>
-        public int Beat { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat % MidiSettings.LibSettings.SubdivsPerBar + _base; } }
+        public int Beat { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat % MidiSettings.LibSettings.BeatsPerBar + _base; } }
 
         /// <summary>The subdiv in the beat.</summary>
         public int Subdiv { get { return TotalSubdivs % MidiSettings.LibSettings.SubdivsPerBeat; } }
