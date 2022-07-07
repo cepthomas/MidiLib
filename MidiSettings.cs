@@ -68,10 +68,11 @@ namespace MidiLib
         [Browsable(true)]
         public int DefaultTempo { get; set; } = 100;
 
-        //[DisplayName("Internal Time Resolution")]
-        //[Description("aka DeltaTicksPerQuarterNote or subdivisions per beat.")]
-        //[Browsable(true)]
-        //public PPQ InternalPPQ { get; set; } = PPQ.PPQ_32;// TODO Implement later maybe.
+        [DisplayName("Internal Time Resolution")]
+        [Description("aka DeltaTicksPerQuarterNote or subdivisions per beat.")]
+        [Browsable(false)] // TODO Implement user selectable later maybe.
+        [JsonIgnore()]
+        public int InternalPPQ { get; set; } = 32;
 
         //[DisplayName("Zero Based Time")]
         //[Description("Use 0:0:0 time instead of 1:1:1.")]

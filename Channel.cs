@@ -128,23 +128,30 @@ namespace MidiLib
             //return vel;
             return _volume;
         }
-        #endregion
 
-
-
+        /// <summary>
+        /// General patch sender.
+        /// </summary>
         public void SendPatch()
         {
             PatchChangeEvent evt = new(0, ChannelNumber, Patch);
             SendEvent(evt);
         }
 
+        /// <summary>
+        /// Send midi all notes off.
+        /// </summary>
         public void Kill()
         {
             ControlChangeEvent nevt = new(0, ChannelNumber, MidiController.AllNotesOff, 0);
             SendEvent(nevt);
         }
 
-
+        /// <summary>
+        /// Generic event sender.
+        /// </summary>
+        /// <param name="evt"></param>
+        /// <exception cref="InvalidOperationException"></exception>
         public void SendEvent(MidiEvent evt)
         {
             if(Device is null)
@@ -154,6 +161,38 @@ namespace MidiLib
 
             Device.SendEvent(evt);
         }
+        #endregion
 
+    }
+
+    /// <summary>Helper extension methods.</summary>
+    public static class ChannelUtils
+    {
+        /// <summary>
+        /// Any solo in collection.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="channels"></param>
+        /// <returns></returns>
+        public static bool AnySolo<T>(this Dictionary<string, T> channels) where T : Channel
+        {
+            var solo = channels.Values.Where(c => c.State == ChannelState.Solo).Any();
+            return solo;
+        }
+
+        /// <summary>
+        /// Get subdivs for the collection, rounded to beat.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="channels"></param>
+        /// <returns></returns>
+        public static int TotalSubdivs<T>(this Dictionary<string, T> channels) where T : Channel
+        {
+            var chmax = channels.Values.Max(ch => ch.MaxSubdiv);
+            // Round total up to next beat.
+            BarTime bs = new();
+            bs.SetRounded(chmax, SnapType.Beat, true);
+            return bs.TotalSubdivs;
+        }
     }
 }

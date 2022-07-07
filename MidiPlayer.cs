@@ -22,10 +22,13 @@ namespace MidiLib
     {
         #region Fields
         /// <summary>Midi output device.</summary>
-        readonly MidiSender? _midiOut = null;
+        readonly IMidiOutputDevice? _outputDevice = null;
 
-        /// <summary>The internal channel objects.</summary>
-        readonly ChannelManager _channelManager = new();
+        /// <summary>All the channels - key is user assigned name.</summary>
+        readonly Dictionary<string, Channel> _channels;
+
+        /// <summary>Cached value.</summary>
+        int _totalSubdivs = 0;
 
         /// <summary>Backing.</summary>
         int _currentSubdiv = 0;
@@ -36,7 +39,7 @@ namespace MidiLib
 
         #region Properties
         /// <summary>Are we ok?</summary>
-        public bool Valid { get { return _midiOut is not null; } }
+        public bool Valid { get { return _outputDevice is not null; } }
 
         /// <summary>What are we doing right now.</summary>
         public bool Playing { get; private set; }
@@ -48,7 +51,7 @@ namespace MidiLib
         public int CurrentSubdiv
         {
             get { return _currentSubdiv; }
-            set { _currentSubdiv = MathUtils.Constrain(value, 0, _channelManager.TotalSubdivs); }
+            set { _currentSubdiv = MathUtils.Constrain(value, 0, _totalSubdivs); }
         }
 
         /// <summary>Log outbound traffic at Trace level. Warning - can get busy.</summary>
@@ -59,18 +62,14 @@ namespace MidiLib
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        /// <param name="midiDevice">Client supplies name of device.</param>
-        /// <param name="channelManager">The actual channels.</param>
-        public MidiPlayer(string midiDevice, ChannelManager channelManager)
+        /// <param name="outputDevice">Client supplies device to use.</param>
+        /// <param name="channels">The actual channels.</param>
+        public MidiPlayer(IMidiOutputDevice outputDevice, Dictionary<string, Channel> channels)
         {
-            _channelManager = channelManager;
+            _channels = channels;
+            _totalSubdivs = _channels.TotalSubdivs();
             LogMidi = false;
-            _midiOut = new MidiSender(midiDevice);
-
-            if(!_midiOut.Valid)
-            {
-                throw new ArgumentException($"Invalid midi out device: {midiDevice}");
-            }
+            _outputDevice = outputDevice;
         }
 
         /// <summary> 
@@ -79,7 +78,7 @@ namespace MidiLib
         public void Dispose()
         {
             // Resources.
-            _midiOut?.Dispose();
+            _outputDevice?.Dispose();
         }
 
         /// <summary>
@@ -124,14 +123,13 @@ namespace MidiLib
             if (Playing)
             {
                 // Any soloes?
-                bool anySolo = _channelManager.AnySolo;
-                int numSelected = _channelManager.NumSelected;
+                bool anySolo = _channels.AnySolo();
 
                 // Process each channel.
-                foreach (var ch in _channelManager)
+                foreach (var ch in _channels.Values)
                 {
                     // Look for events to send. Any explicit solos?
-                    if ((numSelected == 0 || ch.Selected) && (ch.State == ChannelState.Solo || (!anySolo && ch.State == ChannelState.Normal)))
+                    if (ch.State == ChannelState.Solo || (!anySolo && ch.State == ChannelState.Normal))
                     {
                         // Process any sequence steps.
                         var playEvents = ch.GetEvents(_currentSubdiv);
@@ -180,7 +178,7 @@ namespace MidiLib
 
                 // Bump time. Check for end of play. Client must handle next action.
                 _currentSubdiv++;
-                if (_currentSubdiv >= _channelManager.TotalSubdivs)
+                if (_currentSubdiv >= _totalSubdivs)
                 {
                     done = true;
                     _currentSubdiv = 0;
@@ -233,9 +231,9 @@ namespace MidiLib
         /// <param name="evt"></param>
         public void SendMidi(MidiEvent evt)
         {
-            if(_midiOut is not null)
+            if(_outputDevice is not null)
             {
-                _midiOut.SendEvent(evt);
+                _outputDevice.SendEvent(evt);
             }
             if(LogMidi)
             {

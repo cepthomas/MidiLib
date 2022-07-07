@@ -26,11 +26,14 @@ namespace MidiLib.Test
         #endregion
 
         #region Fields - internal
-        /// <summary>The internal channel objects.</summary>
-        readonly ChannelManager _channelManager = new();
+        /// <summary>All the channels - key is user assigned name.</summary>
+        readonly Dictionary<string, Channel> _channels = new();
 
         /// <summary>Midi player.</summary>
         readonly MidiPlayer _player;
+
+        /// <summary>Midi output.</summary>
+        readonly MidiSender _sender;
 
         /// <summary>Midi input.</summary>
         readonly MidiListener _listener;
@@ -132,7 +135,8 @@ namespace MidiLib.Test
             }
 
             // Set up midi devices. TODOX2 should get from settings, and create vk and bb.
-            _player = new(_midiOutDeviceName, _channelManager);
+            _sender = new(_midiOutDeviceName);
+            _player = new(_sender, _channelManager);
             _listener = new(_midiInDeviceName);
             _listener.CaptureEnable = _listener.Valid;
             _player.SendPatch(_kbdChannelNumber, _kbdPatch);
@@ -256,7 +260,7 @@ namespace MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Control_ChannelChange(object? sender, ChannelChangeEventArgs e)
+        void Control_ChannelChangeEvent(object? sender, ChannelChangeEventArgs e)
         {
             ChannelControl chc = (ChannelControl)sender!;
 
@@ -352,7 +356,6 @@ namespace MidiLib.Test
                 // Reset stuff.
                 cmbDrumChannel1.SelectedIndex = MidiDefs.DEFAULT_DRUM_CHANNEL;
                 cmbDrumChannel2.SelectedIndex = 0;
-                _channelManager.Reset();
                 _mdata = new MidiDataFile();
 
                 // Process the file. Set the default tempo from preferences.
@@ -365,9 +368,8 @@ namespace MidiLib.Test
                 switch(pnames.Count)
                 {
                     case 0:
-                        _logger.Error($"Something wrong with this file: {fn}");
                         ok = false;
-                        break;
+                        throw new InvalidOperationException($"Something wrong with this file: {fn}");
 
                     case 1:
                         var pinfo = _mdata.GetPattern(pnames[0]);
@@ -401,6 +403,8 @@ namespace MidiLib.Test
                 Rewind();
 
                 Text = $"Midi Lib Test - {fn}";
+
+                lbPatterns.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
@@ -413,7 +417,7 @@ namespace MidiLib.Test
         }
         #endregion
 
-        #region Process pattern info into executable
+        #region Process pattern info into events
         /// <summary>
         /// Load the requested pattern and create controls.
         /// </summary>
@@ -422,9 +426,14 @@ namespace MidiLib.Test
         {
             _player.Reset();
 
-            // Clean out our controls collection.
-            _channelControls.ForEach(c => Controls.Remove(c));
+            // Clean out our collections.
+            _channelControls.ForEach(c =>
+            {
+                Controls.Remove(c);
+                c.Dispose();
+            });
             _channelControls.Clear();
+            _channels.Clear();
 
             if (pinfo is null)
             {
@@ -437,46 +446,94 @@ namespace MidiLib.Test
                 int x = lbPatterns.Right + 5;
                 int y = lbPatterns.Top;
 
-                for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-                {
-                    int chnum = i + 1;
 
+                foreach(int chnum in pinfo.ChannelNumbers)
+                {
                     var chEvents = pinfo.GetFilteredEvents(new List<int>() { chnum }).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
 
                     // Is this channel pertinent?
                     if (chEvents.Any())
                     {
-                        _channelManager.SetEvents(chnum, chEvents);
+                        // Make new channel.
+                        Channel channel = new()
+                        {
+                            ChannelName = $"chan{chnum}",
+                            ChannelNumber = chnum,
+                            DeviceId = "OutputDevice1",
+                            Volume = VolumeDefs.DEFAULT,
+                            State = ChannelState.Normal,
+                            Patch = pinfo.Patches[chnum - 1],
+                            IsDrums = chnum == MidiDefs.DEFAULT_DRUM_CHANNEL,
+                            Selected = false,
+               //TODOX1             Device = _outputDevices[chspec.DeviceId]
+                        };
+                        channel.SetEvents(chEvents);
+                        _channels.Add(channel.ChannelName, channel);
 
-                        // Make new control.
-                        ChannelControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
-
-                        // Bind to internal channel object.
-                        _channelManager.Bind(chnum, control);
-
-                        // Now init the control - after binding!
-                        control.Patch = pinfo.Patches[i];
-                        //control.IsDrums = GetDrumChannels().Contains(chnum);
-
-                        control.ChannelChangeEvent += Control_ChannelChange;
+                        // Make new control and bind to channel.
+                        ChannelControl control = new()
+                        {
+                            Location = new(x, y),
+                            BorderStyle = BorderStyle.FixedSingle,
+                            BoundChannel = channel
+                        };
+                        control.ChannelChangeEvent += Control_ChannelChangeEvent;
                         Controls.Add(control);
                         _channelControls.Add(control);
 
-                        lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
+                        // Good time to send initial patch.
+                        channel.SendPatch();
+
+                        //lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
 
                         // Adjust positioning.
                         y += control.Height + 5;
-
-                        // Send patch maybe. These can change per pattern.
-                        _player.SendPatch(chnum, pinfo.Patches[i]);
                     }
                 }
+
+
+                //was:
+                //for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+                //{
+                //    int chnum = i + 1;
+
+                //    var chEvents = pinfo.GetFilteredEvents(new List<int>() { chnum }).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
+
+                //    // Is this channel pertinent?
+                //    if (chEvents.Any())
+                //    {
+                //        _channelManager.SetEvents(chnum, chEvents);
+
+                //        // Make new control.
+                //        ChannelControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
+
+                //        // Bind to internal channel object.
+                //        _channelManager.Bind(chnum, control);
+
+                //        // Now init the control - after binding!
+                //        control.Patch = pinfo.Patches[i];
+                //        //control.IsDrums = GetDrumChannels().Contains(chnum);
+
+                //        control.ChannelChangeEvent += Control_ChannelChange;
+                //        Controls.Add(control);
+                //        _channelControls.Add(control);
+
+                //        lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
+
+                //        // Adjust positioning.
+                //        y += control.Height + 5;
+
+                //        // Send patch maybe. These can change per pattern.
+                //        _player.SendPatch(chnum, pinfo.Patches[i]);
+                //    }
+                //}
             }
 
             // Update bar.
+            var tot = _channels.TotalSubdivs();
             barBar.Start = new(0);
-            barBar.End = new(_channelManager.TotalSubdivs - 1);
-            barBar.Length = new(_channelManager.TotalSubdivs);
+            barBar.End = new(tot - 1);
+            barBar.Length = new(tot);
             barBar.Current = new(0);
 
             UpdateDrumChannels();
