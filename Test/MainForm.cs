@@ -29,14 +29,11 @@ namespace MidiLib.Test
         /// <summary>All the channels - key is user assigned name.</summary>
         readonly Dictionary<string, Channel> _channels = new();
 
-        /// <summary>Midi player.</summary>
-        readonly MidiPlayer _player;
-
         /// <summary>Midi output.</summary>
-        readonly MidiSender _sender;
+        readonly IMidiOutputDevice _outputDevice;
 
         /// <summary>Midi input.</summary>
-        readonly MidiListener _listener;
+        readonly IMidiInputDevice? _inputDevice;
 
         /// <summary>The fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -61,23 +58,8 @@ namespace MidiLib.Test
         /// <summary>Cosmetics.</summary>
         readonly Color _controlColor = Color.Aquamarine;
 
-        /// <summary>My midi out.</summary>
-        readonly string _midiOutDeviceName = "VirtualMIDISynth #1";
-
-        /// <summary>My midi in.</summary>
-        readonly string _midiInDeviceName = "MPK mini";
-
         /// <summary>Where to put things.</summary>
-        readonly string _outPath = @"..\..\out";
-
-        /// <summary>Use this if not supplied.</summary>
-        readonly int _defaultTempo = 100;
-
-        /// <summary>Actual 1-based midi channel number.</summary>
-        readonly int _kbdChannelNumber = 1;
-
-        /// <summary>Current patch.</summary>
-        readonly int _kbdPatch = 0;
+        readonly string _outPath = @"..\..\work";
         #endregion
 
         #region Lifecycle
@@ -134,25 +116,40 @@ namespace MidiLib.Test
                 cmbDrumChannel2.Items.Add(i);
             }
 
-            // Set up midi devices. TODOX2 should get from settings, and create vk and bb.
-            _sender = new(_midiOutDeviceName);
-            _player = new(_sender, _channelManager);
-            _listener = new(_midiInDeviceName);
-            _listener.CaptureEnable = _listener.Valid;
-            _player.SendPatch(_kbdChannelNumber, _kbdPatch);
-            bb.InputEvent += Virtual_InputEvent;
-            vkey.InputEvent += Virtual_InputEvent;
+            // Set up input device.
+            switch (_settings.InputDevice)
+            {
+                case nameof(VirtualKeyboard):
+                    vkey.InputEvent += Listener_InputEvent;
+                    _inputDevice = vkey;
+                    break;
+
+                case nameof(BingBong):
+                    bb.InputEvent += Listener_InputEvent;
+                    _inputDevice = bb;
+                    break;
+
+                case "":
+                    // No input device - ignore.
+                    break;
+
+                default:
+                    // Should be a real device.
+                    MidiListener ml = new(_settings.InputDevice);
+                    ml.InputEvent += Listener_InputEvent;
+                    _inputDevice = ml;
+                    break;
+            }
+
+            // Set up output device.
+            MidiSender ms = new(_settings.OutputDevice);
+            _outputDevice = ms;
 
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop); };
             btnRewind.Click += (_, __) => { UpdateState(PlayState.Rewind); };
-            btnKillMidi.Click += (_, __) => { _player.KillAll(); };
-            btnLogMidi.Click += (_, __) => { _player.LogMidi = btnLogMidi.Checked; };
+            btnKillMidi.Click += (_, __) => { btnPlay.Checked = false; _channels.Values.ForEach(ch => ch.Kill()); };
             nudTempo.ValueChanged += (_, __) => { SetTimer(); };
-            sldVolume.ValueChanged += (_, __) => { _player.Volume = sldVolume.Value; };
-
-            // Set up timer.
-            nudTempo.Value = _defaultTempo;
         }
 
         /// <summary>
@@ -161,23 +158,36 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            if (!_player.Valid)
+            bool ok = true;
+            if(_inputDevice is not null)
             {
-                _logger.Error($"Something wrong with your midi output device:{_midiOutDeviceName}");
+                if (!_inputDevice.Valid)
+                {
+                    _logger.Error($"Something wrong with your input device:{_inputDevice.DeviceName}");
+                    ok = false;
+                }
+                else
+                {
+                    _inputDevice.CaptureEnable = true;
+                }
             }
 
-            if (!_listener.Valid)
+            if (!_outputDevice.Valid)
             {
-                _logger.Error($"Something wrong with your midi input device:{_midiInDeviceName}");
+                _logger.Error($"Something wrong with your output device:{_outputDevice.DeviceName}");
+                ok = false;
             }
 
             // MidiTimeTest();
 
-            // Look for filename passed in.
-            string[] args = Environment.GetCommandLineArgs();
-            if (args.Length > 1)
+            if(ok)
             {
-                OpenFile(args[1]);
+                // Look for filename passed in.
+                string[] args = Environment.GetCommandLineArgs();
+                if (args.Length > 1)
+                {
+                    OpenFile(args[1]);
+                }
             }
         }
 
@@ -204,8 +214,8 @@ namespace MidiLib.Test
             // Wait a bit in case there are some lingering events.
             System.Threading.Thread.Sleep(100);
 
-            _player.Dispose();
-            _listener.Dispose();
+            _inputDevice?.Dispose();
+            _outputDevice?.Dispose();
 
             if (disposing && (components is not null))
             {
@@ -262,36 +272,35 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Control_ChannelChangeEvent(object? sender, ChannelChangeEventArgs e)
         {
-            ChannelControl chc = (ChannelControl)sender!;
+            Channel channel = ((ChannelControl)sender!).BoundChannel;
 
             if (e.StateChange)
             {
-                switch (chc.State)
+                switch (channel.State)
                 {
                     case ChannelState.Normal:
                         break;
 
                     case ChannelState.Solo:
                         // Mute any other non-solo channels.
-                        for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+                        _channels.Values.ForEach(ch =>
                         {
-                            int chnum = i + 1;
-                            if (chnum != chc.ChannelNumber && chc.State != ChannelState.Solo)
+                            if (channel.ChannelNumber != ch.ChannelNumber && channel.State != ChannelState.Solo)
                             {
-                                _player.Kill(chnum);
+                                channel.Kill();
                             }
-                        }
+                        });
                         break;
 
                     case ChannelState.Mute:
-                        _player.Kill(chc.ChannelNumber);
+                        channel.Kill();
                         break;
                 }
             }
 
-            if (e.PatchChange && chc.Patch >= 0)
+            if (e.PatchChange && channel.Patch >= 0)
             {
-                _player.SendPatch(chc.ChannelNumber, chc.Patch);
+                channel.SendPatch();
             }
         }
         #endregion
@@ -303,7 +312,6 @@ namespace MidiLib.Test
         void Play()
         {
             _mmTimer.Start();
-            _player.Run(true);
         }
 
         /// <summary>
@@ -312,7 +320,6 @@ namespace MidiLib.Test
         void Stop()
         {
             _mmTimer.Stop();
-            _player.Run(false);
         }
 
         /// <summary>
@@ -320,7 +327,6 @@ namespace MidiLib.Test
         /// </summary>
         void Rewind()
         {
-            _player.CurrentSubdiv = 0;
             barBar.Current = new(0);
         }
 
@@ -331,7 +337,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-            _player.CurrentSubdiv = barBar.Current.TotalSubdivs;
+            //_player.CurrentSubdiv = barBar.Current.TotalSubdivs;
         }
         #endregion
 
@@ -359,7 +365,7 @@ namespace MidiLib.Test
                 _mdata = new MidiDataFile();
 
                 // Process the file. Set the default tempo from preferences.
-                _mdata.Read(fn, _defaultTempo, false);
+                _mdata.Read(fn, 100, false);
 
                 // Init new stuff with contents of file/pattern.
                 lbPatterns.Items.Clear();
@@ -405,6 +411,9 @@ namespace MidiLib.Test
                 Text = $"Midi Lib Test - {fn}";
 
                 lbPatterns.SelectedIndex = 0;
+
+                // Set up timer default.
+                nudTempo.Value = 100;
             }
             catch (Exception ex)
             {
@@ -424,9 +433,10 @@ namespace MidiLib.Test
         /// <param name="pinfo"></param>
         void LoadPattern(PatternInfo? pinfo)
         {
-            _player.Reset();
+            Stop();
+            Rewind();
 
-            // Clean out our collections.
+            // Clean out our current elements.
             _channelControls.ForEach(c =>
             {
                 Controls.Remove(c);
@@ -435,6 +445,7 @@ namespace MidiLib.Test
             _channelControls.Clear();
             _channels.Clear();
 
+            // Load the new one.
             if (pinfo is null)
             {
                 _logger.Error($"Invalid pattern!");
@@ -442,13 +453,12 @@ namespace MidiLib.Test
             else
             {
                 // Create the new controls.
-                int lastSubdiv = 0;
                 int x = lbPatterns.Right + 5;
                 int y = lbPatterns.Top;
 
-
                 foreach(int chnum in pinfo.ChannelNumbers)
                 {
+                    // Get events for the channel.
                     var chEvents = pinfo.GetFilteredEvents(new List<int>() { chnum }).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
 
                     // Is this channel pertinent?
@@ -465,10 +475,10 @@ namespace MidiLib.Test
                             Patch = pinfo.Patches[chnum - 1],
                             IsDrums = chnum == MidiDefs.DEFAULT_DRUM_CHANNEL,
                             Selected = false,
-               //TODOX1             Device = _outputDevices[chspec.DeviceId]
+                            Device = _outputDevice
                         };
-                        channel.SetEvents(chEvents);
                         _channels.Add(channel.ChannelName, channel);
+                        channel.SetEvents(chEvents);
 
                         // Make new control and bind to channel.
                         ChannelControl control = new()
@@ -484,13 +494,12 @@ namespace MidiLib.Test
                         // Good time to send initial patch.
                         channel.SendPatch();
 
-                        //lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
-
                         // Adjust positioning.
                         y += control.Height + 5;
                     }
                 }
 
+                nudTempo.Value = pinfo.Tempo;
 
                 //was:
                 //for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
@@ -577,10 +586,8 @@ namespace MidiLib.Test
         {
             try
             {
-                // Bump time. Check for end of play. Client will take care of transport control.
-                barBar.IncrementCurrent(1);
-
-                if (_player.DoNextStep())
+                // Check for end of play. Client will take care of transport control.
+                if (DoNextStep())
                 {
                     // Done playing. Bump over to main thread.
                     this.InvokeIfRequired(_ => UpdateState(PlayState.Complete));
@@ -591,6 +598,76 @@ namespace MidiLib.Test
                 MessageBox.Show(ex.Message);
             }
         }
+
+        /// <summary>
+        /// Synchronously outputs the next midi events. Does solo/mute.
+        /// This is running on the background thread.
+        /// </summary>
+        /// <returns>True if sequence completed.</returns>
+        public bool DoNextStep()
+        {
+            bool done = false;
+
+            // Any soloes?
+            bool anySolo = _channels.AnySolo();
+
+            // Process each channel.
+            foreach (var ch in _channels.Values)
+            {
+                // Look for events to send. Any explicit solos?
+                if (ch.State == ChannelState.Solo || (!anySolo && ch.State == ChannelState.Normal))
+                {
+                    // Process any sequence steps.
+                    var playEvents = ch.GetEvents(barBar.Current.TotalSubdivs);
+                    foreach (var mevt in playEvents)
+                    {
+                        switch (mevt)
+                        {
+                            case NoteOnEvent evt:
+                                if (ch.IsDrums && evt.Velocity == 0)
+                                {
+                                    // Skip drum noteoffs as windows GM doesn't like them.
+                                }
+                                else
+                                {
+                                    // Adjust volume. Redirect drum channel to default.
+                                    NoteOnEvent ne = new(
+                                        evt.AbsoluteTime,
+                                        ch.IsDrums ? MidiDefs.DEFAULT_DRUM_CHANNEL : evt.Channel,
+                                        evt.NoteNumber,
+                                        Math.Min((int)(evt.Velocity * sldVolume.Value * ch.Volume), MidiDefs.MAX_MIDI),
+                                        evt.OffEvent is null ? 0 : evt.NoteLength); // Fix NAudio NoteLength bug.
+
+                                    ch.SendEvent(ne);
+                                }
+                                break;
+
+                            case NoteEvent evt: // aka NoteOff
+                                if (ch.IsDrums)
+                                {
+                                    // Skip drum noteoffs as windows GM doesn't like them.
+                                }
+                                else
+                                {
+                                    ch.SendEvent(evt);
+                                }
+                                break;
+
+                            default:
+                                // Everything else as is.
+                                ch.SendEvent(mevt);
+                                break;
+                        }
+                    }
+                }
+            }
+
+            // Bump time. Check for end of play.
+            done = barBar.IncrementCurrent(1);
+
+            return done;
+        }
+
         #endregion
 
         #region Drum channel
@@ -874,15 +951,18 @@ namespace MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Virtual_InputEvent(object? sender, InputEventArgs e)
+        void Listener_InputEvent(object? sender, InputEventArgs e)
         {
-            _logger.Debug($"VirtDev N:{e.Note} V:{e.Value}");
+            _logger.Debug($"Listener:{sender} Note:{e.Note} Controller:{e.Controller} Value:{e.Value}");
 
+            var channel = _channels["chan4"]; //TODOX1 how to pick? add a channel just for this?
+
+            // Translate and pass to output.
             NoteEvent nevt = e.Value > 0 ?
-                new NoteOnEvent(0, _kbdChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Value % MidiDefs.MAX_MIDI, 0) :
-                new NoteEvent(0, _kbdChannelNumber, MidiCommandCode.NoteOff, e.Note, 0);
+               new NoteOnEvent(0, channel.ChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Value % MidiDefs.MAX_MIDI, 0) :
+               new NoteEvent(0, channel.ChannelNumber, MidiCommandCode.NoteOff, e.Note, 0);
 
-            _player.SendMidi(nevt);
+            channel.SendEvent(nevt);
         }
         #endregion
     }
@@ -895,10 +975,22 @@ namespace MidiLib.Test
         [JsonConverter(typeof(JsonColorConverter))]
         public Color BackColor { get; set; } = Color.AliceBlue;
 
-        [DisplayName("Ignore Warnings")]
-        [Description("Ignore compiler warnings otherwise treat them as errors.")]
+        [DisplayName("Ignore Me")]
+        [Description("I do nothing.")]
         [Browsable(true)]
-        public bool IgnoreWarnings { get; set; } = true;
+        public bool IgnoreMe { get; set; } = true;
+
+        [DisplayName("Input Device")]
+        [Description("Valid device if handling input.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(DeviceTypeConverter))]
+        public string InputDevice { get; set; } = "";
+
+        [DisplayName("Output Device")]
+        [Description("Valid device if sending output.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(DeviceTypeConverter))]
+        public string OutputDevice { get; set; } = "";
 
         [DisplayName("Midi Settings")]
         [Description("Edit midi settings.")]

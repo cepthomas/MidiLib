@@ -76,7 +76,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Construct a BarTime from Beat.Subdiv representation as a double. Subdiv is limited to 8 max.
+        /// Construct a BarTime from Beat.Subdiv representation as a double. Subdiv can be 0 -> 7.
         /// </summary>
         /// <param name="beat"></param>
         /// <returns>New BarTime.</returns>
@@ -92,9 +92,8 @@ namespace MidiLib
             }
 
             // Scale subdivs to native.
-            subdivs = subdivs * Definitions.InternalPPQ / 8;
-            var totalSubdivs = beats * MidiSettings.LibSettings.SubdivsPerBeat + subdivs;
-            return new(totalSubdivs);
+            subdivs = subdivs * MidiSettings.LibSettings.InternalPPQ / 8;
+            TotalSubdivs = beats * MidiSettings.LibSettings.SubdivsPerBeat + subdivs;
         }
         #endregion
 

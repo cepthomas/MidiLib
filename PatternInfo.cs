@@ -84,9 +84,8 @@ namespace MidiLib
         {
             ChannelNumbers.Add(evt.ChannelNumber);
 
-            // First scale time.
-            _events.ForEach(e => e.ScaledTime = _mt!.MidiToInternal(e.AbsoluteTime));
-
+            // Scale time.
+            evt.ScaledTime = _mt!.MidiToInternal(evt.AbsoluteTime);
             _events.Add(evt);
 
             if(!_eventsByTime.ContainsKey(evt.ScaledTime))

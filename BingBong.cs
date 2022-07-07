@@ -54,7 +54,7 @@ namespace MidiLib
         public bool CaptureEnable { get; set; }
 
         /// <inheritdoc />
-        public string DeviceName { get; init; }
+        public string DeviceName { get; set; }
 
         /// <inheritdoc />
         public bool Valid { get { return true; } }
@@ -70,19 +70,13 @@ namespace MidiLib
 
         #region Lifecycle
         /// <summary>
-        /// Normal constructor with name.
+        /// Normal constructor.
         /// </summary>
-        public BingBong(string devName)
+        public BingBong()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-            DeviceName = devName;
-        }
-
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public BingBong() : this("BingBong")
-        {
+            Name = "BingBong";
+            DeviceName = "BingBong";
         }
 
         /// <summary>

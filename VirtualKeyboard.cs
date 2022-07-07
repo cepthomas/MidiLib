@@ -27,8 +27,7 @@ namespace MidiLib
         public bool CaptureEnable { get; set; }
 
         /// <inheritdoc />
-        public string DeviceName { get; init; }
-//        public string DeviceName { get { return "VirtualKeyboard"; } }
+        public string DeviceName { get; set; }
 
         /// <inheritdoc />
         public bool Valid { get { return true; } }
@@ -61,31 +60,24 @@ namespace MidiLib
 
         #region Lifecycle
         /// <summary>
-        /// Normal constructor with name.
+        /// Normal constructor.
         /// </summary>
-        public VirtualKeyboard(string devName)
+        public VirtualKeyboard()
         {
             // Intercept all keyboard events.
             // KeyPreview = true;
 
-            DeviceName = devName;
+            DeviceName = "VirtualKeyboard";
+            Name = "VirtualKeyboard";
+            Text = "Virtual Keyboard";
 
             AutoScaleDimensions = new SizeF(6F, 13F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(773, 173);
-            Name = "VirtualKeyboard";
-            Text = "Virtual Keyboard";
 
             CreateKeys();
             CreateKeyMap();
             DrawKeys();
-        }
-
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public VirtualKeyboard() : this("VirtualKeyboard")
-        {
         }
 
         /// <summary>
