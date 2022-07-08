@@ -23,7 +23,7 @@ namespace MidiLib
         /// <param name="patterns">Specific patterns.</param>
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="meta">File meta data to include.</param>
-        public static void ExportAllEvents(string outFileName, List<PatternInfo> patterns, List<Channel> channels, Dictionary<string, int> meta)
+        public static void ExportAllEvents(string outFileName, IEnumerable<PatternInfo> patterns, IEnumerable<Channel> channels, Dictionary<string, int> meta)
         {
             var channelNumbers = channels.Select(ch => ch.ChannelNumber).ToList();
 
@@ -53,7 +53,7 @@ namespace MidiLib
         /// <param name="channels">Specific channnels or all if empty.</param>
         /// <param name="meta">File meta data to include.</param>
         /// <param name="includeAll">False if just notes or true if everything.</param>
-        public static void ExportGroupedEvents(string outFileName, PatternInfo pattern, List<Channel> channels, Dictionary<string, int> meta, bool includeAll)
+        public static void ExportGroupedEvents(string outFileName, PatternInfo pattern, IEnumerable<Channel> channels, Dictionary<string, int> meta, bool includeAll)
         {
             var channelNumbers = channels.Select(ch => ch.ChannelNumber).ToList();
             // Special handling of drums.

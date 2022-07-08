@@ -18,7 +18,7 @@ namespace MidiLib
     /// <summary>
     /// Experimental midi controller.
     /// </summary>
-    public partial class BingBong : UserControl, IMidiInputDevice
+    public partial class BingBong : UserControl, IInputDevice
     {
         #region Fields
         /// <summary>Background image data.</summary>

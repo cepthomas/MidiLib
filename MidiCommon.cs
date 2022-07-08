@@ -17,7 +17,24 @@ namespace MidiLib
     public enum SnapType { Bar, Beat, Subdiv }
     #endregion
 
-    #region Special event types
+    #region Definitions
+    public class VolumeDefs
+    {
+        /// <summary>Corresponds to midi velocity = 0.</summary>
+        public const double MIN = 0.0;
+
+        /// <summary>Corresponds to midi velocity = 127.</summary>
+        public const double MAX = 1.0;
+
+        /// <summary>Default value.</summary>
+        public const double DEFAULT = 0.8;
+
+        /// <summary>Allow UI controls some more headroom.</summary>
+        public const double MAX_GAIN = 2.0;
+    }
+    #endregion
+
+    #region Special internal types
     /// <summary>Custom default type to avoid handling null everywhere.</summary>
     public class NullMidiEvent : MidiEvent
     {
@@ -54,6 +71,16 @@ namespace MidiLib
         {
             return $"FunctionMidiEvent: {base.ToString()} function:{ScriptFunction}";
         }
+    }
+
+    /// <summary>Sink that doesn't do anything.</summary>
+    public sealed class NullOutputDevice : IOutputDevice
+    {
+        public string DeviceName => "NullOutputDevice";
+        public bool Valid => true;
+        public bool LogEnable { get; set; }
+        public void Dispose() { }
+        public void SendEvent(MidiEvent evt) { }
     }
     #endregion
 
@@ -109,24 +136,7 @@ namespace MidiLib
     }
     #endregion
 
-    #region Definitions
-    public class VolumeDefs
-    {
-        /// <summary>Corresponds to midi velocity = 0.</summary>
-        public const double MIN = 0.0;
-
-        /// <summary>Corresponds to midi velocity = 127.</summary>
-        public const double MAX = 1.0;
-
-        /// <summary>Default value.</summary>
-        public const double DEFAULT = 0.8;
-
-        /// <summary>Allow UI controls some more headroom.</summary>
-        public const double MAX_GAIN = 2.0;
-    }
-    #endregion
-
-
+    #region UI helpers
     /// <summary>Converter for selecting property value from known lists.</summary>
     public class DeviceTypeConverter : TypeConverter
     {
@@ -164,5 +174,5 @@ namespace MidiLib
             return new StandardValuesCollection(rec);
         }
     }
-
+    #endregion
 }

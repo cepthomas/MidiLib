@@ -22,11 +22,17 @@ namespace MidiLib
 
         /// <summary>Adjustment for 0/1-based.</summary>
         int _base = 0;
+
+        /// <summary>Some features are at a lower resolution.</summary>
+        public const int LOW_RES_PPQ = 8;
         #endregion
 
         #region Properties
         /// <summary>The time in subdivs. Always zero-based.</summary>
         public int TotalSubdivs { get; private set; }
+
+        /// <summary>The time in beats. Always zero-based.</summary>
+        public int TotalBeats { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat; } }
 
         /// <summary>The bar number.</summary>
         public int Bar { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBar + _base; } }
@@ -76,7 +82,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Construct a BarTime from Beat.Subdiv representation as a double. Subdiv can be 0 -> 7.
+        /// Construct a BarTime from Beat.Subdiv representation as a double. Subdiv is LOW_RES_PPQ.
         /// </summary>
         /// <param name="beat"></param>
         /// <returns>New BarTime.</returns>
@@ -86,13 +92,13 @@ namespace MidiLib
             var beats = (int)integral;
             var subdivs = (int)Math.Round(fractional * 10.0);
 
-            if (subdivs >= 8)
+            if (subdivs >= LOW_RES_PPQ)
             {
                 throw new Exception($"Invalid subdiv value: {beat}");
             }
 
             // Scale subdivs to native.
-            subdivs = subdivs * MidiSettings.LibSettings.InternalPPQ / 8;
+            subdivs = subdivs * MidiSettings.LibSettings.InternalPPQ / LOW_RES_PPQ;
             TotalSubdivs = beats * MidiSettings.LibSettings.SubdivsPerBeat + subdivs;
         }
         #endregion

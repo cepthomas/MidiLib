@@ -38,7 +38,7 @@ namespace MidiLib
         }
 
         /// <summary>Associated device.</summary>
-        public IMidiOutputDevice? Device { get; set; } = null;
+        public IOutputDevice? Device { get; set; } = null;
 
         /// <summary>Optional UI label/reference.</summary>
         public string ChannelName { get; set; } = "";
@@ -162,7 +162,6 @@ namespace MidiLib
             Device.SendEvent(evt);
         }
         #endregion
-
     }
 
     /// <summary>Helper extension methods.</summary>

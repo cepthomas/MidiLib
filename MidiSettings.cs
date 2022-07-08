@@ -67,52 +67,5 @@ namespace MidiLib
         public int SubdivsPerBar { get { return InternalPPQ * BeatsPerBar; } }
         #endregion
 
-        // /// <summary>
-        // /// Utility function to make client's life easier.
-        // /// </summary>
-        // /// <returns></returns>
-        // public List<(string id, string name)> GetInputDevices()
-        // {
-        //     var devs = new List<(string, string)>();
-        //     if (InputDevice1 != "")
-        //     {
-        //         devs.Add(("InputDevice1", InputDevice1));
-        //     }
-        //     if (InputDevice2 != "")
-        //     {
-        //         devs.Add(("InputDevice2", InputDevice2));
-        //     }
-        //     if (InputDevice3 != "")
-        //     {
-        //         devs.Add(("InputDevice3", InputDevice3));
-        //     }
-        //     if (InputDevice4 != "")
-        //     {
-        //         devs.Add(("InputDevice4", InputDevice4));
-        //     }
-
-        //     return devs;
-        // }
-
-        // /// <summary>
-        // /// Utility function to make client's life easier.
-        // /// </summary>
-        // /// <returns></returns>
-        // public List<(string id, string name)> GetOutputDevices()
-        // {
-        //     var devs = new List<(string, string)>();
-        //     if (OutputDevice1 != "")
-        //     {
-        //         devs.Add(("OutputDevice1", OutputDevice1));
-        //     }
-        //     if (OutputDevice2 != "")
-        //     {
-        //         devs.Add(("OutputDevice2", OutputDevice2));
-        //     }
-
-        //     return devs;
-        // }
-
     }
-
 }

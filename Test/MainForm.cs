@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
@@ -14,7 +15,6 @@ using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
 using NBagOfTricks.Slog;
-using System.Text.Json.Serialization;
 
 
 namespace MidiLib.Test
@@ -30,10 +30,10 @@ namespace MidiLib.Test
         readonly Dictionary<string, Channel> _channels = new();
 
         /// <summary>Midi output.</summary>
-        readonly IMidiOutputDevice _outputDevice;
+        IOutputDevice _outputDevice = new NullOutputDevice();
 
         /// <summary>Midi input.</summary>
-        readonly IMidiInputDevice? _inputDevice;
+        IInputDevice? _inputDevice;
 
         /// <summary>The fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -116,39 +116,11 @@ namespace MidiLib.Test
                 cmbDrumChannel2.Items.Add(i);
             }
 
-            // Set up input device.
-            switch (_settings.InputDevice)
-            {
-                case nameof(VirtualKeyboard):
-                    vkey.InputEvent += Listener_InputEvent;
-                    _inputDevice = vkey;
-                    break;
-
-                case nameof(BingBong):
-                    bb.InputEvent += Listener_InputEvent;
-                    _inputDevice = bb;
-                    break;
-
-                case "":
-                    // No input device - ignore.
-                    break;
-
-                default:
-                    // Should be a real device.
-                    MidiListener ml = new(_settings.InputDevice);
-                    ml.InputEvent += Listener_InputEvent;
-                    _inputDevice = ml;
-                    break;
-            }
-
-            // Set up output device.
-            MidiSender ms = new(_settings.OutputDevice);
-            _outputDevice = ms;
-
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += (_, __) => { UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop); };
             btnRewind.Click += (_, __) => { UpdateState(PlayState.Rewind); };
             btnKillMidi.Click += (_, __) => { btnPlay.Checked = false; _channels.Values.ForEach(ch => ch.Kill()); };
+            btnLogMidi.CheckedChanged += (_, __) => { _outputDevice.LogEnable = btnLogMidi.Checked; };
             nudTempo.ValueChanged += (_, __) => { SetTimer(); };
         }
 
@@ -158,25 +130,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            bool ok = true;
-            if(_inputDevice is not null)
-            {
-                if (!_inputDevice.Valid)
-                {
-                    _logger.Error($"Something wrong with your input device:{_inputDevice.DeviceName}");
-                    ok = false;
-                }
-                else
-                {
-                    _inputDevice.CaptureEnable = true;
-                }
-            }
-
-            if (!_outputDevice.Valid)
-            {
-                _logger.Error($"Something wrong with your output device:{_outputDevice.DeviceName}");
-                ok = false;
-            }
+            bool ok = CreateDevices();
 
             // MidiTimeTest();
 
@@ -214,8 +168,7 @@ namespace MidiLib.Test
             // Wait a bit in case there are some lingering events.
             System.Threading.Thread.Sleep(100);
 
-            _inputDevice?.Dispose();
-            _outputDevice?.Dispose();
+            DestroyDevices();
 
             if (disposing && (components is not null))
             {
@@ -223,6 +176,74 @@ namespace MidiLib.Test
             }
 
             base.Dispose(disposing);
+        }
+        #endregion
+
+        #region Devices
+        /// <summary>
+        /// Create all I/O devices from user settings.
+        /// </summary>
+        /// <returns>Success</returns>
+        bool CreateDevices()
+        {
+            bool ok = true;
+
+            // First...
+            DestroyDevices();
+
+            // Set up input device.
+            switch (_settings.InputDevice)
+            {
+                case nameof(VirtualKeyboard):
+                    vkey.InputEvent += Listener_InputEvent;
+                    _inputDevice = vkey;
+                    break;
+
+                case nameof(BingBong):
+                    bb.InputEvent += Listener_InputEvent;
+                    _inputDevice = bb;
+                    break;
+
+                case "":
+                    // No input device - ignore.
+                    break;
+
+                default:
+                    // Should be a real device.
+                    MidiListener ml = new(_settings.InputDevice);
+
+                    if (!ml.Valid)
+                    {
+                        _logger.Error($"Something wrong with your input device:{_settings.InputDevice}");
+                        ok = false;
+                    }
+                    else
+                    {
+                        ml.CaptureEnable = true;
+                        ml.InputEvent += Listener_InputEvent;
+                        _inputDevice = ml;
+                    }
+                    break;
+            }
+
+            // Set up output device.
+            _outputDevice = new MidiSender(_settings.OutputDevice);
+            if (!_outputDevice.Valid)
+            {
+                _logger.Error($"Something wrong with your output device:{_outputDevice.DeviceName}");
+                ok = false;
+            }
+
+            return ok;
+        }
+
+        /// <summary>
+        /// Clean up.
+        /// </summary>
+        void DestroyDevices()
+        {
+            _inputDevice?.Dispose();
+            _outputDevice?.Dispose();
         }
         #endregion
 
@@ -469,13 +490,13 @@ namespace MidiLib.Test
                         {
                             ChannelName = $"chan{chnum}",
                             ChannelNumber = chnum,
-                            DeviceId = "OutputDevice1",
+                            Device = _outputDevice,
+                            DeviceId = _outputDevice.DeviceName,
                             Volume = VolumeDefs.DEFAULT,
                             State = ChannelState.Normal,
                             Patch = pinfo.Patches[chnum - 1],
                             IsDrums = chnum == MidiDefs.DEFAULT_DRUM_CHANNEL,
                             Selected = false,
-                            Device = _outputDevice
                         };
                         _channels.Add(channel.ChannelName, channel);
                         channel.SetEvents(chEvents);
@@ -499,43 +520,28 @@ namespace MidiLib.Test
                     }
                 }
 
+                // Add a channel for the input device.
+                if(_inputDevice is not null && _inputDevice.Valid)
+                {
+                    int chnum = 16;
+                    Channel channel = new()
+                    {
+                        ChannelName = $"chan16",
+                        ChannelNumber = chnum,
+                        Device = _outputDevice,
+                        DeviceId = _outputDevice.DeviceName,
+                        Volume = VolumeDefs.DEFAULT,
+                        State = ChannelState.Normal,
+                        Patch = MidiDefs.GetInstrumentNumber("OrchestralHarp"),
+                        IsDrums = false,
+                        Selected = false,
+                    };
+                    _channels.Add(channel.ChannelName, channel);
+                    channel.SendPatch();
+                }
+
+                // Set timer.
                 nudTempo.Value = pinfo.Tempo;
-
-                //was:
-                //for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-                //{
-                //    int chnum = i + 1;
-
-                //    var chEvents = pinfo.GetFilteredEvents(new List<int>() { chnum }).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
-
-                //    // Is this channel pertinent?
-                //    if (chEvents.Any())
-                //    {
-                //        _channelManager.SetEvents(chnum, chEvents);
-
-                //        // Make new control.
-                //        ChannelControl control = new() { Location = new(x, y), Name = $"channel{chnum}" };
-
-                //        // Bind to internal channel object.
-                //        _channelManager.Bind(chnum, control);
-
-                //        // Now init the control - after binding!
-                //        control.Patch = pinfo.Patches[i];
-                //        //control.IsDrums = GetDrumChannels().Contains(chnum);
-
-                //        control.ChannelChangeEvent += Control_ChannelChange;
-                //        Controls.Add(control);
-                //        _channelControls.Add(control);
-
-                //        lastSubdiv = Math.Max(lastSubdiv, control.MaxSubdiv);
-
-                //        // Adjust positioning.
-                //        y += control.Height + 5;
-
-                //        // Send patch maybe. These can change per pattern.
-                //        _player.SendPatch(chnum, pinfo.Patches[i]);
-                //    }
-                //}
             }
 
             // Update bar.
@@ -955,13 +961,11 @@ namespace MidiLib.Test
         {
             _logger.Debug($"Listener:{sender} Note:{e.Note} Controller:{e.Controller} Value:{e.Value}");
 
-            var channel = _channels["chan4"]; //TODOX1 how to pick? add a channel just for this?
-
             // Translate and pass to output.
+            var channel = _channels["chan16"];
             NoteEvent nevt = e.Value > 0 ?
                new NoteOnEvent(0, channel.ChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Value % MidiDefs.MAX_MIDI, 0) :
                new NoteEvent(0, channel.ChannelNumber, MidiCommandCode.NoteOff, e.Note, 0);
-
             channel.SendEvent(nevt);
         }
         #endregion

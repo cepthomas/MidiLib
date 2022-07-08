@@ -184,10 +184,12 @@ namespace MidiLib
             else if (e.X != _lastXPos)
             {
                 BarTime bs = new();
-                bs.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
-                string sdef = GetTimeDef(e.X);
-                string stime = bs.Format();
-                _toolTip.SetToolTip(this, $"{stime} {sdef}");
+                var vv = MidiSettings.LibSettings;
+
+                var subdiv = GetSubdivFromMouse(e.X);
+                bs.SetRounded(subdiv, MidiSettings.LibSettings.Snap);
+                string sdef = GetTimeDef(bs.TotalBeats);
+                _toolTip.SetToolTip(this, $"{bs.Format()} {sdef}");
                 _lastXPos = e.X;
             }
 

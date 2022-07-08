@@ -14,7 +14,7 @@ namespace MidiLib
     /// <summary>
     /// Virtual keyboard control borrowed from Leslie Sanford with extras.
     /// </summary>
-    public partial class VirtualKeyboard : UserControl, IMidiInputDevice
+    public partial class VirtualKeyboard : UserControl, IInputDevice
     {
         #region Properties
         /// <summary>Draw the names on the keys.</summary>

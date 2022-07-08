@@ -23,7 +23,7 @@ namespace MidiLib
     }
 
     /// <summary>Abstraction layer to support input devices.</summary>
-    public interface IMidiInputDevice : IDevice
+    public interface IInputDevice : IDevice
     {
         #region Properties
         /// <summary>Capture on/off.</summary>
@@ -37,7 +37,7 @@ namespace MidiLib
     }
 
     /// <summary>Abstraction layer to support output devices.</summary>
-    public interface IMidiOutputDevice : IDevice
+    public interface IOutputDevice : IDevice
     {
         #region Properties
 

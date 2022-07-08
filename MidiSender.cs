@@ -15,7 +15,7 @@ namespace MidiLib
     /// <summary>
     /// A midi output layer - associated with a single device.
     /// </summary>
-    public sealed class MidiSender : IMidiOutputDevice
+    public sealed class MidiSender : IOutputDevice
     {
         #region Fields
         /// <summary>Low level midi output device.</summary>
