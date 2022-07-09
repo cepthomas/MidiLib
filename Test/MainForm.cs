@@ -83,7 +83,7 @@ namespace MidiLib.Test
 
             // Logger. Note: you can create this here but don't call any _logger functions until loaded.
             LogManager.MinLevelFile = LogLevel.Trace;
-            LogManager.MinLevelNotif = LogLevel.Trace;
+            LogManager.MinLevelNotif = LogLevel.Debug;
             LogManager.LogEvent += LogManager_LogEvent;
             LogManager.Run(Path.Join(_outPath, "log.txt"), 5000);
 
@@ -192,7 +192,7 @@ namespace MidiLib.Test
             DestroyDevices();
 
             // Set up input device.
-            switch (_settings.InputDevice)
+            switch (_settings.MidiSettings.InputDevice)
             {
                 case nameof(VirtualKeyboard):
                     vkey.InputEvent += Listener_InputEvent;
@@ -210,11 +210,11 @@ namespace MidiLib.Test
 
                 default:
                     // Should be a real device.
-                    MidiListener ml = new(_settings.InputDevice);
+                    MidiListener ml = new(_settings.MidiSettings.InputDevice);
 
                     if (!ml.Valid)
                     {
-                        _logger.Error($"Something wrong with your input device:{_settings.InputDevice}");
+                        _logger.Error($"Something wrong with your input device:{_settings.MidiSettings.InputDevice}");
                         ok = false;
                     }
                     else
@@ -227,7 +227,7 @@ namespace MidiLib.Test
             }
 
             // Set up output device.
-            _outputDevice = new MidiSender(_settings.OutputDevice);
+            _outputDevice = new MidiSender(_settings.MidiSettings.OutputDevice);
             if (!_outputDevice.Valid)
             {
                 _logger.Error($"Something wrong with your output device:{_outputDevice.DeviceName}");
@@ -673,7 +673,6 @@ namespace MidiLib.Test
 
             return done;
         }
-
         #endregion
 
         #region Drum channel
@@ -959,7 +958,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Listener_InputEvent(object? sender, InputEventArgs e)
         {
-            _logger.Debug($"Listener:{sender} Note:{e.Note} Controller:{e.Controller} Value:{e.Value}");
+            _logger.Trace($"Listener:{sender} Note:{e.Note} Controller:{e.Controller} Value:{e.Value}");
 
             // Translate and pass to output.
             var channel = _channels["chan16"];
@@ -983,18 +982,6 @@ namespace MidiLib.Test
         [Description("I do nothing.")]
         [Browsable(true)]
         public bool IgnoreMe { get; set; } = true;
-
-        [DisplayName("Input Device")]
-        [Description("Valid device if handling input.")]
-        [Browsable(true)]
-        [TypeConverter(typeof(DeviceTypeConverter))]
-        public string InputDevice { get; set; } = "";
-
-        [DisplayName("Output Device")]
-        [Description("Valid device if sending output.")]
-        [Browsable(true)]
-        [TypeConverter(typeof(DeviceTypeConverter))]
-        public string OutputDevice { get; set; } = "";
 
         [DisplayName("Midi Settings")]
         [Description("Edit midi settings.")]

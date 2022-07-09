@@ -27,10 +27,28 @@ namespace MidiLib
         static MidiSettings? _settings = null;
 
         #region Properties - persisted editable
+        [DisplayName("Input Device")]
+        [Description("Valid device if handling input.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(DeviceTypeConverter))]
+        public string InputDevice { get; set; } = "";
+
+        [DisplayName("Output Device")]
+        [Description("Valid device if sending output.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(DeviceTypeConverter))]
+        public string OutputDevice { get; set; } = "";
+
         [DisplayName("Default Tempo")]
         [Description("Use this tempo if it's not in the file.")]
         [Browsable(true)]
         public int DefaultTempo { get; set; } = 100;
+
+        /// <summary>How to snap.</summary>
+        [DisplayName("Snap Type")]
+        [Description("How to snap to grid.")]
+        [Browsable(true)]
+        public SnapType Snap { get; set; } = SnapType.Beat;
 
         [DisplayName("Internal Time Resolution")]
         [Description("aka DeltaTicksPerQuarterNote or subdivisions per beat.")]
@@ -42,12 +60,6 @@ namespace MidiLib
         //[Description("Use 0:0:0 time instead of 1:1:1.")]
         //[Browsable(true)]
         //public bool ZeroBased { get; set; } = false; // TODO Implement later maybe. For now it's always true.
-
-        /// <summary>How to snap.</summary>
-        [DisplayName("Snap Type")]
-        [Description("How to snap to grid.")]
-        [Browsable(true)]
-        public SnapType Snap { get; set; } = SnapType.Beat;
         #endregion
 
         #region Properties - internal
@@ -66,6 +78,5 @@ namespace MidiLib
         [JsonIgnore()]
         public int SubdivsPerBar { get { return InternalPPQ * BeatsPerBar; } }
         #endregion
-
     }
 }

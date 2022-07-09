@@ -188,7 +188,7 @@ namespace MidiLib
 
                 var subdiv = GetSubdivFromMouse(e.X);
                 bs.SetRounded(subdiv, MidiSettings.LibSettings.Snap);
-                string sdef = GetTimeDef(bs.TotalBeats);
+                string sdef = GetTimeDefString(bs.TotalBeats);
                 _toolTip.SetToolTip(this, $"{bs.Format()} {sdef}");
                 _lastXPos = e.X;
             }
@@ -226,6 +226,7 @@ namespace MidiLib
         /// Change current time. 
         /// </summary>
         /// <param name="num">Subdivs/ticks.</param>
+        /// <returns>True if at the end of the sequence.</returns>
         public bool IncrementCurrent(int num)
         {
             bool done = false;
@@ -270,7 +271,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        private string GetTimeDef(int val)
+        private string GetTimeDefString(int val)
         {
             string s = "";
 

@@ -13,8 +13,11 @@ namespace MidiLib
     public class Channel
     {
         #region Fields
-        ///<summary>The collection of playable events for this channel and pattern. The key is the internal subdiv/time.</summary>
+        ///<summary>The collection of playable events for this channel and pattern. Key is the internal subdiv/time.</summary>
         readonly Dictionary<int, List<MidiEvent>> _events = new();
+
+        /// <summary>Things that are executed once and disappear: NoteOffs, script send now. Key is the internal subdiv/time.</summary>
+        readonly Dictionary<int, List<MidiEvent>> _transients = new();
 
         ///<summary>Backing.</summary>
         double _volume = VolumeDefs.DEFAULT;
@@ -39,6 +42,9 @@ namespace MidiLib
 
         /// <summary>Associated device.</summary>
         public IOutputDevice? Device { get; set; } = null;
+
+        /// <summary>Add a ghost note off for note on.</summary>
+        public bool AddNoteOff { get; set; } = false;
 
         /// <summary>Optional UI label/reference.</summary>
         public string ChannelName { get; set; } = "";
@@ -91,6 +97,7 @@ namespace MidiLib
         {
             // Reset.
             _events.Clear();
+            _transients.Clear();
             MaxSubdiv = 0;
 
             State = ChannelState.Normal;
@@ -118,8 +125,53 @@ namespace MidiLib
             return _events.Values;
         }
 
+        /// <summary>
+        /// Process any events for this time.
+        /// </summary>
+        /// <param name="subdiv"></param>
+        public void DoStep(int subdiv)
+        {
+            // Main events.
+            if(_events.ContainsKey(subdiv))
+            {
+                foreach (var evt in _events[subdiv])
+                {
+                    switch (evt)
+                    {
+                        case FunctionMidiEvent fe:
+                            fe.ScriptFunction?.Invoke();
+                            break;
+
+                        default:
+                            SendEvent(evt);
+                            break;
+                    }
+                }
+            }
+
+            // Transient events.
+            if (_transients.ContainsKey(subdiv))
+            {
+                foreach (var evt in _transients[subdiv])
+                {
+                    SendEvent(evt);
+                }
+                _transients.Remove(subdiv);
+            }
+        }
+
+        /// <summary>
+        /// Execute any lingering transients and clear the collection.
+        /// </summary>
+        /// <param name="subdiv">After this time.</param>
+        public void Flush(int subdiv)
+        {
+            _transients.Where(t => t.Key >= subdiv).ForEach(t => t.Value.ForEach(evt => SendEvent(evt)));
+            _transients.Clear();
+        }
+
         /// <summary>Get the next volume.</summary>
-        /// <param name="def"></param>
+        /// <param name="def">Default value.</param>
         /// <returns></returns>
         public double NextVol(double def)
         {
@@ -134,7 +186,21 @@ namespace MidiLib
         /// </summary>
         public void SendPatch()
         {
-            PatchChangeEvent evt = new(0, ChannelNumber, Patch);
+            if(Patch >= MidiDefs.MIN_MIDI && Patch <= MidiDefs.MAX_MIDI)
+            {
+                PatchChangeEvent evt = new(0, ChannelNumber, Patch);
+                SendEvent(evt);
+            }
+        }
+
+        /// <summary>
+        /// Send a controller now.
+        /// </summary>
+        /// <param name="controller"></param>
+        /// <param name="val"></param>
+        public void SendController(MidiController controller, int val)
+        {
+            ControlChangeEvent evt = new(0, ChannelNumber, controller, val);
             SendEvent(evt);
         }
 
@@ -143,8 +209,7 @@ namespace MidiLib
         /// </summary>
         public void Kill()
         {
-            ControlChangeEvent nevt = new(0, ChannelNumber, MidiController.AllNotesOff, 0);
-            SendEvent(nevt);
+            SendController(MidiController.AllNotesOff, 0);
         }
 
         /// <summary>
@@ -159,6 +224,19 @@ namespace MidiLib
                 throw new InvalidOperationException("Device not set");
             }
 
+            // If note on, add a transient note off for later.
+            if(AddNoteOff && evt is NoteOnEvent)
+            {
+                var nevt = evt as NoteOnEvent;
+                int offTime = (int)evt.AbsoluteTime + nevt!.NoteLength;
+                if (!_transients.ContainsKey(offTime))
+                {
+                    _transients.Add(offTime, new());
+                }
+                _transients[offTime].Add(nevt.OffEvent);
+            }
+
+            // Now send it.
             Device.SendEvent(evt);
         }
         #endregion

@@ -99,7 +99,6 @@ namespace MidiLib
                 {
                     case NoteOnEvent evt:
                         int len = evt.OffEvent is null ? 0 : evt.NoteLength; // NAudio NoteLength bug.
-
                         string nname = drumChannelNumbers.Contains(me.MidiEvent.Channel) ?
                            $"{MidiDefs.GetDrumName(evt.NoteNumber)}" :
                            $"{MusicDefinitions.NoteNumberToName(evt.NoteNumber)}";

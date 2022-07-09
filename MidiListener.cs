@@ -60,7 +60,7 @@ namespace MidiLib
             DeviceName = deviceName;
             LogEnable = false;
             
-            // Figure out which midi output device.
+            // Figure out which midi input device.
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
                 if (deviceName == MidiIn.DeviceInfo(i).ProductName)
