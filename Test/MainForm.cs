@@ -192,46 +192,54 @@ namespace MidiLib.Test
             DestroyDevices();
 
             // Set up input device.
-            switch (_settings.MidiSettings.InputDevice)
+            foreach (var dev in _settings.MidiSettings.InputDevices)
             {
-                case nameof(VirtualKeyboard):
-                    vkey.InputEvent += Listener_InputEvent;
-                    _inputDevice = vkey;
-                    break;
+                switch (dev.DeviceName)
+                {
+                    case nameof(VirtualKeyboard):
+                        vkey.InputEvent += Listener_InputEvent;
+                        _inputDevice = vkey;
+                        break;
 
-                case nameof(BingBong):
-                    bb.InputEvent += Listener_InputEvent;
-                    _inputDevice = bb;
-                    break;
+                    case nameof(BingBong):
+                        bb.InputEvent += Listener_InputEvent;
+                        _inputDevice = bb;
+                        break;
 
-                case "":
-                    // No input device - ignore.
-                    break;
+                    default:
+                        // Should be a real device.
+                        MidiInput min = new(dev.DeviceName);
 
-                default:
-                    // Should be a real device.
-                    MidiInput min = new(_settings.MidiSettings.InputDevice);
-
-                    if (!min.Valid)
-                    {
-                        _logger.Error($"Something wrong with your input device:{_settings.MidiSettings.InputDevice}");
-                        ok = false;
-                    }
-                    else
-                    {
-                        min.CaptureEnable = true;
-                        min.InputEvent += Listener_InputEvent;
-                        _inputDevice = min;
-                    }
-                    break;
+                        if (!min.Valid)
+                        {
+                            _logger.Error($"Something wrong with your input device:{dev.DeviceName}");
+                            ok = false;
+                        }
+                        else
+                        {
+                            min.CaptureEnable = true;
+                            min.InputEvent += Listener_InputEvent;
+                            _inputDevice = min;
+                        }
+                        break;
+                }
             }
 
             // Set up output device.
-            _outputDevice = new MidiOutput(_settings.MidiSettings.OutputDevice);
-            if (!_outputDevice.Valid)
+            foreach (var dev in _settings.MidiSettings.OutputDevices)
             {
-                _logger.Error($"Something wrong with your output device:{_outputDevice.DeviceName}");
-                ok = false;
+                switch (dev.DeviceName)
+                {
+                    default:
+                        // Try midi.
+                        _outputDevice = new MidiOutput(dev.DeviceName);
+                        if (!_outputDevice.Valid)
+                        {
+                            _logger.Error($"Something wrong with your output device:{_outputDevice.DeviceName}");
+                            ok = false;
+                        }
+                        break;
+                }
             }
 
             return ok;
@@ -341,6 +349,8 @@ namespace MidiLib.Test
         void Stop()
         {
             _mmTimer.Stop();
+            // Send kill just in case.
+            _channels.Values.ForEach(ch => ch.Kill());
         }
 
         /// <summary>

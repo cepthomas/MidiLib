@@ -30,17 +30,17 @@ namespace MidiLib
         static MidiSettings? _settings = null;
 
         #region Properties - persisted editable
-        [DisplayName("Input Device")]
-        [Description("Valid device if handling input.")]
-        [Browsable(true)]
-        [TypeConverter(typeof(DeviceTypeConverter))]
-        public string InputDevice { get; set; } = "";
+        //[DisplayName("Input Device")]
+        //[Description("Valid device if handling input.")]
+        //[Browsable(true)]
+        //[TypeConverter(typeof(DeviceTypeConverter))]
+        //public string InputDevice { get; set; } = "";
 
-        [DisplayName("Output Device")]
-        [Description("Valid device if sending output.")]
-        [Browsable(true)]
-        [TypeConverter(typeof(DeviceTypeConverter))]
-        public string OutputDevice { get; set; } = "";
+        //[DisplayName("Output Device")]
+        //[Description("Valid device if sending output.")]
+        //[Browsable(true)]
+        //[TypeConverter(typeof(DeviceTypeConverter))]
+        //public string OutputDevice { get; set; } = "";
 
         [DisplayName("Input Devices")]
         [Description("Valid devices if handling input.")]

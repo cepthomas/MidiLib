@@ -55,16 +55,15 @@ namespace MidiLib
                 Dispose();
 
                 // Check for properly formed port.
-                if (int.TryParse(deviceName, out int port))
+                List<string> parts = deviceName.SplitByToken(":");
+                if (parts.Count == 2)
                 {
-                    _oscInput = new NebOsc.Input() { LocalPort = port };
-                    DeviceName = _oscInput.DeviceName;
-                    _oscInput.InputEvent += OscInput_InputEvent;
-                    _oscInput.LogEvent += OscInput_LogEvent;
-
-                    if(!_oscInput.Init())
+                    if (int.TryParse(parts[1], out int port))
                     {
-                        Dispose();
+                        _oscInput = new NebOsc.Input(port);
+                        DeviceName = _oscInput.DeviceName;
+                        _oscInput.InputEvent += OscInput_InputEvent;
+                        _oscInput.LogEvent += OscInput_LogEvent;
                     }
                 }
             }
@@ -188,26 +187,25 @@ namespace MidiLib
         {
             Dispose();
 
-            // Check for properly formed url:port.
-            List<string> parts = deviceName.SplitByToken(":");
-            if (parts.Count == 2)
+            try
             {
-                if (int.TryParse(parts[1], out int port))
+                // Check for properly formed url:port.
+                List<string> parts = deviceName.SplitByToken(":");
+                if (parts.Count == 3)
                 {
-                    string ip = parts[0];
-                    _oscOutput = new NebOsc.Output() { RemoteIP = ip, RemotePort = port };
-
-                    if (_oscOutput.Init())
+                    if (int.TryParse(parts[2], out int port))
                     {
+                        string ip = parts[1];
+                        _oscOutput = new NebOsc.Output(ip, port);
                         DeviceName = _oscOutput.DeviceName;
                         _oscOutput.LogEvent += OscOutput_LogEvent;
                     }
-                    else
-                    {
-                        _logger.Error($"Init OSC out failed");
-                        _oscOutput = null;
-                    }
                 }
+            }
+            catch
+            {
+                _logger.Error($"Init OSC out failed");
+                Dispose();
             }
         }
 

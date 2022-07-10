@@ -30,9 +30,9 @@
         {
             this.components = new System.ComponentModel.Container();
             this.dgvDevices = new System.Windows.Forms.DataGridView();
-            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dgvDevices)).BeginInit();
             this.SuspendLayout();
             // 
@@ -44,18 +44,12 @@
             this.Column2});
             this.dgvDevices.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvDevices.Location = new System.Drawing.Point(0, 0);
+            this.dgvDevices.MultiSelect = false;
             this.dgvDevices.Name = "dgvDevices";
             this.dgvDevices.RowHeadersWidth = 51;
             this.dgvDevices.RowTemplate.Height = 29;
             this.dgvDevices.Size = new System.Drawing.Size(461, 229);
             this.dgvDevices.TabIndex = 0;
-            // 
-            // contextMenuStrip
-            // 
-            this.contextMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(61, 4);
-            this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.DeviceNameMenu_Opening);
             // 
             // Column1
             // 
@@ -74,6 +68,13 @@
             this.Column2.Name = "Column2";
             this.Column2.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
+            // contextMenuStrip
+            // 
+            this.contextMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.contextMenuStrip.Name = "contextMenuStrip";
+            this.contextMenuStrip.Size = new System.Drawing.Size(61, 4);
+            this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.DeviceNameMenu_Opening);
+            // 
             // DevicesEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
@@ -82,6 +83,8 @@
             this.Controls.Add(this.dgvDevices);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Name = "DevicesEditor";
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
             this.Text = "DevicesEditor";
             ((System.ComponentModel.ISupportInitialize)(this.dgvDevices)).EndInit();
             this.ResumeLayout(false);

@@ -63,7 +63,14 @@ namespace MidiLib
         /// <param name="e"></param>
         private void OnDeviceNameMenu_Click(object? sender, EventArgs e)
         {
-            dgvDevices.CurrentCell.Value = sender!.ToString();
+            if(sender!.ToString() == "Delete")
+            {
+                dgvDevices.Rows.RemoveAt(dgvDevices.CurrentCell.RowIndex);
+            }
+            else
+            {
+                dgvDevices.CurrentCell.Value = sender!.ToString();
+            }
         }
 
         /// <summary>
@@ -81,6 +88,8 @@ namespace MidiLib
                     contextMenuStrip.Items.Add(MidiOut.DeviceInfo(i).ProductName, null, OnDeviceNameMenu_Click);
                 }
                 contextMenuStrip.Items.Add("OSC:127.0.0.1:port", null, OnDeviceNameMenu_Click);
+                contextMenuStrip.Items.Add(new ToolStripSeparator());
+                contextMenuStrip.Items.Add("Delete", null, OnDeviceNameMenu_Click);
             }
             else
             {
@@ -89,8 +98,10 @@ namespace MidiLib
                     contextMenuStrip.Items.Add(MidiOut.DeviceInfo(i).ProductName, null, OnDeviceNameMenu_Click);
                 }
                 contextMenuStrip.Items.Add("OSC:port", null, OnDeviceNameMenu_Click);
-                contextMenuStrip.Items.Add("VirtualKeyboard", null, OnDeviceNameMenu_Click);
-                contextMenuStrip.Items.Add("BingBong", null, OnDeviceNameMenu_Click);
+                contextMenuStrip.Items.Add(nameof(VirtualKeyboard), null, OnDeviceNameMenu_Click);
+                contextMenuStrip.Items.Add(nameof(BingBong), null, OnDeviceNameMenu_Click);
+                contextMenuStrip.Items.Add(new ToolStripSeparator());
+                contextMenuStrip.Items.Add("Delete", null, OnDeviceNameMenu_Click);
             }
         }
     }
@@ -150,7 +161,7 @@ namespace MidiLib
         }
     }
 
-    /// <summary>Converter for selecting property value from known lists. TODOX go away</summary>
+    /// <summary>Converter for selecting property value from known lists. TODO can be removed.</summary>
     public class DeviceTypeConverter : TypeConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) { return true; }
@@ -161,7 +172,7 @@ namespace MidiLib
         {
             List<string>? rec = null;
 
-            if (context!.PropertyDescriptor.Name.Contains("InputDevice"))//TODOX also OSC input = 1234, output = 123.456.0.0:5678.
+            if (context!.PropertyDescriptor.Name.Contains("InputDevice"))
             {
                 rec = new() { "" };
                 for (int devindex = 0; devindex < MidiIn.NumberOfDevices; devindex++)
