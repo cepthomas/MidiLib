@@ -77,7 +77,7 @@ namespace MidiLib
     public sealed class NullOutputDevice : IOutputDevice
     {
         public string DeviceName => "NullOutputDevice";
-        public bool Valid => true;
+        public bool Valid { get { return false; } }
         public bool LogEnable { get; set; }
         public void Dispose() { }
         public void SendEvent(MidiEvent evt) { }

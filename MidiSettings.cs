@@ -12,8 +12,6 @@ using NBagOfTricks;
 using NBagOfUis;
 using System.Windows.Forms;
 
-// TODOX handle multiple inputs/outputs.
-
 
 namespace MidiLib
 {
