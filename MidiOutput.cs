@@ -15,14 +15,14 @@ namespace MidiLib
     /// <summary>
     /// A midi output layer - associated with a single device.
     /// </summary>
-    public sealed class MidiSender : IOutputDevice
+    public sealed class MidiOutput : IOutputDevice
     {
         #region Fields
         /// <summary>Low level midi output device.</summary>
         readonly MidiOut? _midiOut = null;
 
         /// <summary>Midi send logging.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("MidiSender");
+        readonly Logger _logger = LogManager.CreateLogger("MidiOutput");
         #endregion
 
         #region Properties
@@ -41,7 +41,7 @@ namespace MidiLib
         /// Normal constructor.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
-        public MidiSender(string deviceName)
+        public MidiOutput(string deviceName)
         {
             DeviceName = deviceName;
 

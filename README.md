@@ -30,7 +30,7 @@ MidiPlayer
 - Translates from MidiData to the wire.
 - Writes native midi events to the output device every Tick(). Host is responsible for timing/frequency.
 
-MidiListener
+MidiInput
 - A simple midi input component.
 - You supply the handler.
 

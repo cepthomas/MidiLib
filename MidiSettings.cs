@@ -100,6 +100,7 @@ namespace MidiLib
                 {
                     rec.Add(MidiIn.DeviceInfo(devindex).ProductName);
                 }
+                rec.Add("OSC");
                 rec.Add("VirtualKeyboard");
                 rec.Add("BingBong");
             }
@@ -110,6 +111,7 @@ namespace MidiLib
                 {
                     rec.Add(MidiOut.DeviceInfo(devindex).ProductName);
                 }
+                rec.Add("OSC");
             }
             else
             {

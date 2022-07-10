@@ -14,14 +14,14 @@ namespace MidiLib
     /// <summary>
     /// Midi input handler.
     /// </summary>
-    public sealed class MidiListener : IInputDevice
+    public sealed class MidiInput : IInputDevice
     {
         #region Fields
         /// <summary>Midi input device.</summary>
         readonly MidiIn? _midiIn = null;
 
         /// <summary>Midi send logging.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("MidiListener");
+        readonly Logger _logger = LogManager.CreateLogger("MidiInput");
 
         /// <summary>Control.</summary>
         bool _capturing = false;
@@ -55,7 +55,7 @@ namespace MidiLib
         /// Normal constructor.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
-        public MidiListener(string deviceName)
+        public MidiInput(string deviceName)
         {
             DeviceName = deviceName;
             LogEnable = false;

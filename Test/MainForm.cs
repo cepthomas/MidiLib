@@ -210,24 +210,24 @@ namespace MidiLib.Test
 
                 default:
                     // Should be a real device.
-                    MidiListener ml = new(_settings.MidiSettings.InputDevice);
+                    MidiInput min = new(_settings.MidiSettings.InputDevice);
 
-                    if (!ml.Valid)
+                    if (!min.Valid)
                     {
                         _logger.Error($"Something wrong with your input device:{_settings.MidiSettings.InputDevice}");
                         ok = false;
                     }
                     else
                     {
-                        ml.CaptureEnable = true;
-                        ml.InputEvent += Listener_InputEvent;
-                        _inputDevice = ml;
+                        min.CaptureEnable = true;
+                        min.InputEvent += Listener_InputEvent;
+                        _inputDevice = min;
                     }
                     break;
             }
 
             // Set up output device.
-            _outputDevice = new MidiSender(_settings.MidiSettings.OutputDevice);
+            _outputDevice = new MidiOutput(_settings.MidiSettings.OutputDevice);
             if (!_outputDevice.Valid)
             {
                 _logger.Error($"Something wrong with your output device:{_outputDevice.DeviceName}");
