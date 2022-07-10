@@ -10,6 +10,7 @@ using System.Drawing.Design;
 using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfUis;
+using System.Windows.Forms;
 
 // TODOX handle multiple inputs/outputs.
 
@@ -40,6 +41,18 @@ namespace MidiLib
         [Browsable(true)]
         [TypeConverter(typeof(DeviceTypeConverter))]
         public string OutputDevice { get; set; } = "";
+
+        [DisplayName("Input Devices")]
+        [Description("Valid devices if handling input.")]
+        [Browsable(true)]
+        [Editor(typeof(DevicesTypeEditor), typeof(UITypeEditor))]
+        public List<DeviceSpec> InputDevices { get; set; } = new();
+
+        [DisplayName("Output Devices")]
+        [Description("Valid devices if sending output.")]
+        [Browsable(true)]
+        [Editor(typeof(DevicesTypeEditor), typeof(UITypeEditor))]
+        public List<DeviceSpec> OutputDevices { get; set; } = new();
 
         [DisplayName("Default Tempo")]
         [Description("Use this tempo if it's not in the file.")]
@@ -82,43 +95,17 @@ namespace MidiLib
         #endregion
     }
 
-    /// <summary>Converter for selecting property value from known lists.</summary>
-    public class DeviceTypeConverter : TypeConverter
+    [Serializable]
+    public class DeviceSpec
     {
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) { return true; }
-        public override bool GetStandardValuesExclusive(ITypeDescriptorContext? context) { return true; }
+        [DisplayName("Device Id")]
+        [Description("User supplied id for use in client.")]
+        [Browsable(true)]
+        public string DeviceId { get; set; } = "";
 
-        // Get the specific list based on the property name.
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext? context)
-        {
-            List<string>? rec = null;
-
-            if (context!.PropertyDescriptor.Name.Contains("InputDevice"))//TODOX also OSC input = 1234, output = /123.456.0.0:5678.
-            {
-                rec = new() { "" };
-                for (int devindex = 0; devindex < MidiIn.NumberOfDevices; devindex++)
-                {
-                    rec.Add(MidiIn.DeviceInfo(devindex).ProductName);
-                }
-                rec.Add("OSC");
-                rec.Add("VirtualKeyboard");
-                rec.Add("BingBong");
-            }
-            else if (context!.PropertyDescriptor.Name.Contains("OutputDevice"))
-            {
-                rec = new() { "" };
-                for (int devindex = 0; devindex < MidiOut.NumberOfDevices; devindex++)
-                {
-                    rec.Add(MidiOut.DeviceInfo(devindex).ProductName);
-                }
-                rec.Add("OSC");
-            }
-            else
-            {
-                System.Windows.Forms.MessageBox.Show($"This should never happen: {context.PropertyDescriptor.Name}");
-            }
-
-            return new StandardValuesCollection(rec);
-        }
+        [DisplayName("Device Name")]
+        [Description("System device name.")]
+        [Browsable(true)]
+        public string DeviceName { get; set; } = "";
     }
 }
