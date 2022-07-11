@@ -13,37 +13,33 @@ Requires VS2022 and .NET6.
 
 
 ## Notes
-- Since midi files and NAudio use 1-based channel numbers, so does this application, except when used as an array index.
+- Since midi files and NAudio use 1-based channel numbers, so does this application, except when used internally as an array index.
 - Because the windows multimedia timer has inadequate accuracy for midi notes, resolution is limited to 32nd notes.
 - If midi file type is `1`, all tracks are combined. Because.
-- NAudio `NoteEvent` is used to represent Note Off and Key After Touch messages. It is also the base class for `NoteOnEvent`.
+- NAudio `NoteEvent` is used to represent Note Off and Key After Touch messages. It is also the base class for `NoteOnEvent`. Not sure why it was done that way.
 - Tons of styles and technical info at https://psrtutorial.com/.
-- Midi devices are limited to the ones available on your box. (Hint - VirtualMidiSynth).
-- Some midi files are sloppy with channel numbers so there are a couple of options for simple remapping.
+- Midi devices are limited to the ones available on your box. (Hint - try VirtualMidiSynth).
+- Some midi files use different drum channel numbers so there are a couple of options for simple remapping.
 
 # Components
 
 ## Core
 
-MidiPlayer
+MidiOutput
 - The top level component for sending midi data.
 - Translates from MidiData to the wire.
-- Writes native midi events to the output device every Tick(). Host is responsible for timing/frequency.
 
 MidiInput
 - A simple midi input component.
 - You supply the handler.
 
+MidiOsc
+- Implementation of midi over [OSC](https://opensoundcontrol.stanford.edu).
+
 Channel
-- Represents a physical channel in a way usable by ChannelControl UI and MidiPlayer.
+- Represents a physical output channel in a way usable by ChannelControl UI and MidiOutput.
 
-ChannelCollection
-- Container for all the channels.
-- Provides info about the collection e.g. maximum length.
-- API is by channel number.
-- Supports enumeration.
-
-MidiData and PatternInfo
+MidiDataFile, PatternInfo, MidiExport
 - Processes and contains a massaged version of the midi/style file contents.
 - Translates from raw file to MidiData internal representation.
 - Units are in subdivs - essentially midi ticks.
@@ -60,7 +56,7 @@ SimpleChannelControl
 - Simple/dumb UI control.
 - Provides volume, channel, patch selection.
 
-BarBar
+BarBar, BarTime
 - Shows progress in musical bars and beats.
 - User has option to show bars and beats as one-based or zero-based.
 - User can select time.
@@ -68,15 +64,21 @@ BarBar
 PatchPicker
 - Select from the standard GM list.
 
+DevicesEditor
+- Used for selecting inputs and outputs in settings editing.
+
 VirtualKeyboard
 - Piano control based loosely on Leslie Sanford's [Midi Toolkit](https://github.com/tebjan/Sanford.Multimedia.Midi).
+
+BingBong
+- Experimental UI component.
 
 ## Other
 
 - MidiDefs: The GM definitions plus conversion functions.
 - MidiTimeConverter: Used for mapping between data sets using different resolutions.
+- MidiSettings container/editor for use by clients.
 - MidiCommon: All the other stuff.
-- Settings container/editor for use by clients.
 
 # Example
 
@@ -92,4 +94,5 @@ This application uses these FOSS components:
 - [NAudio](https://github.com/naudio/NAudio) (Microsoft Public License).
 - [NBagOfTricks](https://github.com/cepthomas/NBagOfTricks/blob/main/README.md)
 - [NBagOfUis](https://github.com/cepthomas/NBagOfUis/blob/main/README.md)
+- [NebOsc](https://github.com/cepthomas/NebOsc/blob/main/README.md)
 
