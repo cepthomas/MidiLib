@@ -147,7 +147,7 @@ namespace MidiLib
                 value = ed.Devices;
             }
 
-            return value;
+            return value!;
         }
 
         /// <summary>

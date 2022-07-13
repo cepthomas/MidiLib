@@ -35,6 +35,9 @@ namespace MidiLib
         #endregion
 
         #region Properties
+        /// <summary>Channel number 1-based.</summary>
+        public int Channel { get; set; } = 1;
+
         /// <summary>Lowest note. Adjust to taste.</summary>
         public int MinNote { get; set; } = 24;
 
@@ -147,12 +150,12 @@ namespace MidiLib
                     if(_lastNote != -1)
                     {
                         // Turn off last note.
-                        InputEvent?.Invoke(this, new() { Note = _lastNote, Value = 0 });
+                        InputEvent?.Invoke(this, new() { Channel = Channel, Note = _lastNote, Value = 0 });
                     }
 
                     // Start the new note.
                     _lastNote = note;
-                    InputEvent?.Invoke(this, new() { Note = note, Value = value });
+                    InputEvent?.Invoke(this, new() { Channel = Channel, Note = note, Value = value });
                 }
             }
 

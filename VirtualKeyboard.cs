@@ -17,6 +17,9 @@ namespace MidiLib
     public partial class VirtualKeyboard : UserControl, IInputDevice
     {
         #region Properties
+        /// <summary>Channel number 1-based.</summary>
+        public int Channel { get; set; } = 1;
+
         /// <summary>Draw the names on the keys.</summary>
         public bool ShowNoteNames { get; set; } = false;
 
@@ -243,9 +246,9 @@ namespace MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Keyboard_VKeyEvent(object? sender, VirtualKey.VKeyEventArgs e)
+        void Keyboard_InputEvent(object? sender, InputEventArgs e)
         {
-            InputEvent?.Invoke(this, new() { Note = e.NoteId, Value = e.Velocity });
+            InputEvent?.Invoke(this, new() { Channel = Channel, Note = e.Note, Value = e.Value });
         }
         #endregion
 
@@ -271,7 +274,7 @@ namespace MidiLib
                     pk.BringToFront();
                 }
 
-                pk.VKeyEvent += Keyboard_VKeyEvent;
+                pk.InputEvent += Keyboard_InputEvent;
                 _keys.Add(pk);
                 Controls.Add(pk);
             }
@@ -341,12 +344,7 @@ namespace MidiLib
 
         #region Events
         /// <summary>Notify handlers of key change.</summary>
-        public class VKeyEventArgs : EventArgs
-        {
-            public int NoteId { get; set; }
-            public int Velocity { get; set; }
-        }
-        public event EventHandler<VKeyEventArgs>? VKeyEvent;
+        public event EventHandler<InputEventArgs>? InputEvent;
         #endregion
 
         #region Lifecycle
@@ -375,7 +373,7 @@ namespace MidiLib
         {
             IsPressed = true;
             Invalidate();
-            VKeyEvent?.Invoke(this, new VKeyEventArgs() { NoteId = NoteId, Velocity = velocity });
+            InputEvent?.Invoke(this, new() { Note = NoteId, Value = velocity });
         }
 
         /// <summary>
@@ -385,7 +383,7 @@ namespace MidiLib
         {
             IsPressed = false;
             Invalidate();
-            VKeyEvent?.Invoke(this, new VKeyEventArgs() { NoteId = NoteId, Velocity = 0 });
+            InputEvent?.Invoke(this, new() { Note = NoteId, Value = 0 });
         }
         #endregion
 
