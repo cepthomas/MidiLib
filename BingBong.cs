@@ -77,6 +77,7 @@ namespace MidiLib
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
             Name = "BingBong";
             DeviceName = "BingBong";
+            ClientSize = new Size(300, 300);
         }
 
         /// <summary>

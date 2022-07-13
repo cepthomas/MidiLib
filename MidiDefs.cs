@@ -60,8 +60,7 @@ namespace MidiLib
         public static List<string> FormatDoc()
         {
             List<string> docs = new();
-            docs.Add("# Midi GM Definitions");
-            docs.Add("## Instruments");
+            docs.Add("# Midi GM Instruments");
             docs.Add("");
             docs.Add("Instrument          | Number");
             docs.Add("----------          | ------");
@@ -73,16 +72,15 @@ namespace MidiLib
             docs.Add("----                | ------");
             _drums.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
             docs.Add("");
-            docs.Add("## Controllers");
-            docs.Add("- http://www.nortonmusic.com/midi_cc.html");
-            docs.Add("- Undefined MIDI CCs: 3, 9, 14-15, 20-31, 85-90, 102-119");
+            docs.Add("# Midi GM Controllers");
+            docs.Add("- Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119");
             docs.Add("- For most controllers marked on/off, on=127 and off=0");
             docs.Add("");
             docs.Add("Controller          | Number");
             docs.Add("----------          | ------");
             _controllers.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
             docs.Add("");
-            docs.Add("## Drum Kits");
+            docs.Add("# Midi GM Drum Kits");
             docs.Add("");
             docs.Add("Note that these will vary depending on your Soundfont file.");
             docs.Add("");

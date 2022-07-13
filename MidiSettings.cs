@@ -28,18 +28,6 @@ namespace MidiLib
         static MidiSettings? _settings = null;
 
         #region Properties - persisted editable
-        //[DisplayName("Input Device")]
-        //[Description("Valid device if handling input.")]
-        //[Browsable(true)]
-        //[TypeConverter(typeof(DeviceTypeConverter))]
-        //public string InputDevice { get; set; } = "";
-
-        //[DisplayName("Output Device")]
-        //[Description("Valid device if sending output.")]
-        //[Browsable(true)]
-        //[TypeConverter(typeof(DeviceTypeConverter))]
-        //public string OutputDevice { get; set; } = "";
-
         [DisplayName("Input Devices")]
         [Description("Valid devices if handling input.")]
         [Browsable(true)]
@@ -69,10 +57,10 @@ namespace MidiLib
         [JsonIgnore()]
         public int InternalPPQ { get; set; } = 32;
 
-        //[DisplayName("Zero Based Time")]
+        //[DisplayName("Zero Based Time")] // TODO Implement later maybe. Probably will require a BarTimeSpan class.
         //[Description("Use 0:0:0 time instead of 1:1:1.")]
         //[Browsable(true)]
-        //public bool ZeroBased { get; set; } = false; // TODO Implement later maybe. For now it's always true.
+        //public bool ZeroBased { get; set; } = false;
         #endregion
 
         #region Properties - internal

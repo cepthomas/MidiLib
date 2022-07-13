@@ -6,7 +6,7 @@ using System.Linq;
 using NBagOfTricks;
 
 
-//TODO slow startup - too many sub controls?
+// TODO slow startup - too many sub controls?
 
 
 namespace MidiLib
@@ -73,7 +73,7 @@ namespace MidiLib
 
             AutoScaleDimensions = new SizeF(6F, 13F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(773, 173);
+            ClientSize = new Size(1200, 140);
 
             CreateKeys();
             CreateKeyMap();
