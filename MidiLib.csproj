@@ -20,8 +20,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Remove="lib\**" />
         <Compile Remove="Test\**" />
+        <EmbeddedResource Remove="lib\**" />
         <EmbeddedResource Remove="Test\**" />
+        <None Remove="lib\**" />
         <None Remove="Test\**" />
     </ItemGroup>
 
@@ -41,7 +44,7 @@
           <HintPath>..\MidiGenerator\lib\NBagOfTricks.dll</HintPath>
         </Reference>
         <Reference Include="NBagOfUis">
-            <HintPath>..\lib\NBagOfUis.dll</HintPath>
+          <HintPath>lib\NBagOfUis.dll</HintPath>
         </Reference>
         <Reference Include="NebOsc">
           <HintPath>lib\NebOsc.dll</HintPath>

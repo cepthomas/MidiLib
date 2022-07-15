@@ -54,6 +54,8 @@ namespace MidiLib.Test
             this.sldVolume = new NBagOfUis.Slider();
             this.barBar = new MidiLib.BarBar();
             this.bb = new MidiLib.BingBong();
+            this.btnOpen = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTempo)).BeginInit();
             this.SuspendLayout();
@@ -62,6 +64,8 @@ namespace MidiLib.Test
             // 
             this.toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnOpen,
+            this.toolStripSeparator12,
             this.btnLogMidi,
             this.toolStripSeparator3,
             this.btnKillMidi,
@@ -310,8 +314,12 @@ namespace MidiLib.Test
             // 
             // vkey
             // 
+            this.vkey.CaptureEnable = false;
+            this.vkey.Channel = 1;
+            this.vkey.DeviceName = "VirtualKeyboard";
             this.vkey.KeySize = 14;
             this.vkey.Location = new System.Drawing.Point(13, 663);
+            this.vkey.LogEnable = false;
             this.vkey.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.vkey.Name = "vkey";
             this.vkey.ShowNoteNames = true;
@@ -384,8 +392,12 @@ namespace MidiLib.Test
             // bb
             // 
             this.bb.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.bb.CaptureEnable = false;
+            this.bb.Channel = 1;
+            this.bb.DeviceName = "BingBong";
             this.bb.DrawNoteGrid = true;
             this.bb.Location = new System.Drawing.Point(537, 332);
+            this.bb.LogEnable = false;
             this.bb.MaxControl = 127;
             this.bb.MaxNote = 95;
             this.bb.MinControl = 0;
@@ -393,6 +405,20 @@ namespace MidiLib.Test
             this.bb.Name = "bb";
             this.bb.Size = new System.Drawing.Size(300, 300);
             this.bb.TabIndex = 102;
+            // 
+            // btnOpen
+            // 
+            this.btnOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnOpen.Name = "btnOpen";
+            this.btnOpen.Size = new System.Drawing.Size(47, 25);
+            this.btnOpen.Text = "open";
+            this.btnOpen.Click += new System.EventHandler(this.Open_Click);
+            // 
+            // toolStripSeparator12
+            // 
+            this.toolStripSeparator12.Name = "toolStripSeparator12";
+            this.toolStripSeparator12.Size = new System.Drawing.Size(6, 28);
             // 
             // MainForm
             // 
@@ -461,6 +487,8 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton btnSettings;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
+        private System.Windows.Forms.ToolStripButton btnOpen;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
     }
 }
 

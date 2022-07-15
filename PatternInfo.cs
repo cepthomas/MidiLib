@@ -124,19 +124,13 @@ namespace MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            List<string> content = new();
-            content.Add($"Name:{(PatternName == "" ? "None" : PatternName)}");
-            content.Add($"Tempo:{Tempo}");
-
-            if (TimeSig != "")
+            List<string> content = new()
             {
-                content.Add($"TimeSig:{TimeSig}");
-            }
-
-            if (KeySig != "")
-            {
-                content.Add($"KeySig:{KeySig}");
-            }
+                $"Name:{(PatternName == "" ? "None" : PatternName)}",
+                $"Tempo:{Tempo}",
+                $"TimeSig:{TimeSig}",
+                $"KeySig:{KeySig}"
+            };
 
             for(int i = 0; i <MidiDefs.NUM_CHANNELS; i++)
             {

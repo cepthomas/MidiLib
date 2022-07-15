@@ -17,6 +17,7 @@ using NBagOfUis;
 using NBagOfTricks.Slog;
 
 
+
 namespace MidiLib.Test
 {
     public partial class MainForm : Form
@@ -410,6 +411,7 @@ namespace MidiLib.Test
 
                     case 1:
                         var pinfo = _mdata.GetPattern(pnames[0]);
+                        lbPatterns.Items.Add(pinfo.PatternName);
                         LoadPattern(pinfo);
                         break;
 
@@ -454,6 +456,27 @@ namespace MidiLib.Test
             }
 
             return ok;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Open_Click(object sender, EventArgs e)
+        {
+            var fileTypes = $"Midi Files|*.mid|Style Files|*.sty;*.pcs;*.sst;*.prs";
+            using OpenFileDialog openDlg = new()
+            {
+                Filter = fileTypes,
+                Title = "Select a file",
+                InitialDirectory = @"C:\Dev\repos\TestAudioFiles"
+            };
+
+            if (openDlg.ShowDialog() == DialogResult.OK)
+            {
+                OpenFile(openDlg.FileName);
+            }
         }
         #endregion
 
@@ -748,7 +771,7 @@ namespace MidiLib.Test
                 if (sender == btnExportAll)
                 {
                     var newfn = MakeExportFileName(_outPath, _mdata.FileName, "all", "csv");
-                    MidiExport.ExportAllEvents(newfn, patterns, channels, MakeMeta());
+                    MidiExport.ExportCsv(newfn, patterns, channels, MakeMeta());
                     _logger.Info($"Exported to {newfn}");
                 }
                 else if (sender == btnExportPattern)

@@ -19,7 +19,7 @@ namespace MidiLib
         /// <summary>One-based channel number.</summary>
         public int ChannelNumber { get { return MidiEvent.Channel; } }
 
-        /// <summary>Associated channel name.</summary>
+        /// <summary>Associated channel na</summary>
         public string ChannelName { get; }
 
         /// <summary>Time (subdivs) from original file.</summary>
@@ -38,7 +38,82 @@ namespace MidiLib
             ChannelName = channelName;
         }
 
-        /// <summary>Read me.</summary>
+        public string Format(bool IsDrums)
+        {
+            string ret = "???";
+            //"ScaledTime,AbsoluteTime,DeltaTime,CommandCode,Channel,content...,==================";
+
+
+            // Boilerplate.
+            // string ntype = MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "");
+            string ntype = MidiEvent.CommandCode == MidiCommandCode.MetaEvent ? (MidiEvent as MetaEvent).MetaEventType.ToString() : MidiEvent.CommandCode.ToString();
+            string sc = $"{ScaledTime},{MidiEvent.AbsoluteTime},{MidiEvent.DeltaTime},{ntype},{MidiEvent.Channel}";
+
+            string NoteName(int nnum)
+            {
+                return IsDrums ? MidiDefs.GetDrumName(nnum) : MusicDefinitions.NoteNumberToName(nnum);
+            }
+            string PatchName(int pnum)
+            {
+                return IsDrums ? MidiDefs.GetDrumKitName(pnum) : MidiDefs.GetInstrumentName(pnum);
+            }
+
+            switch (MidiEvent)
+            {
+                case NoteOnEvent evt:
+                    string slen = evt.OffEvent is null ? "?" : evt.NoteLength.ToString(); // NAudio NoteLength bug.
+                    ret = $"{sc},{evt.NoteNumber}:{NoteName(evt.NoteNumber)},vel:{evt.Velocity},len:{slen}";
+                    break;
+
+                case NoteEvent evt: // used for NoteOff
+                    ret = $"{sc},{evt.NoteNumber}:{NoteName(evt.NoteNumber)},vel:{evt.Velocity},";
+                    break;
+
+                case TempoEvent evt:
+                    ret = $"{sc},tempo:{evt.Tempo},mspqn:{evt.MicrosecondsPerQuarterNote},";
+                    break;
+
+                case TimeSignatureEvent evt:
+                    ret = $"{sc},timesig:{evt.TimeSignature},,";
+                    break;
+
+                case KeySignatureEvent evt:
+                    ret = $"{sc},{evt.SharpsFlats},{evt.MajorMinor},";
+                    break;
+
+                case PatchChangeEvent evt:
+                    ret = $"{sc},{evt.Patch}:{PatchName(evt.Patch)},,";
+                    break;
+
+                case ControlChangeEvent evt:
+                    ret = $"{sc},{(int)evt.Controller}:{MidiDefs.GetControllerName((int)evt.Controller)},{evt.ControllerValue},";
+                    break;
+
+                case PitchWheelChangeEvent evt:
+                    //otherText.Add($"{sc},{evt.Pitch},,"); too busy?
+                    break;
+
+                case TextEvent evt:
+                    ret = $"{sc},{evt.Text},data:{evt.Data.Length},";
+                    break;
+
+                //Others as needed:
+                //case ChannelAfterTouchEvent:
+                //case SysexEvent:
+                //case MetaEvent:
+                //case RawMetaEvent:
+                //case SequencerSpecificEvent:
+                //case SmpteOffsetEvent:
+                //case TrackSequenceNumberEvent:
+                default:
+                    ret = $"{sc},XXXXXX,,,";
+                    break;
+            }
+
+            return ret;
+        }
+
+        /// <summary>Read </summary>
         public override string ToString()
         {
             return $"Ch:{ChannelName}({ChannelNumber}) Atime:{AbsoluteTime} Stime:{ScaledTime} Evt:{MidiEvent}";
