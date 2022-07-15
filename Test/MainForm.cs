@@ -411,7 +411,7 @@ namespace MidiLib.Test
 
                     case 1:
                         var pinfo = _mdata.GetPattern(pnames[0]);
-                        lbPatterns.Items.Add(pinfo.PatternName);
+                        lbPatterns.Items.Add(pinfo!.PatternName);
                         LoadPattern(pinfo);
                         break;
 
@@ -768,20 +768,11 @@ namespace MidiLib.Test
                 }
 
                 // Execute the requested export function.
-                if (sender == btnExportAll)
+                if (sender == btnExportCsv)
                 {
                     var newfn = MakeExportFileName(_outPath, _mdata.FileName, "all", "csv");
                     MidiExport.ExportCsv(newfn, patterns, channels, MakeMeta());
                     _logger.Info($"Exported to {newfn}");
-                }
-                else if (sender == btnExportPattern)
-                {
-                    foreach (var pattern in patterns)
-                    {
-                        var newfn = MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "csv");
-                        MidiExport.ExportGroupedEvents(newfn, pattern, channels, MakeMeta(), true); //includeAll
-                        _logger.Info($"Exported pattern {pattern.PatternName} to {newfn}");
-                    }
                 }
                 else if (sender == btnExportMidi)
                 {

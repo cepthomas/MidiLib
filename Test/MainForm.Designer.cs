@@ -19,6 +19,8 @@ namespace MidiLib.Test
         private void InitializeComponent()
         {
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.btnOpen = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.btnLogMidi = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.btnKillMidi = new System.Windows.Forms.ToolStripButton();
@@ -27,10 +29,8 @@ namespace MidiLib.Test
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.btnRewind = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnExportAll = new System.Windows.Forms.ToolStripButton();
+            this.btnExportCsv = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnExportPattern = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.btnExportMidi = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
@@ -54,8 +54,6 @@ namespace MidiLib.Test
             this.sldVolume = new NBagOfUis.Slider();
             this.barBar = new MidiLib.BarBar();
             this.bb = new MidiLib.BingBong();
-            this.btnOpen = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTempo)).BeginInit();
             this.SuspendLayout();
@@ -74,10 +72,8 @@ namespace MidiLib.Test
             this.toolStripSeparator5,
             this.btnRewind,
             this.toolStripSeparator6,
-            this.btnExportAll,
+            this.btnExportCsv,
             this.toolStripSeparator8,
-            this.btnExportPattern,
-            this.toolStripSeparator7,
             this.btnExportMidi,
             this.toolStripSeparator9,
             this.toolStripLabel1,
@@ -96,6 +92,20 @@ namespace MidiLib.Test
             this.toolStrip1.Size = new System.Drawing.Size(1250, 28);
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
+            // 
+            // btnOpen
+            // 
+            this.btnOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnOpen.Name = "btnOpen";
+            this.btnOpen.Size = new System.Drawing.Size(47, 25);
+            this.btnOpen.Text = "open";
+            this.btnOpen.Click += new System.EventHandler(this.Open_Click);
+            // 
+            // toolStripSeparator12
+            // 
+            this.toolStripSeparator12.Name = "toolStripSeparator12";
+            this.toolStripSeparator12.Size = new System.Drawing.Size(6, 28);
             // 
             // btnLogMidi
             // 
@@ -153,33 +163,19 @@ namespace MidiLib.Test
             this.toolStripSeparator6.Name = "toolStripSeparator6";
             this.toolStripSeparator6.Size = new System.Drawing.Size(6, 28);
             // 
-            // btnExportAll
+            // btnExportCsv
             // 
-            this.btnExportAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnExportAll.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnExportAll.Name = "btnExportAll";
-            this.btnExportAll.Size = new System.Drawing.Size(76, 25);
-            this.btnExportAll.Text = "export all";
-            this.btnExportAll.Click += new System.EventHandler(this.Export_Click);
+            this.btnExportCsv.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnExportCsv.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnExportCsv.Name = "btnExportCsv";
+            this.btnExportCsv.Size = new System.Drawing.Size(80, 25);
+            this.btnExportCsv.Text = "export csv";
+            this.btnExportCsv.Click += new System.EventHandler(this.Export_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
             this.toolStripSeparator8.Size = new System.Drawing.Size(6, 28);
-            // 
-            // btnExportPattern
-            // 
-            this.btnExportPattern.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnExportPattern.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnExportPattern.Name = "btnExportPattern";
-            this.btnExportPattern.Size = new System.Drawing.Size(87, 25);
-            this.btnExportPattern.Text = "export patt";
-            this.btnExportPattern.Click += new System.EventHandler(this.Export_Click);
-            // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 28);
             // 
             // btnExportMidi
             // 
@@ -406,20 +402,6 @@ namespace MidiLib.Test
             this.bb.Size = new System.Drawing.Size(300, 300);
             this.bb.TabIndex = 102;
             // 
-            // btnOpen
-            // 
-            this.btnOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnOpen.Name = "btnOpen";
-            this.btnOpen.Size = new System.Drawing.Size(47, 25);
-            this.btnOpen.Text = "open";
-            this.btnOpen.Click += new System.EventHandler(this.Open_Click);
-            // 
-            // toolStripSeparator12
-            // 
-            this.toolStripSeparator12.Name = "toolStripSeparator12";
-            this.toolStripSeparator12.Size = new System.Drawing.Size(6, 28);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
@@ -458,14 +440,12 @@ namespace MidiLib.Test
         private System.Windows.Forms.ToolStripButton btnKillMidi;
         private System.Windows.Forms.ToolStripButton btnPlay;
         private System.Windows.Forms.ToolStripButton btnRewind;
-        private System.Windows.Forms.ToolStripButton btnExportAll;
+        private System.Windows.Forms.ToolStripButton btnExportCsv;
         private System.Windows.Forms.ToolStripButton btnExportMidi;
-        private System.Windows.Forms.ToolStripButton btnExportPattern;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.CheckedListBox lbPatterns;

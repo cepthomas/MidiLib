@@ -41,12 +41,9 @@ namespace MidiLib
         public string Format(bool IsDrums)
         {
             string ret = "???";
-            //"ScaledTime,AbsoluteTime,DeltaTime,CommandCode,Channel,content...,==================";
-
 
             // Boilerplate.
-            // string ntype = MidiEvent!.GetType().ToString().Replace("NAudio.Midi.", "");
-            string ntype = MidiEvent.CommandCode == MidiCommandCode.MetaEvent ? (MidiEvent as MetaEvent).MetaEventType.ToString() : MidiEvent.CommandCode.ToString();
+            string ntype = MidiEvent.CommandCode == MidiCommandCode.MetaEvent ? (MidiEvent as MetaEvent)!.MetaEventType.ToString() : MidiEvent.CommandCode.ToString();
             string sc = $"{ScaledTime},{MidiEvent.AbsoluteTime},{MidiEvent.DeltaTime},{ntype},{MidiEvent.Channel}";
 
             string NoteName(int nnum)
