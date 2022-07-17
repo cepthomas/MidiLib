@@ -50,6 +50,7 @@ namespace MidiLib
             {
                 return IsDrums ? MidiDefs.GetDrumName(nnum) : MusicDefinitions.NoteNumberToName(nnum);
             }
+
             string PatchName(int pnum)
             {
                 return IsDrums ? MidiDefs.GetDrumKitName(pnum) : MidiDefs.GetInstrumentName(pnum);
@@ -75,23 +76,27 @@ namespace MidiLib
                     break;
 
                 case KeySignatureEvent evt:
-                    ret = $"{sc},{evt.SharpsFlats},{evt.MajorMinor},";
+                    ret = $"{sc},sharpsflats:{evt.SharpsFlats},majorminor:{evt.MajorMinor},";
                     break;
 
                 case PatchChangeEvent evt:
-                    ret = $"{sc},{evt.Patch}:{PatchName(evt.Patch)},,";
+                    ret = $"{sc},patch:{evt.Patch},name:{PatchName(evt.Patch)},";
                     break;
 
                 case ControlChangeEvent evt:
-                    ret = $"{sc},{(int)evt.Controller}:{MidiDefs.GetControllerName((int)evt.Controller)},{evt.ControllerValue},";
+                    ret = $"{sc},controller:{(int)evt.Controller},name:{MidiDefs.GetControllerName((int)evt.Controller)},value:{evt.ControllerValue}";
                     break;
 
                 case PitchWheelChangeEvent evt:
-                    //otherText.Add($"{sc},{evt.Pitch},,"); too busy?
+                    //otherText.Add($"{sc},pitch:{evt.Pitch},,"); too busy?
                     break;
 
                 case TextEvent evt:
-                    ret = $"{sc},{evt.Text},data:{evt.Data.Length},";
+                    ret = $"{sc},text:{evt.Text},data:{evt.Data.Length},";
+                    break;
+
+                case TrackSequenceNumberEvent evt:
+                    ret = $"{sc},seq:{evt},,";
                     break;
 
                 //Others as needed:
@@ -101,9 +106,8 @@ namespace MidiLib
                 //case RawMetaEvent:
                 //case SequencerSpecificEvent:
                 //case SmpteOffsetEvent:
-                //case TrackSequenceNumberEvent:
                 default:
-                    ret = $"{sc},XXXXXX,,,";
+                    ret = $"{sc},other:???,,,";
                     break;
             }
 

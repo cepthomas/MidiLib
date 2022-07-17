@@ -161,7 +161,7 @@ namespace MidiLib
         }
     }
 
-    /// <summary>Converter for selecting property value from known lists. TODO can be removed.</summary>
+    /// <summary>Converter for selecting property value from known lists. Not currently used.</summary>
     public class DeviceTypeConverter : TypeConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) { return true; }

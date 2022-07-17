@@ -239,9 +239,9 @@ namespace MidiLib
                         break;
 
                     ///// Meta events /////
-                    //case TrackSequenceNumberEvent evt:
-                    //    AddMidiEvent(evt);
-                    //    break;
+                    case TrackSequenceNumberEvent evt:
+                        AddMidiEvent(evt);
+                        break;
 
                     case TempoEvent evt:
                         var tempo = (int)Math.Round(evt.Tempo);

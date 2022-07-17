@@ -119,6 +119,26 @@ namespace MidiLib
         }
 
         /// <summary>
+        /// Helper function.
+        /// </summary>
+        public Dictionary<int, int> ValidPatches
+        {
+            get
+            {
+                Dictionary<int, int> ps = new();
+                for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+                {
+                    int chnum = i + 1;
+                    if (Patches[i] >= 0)
+                    {
+                        ps.Add(chnum, Patches[i]);
+                    }
+                }
+                return ps;
+            }
+        }
+
+        /// <summary>
         /// Readable version.
         /// </summary>
         /// <returns></returns>
@@ -132,14 +152,7 @@ namespace MidiLib
                 $"KeySig:{KeySig}"
             };
 
-            for(int i = 0; i <MidiDefs.NUM_CHANNELS; i++)
-            {
-                int chnum = i + 1;
-                if(Patches[i] >= 0)
-                {
-                    content.Add($"Ch:{chnum} Patch:{MidiDefs.GetInstrumentName(Patches[i])}");
-                }
-            }
+            ValidPatches.ForEach(p => content.Add($"Ch:{p.Key} Patch:{MidiDefs.GetInstrumentName(p.Value)}"));
 
             return string.Join(' ', content);
         }

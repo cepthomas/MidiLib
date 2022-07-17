@@ -70,6 +70,7 @@ namespace MidiLib.Test
         public MainForm()
         {
             // Must do this first before initializing.
+            _settings = (TestSettings)Settings.Load(".", typeof(TestSettings));
             MidiSettings.LibSettings = _settings.MidiSettings;
 
             InitializeComponent();
@@ -79,8 +80,6 @@ namespace MidiLib.Test
             // Make sure out path exists.
             DirectoryInfo di = new(_outPath);
             di.Create();
-
-            _settings = (TestSettings)Settings.Load(".", typeof(TestSettings));
 
             // Logger. Note: you can create this here but don't call any _logger functions until loaded.
             LogManager.MinLevelFile = LogLevel.Trace;
@@ -771,7 +770,7 @@ namespace MidiLib.Test
                 if (sender == btnExportCsv)
                 {
                     var newfn = MakeExportFileName(_outPath, _mdata.FileName, "all", "csv");
-                    MidiExport.ExportCsv(newfn, patterns, channels, MakeMeta());
+                    MidiExport.ExportCsv(newfn, patterns, channels, GetGlobal());
                     _logger.Info($"Exported to {newfn}");
                 }
                 else if (sender == btnExportMidi)
@@ -779,7 +778,7 @@ namespace MidiLib.Test
                     foreach (var pattern in patterns)
                     {
                         var newfn = MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "mid");
-                        MidiExport.ExportMidi(newfn, pattern, channels, MakeMeta());
+                        MidiExport.ExportMidi(newfn, pattern, channels, GetGlobal());
                         _logger.Info($"Export midi to {newfn}");
                     }
                 }
@@ -817,16 +816,16 @@ namespace MidiLib.Test
         /// Utility to contain midi file meta info.
         /// </summary>
         /// <returns></returns>
-        Dictionary<string, int> MakeMeta()
+        Dictionary<string, int> GetGlobal()
         {
-            Dictionary<string, int> meta = new()
+            Dictionary<string, int> global = new()
             {
                 { "MidiFileType", _mdata.MidiFileType },
                 { "DeltaTicksPerQuarterNote", _mdata.DeltaTicksPerQuarterNote },
                 { "NumTracks", _mdata.NumTracks }
             };
 
-            return meta;
+            return global;
         }
         #endregion
 
