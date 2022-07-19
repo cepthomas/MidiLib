@@ -402,40 +402,13 @@ namespace MidiLib.Test
                 lbPatterns.Items.Clear();
                 var pnames = _mdata.GetPatternNames();
 
-                switch(pnames.Count)
+                if(pnames.Count > 0)
                 {
-                    case 0:
-                        ok = false;
-                        throw new InvalidOperationException($"Something wrong with this file: {fn}");
-
-                    case 1:
-                        var pinfo = _mdata.GetPattern(pnames[0]);
-                        lbPatterns.Items.Add(pinfo!.PatternName);
-                        LoadPattern(pinfo);
-                        break;
-
-                    default: // style has multiple patterns.
-                        pnames.ForEach(pn =>
-                        {
-                            var p = _mdata.GetPattern(pn);
-                            switch (p!.PatternName)
-                            {
-                                // These don't contain a pattern.
-                                case "SFF1":
-                                case "SFF2":
-                                case "SInt": // Initial patches are in here.
-                                    break;
-
-                                case "":
-                                    _logger.Error("Well, this should never happen!");
-                                    break;
-
-                                default:
-                                    lbPatterns.Items.Add(p.PatternName);
-                                    break;
-                            }
-                        });
-                        break;
+                    pnames.ForEach(pn => { lbPatterns.Items.Add(pn); });
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Something wrong with this file: {fn}");
                 }
 
                 Rewind();

@@ -59,44 +59,44 @@ namespace MidiLib
             switch (MidiEvent)
             {
                 case NoteOnEvent evt:
-                    string slen = evt.OffEvent is null ? "?" : evt.NoteLength.ToString(); // NAudio NoteLength bug.
-                    ret = $"{sc},{evt.NoteNumber}:{NoteName(evt.NoteNumber)},vel:{evt.Velocity},len:{slen}";
+                    //string slen = evt.OffEvent is null ? "?" : evt.NoteLength.ToString(); // NAudio NoteLength bug.
+                    ret = $"{sc},{evt.NoteNumber}:{NoteName(evt.NoteNumber)},vel:{evt.Velocity}";
                     break;
 
                 case NoteEvent evt: // used for NoteOff
-                    ret = $"{sc},{evt.NoteNumber}:{NoteName(evt.NoteNumber)},vel:{evt.Velocity},";
+                    ret = $"{sc},{evt.NoteNumber}:{NoteName(evt.NoteNumber)},vel:{evt.Velocity}";
                     break;
 
                 case TempoEvent evt:
-                    ret = $"{sc},tempo:{evt.Tempo},mspqn:{evt.MicrosecondsPerQuarterNote},";
+                    ret = $"{sc},tempo:{evt.Tempo},mspqn:{evt.MicrosecondsPerQuarterNote}";
                     break;
 
                 case TimeSignatureEvent evt:
-                    ret = $"{sc},timesig:{evt.TimeSignature},,";
+                    ret = $"{sc},timesig:{evt.TimeSignature},";
                     break;
 
                 case KeySignatureEvent evt:
-                    ret = $"{sc},sharpsflats:{evt.SharpsFlats},majorminor:{evt.MajorMinor},";
+                    ret = $"{sc},sharpsflats:{evt.SharpsFlats},majorminor:{evt.MajorMinor}";
                     break;
 
                 case PatchChangeEvent evt:
-                    ret = $"{sc},patch:{evt.Patch},name:{PatchName(evt.Patch)},";
+                    ret = $"{sc},patch:{evt.Patch},name:{PatchName(evt.Patch)}";
                     break;
 
                 case ControlChangeEvent evt:
-                    ret = $"{sc},controller:{(int)evt.Controller},name:{MidiDefs.GetControllerName((int)evt.Controller)},value:{evt.ControllerValue}";
+                    ret = $"{sc},{(int)evt.Controller}:{MidiDefs.GetControllerName((int)evt.Controller)},value:{evt.ControllerValue}";
                     break;
 
                 case PitchWheelChangeEvent evt:
-                    //otherText.Add($"{sc},pitch:{evt.Pitch},,"); too busy?
+                    //otherText.Add($"{sc},pitch:{evt.Pitch},"); too busy?
                     break;
 
                 case TextEvent evt:
-                    ret = $"{sc},text:{evt.Text},data:{evt.Data.Length},";
+                    ret = $"{sc},text:{evt.Text},datalen:{evt.Data.Length}";
                     break;
 
                 case TrackSequenceNumberEvent evt:
-                    ret = $"{sc},seq:{evt},,";
+                    ret = $"{sc},seq:{evt},";
                     break;
 
                 //Others as needed:
@@ -107,7 +107,7 @@ namespace MidiLib
                 //case SequencerSpecificEvent:
                 //case SmpteOffsetEvent:
                 default:
-                    ret = $"{sc},other:???,,,";
+                    ret = $"{sc},other:???,,";
                     break;
             }
 
@@ -117,7 +117,9 @@ namespace MidiLib
         /// <summary>Read </summary>
         public override string ToString()
         {
-            return $"Ch:{ChannelName}({ChannelNumber}) Atime:{AbsoluteTime} Stime:{ScaledTime} Evt:{MidiEvent}";
+            string ntype = MidiEvent.CommandCode == MidiCommandCode.MetaEvent ? (MidiEvent as MetaEvent)!.MetaEventType.ToString() : MidiEvent.CommandCode.ToString();
+            string ret = $"Ch:{ChannelName}({ChannelNumber}) AbsoluteTime:{AbsoluteTime} ScaledTime:{ScaledTime} MidiEvent:{ntype}";
+            return ret;
         }
     }
 }

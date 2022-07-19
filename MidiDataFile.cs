@@ -32,6 +32,9 @@ namespace MidiLib
         /// <summary>Save this for logging/debugging.</summary>
         long _lastStreamPos = 0;
 
+        /// <summary>It's a style file.</summary>
+        bool _styleFile = false;
+
         /// <summary>All file pattern sections. Plain midi files will have only one, unnamed.</summary>
         readonly List<PatternInfo> _patterns = new();
 
@@ -40,6 +43,9 @@ namespace MidiLib
 
         /// <summary>Default values if not supplied in pattern. Mainly for managing patches.</summary>
         readonly PatternInfo _patternDefaults = new();
+
+        /// <summary>Phased parsing of style files.</summary>
+        bool _styleDefaults = true; // Assumes defaults at beginning of file.
         #endregion
 
         #region Properties
@@ -67,10 +73,11 @@ namespace MidiLib
         {
             if(_patterns.Any())
             {
-                throw new InvalidOperationException($"Already processed - delete me");
+                throw new InvalidOperationException($"Already processed - delete me first");
             }
 
             FileName = fn;
+            _styleFile = MidiDefs.STYLE_FILE_TYPES.Contains(Path.GetExtension(fn).ToLower());
             _patternDefaults.Tempo = defaultTempo;
             _includeNoisy = includeNoisy;
 
@@ -143,13 +150,14 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Get all pattern names.
+        /// Get all useful pattern names.
         /// </summary>
         /// <returns>List of names.</returns>
         public List<string> GetPatternNames()
         {
-            List<string> ret = _patterns.Select(p => p.PatternName).ToList();
-            return ret;
+            var names = _patterns.Select(p => p.PatternName).ToList();
+
+            return names;
         }
         #endregion
 
@@ -209,6 +217,20 @@ namespace MidiLib
                         AddMidiEvent(evt);
                         break;
 
+                    case PatchChangeEvent evt://XXXXX
+                        var index = evt.Channel - 1;
+                        if(_styleFile && _styleDefaults)
+                        {
+                            _patternDefaults.Patches[index] = evt.Patch;
+                        }
+                        else
+                        {
+                            _currentPattern.Patches[index] = evt.Patch;
+                        }
+                        AddMidiEvent(evt);
+                        //Debug.WriteLine($"{evt}");
+                        break;
+
                     case ControlChangeEvent evt:
                         if (_includeNoisy)
                         {
@@ -223,14 +245,6 @@ namespace MidiLib
                         }
                         break;
 
-                    case PatchChangeEvent evt:
-                        var index = evt.Channel - 1;
-                        _patternDefaults.Patches[index] = evt.Patch;
-                        _currentPattern.Patches[index] = evt.Patch;
-                        AddMidiEvent(evt);
-                        //Debug.WriteLine($"{evt}");
-                        break;
-
                     case SysexEvent evt:
                         if (_includeNoisy)
                         {
@@ -243,24 +257,44 @@ namespace MidiLib
                         AddMidiEvent(evt);
                         break;
 
-                    case TempoEvent evt:
+                    case TempoEvent evt://XXXXX
                         var tempo = (int)Math.Round(evt.Tempo);
-                        _patternDefaults.Tempo = tempo;
-                        _currentPattern.Tempo = tempo;
+                        if (_styleFile && _styleDefaults)
+                        {
+                            _patternDefaults.Tempo = tempo;
+                        }
+                        else
+                        {
+                            _currentPattern.Tempo = tempo;
+                        }
                         AddMidiEvent(evt);
                         break;
 
-                    case TimeSignatureEvent evt:
-                        var tsig = evt.TimeSignature;
-                        _patternDefaults.TimeSig = tsig;
-                        _currentPattern.TimeSig = tsig;
+                    case TimeSignatureEvent evt://XXXXX
+                        if (_styleFile && _styleDefaults)
+                        {
+                            _patternDefaults.TimeSigNumerator = evt.Numerator;
+                            _patternDefaults.TimeSigDenominator = evt.Denominator;
+                        }
+                        else
+                        {
+                            _currentPattern.TimeSigNumerator = evt.Numerator;
+                            _currentPattern.TimeSigDenominator = evt.Denominator;
+                        }
                         AddMidiEvent(evt);
                         break;
 
-                    case KeySignatureEvent evt:
-                        var ksig = evt.ToString();
-                        _patternDefaults.KeySig = ksig;
-                        _currentPattern.KeySig = ksig;
+                    case KeySignatureEvent evt://XXXXX
+                        if (_styleFile && _styleDefaults)
+                        {
+                            _patternDefaults.KeySigSharpsFlats = evt.SharpsFlats;
+                            _patternDefaults.KeySigMajorMinor = evt.MajorMinor;
+                        }
+                        else
+                        {
+                            _currentPattern.KeySigSharpsFlats = evt.SharpsFlats;
+                            _currentPattern.KeySigMajorMinor = evt.MajorMinor;
+                        }
                         AddMidiEvent(evt);
                         break;
 
@@ -269,29 +303,53 @@ namespace MidiLib
                         break;
 
                     case TextEvent evt when evt.MetaEventType == MetaEventType.Marker:
-                        // Indicates start of a new midi pattern.
-                        // Tidy up any missing parts of current info.
-                        CleanUpPattern();
+                        // This optional event is used to label points within a sequence, e.g. rehearsal letters, loop points, or section
+                        // names (such as 'First verse'). For a format 1 MIDI le, Marker Meta events should only occur within the first MTrk chunk.
 
-                        if(_currentPattern.PatternName != "")
+                        if (_styleFile)
                         {
-                            _patterns.Add(_currentPattern);
-                        }
+                            // Indicates start of a new midi pattern or global info.
 
-                        // Add a new pattern.
-                        _currentPattern = new PatternInfo(evt.Text, DeltaTicksPerQuarterNote);
-                        absoluteTime = 0;
-                        AddMidiEvent(evt);
+                            // Do something with the current if it's notes.
+                            if(!_styleDefaults)
+                            {
+                                // Tidy up any missing parts of current info and save it.
+                                CleanUpPattern();
+                                _patterns.Add(_currentPattern);
+                                _styleDefaults = false; // reset
+                            }
+
+                            // Start a new pattern.
+                            _currentPattern = new PatternInfo(evt.Text, DeltaTicksPerQuarterNote);
+                            absoluteTime = 0;
+                            AddMidiEvent(evt);
+
+                            // Does it contain defaults?
+                            if(_styleFile)
+                            {
+                                _styleDefaults = _currentPattern.PatternName switch
+                                {
+                                    // These don't contain pattern notes.
+                                    "SFF1" or "SFF2" or "SInt" or "" => true,
+                                    _ => false,
+                                };
+                            }
+                        }
+                        else
+                        {
+                            // Simple add of one only pattern.
+                            AddMidiEvent(evt);
+                        }
                         break;
 
                     case TextEvent evt when evt.MetaEventType == MetaEventType.TextEvent:
                         AddMidiEvent(evt);
                         break;
 
-                    //case MetaEvent evt when evt.MetaEventType == MetaEventType.EndTrack:
-                    //    // Indicates end of current midi track.
-                    //    AddMidiEvent(evt);
-                    //    break;
+                    case MetaEvent evt when evt.MetaEventType == MetaEventType.EndTrack:
+                        // Indicates end of current midi track.
+                        AddMidiEvent(evt);
+                        break;
 
                     default:
                         // Other MidiCommandCodes: AutoSensing, ChannelAfterTouch, ContinueSequence, Eox, KeyAfterTouch, StartSequence, StopSequence, TimingClock
@@ -390,20 +448,22 @@ namespace MidiLib
                 _currentPattern.Tempo = _patternDefaults.Tempo;
             }
 
-            if (_currentPattern.TimeSig == "")
+            if (_currentPattern.TimeSigNumerator == -1 && _currentPattern.TimeSigDenominator == -1)
             {
-                _currentPattern.TimeSig = _patternDefaults.TimeSig;
+                _currentPattern.TimeSigNumerator = _patternDefaults.TimeSigNumerator;
+                _currentPattern.TimeSigDenominator = _patternDefaults.TimeSigDenominator;
             }
 
-            if (_currentPattern.KeySig == "")
+            if (_currentPattern.KeySigSharpsFlats == -1 && _currentPattern.KeySigMajorMinor == -1)
             {
-                _currentPattern.KeySig = _patternDefaults.KeySig;
+                _currentPattern.KeySigSharpsFlats = _patternDefaults.KeySigSharpsFlats;
+                _currentPattern.KeySigMajorMinor = _patternDefaults.KeySigMajorMinor;
             }
 
             _currentPattern.ChannelNumbers.ForEach(ch =>
             {
                 int index = ch - 1;
-                if (_currentPattern.Patches[index] < 0)
+                if (_currentPattern.Patches[index] < 0)//TODOX check for presence in pattern first.
                 {
                     _currentPattern.Patches[index] = _patternDefaults.Patches[index];
                 }

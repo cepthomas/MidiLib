@@ -22,10 +22,16 @@ namespace MidiLib
         public int Tempo { get; set; } = 0;
 
         /// <summary>Time signature, if supplied by file.</summary>
-        public string TimeSig { get; set; } = "";
+        public int TimeSigNumerator { get; set; } = -1;
+
+        /// <summary>Time signature, if supplied by file.</summary>
+        public int TimeSigDenominator { get; set; } = -1;
 
         /// <summary>Key signature, if supplied by file.</summary>
-        public string KeySig { get; set; } = "";
+        public int KeySigSharpsFlats { get; set; } = -1;
+
+        /// <summary>Key signature, if supplied by file.</summary>
+        public int KeySigMajorMinor { get; set; } = -1;
 
         /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
         public int[] Patches { get; } = new int[MidiDefs.NUM_CHANNELS];
@@ -119,18 +125,18 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Helper function.
+        /// Get a list of valid channels with their patches.
         /// </summary>
-        public Dictionary<int, int> ValidPatches
+        public Dictionary<int, int> ValidChannels
         {
             get
             {
                 Dictionary<int, int> ps = new();
                 for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
                 {
-                    int chnum = i + 1;
                     if (Patches[i] >= 0)
                     {
+                        int chnum = i + 1;
                         ps.Add(chnum, Patches[i]);
                     }
                 }
@@ -144,17 +150,17 @@ namespace MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            List<string> content = new()
-            {
-                $"Name:{(PatternName == "" ? "None" : PatternName)}",
-                $"Tempo:{Tempo}",
-                $"TimeSig:{TimeSig}",
-                $"KeySig:{KeySig}"
-            };
+            //List<string> content = new()
+            //{
+            //    $"Name:{(PatternName == "" ? "None" : PatternName)}",
+            //    $"Tempo:{Tempo}",
+            //    $"TimeSig:{TimeSig}",
+            //    $"KeySig:{KeySig}"
+            //};
+            //ValidPatches.ForEach(p => content.Add($"Ch:{p.Key} Patch:{MidiDefs.GetInstrumentName(p.Value)}"));
+            //return string.Join(' ', content);
 
-            ValidPatches.ForEach(p => content.Add($"Ch:{p.Key} Patch:{MidiDefs.GetInstrumentName(p.Value)}"));
-
-            return string.Join(' ', content);
+            return PatternName;
         }
     }
 }

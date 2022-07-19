@@ -26,6 +26,12 @@ namespace MidiLib
 
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
+
+        /// <summary>Supported file types.</summary>
+        public const string MIDI_FILE_TYPES = "*.mid";
+
+        /// <summary>Supported file types.</summary>
+        public const string STYLE_FILE_TYPES = "*.sty;*.pcs;*.sst;*.prs";
         #endregion
 
         #region Fields

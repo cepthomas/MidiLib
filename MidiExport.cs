@@ -31,22 +31,23 @@ namespace MidiLib
             // Header
             List<string> contentText = new()
             {
-                "ScaledTime,AbsoluteTime,DeltaTime,Event,Channel,Content,,"
+                "ScaledTime,AbsoluteTime,DeltaTime,Event,Channel,Content1,Content2"
             };
 
-            // Any global.
-            global.ForEach(m => contentText.Add($"-1,0,0,Global,0,{m.Key}:{m.Value},,"));
+            // Any globals.
+            global.ForEach(m => contentText.Add($"-1,0,0,Global,0,{m.Key}:{m.Value},"));
 
             // Midi events.
             foreach (PatternInfo pi in patterns)
             {
-                contentText.Add($"0,0,0,Pattern,0,name:{pi.PatternName},tempo:{pi.Tempo},");
-                contentText.Add($"0,0,0,Pattern,0,name:{pi.PatternName},timesig:{pi.TimeSig},keysig:{pi.KeySig}");
+                contentText.Add($"0,0,0,Pattern,0,{pi.PatternName},");
+                //contentText.Add($"0,0,0,Pattern,0,name:{pi.PatternName},tempo:{pi.Tempo},");
+                //contentText.Add($"0,0,0,Pattern,0,name:{pi.PatternName},timesig:{pi.TimeSig},keysig:{pi.KeySig}");
 
-                pi.ValidPatches.ForEach(p =>
+                pi.ValidChannels.ForEach(p =>
                 {
                     var pname = drumChannelNumbers.Contains(p.Key) ? MidiDefs.GetDrumKitName(p.Value) : MidiDefs.GetInstrumentName(p.Value);
-                    contentText.Add($"0,0,0,Patch,{p.Key},patch:{pname},,");
+                    contentText.Add($"0,0,0,Patch,{p.Key},patch:{pname},");
                 });
 
                 var descs = pi.GetFilteredEvents(channelNumbers);
@@ -72,54 +73,18 @@ namespace MidiLib
             MidiEventCollection outColl = new(1, ppq);
             IList<MidiEvent> outEvents = outColl.AddTrack();
 
-            // Tempo.
+            // Build the event collection.
             outEvents.Add(new TempoEvent(0, 0) { Tempo = pattern.Tempo });
+            outEvents.Add(new TextEvent($"Export {pattern.PatternName}", MetaEventType.TextEvent, 0));
 
-            // General info.
-            var info = $"Export {pattern.PatternName}";
-            outEvents.Add(new TextEvent(info, MetaEventType.TextEvent, 0));
-
-            // Optional.
-            if (pattern.TimeSig != "")
+            if (pattern.TimeSigNumerator != -1 && pattern.TimeSigDenominator != -1)
             {
-                var parts = pattern.TimeSig.SplitByToken("/");
-                if (parts.Count == 2)
-                {
-                    try
-                    {
-                        int num = int.Parse(parts[0]);
-                        int denom = int.Parse(parts[1]);
-                        switch(denom)
-                        {
-                            case 2: denom = 1; break;
-                            case 4: denom = 2; break;
-                            case 8: denom = 3; break;
-                            case 16: denom = 4; break;
-                            case 32: denom = 5; break;
-                            default: throw new ArgumentException("Bad denominator");
-                        }
-
-                        outEvents.Add(new TimeSignatureEvent(0, num, denom, 2, 8));
-                    }
-                    catch { } // do something?
-                }
+                outEvents.Add(new TimeSignatureEvent(0, pattern.TimeSigNumerator, pattern.TimeSigDenominator, 2, 8));
             }
 
-            // Optional.
-            if (pattern.KeySig != "")
+            if(pattern.KeySigSharpsFlats != -1 && pattern.KeySigMajorMinor != -1)
             {
-                var parts = pattern.KeySig.SplitByToken(" ");
-                int num = parts.Count;
-                if (num > 2)
-                {
-                    try
-                    {
-                        int sharpsFlats = int.Parse(parts[num - 2]);
-                        int majorMinor = int.Parse(parts[num - 1]);
-                        outEvents.Add(new KeySignatureEvent(sharpsFlats, majorMinor, 0));
-                    }
-                    catch { } // do something?
-                }
+                outEvents.Add(new KeySignatureEvent(pattern.KeySigSharpsFlats, pattern.KeySigMajorMinor, 0));
             }
 
             // Patches.
