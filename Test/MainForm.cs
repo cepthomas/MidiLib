@@ -17,7 +17,6 @@ using NBagOfUis;
 using NBagOfTricks.Slog;
 
 
-
 namespace MidiLib.Test
 {
     public partial class MainForm : Form
@@ -65,7 +64,7 @@ namespace MidiLib.Test
 
         #region Lifecycle
         /// <summary>
-        /// Constructor. No logging yet!
+        /// Constructor. No logging allowed yet!
         /// </summary>
         public MainForm()
         {
@@ -83,7 +82,7 @@ namespace MidiLib.Test
 
             // Logger. Note: you can create this here but don't call any _logger functions until loaded.
             LogManager.MinLevelFile = LogLevel.Trace;
-            LogManager.MinLevelNotif = LogLevel.Debug;
+            LogManager.MinLevelNotif = LogLevel.Trace;
             LogManager.LogEvent += LogManager_LogEvent;
             LogManager.Run(Path.Join(_outPath, "log.txt"), 5000);
 
@@ -95,15 +94,14 @@ namespace MidiLib.Test
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
-            sldVolume.Minimum = VolumeDefs.MIN;
-            sldVolume.Maximum = VolumeDefs.MAX;
-            sldVolume.Resolution = VolumeDefs.MAX / 50;
-            sldVolume.Value = VolumeDefs.DEFAULT;
+            sldVolume.Minimum = MidiLibDefs.VOLUME_MIN;
+            sldVolume.Maximum = MidiLibDefs.VOLUME_MAX;
+            sldVolume.Resolution = MidiLibDefs.VOLUME_MAX / 50;
+            sldVolume.Value = MidiLibDefs.VOLUME_DEFAULT;
             sldVolume.Label = "volume";
 
             // Time controller.
             MidiSettings.LibSettings.Snap = SnapType.Beat;
-            //MidiSettings.LibSettings.ZeroBased = true;
             barBar.ProgressColor = _controlColor;
             barBar.CurrentTimeChanged += BarBar_CurrentTimeChanged;
 
@@ -131,9 +129,6 @@ namespace MidiLib.Test
         protected override void OnLoad(EventArgs e)
         {
             bool ok = CreateDevices();
-
-            // MidiTimeTest();
-
             if(ok)
             {
                 // Look for filename passed in.
@@ -208,18 +203,17 @@ namespace MidiLib.Test
 
                     default:
                         // Should be a real device.
-                        MidiInput min = new(dev.DeviceName);
+                        _inputDevice = new MidiInput(dev.DeviceName);
 
-                        if (!min.Valid)
+                        if (!_inputDevice.Valid)
                         {
                             _logger.Error($"Something wrong with your input device:{dev.DeviceName}");
                             ok = false;
                         }
                         else
                         {
-                            min.CaptureEnable = true;
-                            min.InputEvent += Listener_InputEvent;
-                            _inputDevice = min;
+                            _inputDevice.CaptureEnable = true;
+                            _inputDevice.InputEvent += Listener_InputEvent;
                         }
                         break;
                 }
@@ -237,6 +231,10 @@ namespace MidiLib.Test
                         {
                             _logger.Error($"Something wrong with your output device:{_outputDevice.DeviceName}");
                             ok = false;
+                        }
+                        else
+                        {
+                            _outputDevice.LogEnable = btnLogMidi.Checked;
                         }
                         break;
                 }
@@ -437,7 +435,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Open_Click(object sender, EventArgs e)
         {
-            var fileTypes = $"Midi Files|*.mid|Style Files|*.sty;*.pcs;*.sst;*.prs";
+            var fileTypes = $"Midi Files|{MidiLibDefs.MIDI_FILE_TYPES}|Style Files|{MidiLibDefs.STYLE_FILE_TYPES}";
             using OpenFileDialog openDlg = new()
             {
                 Filter = fileTypes,
@@ -457,7 +455,7 @@ namespace MidiLib.Test
         /// Load the requested pattern and create controls.
         /// </summary>
         /// <param name="pinfo"></param>
-        void LoadPattern(PatternInfo? pinfo)
+        void LoadPattern(PatternInfo pinfo)
         {
             Stop();
             Rewind();
@@ -472,82 +470,75 @@ namespace MidiLib.Test
             _channels.Clear();
 
             // Load the new one.
-            if (pinfo is null)
+            // Create the new controls.
+            int x = lbPatterns.Right + 5;
+            int y = lbPatterns.Top;
+
+            foreach(var (number, patch) in pinfo.GetValidChannels())
             {
-                _logger.Error($"Invalid pattern!");
-            }
-            else
-            {
-                // Create the new controls.
-                int x = lbPatterns.Right + 5;
-                int y = lbPatterns.Top;
+                // Get events for the channel.
+                var chEvents = pinfo.GetFilteredEvents(new List<int>() { number }).Where(e => e.RawEvent is NoteEvent || e.RawEvent is NoteOnEvent);
 
-                foreach(int chnum in pinfo.ChannelNumbers)
+                // Is this channel pertinent?
+                if (chEvents.Any() && patch >= 0)
                 {
-                    // Get events for the channel.
-                    var chEvents = pinfo.GetFilteredEvents(new List<int>() { chnum }).Where(e => e.MidiEvent is NoteEvent || e.MidiEvent is NoteOnEvent);
-
-                    // Is this channel pertinent?
-                    if (chEvents.Any())
-                    {
-                        // Make new channel.
-                        Channel channel = new()
-                        {
-                            ChannelName = $"chan{chnum}",
-                            ChannelNumber = chnum,
-                            Device = _outputDevice,
-                            DeviceId = _outputDevice.DeviceName,
-                            Volume = VolumeDefs.DEFAULT,
-                            State = ChannelState.Normal,
-                            Patch = pinfo.Patches[chnum - 1],
-                            IsDrums = chnum == MidiDefs.DEFAULT_DRUM_CHANNEL,
-                            Selected = false,
-                        };
-                        _channels.Add(channel.ChannelName, channel);
-                        channel.SetEvents(chEvents);
-
-                        // Make new control and bind to channel.
-                        ChannelControl control = new()
-                        {
-                            Location = new(x, y),
-                            BorderStyle = BorderStyle.FixedSingle,
-                            BoundChannel = channel
-                        };
-                        control.ChannelChangeEvent += Control_ChannelChangeEvent;
-                        Controls.Add(control);
-                        _channelControls.Add(control);
-
-                        // Good time to send initial patch.
-                        channel.SendPatch();
-
-                        // Adjust positioning.
-                        y += control.Height + 5;
-                    }
-                }
-
-                // Add a channel for the input device.
-                if(_inputDevice is not null && _inputDevice.Valid)
-                {
-                    int chnum = 16;
+                    // Make new channel.
                     Channel channel = new()
                     {
-                        ChannelName = $"chan16",
-                        ChannelNumber = chnum,
+                        ChannelName = $"chan{number}",
+                        ChannelNumber = number,
                         Device = _outputDevice,
                         DeviceId = _outputDevice.DeviceName,
-                        Volume = VolumeDefs.DEFAULT,
+                        Volume = MidiLibDefs.VOLUME_DEFAULT,
                         State = ChannelState.Normal,
-                        Patch = MidiDefs.GetInstrumentNumber("OrchestralHarp"),
-                        IsDrums = false,
+                        Patch = patch,
+                        IsDrums = number == MidiDefs.DEFAULT_DRUM_CHANNEL,
                         Selected = false,
                     };
                     _channels.Add(channel.ChannelName, channel);
-                    channel.SendPatch();
-                }
+                    channel.SetEvents(chEvents);
 
-                // Set timer.
-                nudTempo.Value = pinfo.Tempo;
+                    // Make new control and bind to channel.
+                    ChannelControl control = new()
+                    {
+                        Location = new(x, y),
+                        BorderStyle = BorderStyle.FixedSingle,
+                        BoundChannel = channel
+                    };
+                    control.ChannelChangeEvent += Control_ChannelChangeEvent;
+                    Controls.Add(control);
+                    _channelControls.Add(control);
+
+                    // Good time to send initial patch.
+                    channel.SendPatch();
+
+                    // Adjust positioning.
+                    y += control.Height + 5;
+                }
             }
+
+            // Add a channel for the input device.
+            if(_inputDevice is not null && _inputDevice.Valid)
+            {
+                int chnum = 16;
+                Channel channel = new()
+                {
+                    ChannelName = $"chan16",
+                    ChannelNumber = chnum,
+                    Device = _outputDevice,
+                    DeviceId = _outputDevice.DeviceName,
+                    Volume = MidiLibDefs.VOLUME_DEFAULT,
+                    State = ChannelState.Normal,
+                    Patch = MidiDefs.GetInstrumentNumber("OrchestralHarp"),
+                    IsDrums = false,
+                    Selected = false,
+                };
+                _channels.Add(channel.ChannelName, channel);
+                channel.SendPatch();
+            }
+
+            // Set timer.
+            nudTempo.Value = pinfo.Tempo;
 
             // Update bar.
             var tot = _channels.TotalSubdivs();
@@ -566,9 +557,17 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Patterns_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            var pinfo = _mdata.GetPattern(lbPatterns.SelectedItem.ToString()!);
+            var pname = lbPatterns.SelectedItem.ToString()!;
+            var pinfo = _mdata.GetPattern(pname);
 
-            LoadPattern(pinfo);
+            if (pinfo is not null)
+            {
+                LoadPattern(pinfo);
+            }
+            else
+            {
+                _logger.Warn($"Invalid pattern {pname}");
+            }
 
             Rewind();
         }
@@ -617,7 +616,7 @@ namespace MidiLib.Test
         /// <returns>True if sequence completed.</returns>
         public bool DoNextStep()
         {
-            bool done = false;
+            bool done;
 
             // Any soloes?
             bool anySolo = _channels.AnySolo();
@@ -742,16 +741,16 @@ namespace MidiLib.Test
                 // Execute the requested export function.
                 if (sender == btnExportCsv)
                 {
-                    var newfn = MakeExportFileName(_outPath, _mdata.FileName, "all", "csv");
-                    MidiExport.ExportCsv(newfn, patterns, channels, GetGlobal());
+                    var newfn = MiscUtils.MakeExportFileName(_outPath, _mdata.FileName, "all", "csv");
+                    MidiExport.ExportCsv(newfn, patterns, channels, _mdata.GetGlobal());
                     _logger.Info($"Exported to {newfn}");
                 }
                 else if (sender == btnExportMidi)
                 {
                     foreach (var pattern in patterns)
                     {
-                        var newfn = MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "mid");
-                        MidiExport.ExportMidi(newfn, pattern, channels, GetGlobal());
+                        var newfn = MiscUtils.MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "mid");
+                        MidiExport.ExportMidi(newfn, pattern, channels, _mdata.GetGlobal());
                         _logger.Info($"Export midi to {newfn}");
                     }
                 }
@@ -764,41 +763,6 @@ namespace MidiLib.Test
             {
                 _logger.Error($"{ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// Create a new clean filename for export. Creates path if it doesn't exist.
-        /// </summary>
-        /// <param name="path">Export path</param>
-        /// <param name="baseFn">Root of the new file name</param>
-        /// <param name="mod">Modifier</param>
-        /// <param name="ext">File extension</param>
-        /// <returns></returns>
-        public string MakeExportFileName(string path, string baseFn, string mod, string ext)
-        {
-            string name = Path.GetFileNameWithoutExtension(baseFn);
-
-            // Clean the file name.
-            name = name.Replace('.', '-').Replace(' ', '_');
-            mod = mod == "" ? "default" : mod.Replace(' ', '_');
-            var newfn = Path.Join(path, $"{name}_{mod}.{ext}");
-            return newfn;
-        }
-
-        /// <summary>
-        /// Utility to contain midi file meta info.
-        /// </summary>
-        /// <returns></returns>
-        Dictionary<string, int> GetGlobal()
-        {
-            Dictionary<string, int> global = new()
-            {
-                { "MidiFileType", _mdata.MidiFileType },
-                { "DeltaTicksPerQuarterNote", _mdata.DeltaTicksPerQuarterNote },
-                { "NumTracks", _mdata.NumTracks }
-            };
-
-            return global;
         }
         #endregion
 
@@ -839,41 +803,8 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Stuff_Click(object sender, EventArgs e)
         {
-            MidiTimeTest();
+            // A unit test.
 
-            // var def = _settings.MidiSettings.InternalPPQ;
-
-            // // ppq = 4/8
-            // // 1.0 1.1 ... 1.7 2.0
-            // _settings.MidiSettings.InternalPPQ = PPQ.PPQ_8;
-
-            // var b1 = new BarTime(1.0);
-            // var b2 = new BarTime(1.7);
-            // var b3 = new BarTime(1.8);
-            // var b4 = new BarTime(2.0);
-            // var b5 = new BarTime(2.1);
-
-            // // ppq = 16/32
-            // // 1.0 1.1 ... 1.7 1.8 ... 1.15 2.0
-            // // 1.00 1.01 ... 1.07 1.08 ... 1.15 2.00
-            // _settings.MidiSettings.InternalPPQ = PPQ.PPQ_32;
-            // var b11 = new BarTime(1.0);
-            // var b12 = new BarTime(1.7);
-            // var b13 = new BarTime(1.8);
-            // var b14 = new BarTime(1.31);
-            // var b15 = new BarTime(1.32);
-            // var b16 = new BarTime(2.0);
-            // var b17 = new BarTime(2.1);
-
-            // // Restore.
-            // _settings.MidiSettings.InternalPPQ = def;
-        }
-
-        /// <summary>
-        /// Unit test.
-        /// </summary>
-        void MidiTimeTest()
-        {
             // If we use ppq of 8 (32nd notes):
             // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
             //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
@@ -902,35 +833,32 @@ namespace MidiLib.Test
         }
 
         /// <summary>
-        /// Tell me what you have.
-        /// </summary>
-        void DumpMidiDevices()
-        {
-            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-            {
-                _logger.Info($"Midi In {i} \"{MidiIn.DeviceInfo(i).ProductName}\"");
-            }
-
-            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-            {
-                _logger.Info($"Midi Out {i} \"{MidiOut.DeviceInfo(i).ProductName}\"");
-            }
-        }
-
-        /// <summary>
         /// Generate human info.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void Docs_Click(object sender, EventArgs e)
         {
-            DumpMidiDevices();
+            List<string> docs = new();
+            docs.Add("# Midi Input Devices");
+            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            {
+                docs.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
+            }
+            docs.Add("- \"VirtualKeyboard\"");
+            docs.Add("- \"BingBong\"");
+            docs.Add("");
+            docs.Add("# Midi Output Devices");
+            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            {
+                docs.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
+            }
+            docs.Add("");
 
-            var docs = MusicDefinitions.FormatDoc();
-            Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("tahoma", 16), true);
+            docs.AddRange(MidiDefs.FormatDoc());
+            docs.AddRange(MusicDefinitions.FormatDoc());
 
-            docs = MidiDefs.FormatDoc();
-            Tools.MarkdownToHtml(docs, Color.LightGreen, new Font("Lucida Sans Unicode", 16), true);
+            Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
         }
 
         /// <summary>

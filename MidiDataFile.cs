@@ -9,13 +9,6 @@ using NAudio.Midi;
 using NBagOfTricks;
 
 
-// TODO Properly handle tracks from original files?
-// TODO auto-determine which channels have drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
-// This is from the General MIDI 2.0 specification:
-// "Bank Select 78H/xxH followed by a Program Change will cause the Channel to become a Rhythm Channel, using the Drum Set selected by the Program Change."
-// For more details get the GM2 specification here: https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2
-
-
 namespace MidiLib
 {
     /// <summary>
@@ -56,7 +49,7 @@ namespace MidiLib
         public int MidiFileType { get; private set; } = 0;
 
         /// <summary>How many tracks.</summary>
-        public int NumTracks { get; private set; } = 0;
+        public int NumTracks { get; private set; } = 0;// TODO Properly handle tracks from original files?
 
         /// <summary>Original resolution for all events.</summary>
         public int DeltaTicksPerQuarterNote { get; private set; } = 0;
@@ -77,7 +70,7 @@ namespace MidiLib
             }
 
             FileName = fn;
-            _styleFile = MidiDefs.STYLE_FILE_TYPES.Contains(Path.GetExtension(fn).ToLower());
+            _styleFile = MidiLibDefs.STYLE_FILE_TYPES.Contains(Path.GetExtension(fn).ToLower());
             _patternDefaults.Tempo = defaultTempo;
             _includeNoisy = includeNoisy;
 
@@ -127,9 +120,16 @@ namespace MidiLib
                 }
             }
 
-            // Last one.
+            // Clean up straggler.
             CleanUpPattern();
             _patterns.Add(_currentPattern);
+
+            // TODO auto-determine which channels have drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
+            // This is from the General MIDI 2.0 specification:
+            // "Bank Select 78H/xxH followed by a Program Change will cause the Channel to become a Rhythm Channel, using the Drum Set selected by the Program Change."
+            // For more details get the GM2 specification here: https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2
+            // >>> Drum channels will probably have the most notes. Also durations will be short.
+            // >>> Could also remember user's reassignments in the settings file.
         }
 
         /// <summary>
@@ -158,6 +158,22 @@ namespace MidiLib
             var names = _patterns.Select(p => p.PatternName).ToList();
 
             return names;
+        }
+
+        /// <summary>
+        /// Utility to contain midi file meta info.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, int> GetGlobal()
+        {
+            Dictionary<string, int> global = new()
+            {
+                { "MidiFileType", MidiFileType },
+                { "DeltaTicksPerQuarterNote", DeltaTicksPerQuarterNote },
+                { "NumTracks", NumTracks }
+            };
+
+            return global;
         }
         #endregion
 
@@ -217,15 +233,14 @@ namespace MidiLib
                         AddMidiEvent(evt);
                         break;
 
-                    case PatchChangeEvent evt://XXXXX
-                        var index = evt.Channel - 1;
+                    case PatchChangeEvent evt:
                         if(_styleFile && _styleDefaults)
                         {
-                            _patternDefaults.Patches[index] = evt.Patch;
+                            _patternDefaults.SetChannelPatch(evt.Channel, evt.Patch);
                         }
                         else
                         {
-                            _currentPattern.Patches[index] = evt.Patch;
+                            _currentPattern.SetChannelPatch(evt.Channel, evt.Patch);
                         }
                         AddMidiEvent(evt);
                         //Debug.WriteLine($"{evt}");
@@ -257,7 +272,7 @@ namespace MidiLib
                         AddMidiEvent(evt);
                         break;
 
-                    case TempoEvent evt://XXXXX
+                    case TempoEvent evt:
                         var tempo = (int)Math.Round(evt.Tempo);
                         if (_styleFile && _styleDefaults)
                         {
@@ -270,7 +285,7 @@ namespace MidiLib
                         AddMidiEvent(evt);
                         break;
 
-                    case TimeSignatureEvent evt://XXXXX
+                    case TimeSignatureEvent evt:
                         if (_styleFile && _styleDefaults)
                         {
                             _patternDefaults.TimeSigNumerator = evt.Numerator;
@@ -284,7 +299,7 @@ namespace MidiLib
                         AddMidiEvent(evt);
                         break;
 
-                    case KeySignatureEvent evt://XXXXX
+                    case KeySignatureEvent evt:
                         if (_styleFile && _styleDefaults)
                         {
                             _patternDefaults.KeySigSharpsFlats = evt.SharpsFlats;
@@ -460,12 +475,11 @@ namespace MidiLib
                 _currentPattern.KeySigMajorMinor = _patternDefaults.KeySigMajorMinor;
             }
 
-            _currentPattern.ChannelNumbers.ForEach(ch =>
+            _currentPattern.GetValidChannels().ForEach(ch =>
             {
-                int index = ch - 1;
-                if (_currentPattern.Patches[index] < 0)//TODOX check for presence in pattern first.
+                if (ch.patch < 0)
                 {
-                    _currentPattern.Patches[index] = _patternDefaults.Patches[index];
+                    _currentPattern.SetChannelPatch(ch.number, _patternDefaults.GetPatch(ch.number));
                 }
             });
         }

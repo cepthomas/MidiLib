@@ -56,11 +56,6 @@ namespace MidiLib
         [Browsable(false)] // TODO Implement user selectable later maybe.
         [JsonIgnore()]
         public int InternalPPQ { get; set; } = 32;
-
-        //[DisplayName("Zero Based Time")] // TODO Implement later maybe. Probably will require a BarTimeSpan class.
-        //[Description("Use 0:0:0 time instead of 1:1:1.")]
-        //[Browsable(true)]
-        //public bool ZeroBased { get; set; } = false;
         #endregion
 
         #region Properties - internal

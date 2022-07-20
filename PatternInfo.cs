@@ -32,12 +32,6 @@ namespace MidiLib
 
         /// <summary>Key signature, if supplied by file.</summary>
         public int KeySigMajorMinor { get; set; } = -1;
-
-        /// <summary>All the channel patches. Index is 0-based, not channel number.</summary>
-        public int[] Patches { get; } = new int[MidiDefs.NUM_CHANNELS];
-
-        /// <summary>All channel numbers in the pattern.</summary>
-        public HashSet<int> ChannelNumbers { get; } = new();
         #endregion
 
         #region Fields
@@ -49,6 +43,9 @@ namespace MidiLib
 
         /// <summary>For scaling subdivs to internal.</summary>
         readonly MidiTimeConverter? _mt = null;
+
+        /// <summary>Collection of all channels in this pattern. Key is number, value is associated patch.</summary>
+        readonly Dictionary<int, int> _channelPatches = new();
         #endregion
 
         /// <summary>
@@ -56,11 +53,6 @@ namespace MidiLib
         /// </summary>
         public PatternInfo()
         {
-            // Init fixed length arrays.
-            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-            {
-                Patches[i] = -1;
-            }
         }
 
         /// <summary>
@@ -79,7 +71,7 @@ namespace MidiLib
         {
             events.ForEach(e => AddEvent(e));
             Tempo = tempo;
-            channels.ForEach(ch => Patches[ch.ChannelNumber] = ch.Patch);
+            channels.ForEach(ch => SetChannelPatch(ch.ChannelNumber, ch.Patch));
         }
 
         /// <summary>
@@ -88,7 +80,7 @@ namespace MidiLib
         /// <param name="evt">The event to add.</param>
         public void AddEvent(MidiEventDesc evt)
         {
-            ChannelNumbers.Add(evt.ChannelNumber);
+            SetChannelPatch(evt.ChannelNumber);
 
             // Scale time.
             evt.ScaledTime = _mt!.MidiToInternal(evt.AbsoluteTime);
@@ -125,22 +117,45 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Get a list of valid channels with their patches.
+        /// Get an ordered list of valid channel numbers with their patches.
         /// </summary>
-        public Dictionary<int, int> ValidChannels
+        /// <returns></returns>
+        public List<(int number, int patch)> GetValidChannels()
         {
-            get
+            List<(int number, int patch)> ps = new();
+
+            if (_events.Any())
             {
-                Dictionary<int, int> ps = new();
-                for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
-                {
-                    if (Patches[i] >= 0)
-                    {
-                        int chnum = i + 1;
-                        ps.Add(chnum, Patches[i]);
-                    }
-                }
-                return ps;
+                _channelPatches.OrderBy(n => n.Key).ForEach(n => { ps.Add((n.Key, n.Value)); });
+            }
+
+            return ps;
+        }
+
+        /// <summary>
+        /// Get the patch associated with the arg.
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <returns></returns>
+        public int GetPatch(int channel)
+        {
+            return _channelPatches.ContainsKey(channel) ? _channelPatches[channel] : -1;
+        }
+
+        /// <summary>
+        /// Safely add/update info.
+        /// </summary>
+        /// <param name="number">The channel number</param>
+        /// <param name="patch">The patch. If this is an number update, don't overwrite patch with default.</param>
+        public void SetChannelPatch(int number, int patch = -1)
+        {
+            if (!_channelPatches.ContainsKey(number))
+            {
+                _channelPatches.Add(number, patch);
+            }
+            else if (patch != -1)
+            {
+                _channelPatches[number] = patch;
             }
         }
 

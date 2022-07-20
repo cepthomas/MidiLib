@@ -20,7 +20,7 @@ namespace MidiLib
         readonly Dictionary<int, List<MidiEvent>> _transients = new();
 
         ///<summary>Backing.</summary>
-        double _volume = VolumeDefs.DEFAULT;
+        double _volume = MidiLibDefs.VOLUME_DEFAULT;
         #endregion
 
         #region Properties
@@ -37,7 +37,7 @@ namespace MidiLib
         public double Volume
         {
             get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX); }
+            set { _volume = MathUtils.Constrain(value, MidiLibDefs.VOLUME_MIN, MidiLibDefs.VOLUME_MAX); }
         }
 
         /// <summary>Associated device.</summary>
@@ -85,7 +85,7 @@ namespace MidiLib
                     _events.Add(te.ScaledTime, new List<MidiEvent>());
                 }
 
-                _events[te.ScaledTime].Add(te.MidiEvent);
+                _events[te.ScaledTime].Add(te.RawEvent);
                 MaxSubdiv = Math.Max(MaxSubdiv, te.ScaledTime);
             }
         }

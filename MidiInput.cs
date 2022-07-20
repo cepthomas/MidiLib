@@ -149,8 +149,10 @@ namespace MidiLib
         /// </summary>
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
-            InputEventArgs evt = new();
-            evt.ErrorInfo = $"Message:0x{e.RawMessage:X8}";
+            InputEventArgs evt = new()
+            {
+                ErrorInfo = $"Message:0x{e.RawMessage:X8}"
+            };
             Log(evt);
         }
 

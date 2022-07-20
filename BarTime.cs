@@ -11,7 +11,7 @@ using NBagOfTricks;
 namespace MidiLib
 {
     /// <summary>Sort of like DateTime but for musical terminology.</summary>
-    public class BarTime : IComparable // TODO probably nice to split out a BarTimeSpan class.
+    public class BarTime : IComparable // TODO Create a BarTimeSpan class.
     {
         #region Fields
         /// <summary>For hashing.</summary>
@@ -19,9 +19,6 @@ namespace MidiLib
 
         /// <summary>Increment for unique value.</summary>
         static int _all_ids = 1;
-
-        /// <summary>Adjustment for 0/1-based.</summary>
-        int _base = 0;
 
         /// <summary>Some features are at a lower resolution.</summary>
         public const int LOW_RES_PPQ = 8;
@@ -35,10 +32,10 @@ namespace MidiLib
         public int TotalBeats { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat; } }
 
         /// <summary>The bar number.</summary>
-        public int Bar { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBar + _base; } }
+        public int Bar { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBar; } }
 
         /// <summary>The beat number in the bar.</summary>
-        public int Beat { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat % MidiSettings.LibSettings.BeatsPerBar + _base; } }
+        public int Beat { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat % MidiSettings.LibSettings.BeatsPerBar; } }
 
         /// <summary>The subdiv in the beat.</summary>
         public int Subdiv { get { return TotalSubdivs % MidiSettings.LibSettings.SubdivsPerBeat; } }
@@ -62,7 +59,7 @@ namespace MidiLib
         /// <param name="subdiv"></param>
         public BarTime(int bar, int beat, int subdiv)
         {
-            TotalSubdivs = ((bar - _base) * MidiSettings.LibSettings.SubdivsPerBar) + ((beat - _base) * MidiSettings.LibSettings.SubdivsPerBeat) + subdiv;
+            TotalSubdivs = (bar * MidiSettings.LibSettings.SubdivsPerBar) + (beat * MidiSettings.LibSettings.SubdivsPerBeat) + subdiv;
             _id = _all_ids++;
         }
 
@@ -169,7 +166,7 @@ namespace MidiLib
         /// <returns></returns>
         public string Format()
         {
-           return $"{Bar + _base}.{Beat + _base}.{Subdiv:00}";
+           return $"{Bar}.{Beat}.{Subdiv:00}";
         }
 
         /// <summary>

@@ -14,6 +14,7 @@ Requires VS2022 and .NET6.
 
 ## Notes
 - Since midi files and NAudio use 1-based channel numbers, so does this application, except when used internally as an array index.
+- Time is represented by `bar.beat.subdiv ` but 0-based, unlike typical music representation.
 - Because the windows multimedia timer has inadequate accuracy for midi notes, resolution is limited to 32nd notes.
 - If midi file type is `1`, all tracks are combined. Because.
 - NAudio `NoteEvent` is used to represent Note Off and Key After Touch messages. It is also the base class for `NoteOnEvent`. Not sure why it was done that way.
@@ -58,7 +59,6 @@ SimpleChannelControl
 
 BarBar, BarTime
 - Shows progress in musical bars and beats.
-- User has option to show bars and beats as one-based or zero-based.
 - User can select time.
 
 PatchPicker

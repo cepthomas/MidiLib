@@ -26,12 +26,6 @@ namespace MidiLib
 
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
-
-        /// <summary>Supported file types.</summary>
-        public const string MIDI_FILE_TYPES = "*.mid";
-
-        /// <summary>Supported file types.</summary>
-        public const string STYLE_FILE_TYPES = "*.sty;*.pcs;*.sst;*.prs";
         #endregion
 
         #region Fields
@@ -67,29 +61,21 @@ namespace MidiLib
         {
             List<string> docs = new();
             docs.Add("# Midi GM Instruments");
-            docs.Add("");
             docs.Add("Instrument          | Number");
             docs.Add("----------          | ------");
             Enumerable.Range(0, _instruments.Count).ForEach(i => docs.Add($"{_instruments[i]}|{i}"));
-            docs.Add("");
-            docs.Add("## Drums");
-            docs.Add("");
+            docs.Add("# Midi GM Drums");
             docs.Add("Drum                | Number");
             docs.Add("----                | ------");
             _drums.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
-            docs.Add("");
             docs.Add("# Midi GM Controllers");
             docs.Add("- Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119");
             docs.Add("- For most controllers marked on/off, on=127 and off=0");
-            docs.Add("");
             docs.Add("Controller          | Number");
             docs.Add("----------          | ------");
             _controllers.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
-            docs.Add("");
             docs.Add("# Midi GM Drum Kits");
-            docs.Add("");
             docs.Add("Note that these will vary depending on your Soundfont file.");
-            docs.Add("");
             docs.Add("Kit        | Number");
             docs.Add("-----------| ------");
             _drumKits.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));

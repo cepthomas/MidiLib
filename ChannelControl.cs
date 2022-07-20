@@ -88,8 +88,8 @@ namespace MidiLib
 
             sldVolume.Value = BoundChannel.Volume;
             sldVolume.DrawColor = SelectedColor;
-            sldVolume.Minimum = VolumeDefs.MIN;
-            sldVolume.Maximum = VolumeDefs.MAX_GAIN;
+            sldVolume.Minimum = MidiLibDefs.VOLUME_MIN;
+            sldVolume.Maximum = MidiLibDefs.MAX_GAIN;
             sldVolume.ValueChanged += Volume_ValueChanged;
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;
