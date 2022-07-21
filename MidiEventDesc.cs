@@ -42,7 +42,7 @@ namespace MidiLib
         public override string ToString()
         {
             string ntype = RawEvent.CommandCode == MidiCommandCode.MetaEvent ? (RawEvent as MetaEvent)!.MetaEventType.ToString() : RawEvent.CommandCode.ToString();
-            string ret = $"Ch:{ChannelName}({ChannelNumber}) AbsoluteTime:{AbsoluteTime} ScaledTime:{ScaledTime} MidiEvent:{ntype}";
+            string ret = $"Ch {ChannelNumber}:{ChannelName} TAbs:{AbsoluteTime} TScld:{ScaledTime} Event:{RawEvent}";
             return ret;
         }
     }

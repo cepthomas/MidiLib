@@ -131,12 +131,10 @@ namespace MidiLib.Test
             bool ok = CreateDevices();
             if(ok)
             {
-                // Look for filename passed in.
-                string[] args = Environment.GetCommandLineArgs();
-                if (args.Length > 1)
-                {
-                    OpenFile(args[1]);
-                }
+                // Plain midi, one instrument, no patch: "_bass_ch2.mid"
+                // Plain midi, full song: "WICKGAME.MID"
+                // Style file, full info: "_LoveSong.S474.sty"
+                OpenFile(@"C:\Dev\repos\TestAudioFiles\_bass_ch2.mid");
             }
         }
 

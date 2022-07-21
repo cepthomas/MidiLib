@@ -161,7 +161,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Utility to contain midi file meta info.
+        /// Utility to capture common midi file meta info.
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, int> GetGlobal()
@@ -342,6 +342,12 @@ namespace MidiLib
                             // Does it contain defaults?
                             if(_styleFile)
                             {
+                                // These don't contain notes.
+                                // SFF1:
+                                // SFF2:
+                                // SInt: Initial patches are in here.
+                                //case "":
+
                                 _styleDefaults = _currentPattern.PatternName switch
                                 {
                                     // These don't contain pattern notes.
@@ -352,7 +358,7 @@ namespace MidiLib
                         }
                         else
                         {
-                            // Simple add of one only pattern.
+                            // Simple add if one only pattern.
                             AddMidiEvent(evt);
                         }
                         break;
@@ -454,7 +460,7 @@ namespace MidiLib
 
         #region Private functions
         /// <summary>
-        /// Fill in missing info using defaults.
+        /// Fill in any missing info using defaults.
         /// </summary>
         void CleanUpPattern()
         {

@@ -175,7 +175,7 @@ namespace MidiLib
             //ValidPatches.ForEach(p => content.Add($"Ch:{p.Key} Patch:{MidiDefs.GetInstrumentName(p.Value)}"));
             //return string.Join(' ', content);
 
-            return PatternName;
+            return PatternName == "" ? "nameless" : PatternName;
         }
     }
 }
