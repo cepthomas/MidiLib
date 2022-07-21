@@ -45,7 +45,7 @@ namespace MidiLib.Test
         readonly List<ChannelControl> _channelControls = new();
 
         /// <summary>Prevent button press recursion.</summary>
-        bool _guard = false;
+        bool _guard = false; // TODO get rid of this.
 
         /// <summary>My logging.</summary>
         readonly Logger _logger = LogManager.CreateLogger("MainForm");
@@ -413,6 +413,7 @@ namespace MidiLib.Test
 
                 Text = $"Midi Lib Test - {fn}";
 
+                // Pick first.
                 lbPatterns.SelectedIndex = 0;
 
                 // Set up timer default.

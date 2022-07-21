@@ -146,7 +146,7 @@ namespace MidiLib
         /// Safely add/update info.
         /// </summary>
         /// <param name="number">The channel number</param>
-        /// <param name="patch">The patch. If this is an number update, don't overwrite patch with default.</param>
+        /// <param name="patch">The patch. If this is a number update, don't overwrite patch with default.</param>
         public void SetChannelPatch(int number, int patch = -1)
         {
             if (!_channelPatches.ContainsKey(number))
