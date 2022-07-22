@@ -22,16 +22,7 @@ namespace MidiLib
         public int Tempo { get; set; } = 0;
 
         /// <summary>Time signature, if supplied by file.</summary>
-        public int TimeSigNumerator { get; set; } = -1;
-
-        /// <summary>Time signature, if supplied by file.</summary>
-        public int TimeSigDenominator { get; set; } = -1;
-
-        /// <summary>Key signature, if supplied by file.</summary>
-        public int KeySigSharpsFlats { get; set; } = -1;
-
-        /// <summary>Key signature, if supplied by file.</summary>
-        public int KeySigMajorMinor { get; set; } = -1;
+        public (int num, int denom) TimeSignature { get; set; } = new();
         #endregion
 
         #region Fields
@@ -58,16 +49,27 @@ namespace MidiLib
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public PatternInfo(string name, int ppq) : this()
+        /// <param name="name">Pattern name</param>
+        /// <param name="tempo">Defalt tempo</param>
+        /// <param name="ppq">Resolution</param>
+        public PatternInfo(string name, int tempo, int ppq) : this()
         {
             PatternName = name;
             _mt = new(ppq, MidiSettings.LibSettings.DefaultTempo);
         }
 
+        // <summary>
+        // 
+        // </summary>
         /// <summary>
-        /// Constructor from existing data.
+        ///Constructor from existing data. 
         /// </summary>
-        public PatternInfo(string name, int ppq, IEnumerable<MidiEventDesc> events, IEnumerable<Channel> channels, int tempo) : this(name, ppq)
+        /// <param name="name">Pattern name</param>
+        /// <param name="ppq">Resolution</param>
+        /// <param name="events">All the events</param>
+        /// <param name="channels">Channels of interest</param>
+        /// <param name="tempo">Defalt tempo</param>
+        public PatternInfo(string name, int ppq, IEnumerable<MidiEventDesc> events, IEnumerable<Channel> channels, int tempo) : this(name, tempo, ppq)
         {
             events.ForEach(e => AddEvent(e));
             Tempo = tempo;
@@ -80,7 +82,8 @@ namespace MidiLib
         /// <param name="evt">The event to add.</param>
         public void AddEvent(MidiEventDesc evt)
         {
-            SetChannelPatch(evt.ChannelNumber);
+            // Capture that this is a valid channel. Patch will get patched up later.
+            SetChannelPatch(evt.ChannelNumber, -1);
 
             // Scale time.
             evt.ScaledTime = _mt!.MidiToInternal(evt.AbsoluteTime);
@@ -88,10 +91,12 @@ namespace MidiLib
 
             if(!_eventsByTime.ContainsKey(evt.ScaledTime))
             {
-                _eventsByTime.Add(evt.ScaledTime, new());
+                _eventsByTime.Add(evt.ScaledTime, new() { evt });
             }
-
-            _eventsByTime[evt.ScaledTime].Add(evt);
+            else
+            {
+                _eventsByTime[evt.ScaledTime].Add(evt);
+            }
         }
 
         /// <summary>
@@ -120,13 +125,16 @@ namespace MidiLib
         /// Get an ordered list of valid channel numbers with their patches.
         /// </summary>
         /// <returns></returns>
-        public List<(int number, int patch)> GetValidChannels()
+        public List<(int chnum, int patch)> GetValidChannels()
         {
-            List<(int number, int patch)> ps = new();
+            List<(int chnum, int patch)> ps = new();
 
             if (_events.Any())
             {
-                _channelPatches.OrderBy(n => n.Key).ForEach(n => { ps.Add((n.Key, n.Value)); });
+                _channelPatches
+                    .Where(n => n.Value != -1)
+                    .OrderBy(n => n.Key)
+                    .ForEach(n => { ps.Add((n.Key, n.Value)); });
             }
 
             return ps;
@@ -143,11 +151,23 @@ namespace MidiLib
         }
 
         /// <summary>
+        /// Remove a channel from the channel/patches collection.
+        /// </summary>
+        /// <param name="channel"></param>
+        public void RemoveChannel(int channel)
+        {
+            if(_channelPatches.ContainsKey(channel))
+            {
+                _channelPatches.Remove(channel);
+            }
+        }
+
+        /// <summary>
         /// Safely add/update info.
         /// </summary>
         /// <param name="number">The channel number</param>
         /// <param name="patch">The patch. If this is a number update, don't overwrite patch with default.</param>
-        public void SetChannelPatch(int number, int patch = -1)
+        public void SetChannelPatch(int number, int patch)
         {
             if (!_channelPatches.ContainsKey(number))
             {
@@ -165,17 +185,11 @@ namespace MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            //List<string> content = new()
-            //{
-            //    $"Name:{(PatternName == "" ? "None" : PatternName)}",
-            //    $"Tempo:{Tempo}",
-            //    $"TimeSig:{TimeSig}",
-            //    $"KeySig:{KeySig}"
-            //};
+            var pname = PatternName == "" ? "nameless" : PatternName;
+            var s = $"{pname} tempo:{Tempo} timesig:{TimeSignature} channels:{_channelPatches.Count}";
             //ValidPatches.ForEach(p => content.Add($"Ch:{p.Key} Patch:{MidiDefs.GetInstrumentName(p.Value)}"));
-            //return string.Join(' ', content);
 
-            return PatternName == "" ? "nameless" : PatternName;
+            return s;
         }
     }
 }

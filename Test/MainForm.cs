@@ -131,10 +131,17 @@ namespace MidiLib.Test
             bool ok = CreateDevices();
             if(ok)
             {
-                // Plain midi, one instrument, no patch: "_bass_ch2.mid"
-                // Plain midi, full song: "WICKGAME.MID"
-                // Style file, full info: "_LoveSong.S474.sty"
+                //// Style file, full info:
+                //OpenFile(@"C:\Dev\repos\TestAudioFiles\_LoveSong.S474.sty");
+
+                //// Plain midi, full song:
+                //OpenFile(@"C:\Dev\repos\TestAudioFiles\WICKGAME.MID");
+
+                // Plain midi, one instrument, no patch: TODO doesn't have any patch info.
                 OpenFile(@"C:\Dev\repos\TestAudioFiles\_bass_ch2.mid");
+
+                //// Plain midi, one instrument, ??? patch:
+                //OpenFile(@"C:\Dev\repos\TestAudioFiles\_drums_ch1.mid");
             }
         }
 
@@ -542,7 +549,7 @@ namespace MidiLib.Test
             // Update bar.
             var tot = _channels.TotalSubdivs();
             barBar.Start = new(0);
-            barBar.End = new(tot - 1);
+            barBar.End = new(tot > 0 ? tot - 1 : 0);
             barBar.Length = new(tot);
             barBar.Current = new(0);
 

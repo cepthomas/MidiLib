@@ -7,7 +7,7 @@ using NBagOfTricks;
 namespace MidiLib
 {
     /// <summary>
-    /// Statistical randomizer for time and volume. TODO useful??
+    /// Statistical randomizer for time and volume. TODO useful?
     /// </summary>
     public class Wobbler
     {

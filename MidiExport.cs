@@ -41,12 +41,12 @@ namespace MidiLib
             foreach (PatternInfo pi in patterns)
             {
                 contentText.Add($"0,0,0,Pattern,0,{pi.PatternName},tempo:{pi.Tempo}");
-                //contentText.Add($"0,0,0,Pattern,0,name:{pi.PatternName},timesig:{pi.TimeSig},keysig:{pi.KeySig}");
+                contentText.Add($"0,0,0,Pattern,0,{pi.PatternName},timesig:{pi.TimeSignature}");
 
                 pi.GetValidChannels().ForEach(p =>
                 {
-                    var pname = drumChannelNumbers.Contains(p.number) ? MidiDefs.GetDrumKitName(p.patch) : MidiDefs.GetInstrumentName(p.patch);
-                    contentText.Add($"0,0,0,Patch,{p.number}:{pname},,");
+                    var pname = drumChannelNumbers.Contains(p.chnum) ? MidiDefs.GetDrumKitName(p.patch) : MidiDefs.GetInstrumentName(p.patch);
+                    contentText.Add($"0,0,0,Patch,{p.chnum}:{pname},,");
                 });
 
                 var descs = pi.GetFilteredEvents(channelNumbers);
@@ -76,14 +76,9 @@ namespace MidiLib
             outEvents.Add(new TempoEvent(0, 0) { Tempo = pattern.Tempo });
             outEvents.Add(new TextEvent($"Export {pattern.PatternName}", MetaEventType.TextEvent, 0));
 
-            if (pattern.TimeSigNumerator != -1 && pattern.TimeSigDenominator != -1)
+            if (pattern.TimeSignature == (0, 0))
             {
-                outEvents.Add(new TimeSignatureEvent(0, pattern.TimeSigNumerator, pattern.TimeSigDenominator, 2, 8));
-            }
-
-            if(pattern.KeySigSharpsFlats != -1 && pattern.KeySigMajorMinor != -1)
-            {
-                outEvents.Add(new KeySignatureEvent(pattern.KeySigSharpsFlats, pattern.KeySigMajorMinor, 0));
+                outEvents.Add(new TimeSignatureEvent(0, pattern.TimeSignature.num, pattern.TimeSignature.denom, 24, 8));
             }
 
             // Patches.
@@ -91,7 +86,7 @@ namespace MidiLib
             {
                 if(p.patch >= 0)
                 {
-                    outEvents.Add(new PatchChangeEvent(0, p.number, p.patch));
+                    outEvents.Add(new PatchChangeEvent(0, p.chnum, p.patch));
                 }
             });
 

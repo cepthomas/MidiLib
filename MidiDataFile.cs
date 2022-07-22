@@ -9,11 +9,17 @@ using NAudio.Midi;
 using NBagOfTricks;
 
 
+// Expound on the internals:
+// nameless has: tempo, time signature, copyright
+// SFF1/SFF2 has: SequenceTrackName, ???
+// SInt has: default patches, ???
+
+
+
 namespace MidiLib
 {
     /// <summary>
-    /// Represents one complete collection of midi events, usually from a midi file.
-    /// Reads and processes standard midi or yamaha style files.
+    /// Represents one complete collection of midi events from a file - standard midi or yamaha style files.
     /// Writes subsets to various output formats.
     /// </summary>
     public class MidiDataFile
@@ -22,27 +28,18 @@ namespace MidiLib
         /// <summary>Include events like controller changes, pitch wheel, ...</summary>
         bool _includeNoisy = false;
 
-        /// <summary>Save this for logging/debugging.</summary>
-        long _lastStreamPos = 0;
-
         /// <summary>It's a style file.</summary>
         bool _styleFile = false;
 
-        /// <summary>All file pattern sections. Plain midi files will have only one, unnamed.</summary>
+        /// <summary>All the file pattern sections. Plain midi files will have only one, unnamed.</summary>
         readonly List<PatternInfo> _patterns = new();
 
         /// <summary>Currently collecting this pattern.</summary>
         PatternInfo _currentPattern = new();
-
-        /// <summary>Default values if not supplied in pattern. Mainly for managing patches.</summary>
-        readonly PatternInfo _patternDefaults = new();
-
-        /// <summary>Phased parsing of style files.</summary>
-        bool _styleDefaults = true; // Assumes defaults at beginning of file.
         #endregion
 
         #region Properties
-        /// <summary>Current loaded file.</summary>
+        /// <summary>Current file.</summary>
         public string FileName { get; private set; } = "";
 
         /// <summary>What is it.</summary>
@@ -53,6 +50,12 @@ namespace MidiLib
 
         /// <summary>Original resolution for all events.</summary>
         public int DeltaTicksPerQuarterNote { get; private set; } = 0;
+
+        /// <summary>Tempo supplied by file.</summary>
+        public int Tempo { get; private set; } = 0;
+
+        /// <summary>Time signature, if supplied by file. Default is 4/4.</summary>
+        public (int num, int denom) TimeSignature { get; set; } = (4, 2);
         #endregion
 
         #region Public functions
@@ -60,7 +63,7 @@ namespace MidiLib
         /// Read a file.
         /// </summary>
         /// <param name="fn">The file to open.</param>
-        /// <param name="defaultTempo">Specified by client.</param>
+        /// <param name="defaultTempo">Specified by client in case not in the file.</param>
         /// <param name="includeNoisy"></param>
         public void Read(string fn, int defaultTempo, bool includeNoisy)
         {
@@ -71,7 +74,8 @@ namespace MidiLib
 
             FileName = fn;
             _styleFile = MidiLibDefs.STYLE_FILE_TYPES.Contains(Path.GetExtension(fn).ToLower());
-            _patternDefaults.Tempo = defaultTempo;
+            //_patternDefaults.Tempo = defaultTempo;
+            Tempo = defaultTempo; 
             _includeNoisy = includeNoisy;
 
             using var br = new BinaryReader(File.OpenRead(fn));
@@ -85,8 +89,8 @@ namespace MidiLib
                 {
                     case "MThd":
                         ReadMThd(br);
-                        // Always at least one pattern - for plain midi. Safe to init now.
-                        _currentPattern = new("", DeltaTicksPerQuarterNote);
+                        // Always at least one pattern. Plain midi has just one, style has multiple.
+                        _currentPattern = new("", defaultTempo, DeltaTicksPerQuarterNote);
                         break;
                     case "MTrk":
                         ReadMTrk(br);
@@ -120,9 +124,11 @@ namespace MidiLib
                 }
             }
 
-            // Clean up straggler.
-            CleanUpPattern();
+            // Save last one.
             _patterns.Add(_currentPattern);
+
+            // Clean up.
+            CleanUpPatterns();
 
             // TODO auto-determine which channels have drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
             // This is from the General MIDI 2.0 specification:
@@ -130,33 +136,34 @@ namespace MidiLib
             // For more details get the GM2 specification here: https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2
             // >>> Drum channels will probably have the most notes. Also durations will be short.
             // >>> Could also remember user's reassignments in the settings file.
+
         }
 
         /// <summary>
         /// Get the pattern by name.
         /// </summary>
         /// <param name="name">Which</param>
-        /// <returns>The pattern or null if invalid request.</returns>
-        public PatternInfo? GetPattern(string name)
+        /// <returns>The pattern. Throws if name not found.</returns>
+        public PatternInfo GetPattern(string name)
         {
-            PatternInfo? ret = null;
-
             var pinfo = _patterns.Where(p => p.PatternName == name);
             if (pinfo is not null && pinfo.Any())
             {
-                ret = pinfo.First();
+                return pinfo.First();
             }
-            return ret;
+            else
+            {
+                throw new InvalidOperationException($"Invalid pattern name: {name}");
+            }
         }
 
         /// <summary>
-        /// Get all useful pattern names.
+        /// Get all useful pattern names - those with musicaal notes.
         /// </summary>
         /// <returns>List of names.</returns>
         public List<string> GetPatternNames()
         {
             var names = _patterns.Select(p => p.PatternName).ToList();
-
             return names;
         }
 
@@ -168,9 +175,9 @@ namespace MidiLib
         {
             Dictionary<string, int> global = new()
             {
-                { "MidiFileType", MidiFileType },
-                { "DeltaTicksPerQuarterNote", DeltaTicksPerQuarterNote },
-                { "NumTracks", NumTracks }
+                { nameof(MidiFileType), MidiFileType },
+                { nameof(DeltaTicksPerQuarterNote), DeltaTicksPerQuarterNote },
+                { nameof(NumTracks), NumTracks }
             };
 
             return global;
@@ -179,7 +186,7 @@ namespace MidiLib
 
         #region Section readers
         /// <summary>
-        /// Read the midi header section of a style file.
+        /// Read the midi header section.
         /// </summary>
         /// <param name="br"></param>
         void ReadMThd(BinaryReader br)
@@ -191,13 +198,8 @@ namespace MidiLib
                 throw new FormatException("Unexpected header chunk length");
             }
 
-            // Midi file type.
             MidiFileType = (int)ReadStream(br, 2);
-
-            // Number of tracks.
             NumTracks = (int)ReadStream(br, 2);
-
-            // Resolution.
             DeltaTicksPerQuarterNote = (int)ReadStream(br, 2);
         }
 
@@ -216,11 +218,17 @@ namespace MidiLib
             MidiEvent? me = null; // current event
             while (br.BaseStream.Position < startPos + chunkSize)
             {
-                _lastStreamPos = br.BaseStream.Position;
+                //_lastStreamPos = br.BaseStream.Position;
 
                 me = MidiEvent.ReadNextEvent(br, me);
                 absoluteTime += me.DeltaTime;
                 me.AbsoluteTime = absoluteTime;
+
+                // Style file patterns:
+                // - nameless has: tempo, time signature, copyright. 
+                // - SFF1/SFF2 has: SequenceTrackName, ???.
+                // - SInt has: default patches, ???.
+                // Plain midi file has one only pattern - nameless.
 
                 switch (me)
                 {
@@ -229,42 +237,31 @@ namespace MidiLib
                         AddMidiEvent(evt);
                         break;
 
-                    case NoteEvent evt: // aka NoteOff
+                    case NoteEvent evt: // usually NoteOff
                         AddMidiEvent(evt);
                         break;
 
                     case PatchChangeEvent evt:
-                        if(_styleFile && _styleDefaults)
+                        // Save the pattern patch.
+                        _currentPattern.SetChannelPatch(evt.Channel, evt.Patch);
+                        if (_currentPattern.PatternName == "SInt")
                         {
-                            _patternDefaults.SetChannelPatch(evt.Channel, evt.Patch);
-                        }
-                        else
-                        {
-                            _currentPattern.SetChannelPatch(evt.Channel, evt.Patch);
+                            // Style file section - save to default pattern.
+                            GetPattern("").SetChannelPatch(evt.Channel, evt.Patch);
                         }
                         AddMidiEvent(evt);
-                        //Debug.WriteLine($"{evt}");
                         break;
 
-                    case ControlChangeEvent evt:
-                        if (_includeNoisy)
-                        {
-                            AddMidiEvent(evt);
-                        }
+                    case ControlChangeEvent evt when _includeNoisy:
+                        AddMidiEvent(evt);
                         break;
 
-                    case PitchWheelChangeEvent evt:
-                        if (_includeNoisy)
-                        {
-                            AddMidiEvent(evt);
-                        }
+                    case PitchWheelChangeEvent evt when _includeNoisy:
+                        AddMidiEvent(evt);
                         break;
 
-                    case SysexEvent evt:
-                        if (_includeNoisy)
-                        {
-                            AddMidiEvent(evt);
-                        }
+                    case SysexEvent evt when _includeNoisy:
+                        AddMidiEvent(evt);
                         break;
 
                     ///// Meta events /////
@@ -274,42 +271,24 @@ namespace MidiLib
 
                     case TempoEvent evt:
                         var tempo = (int)Math.Round(evt.Tempo);
-                        if (_styleFile && _styleDefaults)
+                        _currentPattern.Tempo = tempo;
+                        if (_currentPattern.PatternName == "")
                         {
-                            _patternDefaults.Tempo = tempo;
-                        }
-                        else
-                        {
-                            _currentPattern.Tempo = tempo;
+                            Tempo = tempo;
                         }
                         AddMidiEvent(evt);
                         break;
 
                     case TimeSignatureEvent evt:
-                        if (_styleFile && _styleDefaults)
+                        _currentPattern.TimeSignature = (evt.Numerator, evt.Denominator);
+                        if (_currentPattern.PatternName == "")
                         {
-                            _patternDefaults.TimeSigNumerator = evt.Numerator;
-                            _patternDefaults.TimeSigDenominator = evt.Denominator;
-                        }
-                        else
-                        {
-                            _currentPattern.TimeSigNumerator = evt.Numerator;
-                            _currentPattern.TimeSigDenominator = evt.Denominator;
+                            TimeSignature = (evt.Numerator, evt.Denominator);
                         }
                         AddMidiEvent(evt);
                         break;
 
                     case KeySignatureEvent evt:
-                        if (_styleFile && _styleDefaults)
-                        {
-                            _patternDefaults.KeySigSharpsFlats = evt.SharpsFlats;
-                            _patternDefaults.KeySigMajorMinor = evt.MajorMinor;
-                        }
-                        else
-                        {
-                            _currentPattern.KeySigSharpsFlats = evt.SharpsFlats;
-                            _currentPattern.KeySigMajorMinor = evt.MajorMinor;
-                        }
                         AddMidiEvent(evt);
                         break;
 
@@ -319,42 +298,17 @@ namespace MidiLib
 
                     case TextEvent evt when evt.MetaEventType == MetaEventType.Marker:
                         // This optional event is used to label points within a sequence, e.g. rehearsal letters, loop points, or section
-                        // names (such as 'First verse'). For a format 1 MIDI le, Marker Meta events should only occur within the first MTrk chunk.
+                        // names (such as 'First verse'). For a format 1 MIDI file, Marker Meta events should only occur within the first MTrk chunk.
 
                         if (_styleFile)
                         {
-                            // Indicates start of a new midi pattern or global info.
-
-                            // Do something with the current if it's notes.
-                            if(!_styleDefaults)
-                            {
-                                // Tidy up any missing parts of current info and save it.
-                                CleanUpPattern();
-                                _patterns.Add(_currentPattern);
-                                _styleDefaults = false; // reset
-                            }
+                            // Indicates start of a new midi pattern. Save current.
+                            _patterns.Add(_currentPattern);
 
                             // Start a new pattern.
-                            _currentPattern = new PatternInfo(evt.Text, DeltaTicksPerQuarterNote);
+                            _currentPattern = new PatternInfo(evt.Text, Tempo, DeltaTicksPerQuarterNote);
                             absoluteTime = 0;
                             AddMidiEvent(evt);
-
-                            // Does it contain defaults?
-                            if(_styleFile)
-                            {
-                                // These don't contain notes.
-                                // SFF1:
-                                // SFF2:
-                                // SInt: Initial patches are in here.
-                                //case "":
-
-                                _styleDefaults = _currentPattern.PatternName switch
-                                {
-                                    // These don't contain pattern notes.
-                                    "SFF1" or "SFF2" or "SInt" or "" => true,
-                                    _ => false,
-                                };
-                            }
                         }
                         else
                         {
@@ -373,8 +327,7 @@ namespace MidiLib
                         break;
 
                     default:
-                        // Other MidiCommandCodes: AutoSensing, ChannelAfterTouch, ContinueSequence, Eox, KeyAfterTouch, StartSequence, StopSequence, TimingClock
-                        // Other MetaEventType: Copyright, CuePoint, DeviceName, Lyric, MidiChannel, MidiPort, ProgramName, SequencerSpecific, SmpteOffset, TrackInstrumentName
+                        // Add to taste.
                         break;
                 }
             }
@@ -460,34 +413,67 @@ namespace MidiLib
 
         #region Private functions
         /// <summary>
-        /// Fill in any missing info using defaults.
+        /// Fill in any missing pattern info using defaults.
         /// </summary>
-        void CleanUpPattern()
+        void CleanUpPatterns()
         {
-            if (_currentPattern.Tempo == 0)
-            {
-                _currentPattern.Tempo = _patternDefaults.Tempo;
-            }
+            var pdefault = GetPattern("");
 
-            if (_currentPattern.TimeSigNumerator == -1 && _currentPattern.TimeSigDenominator == -1)
+            if (_styleFile)
             {
-                _currentPattern.TimeSigNumerator = _patternDefaults.TimeSigNumerator;
-                _currentPattern.TimeSigDenominator = _patternDefaults.TimeSigDenominator;
-            }
+                // Get the always present nameless pattern.
 
-            if (_currentPattern.KeySigSharpsFlats == -1 && _currentPattern.KeySigMajorMinor == -1)
-            {
-                _currentPattern.KeySigSharpsFlats = _patternDefaults.KeySigSharpsFlats;
-                _currentPattern.KeySigMajorMinor = _patternDefaults.KeySigMajorMinor;
-            }
+                // Delete unneeded stuff.
+                List<PatternInfo> toRemove = new();
 
-            _currentPattern.GetValidChannels().ForEach(ch =>
-            {
-                if (ch.patch < 0)
+                foreach (var p in _patterns)
                 {
-                    _currentPattern.SetChannelPatch(ch.number, _patternDefaults.GetPatch(ch.number));
+                    switch(p.PatternName)
+                    {
+                        case "SFF1":
+                        case "SFF2":
+                        case "SInt":
+                        case "":
+                            toRemove.Add(p);
+                            break;
+
+                        default:
+                            // Check valid channels and update missing properties.
+                            if (p.Tempo == 0) // not specified.
+                            {
+                                p.Tempo = Tempo;
+                            }
+
+                            if (p.TimeSignature == (0, 0)) // not specified.
+                            {
+                                p.TimeSignature = TimeSignature;
+                            }
+
+                            p.GetValidChannels().ForEach(vc =>
+                            {
+                                if (vc.patch == -1)
+                                {
+                                    var newp = pdefault.GetPatch(vc.chnum);
+                                    if(newp == -1)
+                                    {
+                                        pdefault.RemoveChannel(vc.chnum);
+                                    }
+                                    else
+                                    {
+                                        p.SetChannelPatch(vc.chnum, newp);
+                                    }
+                                }
+                            });
+                            break;
+                    }
                 }
-            });
+
+                toRemove.ForEach(p => _patterns.Remove(p));
+            }
+            else
+            {
+                // No need to do anything for simple midi file. Should be good to go.
+            }
         }
 
         /// <summary>
@@ -498,7 +484,8 @@ namespace MidiLib
         /// <returns></returns>
         uint ReadStream(BinaryReader br, int size)
         {
-            _lastStreamPos = br.BaseStream.Position;
+            //_lastStreamPos = br.BaseStream.Position;
+
             var i = size switch
             {
                 2 => MiscUtils.FixEndian(br.ReadUInt16()),
