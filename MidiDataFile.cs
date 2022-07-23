@@ -9,13 +9,6 @@ using NAudio.Midi;
 using NBagOfTricks;
 
 
-// Expound on the internals:
-// nameless has: tempo, time signature, copyright
-// SFF1/SFF2 has: SequenceTrackName, ???
-// SInt has: default patches, ???
-
-
-
 namespace MidiLib
 {
     /// <summary>
@@ -28,9 +21,6 @@ namespace MidiLib
         /// <summary>Include events like controller changes, pitch wheel, ...</summary>
         bool _includeNoisy = false;
 
-        /// <summary>It's a style file.</summary>
-        bool _styleFile = false;
-
         /// <summary>All the file pattern sections. Plain midi files will have only one, unnamed.</summary>
         readonly List<PatternInfo> _patterns = new();
 
@@ -42,7 +32,10 @@ namespace MidiLib
         /// <summary>Current file.</summary>
         public string FileName { get; private set; } = "";
 
-        /// <summary>What is it.</summary>
+        /// <summary>It's a style file.</summary>
+        public bool IsStyleFile { get; private set; } = false;
+
+        /// <summary>What midi type is it.</summary>
         public int MidiFileType { get; private set; } = 0;
 
         /// <summary>How many tracks.</summary>
@@ -73,10 +66,9 @@ namespace MidiLib
             }
 
             FileName = fn;
-            _styleFile = MidiLibDefs.STYLE_FILE_TYPES.Contains(Path.GetExtension(fn).ToLower());
-            //_patternDefaults.Tempo = defaultTempo;
             Tempo = defaultTempo; 
             _includeNoisy = includeNoisy;
+            IsStyleFile = MidiLibDefs.STYLE_FILE_TYPES.Contains(Path.GetExtension(fn).ToLower());
 
             using var br = new BinaryReader(File.OpenRead(fn));
             bool done = false;
@@ -127,16 +119,8 @@ namespace MidiLib
             // Save last one.
             _patterns.Add(_currentPattern);
 
-            // Clean up.
+            // Fix up gaps.
             CleanUpPatterns();
-
-            // TODO auto-determine which channels have drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
-            // This is from the General MIDI 2.0 specification:
-            // "Bank Select 78H/xxH followed by a Program Change will cause the Channel to become a Rhythm Channel, using the Drum Set selected by the Program Change."
-            // For more details get the GM2 specification here: https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2
-            // >>> Drum channels will probably have the most notes. Also durations will be short.
-            // >>> Could also remember user's reassignments in the settings file.
-
         }
 
         /// <summary>
@@ -168,7 +152,7 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Utility to capture common midi file meta info.
+        /// Get common midi file meta info.
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, int> GetGlobal()
@@ -300,7 +284,7 @@ namespace MidiLib
                         // This optional event is used to label points within a sequence, e.g. rehearsal letters, loop points, or section
                         // names (such as 'First verse'). For a format 1 MIDI file, Marker Meta events should only occur within the first MTrk chunk.
 
-                        if (_styleFile)
+                        if (IsStyleFile)
                         {
                             // Indicates start of a new midi pattern. Save current.
                             _patterns.Add(_currentPattern);
@@ -417,9 +401,18 @@ namespace MidiLib
         /// </summary>
         void CleanUpPatterns()
         {
+
+            // TODO auto-determine which channels have drums? https://www.midi.org/forum/8860-general-midi-level-2-ch-11-percussion
+            // This is from the General MIDI 2.0 specification:
+            // "Bank Select 78H/xxH followed by a Program Change will cause the Channel to become a Rhythm Channel, using the Drum Set selected by the Program Change."
+            // For more details get the GM2 specification here: https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2
+            // >>> Drum channels will probably have the most notes. Also durations will be short.
+            // >>> Could also remember user's reassignments in the settings file.
+
+
             var pdefault = GetPattern("");
 
-            if (_styleFile)
+            if (IsStyleFile)
             {
                 // Get the always present nameless pattern.
 
@@ -438,7 +431,7 @@ namespace MidiLib
                             break;
 
                         default:
-                            // Check valid channels and update missing properties.
+                            // Update missing properties.
                             if (p.Tempo == 0) // not specified.
                             {
                                 p.Tempo = Tempo;
@@ -449,7 +442,8 @@ namespace MidiLib
                                 p.TimeSignature = TimeSignature;
                             }
 
-                            p.GetValidChannels().ForEach(vc =>
+                            // Make sure a patch is supplied.
+                            p.GetChannels(true, false).ForEach(vc =>
                             {
                                 if (vc.patch == -1)
                                 {
@@ -472,7 +466,18 @@ namespace MidiLib
             }
             else
             {
-                // No need to do anything for simple midi file. Should be good to go.
+                // Simple midi file. Handle corner cases.
+
+                // Some files are missing patch info.
+                pdefault.GetChannels(true, false).ForEach(vc =>
+                {
+                    var newp = pdefault.GetPatch(vc.chnum);
+                    if (newp == -1)
+                    {
+                        // Force to default.
+                        pdefault.SetChannelPatch(vc.chnum, 0);
+                    }
+                });
             }
         }
 

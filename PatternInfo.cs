@@ -37,6 +37,9 @@ namespace MidiLib
 
         /// <summary>Collection of all channels in this pattern. Key is number, value is associated patch.</summary>
         readonly Dictionary<int, int> _channelPatches = new();
+
+        /// <summary>Channels with real notes.</summary>
+        HashSet<int> _hasNotes = new();
         #endregion
 
         /// <summary>
@@ -55,7 +58,7 @@ namespace MidiLib
         public PatternInfo(string name, int tempo, int ppq) : this()
         {
             PatternName = name;
-            _mt = new(ppq, MidiSettings.LibSettings.DefaultTempo);
+            _mt = new(ppq, tempo);
         }
 
         // <summary>
@@ -84,6 +87,12 @@ namespace MidiLib
         {
             // Capture that this is a valid channel. Patch will get patched up later.
             SetChannelPatch(evt.ChannelNumber, -1);
+
+            // Cache info.
+            if(evt.RawEvent is NoteOnEvent)
+            {
+                _hasNotes.Add(evt.ChannelNumber);
+            }
 
             // Scale time.
             evt.ScaledTime = _mt!.MidiToInternal(evt.AbsoluteTime);
@@ -122,17 +131,21 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Get an ordered list of valid channel numbers with their patches.
+        /// Get an ordered list of channels and their patches.
         /// </summary>
+        /// <param name="hasNotes">Must have noteons.</param>
+        /// <param name="hasPatch">Must have valid patch.</param>
         /// <returns></returns>
-        public List<(int chnum, int patch)> GetValidChannels()
+        public IEnumerable<(int chnum, int patch)> GetChannels(bool hasNotes, bool hasPatch)
         {
             List<(int chnum, int patch)> ps = new();
-
-            if (_events.Any())
+            // Assemble results from filters.
+            bool any = hasNotes ? _events.Where(e => e.RawEvent is NoteOnEvent).Any() : _events.Any();
+            if(any)
             {
                 _channelPatches
-                    .Where(n => n.Value != -1)
+                    .Where(n => hasPatch ? n.Value != -1 : true)
+                    .Where(n => _hasNotes.Contains(n.Key))
                     .OrderBy(n => n.Key)
                     .ForEach(n => { ps.Add((n.Key, n.Value)); });
             }
@@ -141,10 +154,10 @@ namespace MidiLib
         }
 
         /// <summary>
-        /// Get the patch associated with the arg.
+        /// Get the patch associated with the channel.
         /// </summary>
         /// <param name="channel"></param>
-        /// <returns></returns>
+        /// <returns>The patch or -1 if invalid channel</returns>
         public int GetPatch(int channel)
         {
             return _channelPatches.ContainsKey(channel) ? _channelPatches[channel] : -1;
@@ -165,17 +178,17 @@ namespace MidiLib
         /// <summary>
         /// Safely add/update info.
         /// </summary>
-        /// <param name="number">The channel number</param>
-        /// <param name="patch">The patch. If this is a number update, don't overwrite patch with default.</param>
-        public void SetChannelPatch(int number, int patch)
+        /// <param name="channel">The channel number</param>
+        /// <param name="patch">The patch. Can be default -1.</param>
+        public void SetChannelPatch(int channel, int patch)
         {
-            if (!_channelPatches.ContainsKey(number))
+            if (!_channelPatches.ContainsKey(channel))
             {
-                _channelPatches.Add(number, patch);
+                _channelPatches.Add(channel, patch);
             }
             else if (patch != -1)
             {
-                _channelPatches[number] = patch;
+                _channelPatches[channel] = patch;
             }
         }
 

@@ -107,6 +107,13 @@ There's tons of styles and technical info at https://psrtutorial.com/. An overvi
 > Fill Ins are limited to one measure in length; other sections can be any length up to 255 measures, but are typically 2-8 measures.
 
 
+// Expound on the internals:
+// nameless has: tempo, time signature, copyright
+// SFF1/SFF2 has: SequenceTrackName, ???
+// SInt has: default patches, ???
+
+
+
 # Example
 
 The Test project contains a fairly complete demo application.

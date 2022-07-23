@@ -44,9 +44,6 @@ namespace MidiLib.Test
         /// <summary>All the channel play controls.</summary>
         readonly List<ChannelControl> _channelControls = new();
 
-        /// <summary>Prevent button press recursion.</summary>
-        bool _guard = false; // TODO get rid of this.
-
         /// <summary>My logging.</summary>
         readonly Logger _logger = LogManager.CreateLogger("MainForm");
 
@@ -108,14 +105,14 @@ namespace MidiLib.Test
             // Init channel selectors.
             cmbDrumChannel1.Items.Add("NA");
             cmbDrumChannel2.Items.Add("NA");
-            for (int i = 1; i <= MidiDefs.NUM_CHANNELS; i ++)
+            for (int i = 1; i <= MidiDefs.NUM_CHANNELS; i++)
             {
                 cmbDrumChannel1.Items.Add(i);
                 cmbDrumChannel2.Items.Add(i);
             }
 
             // Hook up some simple UI handlers.
-            btnPlay.CheckedChanged += (_, __) => { UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop); };
+            btnPlay.CheckedChanged += Play_CheckedChanged;
             btnRewind.Click += (_, __) => { UpdateState(PlayState.Rewind); };
             btnKillMidi.Click += (_, __) => { btnPlay.Checked = false; _channels.Values.ForEach(ch => ch.Kill()); };
             btnLogMidi.CheckedChanged += (_, __) => { _outputDevice.LogEnable = btnLogMidi.Checked; };
@@ -131,16 +128,16 @@ namespace MidiLib.Test
             bool ok = CreateDevices();
             if(ok)
             {
-                //// Style file, full info:
-                //OpenFile(@"C:\Dev\repos\TestAudioFiles\_LoveSong.S474.sty");
+                // Style file, full info:
+                OpenFile(@"C:\Dev\repos\TestAudioFiles\_LoveSong.S474.sty");
 
-                //// Plain midi, full song:
+                // Plain midi, full song:
                 //OpenFile(@"C:\Dev\repos\TestAudioFiles\WICKGAME.MID");
 
-                // Plain midi, one instrument, no patch: TODO doesn't have any patch info.
-                OpenFile(@"C:\Dev\repos\TestAudioFiles\_bass_ch2.mid");
+                // Plain midi, one instrument, no patch:
+                //OpenFile(@"C:\Dev\repos\TestAudioFiles\_bass_ch2.mid");
 
-                //// Plain midi, one instrument, ??? patch:
+                // Plain midi, one instrument, ??? patch:
                 //OpenFile(@"C:\Dev\repos\TestAudioFiles\_drums_ch1.mid");
             }
         }
@@ -265,13 +262,9 @@ namespace MidiLib.Test
         void UpdateState(PlayState state)
         {
             // Suppress recursive updates caused by manually pressing the play button.
-            if (_guard)
-            {
-                return;
-            }
-            _guard = true;
+            btnPlay.CheckedChanged -= Play_CheckedChanged;
 
-            switch(state)
+            switch (state)
             {
                 case PlayState.Complete:
                     btnPlay.Checked = false;
@@ -294,7 +287,18 @@ namespace MidiLib.Test
                     break;
             }
 
-            _guard = false;
+            // Rehook.
+            btnPlay.CheckedChanged += Play_CheckedChanged;
+        }
+
+        /// <summary>
+        /// Handle button presses.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Play_CheckedChanged(object? sender, EventArgs e)
+        {
+            UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop);
         }
 
         /// <summary>
@@ -399,7 +403,7 @@ namespace MidiLib.Test
                 _mdata = new MidiDataFile();
 
                 // Process the file. Set the default tempo from preferences.
-                _mdata.Read(fn, 100, false);
+                _mdata.Read(fn, _settings.MidiSettings.DefaultTempo, false);
 
                 // Init new stuff with contents of file/pattern.
                 lbPatterns.Items.Clear();
@@ -423,6 +427,8 @@ namespace MidiLib.Test
 
                 // Set up timer default.
                 nudTempo.Value = 100;
+
+                btnExportMidi.Enabled = _mdata.IsStyleFile;
             }
             catch (Exception ex)
             {
@@ -480,13 +486,13 @@ namespace MidiLib.Test
             int x = lbPatterns.Right + 5;
             int y = lbPatterns.Top;
 
-            foreach(var (number, patch) in pinfo.GetValidChannels())
+            foreach(var (number, patch) in pinfo.GetChannels(true, true))
             {
                 // Get events for the channel.
-                var chEvents = pinfo.GetFilteredEvents(new List<int>() { number }).Where(e => e.RawEvent is NoteEvent || e.RawEvent is NoteOnEvent);
+                var chEvents = pinfo.GetFilteredEvents(new List<int>() { number });
 
                 // Is this channel pertinent?
-                if (chEvents.Any() && patch >= 0)
+                if (chEvents.Any())
                 {
                     // Make new channel.
                     Channel channel = new()
@@ -563,6 +569,8 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Patterns_SelectedIndexChanged(object? sender, EventArgs e)
         {
+            btnPlay.Checked = false;
+
             var pname = lbPatterns.SelectedItem.ToString()!;
             var pinfo = _mdata.GetPattern(pname);
 

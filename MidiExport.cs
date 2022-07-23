@@ -43,7 +43,7 @@ namespace MidiLib
                 contentText.Add($"0,0,0,Pattern,0,{pi.PatternName},tempo:{pi.Tempo}");
                 contentText.Add($"0,0,0,Pattern,0,{pi.PatternName},timesig:{pi.TimeSignature}");
 
-                pi.GetValidChannels().ForEach(p =>
+                pi.GetChannels(false, false).ForEach(p =>
                 {
                     var pname = drumChannelNumbers.Contains(p.chnum) ? MidiDefs.GetDrumKitName(p.patch) : MidiDefs.GetInstrumentName(p.patch);
                     contentText.Add($"0,0,0,Patch,{p.chnum}:{pname},,");
@@ -82,20 +82,11 @@ namespace MidiLib
             }
 
             // Patches.
-            pattern.GetValidChannels().ForEach(p =>
-            {
-                if(p.patch >= 0)
-                {
-                    outEvents.Add(new PatchChangeEvent(0, p.chnum, p.patch));
-                }
-            });
+            pattern.GetChannels(true, true).ForEach(p => { outEvents.Add(new PatchChangeEvent(0, p.chnum, p.patch)); });
 
             // Gather the midi events for the pattern ordered by time.
             var events = pattern.GetFilteredEvents(channelNumbers);
-            events?.ForEach(e =>
-            {
-                outEvents.Add(e.RawEvent);
-            });
+            events?.ForEach(e => { outEvents.Add(e.RawEvent); });
 
             // Add end track.
             long ltime = outEvents.Last().AbsoluteTime;
