@@ -108,7 +108,6 @@ namespace MidiLib
 
         #endregion
         private System.Windows.Forms.Label lblChannelNumber;
-        //private NBagOfUis.Slider sldVolume;
         private System.Windows.Forms.Label lblPatch;
         private System.Windows.Forms.Label lblSolo;
         private System.Windows.Forms.Label lblMute;
