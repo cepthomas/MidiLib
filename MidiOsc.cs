@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using NAudio.Midi;
 using NBagOfTricks;
 using NBagOfTricks.Slog;
-//using NebOsc;
-using MidiLib;
 
 
 namespace MidiLib

@@ -7,10 +7,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows.Forms.Design;
 using System.Drawing.Design;
+using System.Windows.Forms;
 using NAudio.Midi;
 using NBagOfTricks;
-using NBagOfUis;
-using System.Windows.Forms;
 
 
 namespace MidiLib
