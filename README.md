@@ -94,7 +94,7 @@ There's tons of styles and technical info at https://psrtutorial.com/. An overvi
 > The first two sections, SFF1 (or SFF2) and SInt, occupying the first measure of the midi part, include a Midi On plus midi commands to
 > setup the default instruments and the amount of DSP (only DSP1 as a system effect is available for styles) used for each track.
 > 
-> Each of the other markers(Intro A, Main B, etc) defines musical patterns that are triggered by the keying chords. Intros play only once
+> Each of the other markers (Intro A, Main B, etc) defines musical patterns that are triggered by the keying chords. Intros play only once
 > when triggered and then turn control over to the next section selected by the panel buttons. Main sections(A, B, C, and D) repeat until
 > the style is stopped or an Ending or an Intro is selected. Ending sections play once and the style is stopped. Fill Ins are triggered
 > manually, or play automatically (if Auto Fill is On) when a new main section is selected.
@@ -107,13 +107,6 @@ There's tons of styles and technical info at https://psrtutorial.com/. An overvi
 > Fill Ins are limited to one measure in length; other sections can be any length up to 255 measures, but are typically 2-8 measures.
 
 
-// Expound on the internals:
-// nameless has: tempo, time signature, copyright
-// SFF1/SFF2 has: SequenceTrackName, ???
-// SInt has: default patches, ???
-
-
-
 # Example
 
 The Test project contains a fairly complete demo application.
@@ -123,11 +116,7 @@ The Test project contains a fairly complete demo application.
 - Some midi files with single instruments are sloppy with channel numbers so there are a couple of options for simple remapping.
 - In the log view: C for clear, W for word wrap toggle.
 
-# Third Party
+# External Components
 
-This application uses these FOSS components:
 - [NAudio](https://github.com/naudio/NAudio) (Microsoft Public License).
-- [NBagOfTricks](https://github.com/cepthomas/NBagOfTricks/blob/main/README.md)
-- [NBagOfUis](https://github.com/cepthomas/NBagOfUis/blob/main/README.md)
-- [NebOsc](https://github.com/cepthomas/NebOsc/blob/main/README.md)
 

@@ -86,8 +86,8 @@ namespace MidiLib.Test
             // The text output.
             txtViewer.Font = Font;
             txtViewer.WordWrap = true;
-            txtViewer.Colors.Add("ERR", Color.LightPink);
-            txtViewer.Colors.Add("WRN", Color.Plum);
+            txtViewer.MatchColors.Add("ERR", Color.LightPink);
+            txtViewer.MatchColors.Add("WRN", Color.Plum);
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
@@ -853,16 +853,21 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Docs_Click(object sender, EventArgs e)
         {
-            List<string> docs = new();
-            docs.Add("# Midi Input Devices");
+            List<string> docs = new()
+            {
+                "# Midi Input Devices"
+            };
+
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
                 docs.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
+
             docs.Add("- \"VirtualKeyboard\"");
             docs.Add("- \"BingBong\"");
             docs.Add("");
             docs.Add("# Midi Output Devices");
+
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
                 docs.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
