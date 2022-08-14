@@ -85,11 +85,6 @@ namespace MidiLib
         public ChannelControl()
         {
             InitializeComponent();
-
-            sldVolume.Value = BoundChannel.Volume;
-            sldVolume.DrawColor = SelectedColor;
-            sldVolume.Minimum = MidiLibDefs.VOLUME_MIN;
-            sldVolume.Maximum = MidiLibDefs.MAX_GAIN;
             sldVolume.ValueChanged += Volume_ValueChanged;
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;
@@ -102,6 +97,12 @@ namespace MidiLib
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
+
+            sldVolume.Value = BoundChannel.Volume;
+            sldVolume.DrawColor = SelectedColor;
+            sldVolume.Minimum = MidiLibDefs.VOLUME_MIN;
+            sldVolume.Maximum = MidiLibDefs.MAX_GAIN;
+
             UpdateUi();
 
             base.OnLoad(e);
