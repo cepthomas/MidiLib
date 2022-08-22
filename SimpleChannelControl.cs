@@ -15,6 +15,11 @@ namespace MidiLib
     /// <summary>A simpler channel UI component.</summary>
     public partial class SimpleChannelControl : UserControl
     {
+        #region Backing fields
+        int _channelNumber = 0;
+        int _patch = -1;
+        #endregion
+
         #region Properties
         /// <summary>Actual 1-based midi channel number.</summary>
         public int ChannelNumber
@@ -22,7 +27,6 @@ namespace MidiLib
             get { return _channelNumber; }
             set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); cmbChannel.SelectedIndex = _channelNumber - 1; }
         }
-        int _channelNumber = 0;
 
         /// <summary>Current patch.</summary>
         public int Patch
@@ -30,7 +34,6 @@ namespace MidiLib
             get { return _patch; }
             set { _patch = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); lblPatch.Text = MidiDefs.GetInstrumentName(_patch); }
         }
-        int _patch = -1;
 
         /// <summary>Current volume.</summary>
         public double Volume

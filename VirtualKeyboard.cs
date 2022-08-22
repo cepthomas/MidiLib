@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
+using System.ComponentModel;
 using NBagOfTricks;
 
 
@@ -30,9 +31,11 @@ namespace MidiLib
         public bool CaptureEnable { get; set; }
 
         /// <inheritdoc />
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public string DeviceName { get; set; }
 
         /// <inheritdoc />
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool Valid { get { return true; } }
 
         /// <inheritdoc />

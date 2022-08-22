@@ -15,9 +15,8 @@ namespace MidiLib
 {
     public partial class DevicesEditor : Form
     {
-        /// <summary>
-        /// Items to edit.
-        /// </summary>
+        /// <summary>Items to edit.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public List<DeviceSpec> Devices { get; set; } = new();
 
         /// <summary>

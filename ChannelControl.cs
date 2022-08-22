@@ -22,15 +22,18 @@ namespace MidiLib
 
         #region Properties
         /// <summary>Bound object.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Channel BoundChannel { get; set; } = new();
 
         /// <summary>Actual 1-based midi channel number for UI.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int ChannelNumber
         {
             get { return BoundChannel.ChannelNumber; }
         }
 
         /// <summary>For muting/soloing.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public ChannelState State
         {
             get { return BoundChannel.State; }
@@ -38,6 +41,7 @@ namespace MidiLib
         }
 
         /// <summary>Current patch.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int Patch
         {
             get { return BoundChannel.Patch; }
@@ -45,6 +49,7 @@ namespace MidiLib
         }
 
         /// <summary>Current volume. Channel.Volume performs the constraints.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public double Volume
         {
             get { return BoundChannel.Volume; }
@@ -52,12 +57,14 @@ namespace MidiLib
         }
 
         ///<summary>The duration of the whole channel.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int MaxSubdiv
         {
             get { return BoundChannel.MaxSubdiv; }
         }
 
         /// <summary>Drum channel changed.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool IsDrums
         {
             get { return BoundChannel.IsDrums; }
@@ -65,6 +72,7 @@ namespace MidiLib
         }
 
         /// <summary>User has selected this channel.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool Selected
         {
             get { return BoundChannel.Selected; }

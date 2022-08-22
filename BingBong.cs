@@ -60,6 +60,7 @@ namespace MidiLib
         public string DeviceName { get; set; }
 
         /// <inheritdoc />
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool Valid { get { return true; } }
 
         /// <inheritdoc />

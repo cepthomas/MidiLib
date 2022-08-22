@@ -44,7 +44,7 @@ namespace MidiLib
     /// <summary>Custom default type to avoid handling null everywhere.</summary>
     public class NullMidiEvent : MidiEvent
     {
-        /// <summary>Single constructor.</summary>
+        /// <summary>Constructor.</summary>
         public NullMidiEvent() : base(0, 0, MidiCommandCode.MetaEvent)
         {
         }

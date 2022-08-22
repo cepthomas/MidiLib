@@ -14,17 +14,6 @@ namespace MidiLib
     /// <summary>Represents the contents of a midi file pattern. If it is a plain midi file (not style) there will be one only.</summary>
     public class PatternInfo
     {
-        #region Properties
-        /// <summary>Pattern name. Empty indicates single pattern aka plain midi file.</summary>
-        public string PatternName { get; init; } = "";
-
-        /// <summary>Tempo, if supplied by file. Default indicates invalid which will be filled in during read.</summary>
-        public int Tempo { get; set; } = 0;
-
-        /// <summary>Time signature, if supplied by file.</summary>
-        public (int num, int denom) TimeSignature { get; set; } = new();
-        #endregion
-
         #region Fields
         /// <summary>All the pattern midi events.</summary>
         readonly List<MidiEventDesc> _events = new();
@@ -40,6 +29,17 @@ namespace MidiLib
 
         /// <summary>Channels with real notes.</summary>
         HashSet<int> _hasNotes = new();
+        #endregion
+
+        #region Properties
+        /// <summary>Pattern name. Empty indicates single pattern aka plain midi file.</summary>
+        public string PatternName { get; init; } = "";
+
+        /// <summary>Tempo, if supplied by file. Default indicates invalid which will be filled in during read.</summary>
+        public int Tempo { get; set; } = 0;
+
+        /// <summary>Time signature, if supplied by file.</summary>
+        public (int num, int denom) TimeSignature { get; set; } = new();
         #endregion
 
         /// <summary>

@@ -19,7 +19,7 @@ namespace MidiLib
         /// <summary>Things that are executed once and disappear: NoteOffs, script send now. Key is the internal subdiv/time.</summary>
         readonly Dictionary<int, List<MidiEvent>> _transients = new();
 
-        ///<summary>Backing.</summary>
+        ///<summary>Current volume.</summary>
         double _volume = MidiLibDefs.VOLUME_DEFAULT;
         #endregion
 

@@ -20,36 +20,35 @@ namespace MidiLib
         /// <summary>Tooltip for mousing.</summary>
         readonly ToolTip _toolTip = new();
 
-        /// <summary>The brush.</summary>
-        readonly SolidBrush _brush = new(Color.White);
-
-        /// <summary>The pen.</summary>
-        readonly Pen _penMarker = new(Color.Black, 1);
-
         /// <summary>For drawing text.</summary>
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
+        #endregion
+
+        #region Backing fields
+        readonly SolidBrush _brush = new(Color.White);
+        readonly Pen _penMarker = new(Color.Black, 1);
+        BarTime _length = new();
+        BarTime _start = new();
+        BarTime _end = new();
+        BarTime _current = new();
         #endregion
 
         #region Properties
         /// <summary>Total length of the bar.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public BarTime Length { get { return _length; } set { _length = value; Invalidate(); } }
-        BarTime _length = new(); // backing
 
         /// <summary>Start of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public BarTime Start { get { return _start; } set { _start = value; Invalidate(); } }
-        BarTime _start = new(); // backing
 
         /// <summary>End of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public BarTime End { get { return _end; } set { _end = value; Invalidate(); } }
-        BarTime _end = new(); // backing
 
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public BarTime Current { get { return _current; } set { _current = value; Invalidate(); } }
-        BarTime _current = new(); // backing
 
         /// <summary>For styling.</summary>
         public Color ProgressColor { get { return _brush.Color; } set { _brush.Color = value; } }
