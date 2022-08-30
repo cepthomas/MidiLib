@@ -140,6 +140,7 @@ namespace MidiLib.Test
                 // Plain midi, one instrument, ??? patch:
                 //OpenFile(@"C:\Dev\repos\TestAudioFiles\_drums_ch1.mid");
             }
+            base.OnLoad(e);
         }
 
         /// <summary>
