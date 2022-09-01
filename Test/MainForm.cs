@@ -113,10 +113,14 @@ namespace MidiLib.Test
 
             // Hook up some simple UI handlers.
             btnPlay.CheckedChanged += Play_CheckedChanged;
-            btnRewind.Click += (_, __) => { UpdateState(PlayState.Rewind); };
-            btnKillMidi.Click += (_, __) => { btnPlay.Checked = false; _channels.Values.ForEach(ch => ch.Kill()); };
-            btnLogMidi.CheckedChanged += (_, __) => { _outputDevice.LogEnable = btnLogMidi.Checked; };
-            nudTempo.ValueChanged += (_, __) => { SetTimer(); };
+            btnRewind.Click += (_, __) => UpdateState(PlayState.Rewind);
+            btnKillMidi.Click += (_, __) =>
+            {
+                btnPlay.Checked = false;
+                _channels.Values.ForEach(ch => ch.Kill());
+            };
+            btnLogMidi.CheckedChanged += (_, __) => _outputDevice.LogEnable = btnLogMidi.Checked;
+            nudTempo.ValueChanged += (_, __) => SetTimer();
         }
 
         /// <summary>

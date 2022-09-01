@@ -78,7 +78,7 @@ namespace MidiLib
                 cmbChannel.Items.Add($"{i + 1}");
             }
             cmbChannel.SelectedIndex = ChannelNumber - 1;
-            cmbChannel.SelectedIndexChanged += (_, __) => { _channelNumber = cmbChannel.SelectedIndex + 1; };
+            cmbChannel.SelectedIndexChanged += (_, __) => _channelNumber = cmbChannel.SelectedIndex + 1;
             
             base.OnLoad(e);
         }
