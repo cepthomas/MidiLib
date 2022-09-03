@@ -56,7 +56,7 @@ namespace MidiLib.Test
         readonly Color _controlColor = Color.Aquamarine;
 
         /// <summary>Where to put things.</summary>
-        readonly string _outPath = @"..\..\work";
+        readonly string _outPath = @"..\..\out";
         #endregion
 
         #region Lifecycle
@@ -81,7 +81,7 @@ namespace MidiLib.Test
             LogManager.MinLevelFile = LogLevel.Trace;
             LogManager.MinLevelNotif = LogLevel.Trace;
             LogManager.LogEvent += LogManager_LogEvent;
-            LogManager.Run(Path.Join(_outPath, "log.txt"), 5000);
+            LogManager.Run(Path.Join(_outPath, "log.txt"), 100000);
 
             // The text output.
             txtViewer.Font = Font;
