@@ -212,8 +212,8 @@ namespace MidiLib
         protected override void OnResize(EventArgs e)
         {
             DrawBitmap();
-
             Invalidate();
+            base.OnResize(e);
         }
         #endregion
 

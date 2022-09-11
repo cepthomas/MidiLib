@@ -94,6 +94,7 @@ namespace MidiLib
         {
             DrawKeys();
             Invalidate();
+            base.OnResize(e);
         }
 
         /// <summary>
@@ -226,6 +227,7 @@ namespace MidiLib
 
                 _keyDown = true;
             }
+            base.OnKeyDown(e);
         }
 
         /// <summary>
@@ -242,6 +244,7 @@ namespace MidiLib
                 pk.ReleaseVKey();
                 e.Handled = true;
             }
+            base.OnKeyUp(e);
         }
 
         /// <summary>
@@ -414,6 +417,7 @@ namespace MidiLib
             {
                 PressVKey(CalcVelocity());
             }
+            base.OnMouseEnter(e);
         }
 
         /// <summary>
@@ -426,6 +430,7 @@ namespace MidiLib
             {
                 ReleaseVKey();
             }
+            base.OnMouseLeave(e);
         }
 
         /// <summary>
@@ -440,6 +445,7 @@ namespace MidiLib
             {
                 _owner.Focus();
             }
+            base.OnMouseDown(e);
         }
 
         /// <summary>
@@ -449,6 +455,7 @@ namespace MidiLib
         protected override void OnMouseUp(MouseEventArgs e)
         {
             ReleaseVKey();
+            base.OnMouseUp(e);
         }
 
         /// <summary>
@@ -461,6 +468,7 @@ namespace MidiLib
             {
                 Capture = false;
             }
+            base.OnMouseMove(e);
         }
         #endregion
 

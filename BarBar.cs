@@ -168,6 +168,7 @@ namespace MidiLib
                 _end.Reset();
                 Invalidate();
             }
+            base.OnKeyDown(e);
         }
 
         /// <summary>
