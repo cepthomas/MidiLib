@@ -1,4 +1,4 @@
-# MidiLib TODO doc
+# MidiLib
 
 This library contains a bunch of components and controls accumulated over the years. It supports:
 - Reading and playing midi files.
@@ -6,8 +6,7 @@ This library contains a bunch of components and controls accumulated over the ye
 - Remapping channel patches.
 - Various export functions including specific style patterns.
 - Midi input handler.
-
-Requires VS2022 and .NET6.
+- Requires VS2022 and .NET6.
 
 ![logo](felixui.png)
 
@@ -19,7 +18,7 @@ Requires VS2022 and .NET6.
 - If midi file type is `1`, all tracks are combined. Because.
 - NAudio `NoteEvent` is used to represent Note Off and Key After Touch messages. It is also the base class for `NoteOnEvent`. Not sure why it was done that way.
 - Midi devices are limited to the ones available on your box. (Hint - try VirtualMidiSynth).
-- Some midi files use different drum channel numbers so there are a couple of options for simple remapping.
+- Some midi files (particuarly single instrument) use different drum channel numbers so there are a couple of options for simple remapping.
 
 # Components
 
@@ -102,10 +101,7 @@ There's tons of styles and technical info at https://psrtutorial.com/. An overvi
 
 The Test project contains a fairly complete demo application.
 
-- MainForm Creates a Player. Opens a file using MidiData. Stars and runs the timer based on user tempo selection/change.
-- Click on the settings icon to edit your options.
-- Some midi files with single instruments are sloppy with channel numbers so there are a couple of options for simple remapping.
-- In the log view: C for clear, W for word wrap toggle.
+[Midifrier](https://github.com/cepthomas/Midifrier) also uses this extensively.
 
 # External Components
 

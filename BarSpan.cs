@@ -10,8 +10,8 @@ using NBagOfTricks;
 
 namespace MidiLib
 {
-    /// <summary>Sort of like DateTime but for musical terminology.</summary>
-    public class BarTime : IComparable
+    /// <summary>Sort of like TimeSpan but for musical terminology. TODO finish and integrate with BarTime.</summary>
+    public class BarSpan : IComparable
     {
         #region Fields
         /// <summary>For hashing.</summary>
@@ -19,17 +19,14 @@ namespace MidiLib
 
         /// <summary>Increment for unique value.</summary>
         static int _all_ids = 1;
-
-        /// <summary>Some features are at a lower resolution.</summary>
-        public const int LOW_RES_PPQ = 8;
         #endregion
 
         #region Properties
         /// <summary>The time in subdivs. Always zero-based.</summary>
         public int TotalSubdivs { get; private set; }
 
-        /// <summary>The time in beats. Always zero-based.</summary>
-        public int TotalBeats { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat; } }
+        // /// <summary>The time in beats. Always zero-based.</summary>
+        // public int TotalBeats { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBeat; } }
 
         /// <summary>The bar number.</summary>
         public int Bar { get { return TotalSubdivs / MidiSettings.LibSettings.SubdivsPerBar; } }
@@ -45,7 +42,7 @@ namespace MidiLib
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public BarTime()
+        public BarSpan()
         {
             TotalSubdivs = 0;
             _id = _all_ids++;
@@ -57,7 +54,7 @@ namespace MidiLib
         /// <param name="bar"></param>
         /// <param name="beat"></param>
         /// <param name="subdiv"></param>
-        public BarTime(int bar, int beat, int subdiv)
+        public BarSpan(int bar, int beat, int subdiv)
         {
             TotalSubdivs = (bar * MidiSettings.LibSettings.SubdivsPerBar) + (beat * MidiSettings.LibSettings.SubdivsPerBeat) + subdiv;
             _id = _all_ids++;
@@ -67,7 +64,7 @@ namespace MidiLib
         /// Constructor from subdivs.
         /// </summary>
         /// <param name="subdivs">Number of subdivs.</param>
-        public BarTime(int subdivs)
+        public BarSpan(int subdivs)
         {
             if (subdivs < 0)
             {
@@ -76,27 +73,6 @@ namespace MidiLib
 
             TotalSubdivs = subdivs;
             _id = _all_ids++;
-        }
-
-        /// <summary>
-        /// Construct a BarTime from Beat.Subdiv representation as a double. Subdiv is LOW_RES_PPQ.
-        /// </summary>
-        /// <param name="beat"></param>
-        /// <returns>New BarTime.</returns>
-        public BarTime(double beat)
-        {
-            var (integral, fractional) = MathUtils.SplitDouble(beat);
-            var beats = (int)integral;
-            var subdivs = (int)Math.Round(fractional * 10.0);
-
-            if (subdivs >= LOW_RES_PPQ)
-            {
-                throw new Exception($"Invalid subdiv value: {beat}");
-            }
-
-            // Scale subdivs to native.
-            subdivs = subdivs * MidiSettings.LibSettings.InternalPPQ / LOW_RES_PPQ;
-            TotalSubdivs = beats * MidiSettings.LibSettings.SubdivsPerBeat + subdivs;
         }
         #endregion
 
@@ -114,7 +90,7 @@ namespace MidiLib
         /// </summary>
         /// <param name="lower"></param>
         /// <param name="upper"></param>
-        public void Constrain(BarTime lower, BarTime upper)
+        public void Constrain(BarSpan lower, BarSpan upper)
         {
             TotalSubdivs = MathUtils.Constrain(TotalSubdivs, lower.TotalSubdivs, upper.TotalSubdivs);
         }
@@ -182,7 +158,7 @@ namespace MidiLib
         #region Standard IComparable stuff
         public override bool Equals(object? obj)
         {
-            return obj is not null && obj is BarTime tm && tm.TotalSubdivs == TotalSubdivs;
+            return obj is not null && obj is BarSpan tm && tm.TotalSubdivs == TotalSubdivs;
         }
 
         public override int GetHashCode()
@@ -197,7 +173,7 @@ namespace MidiLib
                 throw new ArgumentException("Object is null");
             }
 
-            BarTime? other = obj as BarTime;
+            BarSpan? other = obj as BarSpan;
             if (other is not null)
             {
                 return TotalSubdivs.CompareTo(other.TotalSubdivs);
@@ -208,42 +184,42 @@ namespace MidiLib
             }
         }
 
-        public static bool operator ==(BarTime a, BarTime b)
+        public static bool operator ==(BarSpan a, BarSpan b)
         {
             return a.TotalSubdivs == b.TotalSubdivs;
         }
 
-        public static bool operator !=(BarTime a, BarTime b)
+        public static bool operator !=(BarSpan a, BarSpan b)
         {
             return !(a == b);
         }
 
-        public static BarTime operator +(BarTime a, BarTime b)
+        public static BarSpan operator +(BarSpan a, BarSpan b)
         {
-            return new BarTime(a.TotalSubdivs + b.TotalSubdivs);
+            return new BarSpan(a.TotalSubdivs + b.TotalSubdivs);
         }
 
-        public static BarTime operator -(BarTime a, BarTime b)
+        public static BarSpan operator -(BarSpan a, BarSpan b)
         {
-            return new BarTime(a.TotalSubdivs - b.TotalSubdivs);
+            return new BarSpan(a.TotalSubdivs - b.TotalSubdivs);
         }
 
-        public static bool operator <(BarTime a, BarTime b)
+        public static bool operator <(BarSpan a, BarSpan b)
         {
             return a.TotalSubdivs < b.TotalSubdivs;
         }
 
-        public static bool operator >(BarTime a, BarTime b)
+        public static bool operator >(BarSpan a, BarSpan b)
         {
             return a.TotalSubdivs > b.TotalSubdivs;
         }
 
-        public static bool operator <=(BarTime a, BarTime b)
+        public static bool operator <=(BarSpan a, BarSpan b)
         {
             return a.TotalSubdivs <= b.TotalSubdivs;
         }
 
-        public static bool operator >=(BarTime a, BarTime b)
+        public static bool operator >=(BarSpan a, BarSpan b)
         {
             return a.TotalSubdivs >= b.TotalSubdivs;
         }
