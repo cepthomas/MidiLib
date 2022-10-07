@@ -66,7 +66,7 @@ namespace MidiLib.Test
         public MainForm()
         {
             // Must do this first before initializing.
-            _settings = (TestSettings)Settings.Load(".", typeof(TestSettings));
+            _settings = (TestSettings)SettingsCore.Load(".", typeof(TestSettings));
             MidiSettings.LibSettings = _settings.MidiSettings;
 
             InitializeComponent();
@@ -892,7 +892,7 @@ namespace MidiLib.Test
         /// <param name="e"></param>
         void Settings_Click(object sender, EventArgs e)
         {
-            _settings.Edit("howdy!", 400);
+            SettingsEditor.Edit(_settings, "howdy!!!", 400);
             _settings.Save();
             _logger.Warn("You better restart!");
         }
@@ -918,7 +918,7 @@ namespace MidiLib.Test
         #endregion
     }
 
-    public class TestSettings : Settings
+    public class TestSettings : SettingsCore
     {
         [DisplayName("Background Color")]
         [Description("The color used for overall background.")]
