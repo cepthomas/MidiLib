@@ -6,10 +6,10 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 using NAudio.Midi;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>
     /// Represents one complete collection of midi events from a file - standard midi or yamaha style files.

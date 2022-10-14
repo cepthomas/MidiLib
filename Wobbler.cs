@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>
     /// Statistical randomizer for time and volume.

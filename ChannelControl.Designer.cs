@@ -1,5 +1,5 @@
 ﻿
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     partial class ChannelControl
     {

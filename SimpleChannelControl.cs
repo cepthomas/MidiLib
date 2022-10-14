@@ -7,10 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>A simpler channel UI component.</summary>
     public partial class SimpleChannelControl : UserControl

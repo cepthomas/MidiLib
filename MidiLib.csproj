@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <RootNamespace>MidiLib</RootNamespace>
-        <AssemblyName>MidiLib</AssemblyName>
+        <RootNamespace>Ephemera.MidiLib</RootNamespace>
+        <AssemblyName>Ephemera.MidiLib</AssemblyName>
         <TargetFramework>net6.0-windows</TargetFramework>
         <UseWindowsForms>true</UseWindowsForms>
         <Deterministic>False</Deterministic>
@@ -29,25 +29,20 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="midilib.sublime-project" />
-        <None Remove="midilib.sublime-workspace" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="NAudio" Version="2.1.0" />
         <PackageReference Include="NAudio.Midi" Version="2.1.0" />
         <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="NBagOfTricks">
-          <HintPath>..\MidiGenerator\lib\NBagOfTricks.dll</HintPath>
+        <Reference Include="Ephemera.NBagOfTricks">
+          <HintPath>lib\Ephemera.NBagOfTricks.dll</HintPath>
         </Reference>
-        <Reference Include="NBagOfUis">
-          <HintPath>lib\NBagOfUis.dll</HintPath>
+        <Reference Include="Ephemera.NBagOfUis">
+          <HintPath>lib\Ephemera.NBagOfUis.dll</HintPath>
         </Reference>
-        <Reference Include="NebOsc">
-          <HintPath>lib\NebOsc.dll</HintPath>
+        <Reference Include="Ephemera.NebOsc">
+          <HintPath>lib\Ephemera.NebOsc.dll</HintPath>
         </Reference>
     </ItemGroup>
 

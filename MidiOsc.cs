@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using NAudio.Midi;
-using NBagOfTricks;
-using NBagOfTricks.Slog;
+using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfTricks.Slog;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>Provides midi over OSC. Server side.</summary>
     public sealed class OscInput : IInputDevice

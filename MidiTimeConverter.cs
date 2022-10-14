@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>Helpers to translate between midi standard and arbtrary internal representation.</summary>
     public class MidiTimeConverter

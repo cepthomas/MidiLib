@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>Abstraction layer to support all midi-like devices.</summary>
     public interface IDevice : IDisposable

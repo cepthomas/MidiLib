@@ -9,11 +9,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using NBagOfTricks;
-using NBagOfUis;
+using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfUis;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>
     /// Experimental midi controller.

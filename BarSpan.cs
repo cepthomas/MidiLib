@@ -5,10 +5,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>Sort of like TimeSpan but for musical terminology. TODO finish and integrate with BarTime.</summary>
     public class BarSpan : IComparable

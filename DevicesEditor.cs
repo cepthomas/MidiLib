@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     public partial class DevicesEditor : Form
     {

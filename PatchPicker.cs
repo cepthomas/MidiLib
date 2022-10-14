@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     public partial class PatchPicker : Form
     {

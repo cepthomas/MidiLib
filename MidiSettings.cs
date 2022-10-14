@@ -9,10 +9,10 @@ using System.Windows.Forms.Design;
 using System.Drawing.Design;
 using System.Windows.Forms;
 using NAudio.Midi;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     [Serializable]
     public class MidiSettings

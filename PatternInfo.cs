@@ -6,10 +6,10 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 using NAudio.Midi;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>Represents the contents of a midi file pattern. If it is a plain midi file (not style) there will be one only.</summary>
     public class PatternInfo

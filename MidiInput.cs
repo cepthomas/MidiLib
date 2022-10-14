@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NAudio.Midi;
-using NBagOfTricks;
-using NBagOfTricks.Slog;
+using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfTricks.Slog;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>
     /// Midi input handler.

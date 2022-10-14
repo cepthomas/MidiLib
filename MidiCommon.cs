@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     #region Enums
     /// <summary>Channel state.</summary>

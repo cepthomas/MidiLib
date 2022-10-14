@@ -4,13 +4,13 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
 using System.ComponentModel;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
 // TODO slow startup - too many sub controls?
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>
     /// Virtual keyboard control borrowed from Leslie Sanford with extras.

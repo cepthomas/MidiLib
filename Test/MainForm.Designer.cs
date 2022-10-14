@@ -1,6 +1,6 @@
 ﻿
 
-namespace MidiLib.Test
+namespace Ephemera.MidiLib.Test
 {
     partial class MainForm
     {

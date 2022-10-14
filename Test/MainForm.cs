@@ -12,12 +12,12 @@ using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 using NAudio.Midi;
-using NBagOfTricks;
-using NBagOfUis;
-using NBagOfTricks.Slog;
+using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfUis;
+using Ephemera.NBagOfTricks.Slog;
 
 
-namespace MidiLib.Test
+namespace Ephemera.MidiLib.Test
 {
     public partial class MainForm : Form
     {

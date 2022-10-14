@@ -6,10 +6,10 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 using NAudio.Midi;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace MidiLib
+namespace Ephemera.MidiLib
 {
     /// <summary>
     /// Internal representation of one midi event.

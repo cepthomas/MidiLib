@@ -4,8 +4,8 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>net6.0-windows</TargetFramework>
         <UseWindowsForms>true</UseWindowsForms>
-        <RootNamespace>MidiLib.Test</RootNamespace>
-        <AssemblyName>MidiLib.Test</AssemblyName>
+        <RootNamespace>Ephemera.MidiLib.Test</RootNamespace>
+        <AssemblyName>Ephemera.MidiLib.Test</AssemblyName>
         <Deterministic>False</Deterministic>
         <Description>MidiLib tester</Description>
         <Copyright>MIT License</Copyright>
@@ -14,13 +14,19 @@
         <WarningLevel>4</WarningLevel>
         <NoWarn>CS1591;CA1822</NoWarn>
         <Nullable>enable</Nullable>
-        <!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-        <StartupObject>MidiLib.Test.Program</StartupObject>
+        <StartupObject>Ephemera.MidiLib.Test.Program</StartupObject>
         <NoWin32Manifest>true</NoWin32Manifest>
         <IsPublishable>False</IsPublishable>
         <!-- en none -->
     </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="work\**" />
+      <EmbeddedResource Remove="work\**" />
+      <None Remove="work\**" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="NAudio" Version="2.1.0" />
@@ -33,11 +39,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="NBagOfTricks">
-          <HintPath>..\lib\NBagOfTricks.dll</HintPath>
+        <Reference Include="Ephemera.NBagOfTricks">
+          <HintPath>..\lib\Ephemera.NBagOfTricks.dll</HintPath>
         </Reference>
-        <Reference Include="NBagOfUis">
-            <HintPath>..\lib\NBagOfUis.dll</HintPath>
+        <Reference Include="Ephemera.NBagOfUis">
+            <HintPath>..\lib\Ephemera.NBagOfUis.dll</HintPath>
         </Reference>
     </ItemGroup>
 
