@@ -142,7 +142,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Get all useful pattern names - those with musicaal notes.
+        /// Get all useful pattern names - those with musical notes.
         /// </summary>
         /// <returns>List of names.</returns>
         public List<string> GetPatternNames()
