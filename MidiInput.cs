@@ -47,7 +47,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <inheritdoc />
-        public event EventHandler<InputEventArgs>? InputEvent;
+        public event EventHandler<InputReceiveEventArgs>? InputReceive;
         #endregion
 
         #region Lifecycle
@@ -91,12 +91,12 @@ namespace Ephemera.MidiLib
         {
             // Decode the message. We only care about a few.
             MidiEvent me = MidiEvent.FromRawMessage(e.RawMessage);
-            InputEventArgs? mevt = null;
+            InputReceiveEventArgs? mevt = null;
 
             switch (me)
             {
                 case NoteOnEvent evt:
-                    mevt = new InputEventArgs()
+                    mevt = new InputReceiveEventArgs()
                     {
                         Channel = evt.Channel,
                         Note = evt.NoteNumber,
@@ -105,7 +105,7 @@ namespace Ephemera.MidiLib
                     break;
 
                 case NoteEvent evt:
-                    mevt = new InputEventArgs()
+                    mevt = new InputReceiveEventArgs()
                     {
                         Channel = evt.Channel,
                         Note = evt.NoteNumber,
@@ -114,7 +114,7 @@ namespace Ephemera.MidiLib
                     break;
 
                 case ControlChangeEvent evt:
-                    mevt = new InputEventArgs()
+                    mevt = new InputReceiveEventArgs()
                     {
                         Channel = evt.Channel,
                         Controller = (int)evt.Controller,
@@ -123,10 +123,10 @@ namespace Ephemera.MidiLib
                     break;
 
                 case PitchWheelChangeEvent evt:
-                    mevt = new InputEventArgs()
+                    mevt = new InputReceiveEventArgs()
                     {
                         Channel = evt.Channel,
-                        Controller = InputEventArgs.PITCH_CONTROL,
+                        Controller = InputReceiveEventArgs.PITCH_CONTROL,
                         Value = evt.Pitch
                     };
                     break;
@@ -136,10 +136,10 @@ namespace Ephemera.MidiLib
                     break;
             }
 
-            if (mevt is not null && InputEvent is not null)
+            if (mevt is not null && InputReceive is not null)
             {
                 // Pass it up for client handling.
-                InputEvent.Invoke(this, mevt);
+                InputReceive.Invoke(this, mevt);
                 Log(mevt);
             }
         }
@@ -149,7 +149,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
-            InputEventArgs evt = new()
+            InputReceiveEventArgs evt = new()
             {
                 ErrorInfo = $"Message:0x{e.RawMessage:X8}"
             };
@@ -160,7 +160,7 @@ namespace Ephemera.MidiLib
         /// Send event information to the client to sort out.
         /// </summary>
         /// <param name="evt"></param>
-        void Log(InputEventArgs evt)
+        void Log(InputReceiveEventArgs evt)
         {
             if (LogEnable)
             {

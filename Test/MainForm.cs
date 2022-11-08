@@ -80,7 +80,7 @@ namespace Ephemera.MidiLib.Test
             // Logger. Note: you can create this here but don't call any _logger functions until loaded.
             LogManager.MinLevelFile = LogLevel.Trace;
             LogManager.MinLevelNotif = LogLevel.Trace;
-            LogManager.LogEvent += LogManager_LogEvent;
+            LogManager.LogMessage += LogManager_LogMessage;
             LogManager.Run(Path.Join(_outPath, "log.txt"), 100000);
 
             // The text output.
@@ -199,12 +199,12 @@ namespace Ephemera.MidiLib.Test
                 switch (dev.DeviceName)
                 {
                     case nameof(VirtualKeyboard):
-                        vkey.InputEvent += Listener_InputEvent;
+                        vkey.InputReceive += Listener_InputReceive;
                         _inputDevice = vkey;
                         break;
 
                     case nameof(BingBong):
-                        bb.InputEvent += Listener_InputEvent;
+                        bb.InputReceive += Listener_InputReceive;
                         _inputDevice = bb;
                         break;
 
@@ -220,7 +220,7 @@ namespace Ephemera.MidiLib.Test
                         else
                         {
                             _inputDevice.CaptureEnable = true;
-                            _inputDevice.InputEvent += Listener_InputEvent;
+                            _inputDevice.InputReceive += Listener_InputReceive;
                         }
                         break;
                 }
@@ -311,7 +311,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Control_ChannelChangeEvent(object? sender, ChannelChangeEventArgs e)
+        void Control_ChannelChange(object? sender, ChannelChangeEventArgs e)
         {
             Channel channel = ((ChannelControl)sender!).BoundChannel;
 
@@ -522,7 +522,7 @@ namespace Ephemera.MidiLib.Test
                         BorderStyle = BorderStyle.FixedSingle,
                         BoundChannel = channel
                     };
-                    control.ChannelChangeEvent += Control_ChannelChangeEvent;
+                    control.ChannelChange += Control_ChannelChange;
                     Controls.Add(control);
                     _channelControls.Add(control);
 
@@ -801,7 +801,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void LogManager_LogEvent(object? sender, LogEventArgs e)
+        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
         {
             // Usually come from a different thread.
             if(IsHandleCreated)
@@ -904,7 +904,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Listener_InputEvent(object? sender, InputEventArgs e)
+        void Listener_InputReceive(object? sender, InputReceiveEventArgs e)
         {
             _logger.Trace($"Listener:{sender} Note:{e.Note} Controller:{e.Controller} Value:{e.Value}");
 

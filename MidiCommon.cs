@@ -103,7 +103,7 @@ namespace Ephemera.MidiLib
     /// Midi (real or sim) has received something. It's up to the client to make sense of it.
     /// Property value of -1 indicates invalid or not pertinent e.g a controller event doesn't have velocity.
     /// </summary>
-    public class InputEventArgs : EventArgs
+    public class InputReceiveEventArgs : EventArgs
     {
         /// <summary>Channel number 1-based. Required.</summary>
         public int Channel { get; set; } = 0;

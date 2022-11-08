@@ -32,7 +32,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
-        event EventHandler<InputEventArgs>? InputEvent;
+        event EventHandler<InputReceiveEventArgs>? InputReceive;
         #endregion
     }
 

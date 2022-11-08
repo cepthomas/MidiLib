@@ -17,7 +17,7 @@ namespace Ephemera.MidiLib
     {
         #region Events
         /// <summary>Notify host of asynchronous changes from user.</summary>
-        public event EventHandler<ChannelChangeEventArgs>? ChannelChangeEvent;
+        public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
         #endregion
 
         #region Properties
@@ -180,7 +180,7 @@ namespace Ephemera.MidiLib
                 {
                     State = newState;
                     UpdateUi();
-                    ChannelChangeEvent?.Invoke(this, new() { StateChange = true });
+                    ChannelChange?.Invoke(this, new() { StateChange = true });
                 }
             }
         }
@@ -198,7 +198,7 @@ namespace Ephemera.MidiLib
             {
                 BoundChannel.Patch = pp.PatchNumber;
                 UpdateUi();
-                ChannelChangeEvent?.Invoke(this, new() { PatchChange = true });
+                ChannelChange?.Invoke(this, new() { PatchChange = true });
             }
         }
 

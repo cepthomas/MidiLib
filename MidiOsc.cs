@@ -20,7 +20,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <inheritdoc />
-        public event EventHandler<InputEventArgs>? InputEvent;
+        public event EventHandler<InputReceiveEventArgs>? InputReceive;
         #endregion
 
         #region Properties
@@ -60,8 +60,8 @@ namespace Ephemera.MidiLib
                     {
                         _oscInput = new NebOsc.Input(port);
                         DeviceName = _oscInput.DeviceName;
-                        _oscInput.InputEvent += OscInput_InputEvent;
-                        _oscInput.LogEvent += OscInput_LogEvent;
+                        _oscInput.InputReceived += OscInput_InputReceived;
+                        _oscInput.Notification += OscInput_Notification;
                     }
                 }
             }
@@ -88,7 +88,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void OscInput_LogEvent(object? sender, NebOsc.LogEventArgs e)
+        void OscInput_Notification(object? sender, NebOsc.NotificationEventArgs e)
         {
             if(e.IsError)
             {
@@ -105,7 +105,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void OscInput_InputEvent(object? sender, NebOsc.InputEventArgs e)
+        void OscInput_InputReceived(object? sender, NebOsc.InputReceiveEventArgs e)
         {
             // message could be:
             // /note/ channel notenum vel
@@ -113,7 +113,7 @@ namespace Ephemera.MidiLib
 
             e.Messages.ForEach(m =>
             {
-                InputEventArgs args = new();
+                InputReceiveEventArgs args = new();
 
                 switch (m.Address)
                 {
@@ -140,7 +140,7 @@ namespace Ephemera.MidiLib
                         break;
                 }
 
-                InputEvent?.Invoke(this, args);
+                InputReceive?.Invoke(this, args);
 
                 if (LogEnable)
                 {
@@ -196,7 +196,7 @@ namespace Ephemera.MidiLib
                         string ip = parts[1];
                         _oscOutput = new NebOsc.Output(ip, port);
                         DeviceName = _oscOutput.DeviceName;
-                        _oscOutput.LogEvent += OscOutput_LogEvent;
+                        _oscOutput.Notification += OscOutput_Notification;
                     }
                 }
             }
@@ -291,7 +291,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void OscOutput_LogEvent(object? sender, NebOsc.LogEventArgs e)
+        void OscOutput_Notification(object? sender, NebOsc.NotificationEventArgs e)
         {
             if (e.IsError)
             {

@@ -44,7 +44,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Key press info.</summary>
-        public event EventHandler<InputEventArgs>? InputEvent;
+        public event EventHandler<InputReceiveEventArgs>? InputReceive;
         #endregion
 
         #region Constants
@@ -252,9 +252,9 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Keyboard_InputEvent(object? sender, InputEventArgs e)
+        void Keyboard_InputReceive(object? sender, InputReceiveEventArgs e)
         {
-            InputEvent?.Invoke(this, new() { Channel = Channel, Note = e.Note, Value = e.Value });
+            InputReceive?.Invoke(this, new() { Channel = Channel, Note = e.Note, Value = e.Value });
         }
         #endregion
 
@@ -280,7 +280,7 @@ namespace Ephemera.MidiLib
                     pk.BringToFront();
                 }
 
-                pk.InputEvent += Keyboard_InputEvent;
+                pk.InputReceive += Keyboard_InputReceive;
                 _keys.Add(pk);
                 Controls.Add(pk);
             }
@@ -350,7 +350,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Notify handlers of key change.</summary>
-        public event EventHandler<InputEventArgs>? InputEvent;
+        public event EventHandler<InputReceiveEventArgs>? InputReceive;
         #endregion
 
         #region Lifecycle
@@ -379,7 +379,7 @@ namespace Ephemera.MidiLib
         {
             IsPressed = true;
             Invalidate();
-            InputEvent?.Invoke(this, new() { Note = NoteId, Value = velocity });
+            InputReceive?.Invoke(this, new() { Note = NoteId, Value = velocity });
         }
 
         /// <summary>
@@ -389,7 +389,7 @@ namespace Ephemera.MidiLib
         {
             IsPressed = false;
             Invalidate();
-            InputEvent?.Invoke(this, new() { Note = NoteId, Value = 0 });
+            InputReceive?.Invoke(this, new() { Note = NoteId, Value = 0 });
         }
         #endregion
 

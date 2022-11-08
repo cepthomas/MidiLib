@@ -48,7 +48,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Notify host of asynchronous changes from user.</summary>
-        public event EventHandler<ChannelChangeEventArgs>? ChannelChangeEvent;
+        public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
         #endregion
 
         #region Lifecycle
@@ -99,7 +99,7 @@ namespace Ephemera.MidiLib
             if (pp.PatchNumber != -1)
             {
                 Patch = pp.PatchNumber;
-                ChannelChangeEvent?.Invoke(this, new() { PatchChange = true } );
+                ChannelChange?.Invoke(this, new() { PatchChange = true } );
             }
         }
         #endregion

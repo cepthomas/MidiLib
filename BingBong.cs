@@ -69,7 +69,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Click press info.</summary>
-        public event EventHandler<InputEventArgs>? InputEvent;
+        public event EventHandler<InputReceiveEventArgs>? InputReceive;
         #endregion
 
         #region Lifecycle
@@ -151,12 +151,12 @@ namespace Ephemera.MidiLib
                     if(_lastNote != -1)
                     {
                         // Turn off last note.
-                        InputEvent?.Invoke(this, new() { Channel = Channel, Note = _lastNote, Value = 0 });
+                        InputReceive?.Invoke(this, new() { Channel = Channel, Note = _lastNote, Value = 0 });
                     }
 
                     // Start the new note.
                     _lastNote = note;
-                    InputEvent?.Invoke(this, new() { Channel = Channel, Note = note, Value = value });
+                    InputReceive?.Invoke(this, new() { Channel = Channel, Note = note, Value = value });
                 }
             }
 
@@ -184,7 +184,7 @@ namespace Ephemera.MidiLib
             var (note, value) = XyToMidi(mp.X, mp.Y);
             _lastNote = note;
 
-            InputEvent?.Invoke(this, new() { Note = note, Value = value });
+            InputReceive?.Invoke(this, new() { Note = note, Value = value });
 
             base.OnMouseDown(e);
         }
@@ -197,7 +197,7 @@ namespace Ephemera.MidiLib
         {
             if(_lastNote != -1)
             {
-                InputEvent?.Invoke(this, new() { Note = _lastNote, Value = 0 });
+                InputReceive?.Invoke(this, new() { Note = _lastNote, Value = 0 });
             }
 
             _lastNote = -1;
