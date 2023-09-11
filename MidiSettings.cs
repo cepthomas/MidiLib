@@ -66,12 +66,12 @@ namespace Ephemera.MidiLib
         /// <summary>Convenience.</summary>
         [Browsable(false)]
         [JsonIgnore()]
-        public int SubdivsPerBeat { get { return InternalPPQ; } }
+        public int SubbeatsPerBeat { get { return InternalPPQ; } }
 
         /// <summary>Convenience.</summary>
         [Browsable(false)]
         [JsonIgnore()]
-        public int SubdivsPerBar { get { return InternalPPQ * BeatsPerBar; } }
+        public int SubeatsPerBar { get { return InternalPPQ * BeatsPerBar; } }
         #endregion
     }
 

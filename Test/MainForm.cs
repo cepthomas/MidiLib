@@ -380,7 +380,7 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-            //_player.CurrentSubdiv = barBar.Current.TotalSubdivs;
+            //_player.CurrentSubbeat = barBar.Current.TotalSubbeats;
         }
         #endregion
 
@@ -558,7 +558,7 @@ namespace Ephemera.MidiLib.Test
             nudTempo.Value = pinfo.Tempo;
 
             // Update bar.
-            var tot = _channels.TotalSubdivs();
+            var tot = _channels.TotalSubbeats();
             barBar.Start = new(0);
             barBar.End = new(tot > 0 ? tot - 1 : 0);
             barBar.Length = new(tot);
@@ -647,7 +647,7 @@ namespace Ephemera.MidiLib.Test
                 if (ch.State == ChannelState.Solo || (!anySolo && ch.State == ChannelState.Normal))
                 {
                     // Process any sequence steps.
-                    var playEvents = ch.GetEvents(barBar.Current.TotalSubdivs);
+                    var playEvents = ch.GetEvents(barBar.Current.TotalSubbeats);
                     foreach (var mevt in playEvents)
                     {
                         switch (mevt)

@@ -14,7 +14,7 @@ namespace Ephemera.MidiLib
     public enum ChannelState { Normal = 0, Solo = 1, Mute = 2 }
 
     /// <summary>User selection options.</summary>
-    public enum SnapType { Bar, Beat, Subdiv }
+    public enum SnapType { Bar, Beat, Subbeat }
     #endregion
 
     #region Definitions

@@ -178,7 +178,7 @@ namespace Ephemera.MidiLib
         {
             if (e.Button == MouseButtons.Left)
             {
-                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
+                _current.SetRounded(GetSubbeatFromMouse(e.X), MidiSettings.LibSettings.Snap);
                 CurrentTimeChanged?.Invoke(this, new EventArgs());
             }
             else if (e.X != _lastXPos)
@@ -186,8 +186,8 @@ namespace Ephemera.MidiLib
                 BarTime bs = new();
                 var vv = MidiSettings.LibSettings;
 
-                var subdiv = GetSubdivFromMouse(e.X);
-                bs.SetRounded(subdiv, MidiSettings.LibSettings.Snap);
+                var subbeat = GetSubbeatFromMouse(e.X);
+                bs.SetRounded(subbeat, MidiSettings.LibSettings.Snap);
                 string sdef = GetTimeDefString(bs.TotalBeats);
                 _toolTip.SetToolTip(this, $"{bs.Format()} {sdef}");
                 _lastXPos = e.X;
@@ -204,15 +204,15 @@ namespace Ephemera.MidiLib
         {
             if (ModifierKeys.HasFlag(Keys.Control))
             {
-                _start.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
+                _start.SetRounded(GetSubbeatFromMouse(e.X), MidiSettings.LibSettings.Snap);
             }
             else if (ModifierKeys.HasFlag(Keys.Alt))
             {
-                _end.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
+                _end.SetRounded(GetSubbeatFromMouse(e.X), MidiSettings.LibSettings.Snap);
             }
             else
             {
-                _current.SetRounded(GetSubdivFromMouse(e.X), MidiSettings.LibSettings.Snap);
+                _current.SetRounded(GetSubbeatFromMouse(e.X), MidiSettings.LibSettings.Snap);
             }
 
             CurrentTimeChanged?.Invoke(this, new EventArgs());
@@ -225,7 +225,7 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Change current time. 
         /// </summary>
-        /// <param name="num">Subdivs/ticks.</param>
+        /// <param name="num">Subbeats/ticks.</param>
         /// <returns>True if at the end of the sequence.</returns>
         public bool IncrementCurrent(int num)
         {
@@ -239,12 +239,12 @@ namespace Ephemera.MidiLib
             }
             else if (_current < _start)
             {
-                _current.SetRounded(_start.TotalSubdivs, SnapType.Subdiv);
+                _current.SetRounded(_start.TotalSubbeats, SnapType.Subbeat);
                 done = true;
             }
             else if (_current > _end)
             {
-                _current.SetRounded(_end.TotalSubdivs, SnapType.Subdiv);
+                _current.SetRounded(_end.TotalSubbeats, SnapType.Subbeat);
                 done = true;
             }
 
@@ -293,20 +293,20 @@ namespace Ephemera.MidiLib
 
         #region Private functions
         /// <summary>
-        /// Convert x pos to subdiv.
+        /// Convert x pos to subbeat.
         /// </summary>
         /// <param name="x"></param>
-        int GetSubdivFromMouse(int x)
+        int GetSubbeatFromMouse(int x)
         {
-            int subdiv = 0;
+            int subbeat = 0;
 
             if(_current < _length)
             {
-                subdiv = x * _length.TotalSubdivs / Width;
-                subdiv = MathUtils.Constrain(subdiv, 0, _length.TotalSubdivs);
+                subbeat = x * _length.TotalSubbeats / Width;
+                subbeat = MathUtils.Constrain(subbeat, 0, _length.TotalSubbeats);
             }
 
-            return subdiv;
+            return subbeat;
         }
 
         /// <summary>
@@ -316,7 +316,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public int Scale(BarTime val)
         {
-            return val.TotalSubdivs * Width / _length.TotalSubdivs;
+            return val.TotalSubbeats * Width / _length.TotalSubbeats;
         }
         #endregion
     }

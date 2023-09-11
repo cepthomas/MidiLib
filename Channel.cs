@@ -13,10 +13,10 @@ namespace Ephemera.MidiLib
     public class Channel
     {
         #region Fields
-        ///<summary>The collection of playable events for this channel and pattern. Key is the internal subdiv/time.</summary>
+        ///<summary>The collection of playable events for this channel and pattern. Key is the internal subbeat/time.</summary>
         readonly Dictionary<int, List<MidiEvent>> _events = new();
 
-        /// <summary>Things that are executed once and disappear: NoteOffs, script send now. Key is the internal subdiv/time.</summary>
+        /// <summary>Things that are executed once and disappear: NoteOffs, script send now. Key is the internal subbeat/time.</summary>
         readonly Dictionary<int, List<MidiEvent>> _transients = new();
 
         ///<summary>Current volume.</summary>
@@ -59,7 +59,7 @@ namespace Ephemera.MidiLib
         public bool Selected { get; set; } = false;
 
         ///<summary>The duration of the whole channel - calculated.</summary>
-        public int MaxSubdiv { get; private set; } = 0;
+        public int MaxSubbeat { get; private set; } = 0;
 
         /// <summary>Get the number of events - calculated.</summary>
         public int NumEvents { get { return _events.Count; } }
@@ -74,9 +74,9 @@ namespace Ephemera.MidiLib
         {
             // Reset.
             _events.Clear();
-            MaxSubdiv = 0;
+            MaxSubbeat = 0;
 
-            // Bin by subdiv.
+            // Bin by subbeat.
             foreach (var te in events)
             {
                 // Add to our collection.
@@ -86,7 +86,7 @@ namespace Ephemera.MidiLib
                 }
 
                 _events[te.ScaledTime].Add(te.RawEvent);
-                MaxSubdiv = Math.Max(MaxSubdiv, te.ScaledTime);
+                MaxSubbeat = Math.Max(MaxSubbeat, te.ScaledTime);
             }
         }
 
@@ -98,7 +98,7 @@ namespace Ephemera.MidiLib
             // Reset.
             _events.Clear();
             _transients.Clear();
-            MaxSubdiv = 0;
+            MaxSubbeat = 0;
 
             State = ChannelState.Normal;
             Selected = false;
@@ -107,13 +107,13 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Get the events for a specific subdiv.
+        /// Get the events for a specific subbeat.
         /// </summary>
-        /// <param name="subdiv"></param>
+        /// <param name="subbeat"></param>
         /// <returns></returns>
-        public IEnumerable<MidiEvent> GetEvents(int subdiv)
+        public IEnumerable<MidiEvent> GetEvents(int subbeat)
         {
-            return _events.ContainsKey(subdiv) ? _events[subdiv] : new List<MidiEvent>();
+            return _events.ContainsKey(subbeat) ? _events[subbeat] : new List<MidiEvent>();
         }
 
         /// <summary>
@@ -128,13 +128,13 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Process any events for this time.
         /// </summary>
-        /// <param name="subdiv"></param>
-        public void DoStep(int subdiv)
+        /// <param name="subbeat"></param>
+        public void DoStep(int subbeat)
         {
             // Main events.
-            if(_events.ContainsKey(subdiv))
+            if(_events.ContainsKey(subbeat))
             {
-                foreach (var evt in _events[subdiv])
+                foreach (var evt in _events[subbeat])
                 {
                     switch (evt)
                     {
@@ -150,23 +150,23 @@ namespace Ephemera.MidiLib
             }
 
             // Transient events.
-            if (_transients.ContainsKey(subdiv))
+            if (_transients.ContainsKey(subbeat))
             {
-                foreach (var evt in _transients[subdiv])
+                foreach (var evt in _transients[subbeat])
                 {
                     SendEvent(evt);
                 }
-                _transients.Remove(subdiv);
+                _transients.Remove(subbeat);
             }
         }
 
         /// <summary>
         /// Execute any lingering transients and clear the collection.
         /// </summary>
-        /// <param name="subdiv">After this time.</param>
-        public void Flush(int subdiv)
+        /// <param name="subbeat">After this time.</param>
+        public void Flush(int subbeat)
         {
-            _transients.Where(t => t.Key >= subdiv).ForEach(t => t.Value.ForEach(evt => SendEvent(evt)));
+            _transients.Where(t => t.Key >= subbeat).ForEach(t => t.Value.ForEach(evt => SendEvent(evt)));
             _transients.Clear();
         }
 
@@ -258,18 +258,18 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Get subdivs for the collection, rounded to beat.
+        /// Get subbeats for the collection, rounded to beat.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="channels"></param>
         /// <returns></returns>
-        public static int TotalSubdivs<T>(this Dictionary<string, T> channels) where T : Channel
+        public static int TotalSubbeats<T>(this Dictionary<string, T> channels) where T : Channel
         {
-            var chmax = channels.Values.Max(ch => ch.MaxSubdiv);
+            var chmax = channels.Values.Max(ch => ch.MaxSubbeat);
             // Round total up to next beat.
             BarTime bs = new();
             bs.SetRounded(chmax, SnapType.Beat, true);
-            return bs.TotalSubdivs;
+            return bs.TotalSubbeats;
         }
     }
 }

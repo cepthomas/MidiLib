@@ -22,10 +22,10 @@ namespace Ephemera.MidiLib
         /// <summary>Associated channel name.</summary>
         public string ChannelName { get; }
 
-        /// <summary>Time (subdivs) from original file.</summary>
+        /// <summary>Time (subbeats) from original file.</summary>
         public long AbsoluteTime { get { return RawEvent.AbsoluteTime; } }
 
-        /// <summary>Time (subdivs) scaled to internal units using send PPQ.</summary>
+        /// <summary>Time (subbeats) scaled to internal units using send PPQ.</summary>
         public int ScaledTime { get; set; } = -1;
 
         /// <summary>The raw midi event.</summary>
