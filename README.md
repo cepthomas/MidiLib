@@ -13,7 +13,7 @@ This library contains a bunch of components and controls accumulated over the ye
 
 ## Notes
 - Since midi files and NAudio use 1-based channel numbers, so does this application, except when used internally as an array index.
-- Time is represented by `bar.beat.subbeat ` but 0-based, unlike typical music representation.
+- Time is represented by `bar.beat.sub ` but 0-based, unlike typical music representation.
 - Because the windows multimedia timer has inadequate accuracy for midi notes, resolution is limited to 32nd notes.
 - If midi file type is `1`, all tracks are combined. Because.
 - NAudio `NoteEvent` is used to represent Note Off and Key After Touch messages. It is also the base class for `NoteOnEvent`. Not sure why it was done that way.
@@ -41,7 +41,7 @@ Channel
 MidiDataFile, PatternInfo, MidiExport
 - Processes and contains a massaged version of the midi/style file contents.
 - Translates from raw file to MidiData internal representation.
-- Units are in subbeats - essentially midi ticks.
+- Units are in subs - essentially midi ticks.
 - Lots of utility and export functions too.
 
 ## UI

@@ -34,7 +34,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public long InternalToMidi(int t)
         {
-            long mtime = t * _midiPpq / MidiSettings.LibSettings.SubbeatsPerBeat;
+            long mtime = t * _midiPpq / MidiSettings.LibSettings.SubsPerBeat;
             return mtime;
         }
 
@@ -45,7 +45,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public int MidiToInternal(long t)
         {
-            long itime = t * MidiSettings.LibSettings.SubbeatsPerBeat / _midiPpq;
+            long itime = t * MidiSettings.LibSettings.SubsPerBeat / _midiPpq;
             return (int)itime;
         }
 
@@ -89,7 +89,7 @@ namespace Ephemera.MidiLib
         public double InternalPeriod()
         {
             double secPerBeat = 60.0 / _tempo;
-            double msecPerT = 1000 * secPerBeat / MidiSettings.LibSettings.SubbeatsPerBeat;
+            double msecPerT = 1000 * secPerBeat / MidiSettings.LibSettings.SubsPerBeat;
             return msecPerT;
         }
 

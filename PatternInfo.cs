@@ -21,7 +21,7 @@ namespace Ephemera.MidiLib
         /// <summary>All the pattern midi events, key is when to play (scaled time).</summary>
         readonly Dictionary<int, List<MidiEventDesc>> _eventsByTime = new();
 
-        /// <summary>For scaling subbeats to internal.</summary>
+        /// <summary>For scaling subs to internal.</summary>
         readonly MidiTimeConverter? _mt = null;
 
         /// <summary>Collection of all channels in this pattern. Key is number, value is associated patch.</summary>

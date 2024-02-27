@@ -58,9 +58,9 @@ namespace Ephemera.MidiLib
 
         ///<summary>The duration of the whole channel.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int MaxSubbeat
+        public int MaxSub
         {
-            get { return BoundChannel.MaxSubbeat; }
+            get { return BoundChannel.MaxSub; }
         }
 
         /// <summary>Drum channel changed.</summary>

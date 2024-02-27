@@ -22,20 +22,20 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties
-        /// <summary>The time in subbeats. Always zero-based.</summary>
-        public int TotalSubbeats { get; private set; }
+        /// <summary>The time in subs. Always zero-based.</summary>
+        public int TotalSubs { get; private set; }
 
         // /// <summary>The time in beats. Always zero-based.</summary>
-        // public int TotalBeats { get { return TotalSubbeats / MidiSettings.LibSettings.SubbeatsPerBeat; } }
+        // public int TotalBeats { get { return TotalSubs / MidiSettings.LibSettings.SubsPerBeat; } }
 
         /// <summary>The bar number.</summary>
-        public int Bar { get { return TotalSubbeats / MidiSettings.LibSettings.SubeatsPerBar; } }
+        public int Bar { get { return TotalSubs / MidiSettings.LibSettings.SubsPerBar; } }
 
         /// <summary>The beat number in the bar.</summary>
-        public int Beat { get { return TotalSubbeats / MidiSettings.LibSettings.SubbeatsPerBeat % MidiSettings.LibSettings.BeatsPerBar; } }
+        public int Beat { get { return TotalSubs / MidiSettings.LibSettings.SubsPerBeat % MidiSettings.LibSettings.BeatsPerBar; } }
 
-        /// <summary>The subbeat in the beat.</summary>
-        public int Subbeat { get { return TotalSubbeats % MidiSettings.LibSettings.SubbeatsPerBeat; } }
+        /// <summary>The sub in the beat.</summary>
+        public int Sub { get { return TotalSubs % MidiSettings.LibSettings.SubsPerBeat; } }
         #endregion
 
         #region Lifecycle
@@ -44,34 +44,34 @@ namespace Ephemera.MidiLib
         /// </summary>
         public BarSpan()
         {
-            TotalSubbeats = 0;
+            TotalSubs = 0;
             _id = _all_ids++;
         }
 
         /// <summary>
-        /// Constructor from bar/beat/subbeat.
+        /// Constructor from bar/beat/sub.
         /// </summary>
         /// <param name="bar"></param>
         /// <param name="beat"></param>
-        /// <param name="subbeat"></param>
-        public BarSpan(int bar, int beat, int subbeat)
+        /// <param name="sub"></param>
+        public BarSpan(int bar, int beat, int sub)
         {
-            TotalSubbeats = (bar * MidiSettings.LibSettings.SubeatsPerBar) + (beat * MidiSettings.LibSettings.SubbeatsPerBeat) + subbeat;
+            TotalSubs = (bar * MidiSettings.LibSettings.SubsPerBar) + (beat * MidiSettings.LibSettings.SubsPerBeat) + sub;
             _id = _all_ids++;
         }
 
         /// <summary>
-        /// Constructor from subbeats.
+        /// Constructor from subs.
         /// </summary>
-        /// <param name="subbeats">Number of subbeats.</param>
-        public BarSpan(int subbeats)
+        /// <param name="subs">Number of subs.</param>
+        public BarSpan(int subs)
         {
-            if (subbeats < 0)
+            if (subs < 0)
             {
                 throw new ArgumentException("Negative value is invalid");
             }
 
-            TotalSubbeats = subbeats;
+            TotalSubs = subs;
             _id = _all_ids++;
         }
         #endregion
@@ -82,7 +82,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         public void Reset()
         {
-            TotalSubbeats = 0;
+            TotalSubs = 0;
         }
 
         /// <summary>
@@ -92,48 +92,48 @@ namespace Ephemera.MidiLib
         /// <param name="upper"></param>
         public void Constrain(BarSpan lower, BarSpan upper)
         {
-            TotalSubbeats = MathUtils.Constrain(TotalSubbeats, lower.TotalSubbeats, upper.TotalSubbeats);
+            TotalSubs = MathUtils.Constrain(TotalSubs, lower.TotalSubs, upper.TotalSubs);
         }
 
         /// <summary>
         /// Update current value.
         /// </summary>
-        /// <param name="subbeats">By this number of subbeats.</param>
-        public void Increment(int subbeats)
+        /// <param name="subs">By this number of subs.</param>
+        public void Increment(int subs)
         {
-            TotalSubbeats += subbeats;
-            if (TotalSubbeats < 0)
+            TotalSubs += subs;
+            if (TotalSubs < 0)
             {
-                TotalSubbeats = 0;
+                TotalSubs = 0;
             }
         }
 
         /// <summary>
-        /// Set to subbeat using specified rounding.
+        /// Set to sub using specified rounding.
         /// </summary>
-        /// <param name="subbeat"></param>
+        /// <param name="sub"></param>
         /// <param name="snapType"></param>
         /// <param name="up">To ceiling otherwise closest.</param>
-        public void SetRounded(int subbeat, SnapType snapType, bool up = false)
+        public void SetRounded(int sub, SnapType snapType, bool up = false)
         {
-            if(subbeat > 0 && snapType != SnapType.Subbeat)
+            if(sub > 0 && snapType != SnapType.Sub)
             {
                 // res:32 in:27 floor=(in%aim)*aim  ceiling=floor+aim
-                int res = snapType == SnapType.Bar ? MidiSettings.LibSettings.SubeatsPerBar : MidiSettings.LibSettings.SubbeatsPerBeat;
-                int floor = (subbeat / res) * res;
+                int res = snapType == SnapType.Bar ? MidiSettings.LibSettings.SubsPerBar : MidiSettings.LibSettings.SubsPerBeat;
+                int floor = (sub / res) * res;
                 int ceiling = floor + res;
 
-                if (up || (ceiling - subbeat) >= res / 2)
+                if (up || (ceiling - sub) >= res / 2)
                 {
-                    subbeat = ceiling;
+                    sub = ceiling;
                 }
                 else
                 {
-                    subbeat = floor;
+                    sub = floor;
                 }
             }
 
-            TotalSubbeats = subbeat;
+            TotalSubs = sub;
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public string Format()
         {
-           return $"{Bar}.{Beat}.{Subbeat:00}";
+           return $"{Bar}.{Beat}.{Sub:00}";
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Ephemera.MidiLib
         #region Standard IComparable stuff
         public override bool Equals(object? obj)
         {
-            return obj is not null && obj is BarSpan tm && tm.TotalSubbeats == TotalSubbeats;
+            return obj is not null && obj is BarSpan tm && tm.TotalSubs == TotalSubs;
         }
 
         public override int GetHashCode()
@@ -176,7 +176,7 @@ namespace Ephemera.MidiLib
             BarSpan? other = obj as BarSpan;
             if (other is not null)
             {
-                return TotalSubbeats.CompareTo(other.TotalSubbeats);
+                return TotalSubs.CompareTo(other.TotalSubs);
             }
             else
             {
@@ -186,7 +186,7 @@ namespace Ephemera.MidiLib
 
         public static bool operator ==(BarSpan a, BarSpan b)
         {
-            return a.TotalSubbeats == b.TotalSubbeats;
+            return a.TotalSubs == b.TotalSubs;
         }
 
         public static bool operator !=(BarSpan a, BarSpan b)
@@ -196,32 +196,32 @@ namespace Ephemera.MidiLib
 
         public static BarSpan operator +(BarSpan a, BarSpan b)
         {
-            return new BarSpan(a.TotalSubbeats + b.TotalSubbeats);
+            return new BarSpan(a.TotalSubs + b.TotalSubs);
         }
 
         public static BarSpan operator -(BarSpan a, BarSpan b)
         {
-            return new BarSpan(a.TotalSubbeats - b.TotalSubbeats);
+            return new BarSpan(a.TotalSubs - b.TotalSubs);
         }
 
         public static bool operator <(BarSpan a, BarSpan b)
         {
-            return a.TotalSubbeats < b.TotalSubbeats;
+            return a.TotalSubs < b.TotalSubs;
         }
 
         public static bool operator >(BarSpan a, BarSpan b)
         {
-            return a.TotalSubbeats > b.TotalSubbeats;
+            return a.TotalSubs > b.TotalSubs;
         }
 
         public static bool operator <=(BarSpan a, BarSpan b)
         {
-            return a.TotalSubbeats <= b.TotalSubbeats;
+            return a.TotalSubs <= b.TotalSubs;
         }
 
         public static bool operator >=(BarSpan a, BarSpan b)
         {
-            return a.TotalSubbeats >= b.TotalSubbeats;
+            return a.TotalSubs >= b.TotalSubs;
         }
         #endregion
     }
