@@ -48,6 +48,7 @@ namespace Ephemera.MidiLib
         [DisplayName("Snap Type")]
         [Description("How to snap to grid.")]
         [Browsable(true)]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public SnapType Snap { get; set; } = SnapType.Beat;
 
         [DisplayName("Internal Time Resolution")]
