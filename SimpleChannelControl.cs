@@ -42,7 +42,7 @@ namespace Ephemera.MidiLib
             set { sldVolume.Value = value; }
         }
 
-        /// <summary>Cosmetics.</summary>
+        /// <summary>The color used for active control surfaces.</summary>
         public Color ControlColor { get; set; } = Color.Crimson;
         #endregion
 
