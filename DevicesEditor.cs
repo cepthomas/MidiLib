@@ -160,43 +160,43 @@ namespace Ephemera.MidiLib
         }
     }
 
-    /// <summary>Converter for selecting property value from known lists. Not currently used.</summary>
-    public class DeviceTypeConverter : TypeConverter
-    {
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) { return true; }
-        public override bool GetStandardValuesExclusive(ITypeDescriptorContext? context) { return true; }
+    // /// <summary>Converter for selecting property value from known lists. Not currently used.</summary>
+    // public class DeviceTypeConverter : TypeConverter
+    // {
+    //     public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) { return true; }
+    //     public override bool GetStandardValuesExclusive(ITypeDescriptorContext? context) { return true; }
 
-        // Get the specific list based on the property name.
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext? context)
-        {
-            List<string>? rec = null;
+    //     // Get the specific list based on the property name.
+    //     public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext? context)
+    //     {
+    //         List<string>? rec = null;
 
-            if (context!.PropertyDescriptor.Name.Contains("InputDevice"))
-            {
-                rec = new() { "" };
-                for (int devindex = 0; devindex < MidiIn.NumberOfDevices; devindex++)
-                {
-                    rec.Add(MidiIn.DeviceInfo(devindex).ProductName);
-                }
-                rec.Add("OSC");
-                rec.Add("VirtualKeyboard");
-                rec.Add("BingBong");
-            }
-            else if (context!.PropertyDescriptor.Name.Contains("OutputDevice"))
-            {
-                rec = new() { "" };
-                for (int devindex = 0; devindex < MidiOut.NumberOfDevices; devindex++)
-                {
-                    rec.Add(MidiOut.DeviceInfo(devindex).ProductName);
-                }
-                rec.Add("OSC");
-            }
-            else
-            {
-                System.Windows.Forms.MessageBox.Show($"This should never happen: {context.PropertyDescriptor.Name}");
-            }
+    //         if (context!.PropertyDescriptor.Name.Contains("InputDevice"))
+    //         {
+    //             rec = new() { "" };
+    //             for (int devindex = 0; devindex < MidiIn.NumberOfDevices; devindex++)
+    //             {
+    //                 rec.Add(MidiIn.DeviceInfo(devindex).ProductName);
+    //             }
+    //             rec.Add("OSC");
+    //             rec.Add("VirtualKeyboard");
+    //             rec.Add("BingBong");
+    //         }
+    //         else if (context!.PropertyDescriptor.Name.Contains("OutputDevice"))
+    //         {
+    //             rec = new() { "" };
+    //             for (int devindex = 0; devindex < MidiOut.NumberOfDevices; devindex++)
+    //             {
+    //                 rec.Add(MidiOut.DeviceInfo(devindex).ProductName);
+    //             }
+    //             rec.Add("OSC");
+    //         }
+    //         else
+    //         {
+    //             System.Windows.Forms.MessageBox.Show($"This should never happen: {context.PropertyDescriptor.Name}");
+    //         }
 
-            return new StandardValuesCollection(rec);
-        }
-    }
+    //         return new StandardValuesCollection(rec);
+    //     }
+    // }
 }
