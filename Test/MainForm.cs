@@ -86,8 +86,8 @@ namespace Ephemera.MidiLib.Test
             // The text output.
             txtViewer.Font = Font;
             txtViewer.WordWrap = true;
-            txtViewer.MatchColors.Add("ERR", Color.LightPink);
-            txtViewer.MatchColors.Add("WRN", Color.Plum);
+            txtViewer.MatchText.Add("ERR", Color.LightPink);
+            txtViewer.MatchText.Add("WRN", Color.Plum);
 
             // UI configs.
             sldVolume.DrawColor = _controlColor;
