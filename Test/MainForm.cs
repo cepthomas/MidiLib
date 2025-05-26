@@ -133,16 +133,16 @@ namespace Ephemera.MidiLib.Test
             if(ok)
             {
                 // Style file, full info:
-                OpenFile(@"C:\Dev\repos\Misc\TestAudioFiles\_LoveSong.S474.sty");
+                OpenFile(@"C:\Dev\Misc\TestAudioFiles\_LoveSong.S474.sty");
 
                 // Plain midi, full song:
-                //OpenFile(@"C:\Dev\repos\Misc\TestAudioFiles\WICKGAME.MID");
+                //OpenFile(@"C:\Dev\Misc\TestAudioFiles\WICKGAME.MID");
 
                 // Plain midi, one instrument, no patch:
-                //OpenFile(@"C:\Dev\repos\Misc\TestAudioFiles\_bass_ch2.mid");
+                //OpenFile(@"C:\Dev\Misc\TestAudioFiles\_bass_ch2.mid");
 
                 // Plain midi, one instrument, ??? patch:
-                //OpenFile(@"C:\Dev\repos\Misc\TestAudioFiles\_drums_ch1.mid");
+                //OpenFile(@"C:\Dev\Misc\TestAudioFiles\_drums_ch1.mid");
             }
             base.OnLoad(e);
         }
