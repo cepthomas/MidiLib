@@ -14,7 +14,6 @@ using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-using Ephemera.NBagOfTricks.Slog;
 
 
 namespace Ephemera.MidiLib.Test
@@ -457,7 +456,7 @@ namespace Ephemera.MidiLib.Test
             {
                 Filter = fileTypes,
                 Title = "Select a file",
-                InitialDirectory = @"C:\Dev\repos\TestAudioFiles"
+                InitialDirectory = @"C:\Dev\Apps\TestAudioFiles"
             };
 
             if (openDlg.ShowDialog() == DialogResult.OK)

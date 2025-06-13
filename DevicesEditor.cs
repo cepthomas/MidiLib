@@ -17,7 +17,7 @@ namespace Ephemera.MidiLib
     {
         /// <summary>Items to edit.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public List<DeviceSpec> Devices { get; set; } = new();
+        public List<DeviceSpec> Devices { get; set; } = [];
 
         /// <summary>
         /// Default constructor.
@@ -117,15 +117,15 @@ namespace Ephemera.MidiLib
         /// <param name="provider"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        public override object EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {
             IWindowsFormsEditorService? editorService = provider.GetService(typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
 
-            if (editorService is not null && value is not null && value is List<DeviceSpec>)
+            if (editorService is not null && context is not null && value is not null && value is List<DeviceSpec>)
             {
                 DevicesEditor ed = new();
 
-                switch (context.PropertyDescriptor.Name)
+                switch (context.PropertyDescriptor!.Name)
                 {
                     case "InputDevices":
                         ed.Text = "Edit Input Devices";
@@ -154,7 +154,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context)
         {
             return UITypeEditorEditStyle.Modal;
         }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.Slog;
 
 
 namespace Ephemera.MidiLib

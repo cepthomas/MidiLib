@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.Slog;
 
 
 namespace Ephemera.MidiLib
@@ -71,10 +70,7 @@ namespace Ephemera.MidiLib
         /// <inheritdoc />
         public void SendEvent(MidiEvent evt)
         {
-            if(_midiOut is not null)
-            {
-                _midiOut.Send(evt.GetAsShortMessage());
-            }
+            _midiOut?.Send(evt.GetAsShortMessage());
             if (LogEnable)
             {
                 _logger.Trace(evt.ToString());
