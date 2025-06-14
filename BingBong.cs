@@ -162,7 +162,7 @@ namespace Ephemera.MidiLib
 
             //toolTip1.SetToolTip(this, $"X:{mp.X} Y:{mp.Y}");
 
-            //Color clr = _result.GetPixel(mp.X, mp.Y);
+            //Color clr = _result.GetPixel(mp.X, mp.Y); --
             //toolTip1.SetToolTip(this, $"X:{mp.X} Y:{mp.Y} C:{clr}");
 
             //var note = MidiDefs.NoteNumberToName(mp.X);
@@ -232,7 +232,7 @@ namespace Ephemera.MidiLib
             {
                 foreach (var x in Enumerable.Range(0, Width))
                 {
-                    _bmp!.SetPixel(x, y, 255, x * 256 / Width, y * 256 / Height, 150);
+                    _bmp!.SetPixel(x, y, 255, x * 256 / Width, y * 256 / Height, 150); --
                 }
             }
         }

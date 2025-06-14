@@ -9,7 +9,7 @@ namespace Ephemera.MidiLib
     /// <summary>
     /// Statistical randomizer for time and volume.
     /// </summary>
-    public class Wobbler // TODO useful?
+    public class Wobbler
     {
         /// <summary>Randomizer.</summary>
         readonly Random _rand = new();
