@@ -116,7 +116,7 @@ namespace Ephemera.MidiLib
             // Background?
             if(_bmp is not null)
             {
-                pe.Graphics.DrawImage(_bmp.Bitmap, 0, 0, _bmp.Bitmap.Width, _bmp.Bitmap.Height);
+                pe.Graphics.DrawImage(_bmp.ClientBitmap, 0, 0, _bmp.ClientBitmap.Width, _bmp.ClientBitmap.Height);
             }
 
             // Draw grid?
@@ -232,7 +232,7 @@ namespace Ephemera.MidiLib
             {
                 foreach (var x in Enumerable.Range(0, Width))
                 {
-                    _bmp!.SetPixel(x, y, 255, x * 256 / Width, y * 256 / Height, 150); --
+                    _bmp!.SetPixel(x, y, Color.FromArgb(255, x * 256 / Width, y * 256 / Height, 150));
                 }
             }
         }

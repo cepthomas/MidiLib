@@ -70,7 +70,7 @@ namespace Ephemera.MidiLib.Test
 
             InitializeComponent();
 
-            toolStrip1.Renderer = new NBagOfUis.CheckBoxRenderer() { SelectedColor = _controlColor };
+            toolStrip1.Renderer = new GraphicsUtils.CheckBoxRenderer() { SelectedColor = _controlColor };
 
             // Make sure out path exists.
             DirectoryInfo di = new(_outPath);
@@ -759,7 +759,7 @@ namespace Ephemera.MidiLib.Test
                 // Execute the requested export function.
                 if (sender == btnExportCsv)
                 {
-                    var newfn = MiscUtils.MakeExportFileName(_outPath, _mdata.FileName, "all", "csv");
+                    var newfn = Tools.MakeExportFileName(_outPath, _mdata.FileName, "all", "csv");
                     MidiExport.ExportCsv(newfn, patterns, channels, _mdata.GetGlobal());
                     _logger.Info($"Exported to {newfn}");
                 }
@@ -767,7 +767,7 @@ namespace Ephemera.MidiLib.Test
                 {
                     foreach (var pattern in patterns)
                     {
-                        var newfn = MiscUtils.MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "mid");
+                        var newfn = Tools.MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "mid");
                         MidiExport.ExportMidi(newfn, pattern, channels, _mdata.GetGlobal());
                         _logger.Info($"Export midi to {newfn}");
                     }
