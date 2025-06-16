@@ -16,7 +16,7 @@ using Ephemera.NBagOfUis;
 namespace Ephemera.MidiLib
 {
     /// <summary>
-    /// Experimental midi controller.
+    /// Experimental midi controller. TODO final resting place?
     /// </summary>
     public partial class BingBong : UserControl, IInputDevice
     {

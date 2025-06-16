@@ -70,7 +70,7 @@ namespace Ephemera.MidiLib.Test
 
             InitializeComponent();
 
-            toolStrip1.Renderer = new GraphicsUtils.CheckBoxRenderer() { SelectedColor = _controlColor };
+            toolStrip1.Renderer = new ToolStripCheckBoxRenderer() { SelectedColor = _controlColor };
 
             // Make sure out path exists.
             DirectoryInfo di = new(_outPath);
