@@ -8,8 +8,6 @@ This library contains a bunch of components and controls accumulated over the ye
 - Midi input handler.
 - Requires VS2022 and .NET6.
 
-![logo](felixui.png)
-
 
 ## Notes
 - Since midi files and NAudio use 1-based channel numbers, so does this application, except when used internally as an array index.
