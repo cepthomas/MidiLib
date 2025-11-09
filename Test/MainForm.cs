@@ -195,33 +195,17 @@ namespace Ephemera.MidiLib.Test
             // Set up input device.
             foreach (var dev in _settings.MidiSettings.InputDevices)
             {
-                switch (dev.DeviceName)
+                _inputDevice = new MidiInput(dev.DeviceName);
+
+                if (!_inputDevice.Valid)
                 {
-                    case nameof(VirtualKeyboard):
-                        vkey.InputReceive += Listener_InputReceive;
-                        _inputDevice = vkey;
-                        break;
-
-                    case nameof(BingBong):
-                        bb.InputReceive += Listener_InputReceive;
-                        _inputDevice = bb;
-                        break;
-
-                    default:
-                        // Should be a real device.
-                        _inputDevice = new MidiInput(dev.DeviceName);
-
-                        if (!_inputDevice.Valid)
-                        {
-                            _logger.Error($"Something wrong with your input device:{dev.DeviceName}");
-                            ok = false;
-                        }
-                        else
-                        {
-                            _inputDevice.CaptureEnable = true;
-                            _inputDevice.InputReceive += Listener_InputReceive;
-                        }
-                        break;
+                    _logger.Error($"Something wrong with your input device:{dev.DeviceName}");
+                    ok = false;
+                }
+                else
+                {
+                    _inputDevice.CaptureEnable = true;
+                    _inputDevice.InputReceive += Listener_InputReceive;
                 }
             }
 
@@ -867,8 +851,6 @@ namespace Ephemera.MidiLib.Test
                 docs.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
-            docs.Add("- \"VirtualKeyboard\"");
-            docs.Add("- \"BingBong\"");
             docs.Add("");
             docs.Add("# Midi Output Devices");
 

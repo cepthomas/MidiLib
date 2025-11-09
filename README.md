@@ -63,12 +63,6 @@ PatchPicker
 DevicesEditor
 - Used for selecting inputs and outputs in settings editing.
 
-VirtualKeyboard
-- Piano control based loosely on Leslie Sanford's [Midi Toolkit](https://github.com/tebjan/Sanford.Multimedia.Midi).
-
-BingBong
-- Experimental UI component.
-
 ## Other
 
 - MidiDefs: The GM definitions plus conversion functions.
