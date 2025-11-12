@@ -204,7 +204,7 @@ namespace Ephemera.MidiLib
             }
             else
             {
-                throw new ArgumentException("Object is not a BarSpan");
+                throw new ArgumentException("Object is not a BarTime");
             }
         }
 
