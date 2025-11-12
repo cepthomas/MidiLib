@@ -30,27 +30,27 @@ namespace Ephemera.MidiLib
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.sldVolume = new NBagOfUis.Slider();
+            this.sldGain = new NBagOfUis.Slider();
             this.lblPatch = new System.Windows.Forms.Label();
             this.cmbChannel = new System.Windows.Forms.ComboBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
-            // sldVolume
+            // sldGain
             // 
-            this.sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sldVolume.DrawColor = System.Drawing.Color.White;
-            this.sldVolume.Label = "";
-            this.sldVolume.Location = new System.Drawing.Point(217, 5);
-            this.sldVolume.Maximum = 10D;
-            this.sldVolume.Minimum = 0D;
-            this.sldVolume.Name = "sldVolume";
-            this.sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.sldVolume.Resolution = 0.1D;
-            this.sldVolume.Size = new System.Drawing.Size(83, 30);
-            this.sldVolume.TabIndex = 50;
-            this.toolTip1.SetToolTip(this.sldVolume, "Channel Volume");
-            this.sldVolume.Value = 5D;
+            this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sldGain.DrawColor = System.Drawing.Color.White;
+            this.sldGain.Label = "";
+            this.sldGain.Location = new System.Drawing.Point(217, 5);
+            this.sldGain.Maximum = 10D;
+            this.sldGain.Minimum = 0D;
+            this.sldGain.Name = "sldGain";
+            this.sldGain.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.sldGain.Resolution = 0.1D;
+            this.sldGain.Size = new System.Drawing.Size(83, 30);
+            this.sldGain.TabIndex = 50;
+            this.toolTip1.SetToolTip(this.sldGain, "Channel Gain");
+            this.sldGain.Value = 5D;
             // 
             // lblPatch
             // 
@@ -77,7 +77,7 @@ namespace Ephemera.MidiLib
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.cmbChannel);
-            this.Controls.Add(this.sldVolume);
+            this.Controls.Add(this.sldGain);
             this.Controls.Add(this.lblPatch);
             this.Name = "SimpleChannelControl";
             this.Size = new System.Drawing.Size(309, 41);
@@ -87,7 +87,7 @@ namespace Ephemera.MidiLib
 
         #endregion
 
-        private NBagOfUis.Slider sldVolume;
+        private NBagOfUis.Slider sldGain;
         private System.Windows.Forms.Label lblPatch;
         private System.Windows.Forms.ComboBox cmbChannel;
         private System.Windows.Forms.ToolTip toolTip1;

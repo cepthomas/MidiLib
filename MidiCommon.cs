@@ -26,14 +26,11 @@ namespace Ephemera.MidiLib
         /// <summary>Supported file types.</summary>
         public const string STYLE_FILE_TYPES = "*.sty;*.pcs;*.sst;*.prs";
 
-        /// <summary>Corresponds to midi velocity = 0.</summary>
-        public const double VOLUME_MIN = 0.0;
-
-        /// <summary>Corresponds to midi velocity = 127.</summary>
-        public const double VOLUME_MAX = 1.0;
+        /// <summary>Default value.</summary>
+        public const double MIN_GAIN = 0.0;
 
         /// <summary>Default value.</summary>
-        public const double VOLUME_DEFAULT = 0.8;
+        public const double DEFAULT_GAIN = 0.8;
 
         /// <summary>Allow UI controls some more headroom.</summary>
         public const double MAX_GAIN = 2.0;

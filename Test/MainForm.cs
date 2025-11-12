@@ -89,12 +89,12 @@ namespace Ephemera.MidiLib.Test
             txtViewer.MatchText.Add("WRN", Color.Plum);
 
             // UI configs.
-            sldVolume.DrawColor = _controlColor;
-            sldVolume.Minimum = MidiLibDefs.VOLUME_MIN;
-            sldVolume.Maximum = MidiLibDefs.VOLUME_MAX;
-            sldVolume.Resolution = MidiLibDefs.VOLUME_MAX / 50;
-            sldVolume.Value = MidiLibDefs.VOLUME_DEFAULT;
-            sldVolume.Label = "volume";
+            sldGain.DrawColor = _controlColor;
+            sldGain.Minimum = MidiLibDefs.MIN_GAIN;
+            sldGain.Maximum = MidiLibDefs.MAX_GAIN;
+            sldGain.Resolution = MidiLibDefs.MAX_GAIN / 50;
+            sldGain.Value = MidiLibDefs.DEFAULT_GAIN;
+            sldGain.Label = "gain";
 
             // Time controller.
             MidiSettings.LibSettings.Snap = SnapType.Beat;
@@ -489,7 +489,7 @@ namespace Ephemera.MidiLib.Test
                         ChannelNumber = number,
                         Device = _outputDevice,
                         DeviceId = _outputDevice.DeviceName,
-                        Volume = MidiLibDefs.VOLUME_DEFAULT,
+                        Gain = MidiLibDefs.DEFAULT_GAIN,
                         State = ChannelState.Normal,
                         Patch = patch,
                         IsDrums = number == MidiDefs.DEFAULT_DRUM_CHANNEL,
@@ -527,7 +527,7 @@ namespace Ephemera.MidiLib.Test
                     ChannelNumber = chnum,
                     Device = _outputDevice,
                     DeviceId = _outputDevice.DeviceName,
-                    Volume = MidiLibDefs.VOLUME_DEFAULT,
+                    Gain = MidiLibDefs.DEFAULT_GAIN,
                     State = ChannelState.Normal,
                     Patch = MidiDefs.GetInstrumentNumber("OrchestralHarp"),
                     IsDrums = false,
@@ -647,7 +647,7 @@ namespace Ephemera.MidiLib.Test
                                         evt.AbsoluteTime,
                                         ch.IsDrums ? MidiDefs.DEFAULT_DRUM_CHANNEL : evt.Channel,
                                         evt.NoteNumber,
-                                        Math.Min((int)(evt.Velocity * sldVolume.Value * ch.Volume), MidiDefs.MAX_MIDI),
+                                        Math.Min((int)(evt.Velocity * sldGain.Value * ch.Gain), MidiDefs.MAX_MIDI),
                                         evt.OffEvent is null ? 0 : evt.NoteLength); // Fix NAudio NoteLength bug.
 
                                     ch.SendEvent(ne);

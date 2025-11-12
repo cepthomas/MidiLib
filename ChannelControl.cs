@@ -48,12 +48,12 @@ namespace Ephemera.MidiLib
             set { BoundChannel.Patch = value; UpdateUi(); }
         }
 
-        /// <summary>Current volume. Channel.Volume performs the constraints.</summary>
+        /// <summary>Current volume. Channel.Gain performs the constraints.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public double Volume
+        public double Gain
         {
-            get { return BoundChannel.Volume; }
-            set { BoundChannel.Volume = value; }
+            get { return BoundChannel.Gain; }
+            set { BoundChannel.Gain = value; }
         }
 
         ///<summary>The duration of the whole channel.</summary>
@@ -93,7 +93,7 @@ namespace Ephemera.MidiLib
         public ChannelControl()
         {
             InitializeComponent();
-            sldVolume.ValueChanged += Volume_ValueChanged;
+            sldGain.ValueChanged += Gain_ValueChanged;
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;
             lblChannelNumber.Click += ChannelNumber_Click;
@@ -106,10 +106,10 @@ namespace Ephemera.MidiLib
         protected override void OnLoad(EventArgs e)
         {
 
-            sldVolume.Value = BoundChannel.Volume;
-            sldVolume.DrawColor = SelectedColor;
-            sldVolume.Minimum = MidiLibDefs.VOLUME_MIN;
-            sldVolume.Maximum = MidiLibDefs.MAX_GAIN;
+            sldGain.Value = BoundChannel.Gain;
+            sldGain.DrawColor = SelectedColor;
+            sldGain.Minimum = MidiLibDefs.MIN_GAIN;
+            sldGain.Maximum = MidiLibDefs.MAX_GAIN;
 
             UpdateUi();
 
@@ -123,11 +123,11 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Volume_ValueChanged(object? sender, EventArgs e)
+        void Gain_ValueChanged(object? sender, EventArgs e)
         {
             if (sender is not null)
             {
-                Volume = (sender as NBagOfUis.Slider)!.Value;
+                Gain = (sender as NBagOfUis.Slider)!.Value;
             }
         }
 

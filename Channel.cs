@@ -14,13 +14,13 @@ namespace Ephemera.MidiLib
     {
         #region Fields
         ///<summary>The collection of playable events for this channel and pattern. Key is the internal sub/time.</summary>
-        readonly Dictionary<int, List<MidiEvent>> _events = new();
+        readonly Dictionary<int, List<MidiEvent>> _events = [];
 
         /// <summary>Things that are executed once and disappear: NoteOffs, script send now. Key is the internal sub/time.</summary>
-        readonly Dictionary<int, List<MidiEvent>> _transients = new();
+        readonly Dictionary<int, List<MidiEvent>> _transients = [];
 
-        ///<summary>Current volume.</summary>
-        double _volume = MidiLibDefs.VOLUME_DEFAULT;
+        ///<summary>Current gain.</summary>
+        double _gain = MidiLibDefs.DEFAULT_GAIN;
         #endregion
 
         #region Properties
@@ -33,11 +33,11 @@ namespace Ephemera.MidiLib
         /// <summary>Current patch.</summary>
         public int Patch { get; set; } = -1;
 
-        /// <summary>Current volume constrained to legal values.</summary>
-        public double Volume
+        /// <summary>Current gain constrained to legal values.</summary>
+        public double Gain
         {
-            get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, MidiLibDefs.VOLUME_MIN, MidiLibDefs.VOLUME_MAX); }
+            get { return _gain; }
+            set { _gain = MathUtils.Constrain(value, MidiLibDefs.MIN_GAIN, MidiLibDefs.MAX_GAIN); }
         }
 
         /// <summary>Associated device.</summary>
@@ -80,12 +80,13 @@ namespace Ephemera.MidiLib
             foreach (var te in events)
             {
                 // Add to our collection.
-                if (!_events.ContainsKey(te.ScaledTime))
+                if (!_events.TryGetValue(te.ScaledTime, out List<MidiEvent>? value))
                 {
-                    _events.Add(te.ScaledTime, new List<MidiEvent>());
+                    value = [];
+                    _events.Add(te.ScaledTime, value);
                 }
 
-                _events[te.ScaledTime].Add(te.RawEvent);
+                value.Add(te.RawEvent);
                 MaxSub = Math.Max(MaxSub, te.ScaledTime);
             }
         }
@@ -113,7 +114,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public IEnumerable<MidiEvent> GetEvents(int sub)
         {
-            return _events.ContainsKey(sub) ? _events[sub] : new List<MidiEvent>();
+            return _events.TryGetValue(sub, out List<MidiEvent>? value) ? value : [];
         }
 
         /// <summary>
@@ -132,9 +133,9 @@ namespace Ephemera.MidiLib
         public void DoStep(int sub)
         {
             // Main events.
-            if(_events.ContainsKey(sub))
+            if(_events.TryGetValue(sub, out List<MidiEvent>? value))
             {
-                foreach (var evt in _events[sub])
+                foreach (var evt in value)
                 {
                     switch (evt)
                     {
@@ -150,9 +151,9 @@ namespace Ephemera.MidiLib
             }
 
             // Transient events.
-            if (_transients.ContainsKey(sub))
+            if (_transients.TryGetValue(sub, out List<MidiEvent>? tvalue))
             {
-                foreach (var evt in _transients[sub])
+                foreach (var evt in tvalue)
                 {
                     SendEvent(evt);
                 }
@@ -168,17 +169,6 @@ namespace Ephemera.MidiLib
         {
             _transients.Where(t => t.Key >= sub).ForEach(t => t.Value.ForEach(evt => SendEvent(evt)));
             _transients.Clear();
-        }
-
-        /// <summary>Get the next volume.</summary>
-        /// <param name="def">Default value.</param>
-        /// <returns></returns>
-        public double NextVol(double def)
-        {
-            //var vel = _volWobbler is null ? def : _volWobbler.Next(def);
-            //vel *= _volume;
-            //return vel;
-            return _volume;
         }
 
         /// <summary>
@@ -229,11 +219,13 @@ namespace Ephemera.MidiLib
             {
                 var nevt = evt as NoteOnEvent;
                 int offTime = (int)evt.AbsoluteTime + nevt!.NoteLength;
-                if (!_transients.ContainsKey(offTime))
+                if (!_transients.TryGetValue(offTime, out List<MidiEvent>? value))
                 {
-                    _transients.Add(offTime, new());
+                    value = [];
+                    _transients.Add(offTime, value);
                 }
-                _transients[offTime].Add(nevt.OffEvent);
+
+                value.Add(nevt.OffEvent);
             }
 
             // Now send it.

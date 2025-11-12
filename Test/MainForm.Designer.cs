@@ -50,7 +50,7 @@ namespace Ephemera.MidiLib.Test
             btnNone = new System.Windows.Forms.Button();
             nudTempo = new System.Windows.Forms.NumericUpDown();
             label1 = new System.Windows.Forms.Label();
-            sldVolume = new Ephemera.NBagOfUis.Slider();
+            sldGain = new Ephemera.NBagOfUis.Slider();
             barBar = new BarBar();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudTempo).BeginInit();
@@ -300,20 +300,20 @@ namespace Ephemera.MidiLib.Test
             label1.TabIndex = 98;
             label1.Text = "BPM";
             // 
-            // sldVolume
+            // sldGain
             // 
-            sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            sldVolume.DrawColor = System.Drawing.Color.White;
-            sldVolume.Label = "";
-            sldVolume.Location = new System.Drawing.Point(8, 38);
-            sldVolume.Maximum = 10D;
-            sldVolume.Minimum = 0D;
-            sldVolume.Name = "sldVolume";
-            sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            sldVolume.Resolution = 0.1D;
-            sldVolume.Size = new System.Drawing.Size(138, 48);
-            sldVolume.TabIndex = 99;
-            sldVolume.Value = 5D;
+            sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            sldGain.DrawColor = System.Drawing.Color.White;
+            sldGain.Label = "";
+            sldGain.Location = new System.Drawing.Point(8, 38);
+            sldGain.Maximum = 10D;
+            sldGain.Minimum = 0D;
+            sldGain.Name = "sldGain";
+            sldGain.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            sldGain.Resolution = 0.1D;
+            sldGain.Size = new System.Drawing.Size(138, 48);
+            sldGain.TabIndex = 99;
+            sldGain.Value = 5D;
             // 
             // barBar
             // 
@@ -333,7 +333,7 @@ namespace Ephemera.MidiLib.Test
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1062, 542);
             Controls.Add(barBar);
-            Controls.Add(sldVolume);
+            Controls.Add(sldGain);
             Controls.Add(label1);
             Controls.Add(nudTempo);
             Controls.Add(btnNone);
@@ -357,7 +357,7 @@ namespace Ephemera.MidiLib.Test
         #endregion
 
         private System.Windows.Forms.ToolStrip toolStrip1;
-        private NBagOfUis.Slider sldVolume;
+        private NBagOfUis.Slider sldGain;
         private NBagOfUis.TextViewer txtViewer;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;

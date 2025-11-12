@@ -35,7 +35,7 @@ namespace Ephemera.MidiLib
             this.lblSolo = new System.Windows.Forms.Label();
             this.lblMute = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.sldVolume = new NBagOfUis.Slider();
+            this.sldGain = new NBagOfUis.Slider();
             this.SuspendLayout();
             // 
             // lblChannelNumber
@@ -75,26 +75,26 @@ namespace Ephemera.MidiLib
             this.lblMute.Text = "M";
             this.toolTip1.SetToolTip(this.lblMute, "Mute");
             // 
-            // sldVolume
+            // sldGain
             // 
-            this.sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sldVolume.DrawColor = System.Drawing.Color.White;
-            this.sldVolume.Label = "";
-            this.sldVolume.Location = new System.Drawing.Point(194, 3);
-            this.sldVolume.Maximum = 10D;
-            this.sldVolume.Minimum = 0D;
-            this.sldVolume.Name = "sldVolume";
-            this.sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.sldVolume.Resolution = 0.1D;
-            this.sldVolume.Size = new System.Drawing.Size(83, 30);
-            this.sldVolume.TabIndex = 47;
-            this.sldVolume.Value = 5D;
+            this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sldGain.DrawColor = System.Drawing.Color.White;
+            this.sldGain.Label = "";
+            this.sldGain.Location = new System.Drawing.Point(194, 3);
+            this.sldGain.Maximum = 10D;
+            this.sldGain.Minimum = 0D;
+            this.sldGain.Name = "sldGain";
+            this.sldGain.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.sldGain.Resolution = 0.1D;
+            this.sldGain.Size = new System.Drawing.Size(83, 30);
+            this.sldGain.TabIndex = 47;
+            this.sldGain.Value = 5D;
             // 
             // ChannelControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.sldVolume);
+            this.Controls.Add(this.sldGain);
             this.Controls.Add(this.lblMute);
             this.Controls.Add(this.lblSolo);
             this.Controls.Add(this.lblPatch);
@@ -112,6 +112,6 @@ namespace Ephemera.MidiLib
         private System.Windows.Forms.Label lblSolo;
         private System.Windows.Forms.Label lblMute;
         private System.Windows.Forms.ToolTip toolTip1;
-        private NBagOfUis.Slider sldVolume;
+        private NBagOfUis.Slider sldGain;
     }
 }
