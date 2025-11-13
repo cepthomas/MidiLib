@@ -43,7 +43,7 @@ namespace Ephemera.MidiLib
             _lv.KeyDown += new KeyEventHandler(this.List_KeyDown);
             Controls.Add(_lv);
 
-            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
+            for (int i = 0; i <= MidiDefs.MAX_MIDI; i++)
             {
                 _lv.Items.Add(MidiDefs.GetInstrumentName(i));
             }
