@@ -27,13 +27,10 @@ namespace Ephemera.MidiLib
         public const string STYLE_FILE_TYPES = "*.sty;*.pcs;*.sst;*.prs";
 
         /// <summary>Default value.</summary>
-        public const double MIN_GAIN = 0.0;
-
-        /// <summary>Default value.</summary>
-        public const double DEFAULT_GAIN = 0.8;
+        public const double DEFAULT_VOLUME = 0.8;
 
         /// <summary>Allow UI controls some more headroom.</summary>
-        public const double MAX_GAIN = 2.0;
+        public const double MAX_VOLUME = 2.0;
     }
     #endregion
 

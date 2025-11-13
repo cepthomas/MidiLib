@@ -46,12 +46,12 @@ MidiDataFile, PatternInfo, MidiExport
 
 ChannelControl
 - Bound to a Channel object.
-- Provides gain, mute, solo.
+- Provides volume, mute, solo.
 - Patch selection.
 
 SimpleChannelControl
 - Simple/dumb UI control.
-- Provides gain, channel, patch selection.
+- Provides volume, channel, patch selection.
 
 BarBar, BarTime
 - Shows progress in musical bars and beats.

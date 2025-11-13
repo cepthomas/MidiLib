@@ -35,11 +35,11 @@ namespace Ephemera.MidiLib
             set { _patch = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); lblPatch.Text = MidiDefs.GetInstrumentName(_patch); }
         }
 
-        /// <summary>Current gain.</summary>
-        public double Gain
+        /// <summary>Current volume.</summary>
+        public double Volume
         {
-            get { return sldGain.Value; }
-            set { sldGain.Value = value; }
+            get { return sldVolume.Value; }
+            set { sldVolume.Value = value; }
         }
 
         /// <summary>The color used for active control surfaces.</summary>
@@ -66,10 +66,10 @@ namespace Ephemera.MidiLib
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            sldGain.DrawColor = ControlColor;
-            sldGain.Minimum = MidiLibDefs.MIN_GAIN;
-            sldGain.Maximum = MidiLibDefs.MAX_GAIN;
-            sldGain.Value = MidiLibDefs.DEFAULT_GAIN;
+            sldVolume.DrawColor = ControlColor;
+            sldVolume.Minimum = 0.0;
+            sldVolume.Maximum = MidiLibDefs.MAX_VOLUME;
+            sldVolume.Value = MidiLibDefs.DEFAULT_VOLUME;
 
             lblPatch.Click += Patch_Click;
 

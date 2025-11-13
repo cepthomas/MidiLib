@@ -19,8 +19,8 @@ namespace Ephemera.MidiLib
         /// <summary>Things that are executed once and disappear: NoteOffs, script send now. Key is the internal sub/time.</summary>
         readonly Dictionary<int, List<MidiEvent>> _transients = [];
 
-        ///<summary>Current gain.</summary>
-        double _gain = MidiLibDefs.DEFAULT_GAIN;
+        ///<summary>Current volume.</summary>
+        double _volume = MidiLibDefs.DEFAULT_VOLUME;
         #endregion
 
         #region Properties
@@ -33,11 +33,11 @@ namespace Ephemera.MidiLib
         /// <summary>Current patch.</summary>
         public int Patch { get; set; } = -1;
 
-        /// <summary>Current gain constrained to legal values.</summary>
-        public double Gain
+        /// <summary>Current volume constrained to legal values.</summary>
+        public double Volume
         {
-            get { return _gain; }
-            set { _gain = MathUtils.Constrain(value, MidiLibDefs.MIN_GAIN, MidiLibDefs.MAX_GAIN); }
+            get { return _volume; }
+            set { _volume = MathUtils.Constrain(value, 0.0, MidiLibDefs.MAX_VOLUME); }
         }
 
         /// <summary>Associated device.</summary>
