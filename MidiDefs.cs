@@ -210,7 +210,7 @@ namespace Ephemera.MidiLib
         }
         #endregion
 
-        #region All the names TODO1 get from new txt files
+        #region All the names
         /// <summary>The GM midi instrument definitions.</summary>
         static readonly List<string> _instruments = new()
         {
