@@ -91,7 +91,7 @@ namespace Ephemera.MidiLib
 
             if (subs >= LOW_RES_PPQ)
             {
-                throw new Exception($"Invalid sub value: {beat}");
+                throw new ArgumentException($"Invalid sub value: {beat}");
             }
 
             // Scale subs to native.
