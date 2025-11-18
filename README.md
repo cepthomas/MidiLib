@@ -49,10 +49,6 @@ ChannelControl
 - Provides volume, mute, solo.
 - Patch selection.
 
-SimpleChannelControl
-- Simple/dumb UI control.
-- Provides volume, channel, patch selection.
-
 BarBar, BarTime
 - Shows progress in musical bars and beats.
 - User can select time.
