@@ -79,11 +79,8 @@ namespace Ephemera.MidiLib
             set { BoundChannel.Selected = value; UpdateUi(); }
         }
 
-        /// <summary>Indicate user selected.</summary>
-        public Color SelectedColor { get; set; } = Color.Aquamarine;
-
-        /// <summary>Indicate user not selected.</summary>
-        public Color UnselectedColor { get; set; } = DefaultBackColor;
+        /// <summary>Active control surfaces.</summary>
+        public Color ControlColor { get; set; } = Color.Aquamarine;
         #endregion
 
         #region Lifecycle
@@ -105,9 +102,8 @@ namespace Ephemera.MidiLib
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-
             sldVolume.Value = BoundChannel.Volume;
-            sldVolume.DrawColor = SelectedColor;
+            sldVolume.DrawColor = ControlColor;
             sldVolume.Minimum = 0.0;
             sldVolume.Maximum = MidiLibDefs.MAX_VOLUME;
 
@@ -144,12 +140,12 @@ namespace Ephemera.MidiLib
                 ChannelState newState = ChannelState.Normal; // default
 
                 // Toggle control. Get current.
-                bool soloSel = lblSolo.BackColor == SelectedColor;
-                bool muteSel = lblMute.BackColor == SelectedColor;
+                bool soloSel = lblSolo.BackColor == ControlColor;
+                bool muteSel = lblMute.BackColor == ControlColor;
 
                 if (lbl == lblSolo)
                 {
-                    if(soloSel) // unselect
+                    if (soloSel) // unselect
                     {
                         if(muteSel)
                         {
@@ -224,22 +220,22 @@ namespace Ephemera.MidiLib
             switch (State)
             {
                 case ChannelState.Normal:
-                    lblSolo.BackColor = UnselectedColor;
-                    lblMute.BackColor = UnselectedColor;
+                    lblSolo.BackColor = BackColor;
+                    lblMute.BackColor = BackColor;
                     break;
                 case ChannelState.Solo:
-                    lblSolo.BackColor = SelectedColor;
-                    lblMute.BackColor = UnselectedColor;
+                    lblSolo.BackColor = ControlColor;
+                    lblMute.BackColor = BackColor;
                     break;
                 case ChannelState.Mute:
-                    lblSolo.BackColor = UnselectedColor;
-                    lblMute.BackColor = SelectedColor;
+                    lblSolo.BackColor = BackColor;
+                    lblMute.BackColor = ControlColor;
                     break;
             }
 
             // General.
             lblChannelNumber.Text = $"Ch{ChannelNumber}";
-            lblChannelNumber.BackColor = Selected ? SelectedColor : UnselectedColor;
+            lblChannelNumber.BackColor = Selected ? ControlColor : BackColor;
             lblPatch.Text = IsDrums ? "Drums" : MidiDefs.GetInstrumentName(BoundChannel.Patch);
         }
 
