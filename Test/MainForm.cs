@@ -901,11 +901,11 @@ namespace Ephemera.MidiLib.Test
 
     public class TestSettings : SettingsCore
     {
-        [DisplayName("Background Color")]
-        [Description("The color used for overall background.")]
-        [Browsable(true)]
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color BackColor { get; set; } = Color.AliceBlue;
+        // [DisplayName("Background Color")]
+        // [Description("The color used for overall background.")]
+        // [Browsable(true)]
+        // [JsonConverter(typeof(JsonColorConverter))]
+        // public Color BackColor { get; set; } = Color.AliceBlue;
 
         [DisplayName("Ignore Me")]
         [Description("I do nothing.")]
