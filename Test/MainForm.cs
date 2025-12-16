@@ -83,7 +83,7 @@ namespace Ephemera.MidiLib.Test
             LogManager.Run(Path.Join(_outPath, "log.txt"), 100000);
 
             // The text output.
-            txtViewer.Font = Font;
+            txtViewer.Font = new Font("Cascadia Code", 9);
             txtViewer.WordWrap = true;
             txtViewer.MatchText.Add("ERR", Color.LightPink);
             txtViewer.MatchText.Add("WRN", Color.Plum);
