@@ -55,7 +55,7 @@ namespace Ephemera.MidiLib.Test
         readonly Color _controlColor = Color.Aquamarine;
 
         /// <summary>Where to put things.</summary>
-        readonly string _outPath = @"..\..\out";
+        readonly string _outPath = @"???";
         #endregion
 
         #region Lifecycle
@@ -73,6 +73,7 @@ namespace Ephemera.MidiLib.Test
             toolStrip1.Renderer = new ToolStripCheckBoxRenderer() { SelectedColor = _controlColor };
 
             // Make sure out path exists.
+            _outPath = Path.Join(MiscUtils.GetSourcePath(), "out");
             DirectoryInfo di = new(_outPath);
             di.Create();
 
