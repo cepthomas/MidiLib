@@ -1,86 +1,143 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfUis;
 
 
 namespace Ephemera.MidiLib
 {
-    /// <summary>Channel events and other properties.</summary>
-    public partial class ChannelControl : UserControl
+    [DesignTimeVisible(true)]
+    public class ChannelControl : UserControl
     {
-        #region Events
-        /// <summary>Notify host of asynchronous changes from user.</summary>
-        public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
+        #region Types
+        /// <summary>Channel playing.</summary>
+        public enum ChannelState { Normal, Solo, Mute }
+
+        /// <summary>Notify host of UI changes.</summary>
+        public class ChannelChangeEventArgs : EventArgs
+        {
+            public bool InfoChange { get; set; } = false;
+            public bool StateChange { get; set; } = false;
+            public bool PatchChange { get; set; } = false;
+            public bool ChannelNumberChange { get; set; } = false;
+        }
+
+        /// <summary>Some flavors of control may need to be defeatured.</summary>
+        [Flags]
+        public enum DisplayOptions
+        {
+            //Notes = 0x01,     // NA
+            SoloMute = 0x02,    // solo and mute buttons
+            Controller = 0x04,  // controller select and send
+            All = 0x0F,         // all of above
+        }
+        #endregion
+
+        #region Fields
+        ChannelState _state = ChannelState.Normal;
+        const int PAD = 4;
+        const int SIZE = 48;
+
+        readonly Container components = new();
+        protected ToolTip toolTip = new();
+
+        readonly TextBox txtInfo = new();
+        readonly Slider sldVolume = new();
+        // optional:
+        readonly Label lblSolo = new();
+        readonly Label lblMute = new();
+        // optional:
+        readonly Slider sldControllerValue = new();
+        readonly Button btnSend = new();
         #endregion
 
         #region Properties
-        /// <summary>Bound object.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public Channel BoundChannel { get; set; } = new();
+        /// <summary>My channel.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public OutputChannel BoundChannel { get; set; }
 
-        /// <summary>Actual 1-based midi channel number for UI.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int ChannelNumber
+        /// <summary>My custom renderer - optional.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public UserControl? UserRenderer
         {
-            get { return BoundChannel.ChannelNumber; }
+            get { return _userRenderer; }
+            set {
+                _userRenderer = value;
+                if (_userRenderer is not null)
+                {
+                    _userRenderer.Location = new(PAD, Height);
+                    Height += _userRenderer.Height + PAD;
+                    Controls.Add(_userRenderer);
+                }
+            }
         }
+        UserControl? _userRenderer = null;
+
+        /// <summary>Display options.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public DisplayOptions Options { get; set; } = DisplayOptions.All;
+
+        /// <summary>Drawing the active elements of a control.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public Color ControlColor
+        {
+            get { return txtInfo.BackColor; }
+            set {
+                txtInfo.BackColor = value;
+                sldVolume.DrawColor = value;
+                sldControllerValue.DrawColor = value;
+                btnSend.BackColor = value;
+            }
+        }
+
+        /// <summary>Drawing the control when selected.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public Color SelectedColor { get; set; }
 
         /// <summary>For muting/soloing.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public ChannelState State
         {
-            get { return BoundChannel.State; }
-            set { BoundChannel.State = value; UpdateUi(); }
+            get { return _state; }
+            set { _state = value; UpdateUi(); }
         }
 
-        /// <summary>Current patch.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int Patch
-        {
-            get { return BoundChannel.Patch; }
-            set { BoundChannel.Patch = value; UpdateUi(); }
-        }
-
-        /// <summary>Current volume. Channel.Volume performs the constraints.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+        /// <summary>Current volume.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume
         {
-            get { return BoundChannel.Volume; }
-            set { BoundChannel.Volume = value; }
+            get { return sldVolume.Value; }
+            set { sldVolume.Value = value; }
         }
+        #endregion
 
-        ///<summary>The duration of the whole channel.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int MaxSub
-        {
-            get { return BoundChannel.MaxSub; }
-        }
+        #region Events
+        /// <summary>UI channel config change.</summary>
+        public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
 
-        /// <summary>Drum channel changed.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public bool IsDrums
-        {
-            get { return BoundChannel.IsDrums; }
-            set { BoundChannel.IsDrums = value; UpdateUi(); }
-        }
+        /// <summary>UI midi send.</summary>
+        public event EventHandler<BaseMidiEvent>? SendMidi;
 
-        /// <summary>User has selected this channel.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public bool Selected
-        {
-            get { return BoundChannel.Selected; }
-            set { BoundChannel.Selected = value; UpdateUi(); }
-        }
-
-        /// <summary>Active control surfaces.</summary>
-        public Color ControlColor { get; set; } = Color.Aquamarine;
+        /// <summary>Derived class helper.</summary>
+        protected virtual void OnSendMidi(BaseMidiEvent e) { SendMidi?.Invoke(this, e); }
         #endregion
 
         #region Lifecycle
@@ -89,163 +146,217 @@ namespace Ephemera.MidiLib
         /// </summary>
         public ChannelControl()
         {
-            InitializeComponent();
-            sldVolume.ValueChanged += Volume_ValueChanged;
-            lblSolo.Click += SoloMute_Click;
-            lblMute.Click += SoloMute_Click;
-            lblChannelNumber.Click += ChannelNumber_Click;
+            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+
+            // Dummy channel to satisfy designer. Will be overwritten by the real one.
+            var dev = new NullOutputDevice("DUMMY_DEVICE");
+            BoundChannel = new OutputChannel(dev, 9);
         }
 
         /// <summary>
-        /// 
+        /// Apply customization from system. Properties should be valid now.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            sldVolume.Value = BoundChannel.Volume;
-            sldVolume.DrawColor = ControlColor;
-            sldVolume.Minimum = 0.0;
-            sldVolume.Maximum = MidiLibDefs.MAX_VOLUME;
+            SuspendLayout();
+            
+            // Create the controls per the config.
+            int xPos = PAD;
+            int xMax = xPos;
+            int yPos = PAD;
+            int yMax = yPos;
 
+            // The standard stuff.
+            {
+                txtInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+                txtInfo.BorderStyle = BorderStyle.FixedSingle;
+                txtInfo.Location = new(xPos, yPos);
+                txtInfo.Size = new(100, SIZE);
+                txtInfo.ReadOnly = true;
+                txtInfo.Multiline = true;
+                txtInfo.WordWrap = false;
+                txtInfo.Text = "Hello world\nWhat's up?";
+                txtInfo.Click += ChannelInfo_Click;
+                Controls.Add(txtInfo);
+
+                xPos = txtInfo.Right + PAD;
+                xMax = xPos;
+                yMax = Math.Max(txtInfo.Bottom, yMax);
+            }
+
+            {
+                sldVolume.Minimum = 0.0;
+                sldVolume.Maximum = Defs.MAX_VOLUME;
+                sldVolume.Resolution = 0.05;
+                sldVolume.Value = 1.0;
+                sldVolume.BorderStyle = BorderStyle.FixedSingle;
+                sldVolume.Orientation = Orientation.Horizontal;
+                sldVolume.Location = new(xPos, yPos);
+                sldVolume.Size = new(80, SIZE);
+                sldVolume.Label = "volume";
+                sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
+                Controls.Add(sldVolume);
+
+                xPos = sldVolume.Right + PAD;
+                xMax = xPos;
+                yMax = Math.Max(sldVolume.Bottom, yMax);
+            }
+
+            if (Options.HasFlag(DisplayOptions.SoloMute))
+            {
+                lblSolo.Location = new(xPos, yPos + 1);
+                lblSolo.Size = new(20, 20);
+                lblSolo.Text = "S";
+                lblSolo.Click += SoloMute_Click;
+                Controls.Add(lblSolo);
+
+                lblMute.Location = new(xPos, yPos  + SIZE / 2 + 1);
+                lblMute.Size = new(20, 20);
+                lblMute.Text = "M";
+                lblMute.Click += SoloMute_Click;
+                Controls.Add(lblMute);
+
+                xPos = lblSolo.Right + PAD;
+                xMax = xPos;
+                yMax = Math.Max(lblMute.Bottom, yMax);
+            }
+
+            if (Options.HasFlag(DisplayOptions.Controller))
+            {
+                btnSend.FlatStyle = FlatStyle.Flat;
+                btnSend.UseVisualStyleBackColor = true;
+                btnSend.Location = new(xPos, yPos);
+                btnSend.Size = new(SIZE, SIZE);
+                btnSend.Text = "!";
+                btnSend.Click += Send_Click;
+                Controls.Add(btnSend);
+
+                xPos = btnSend.Right + PAD;
+                yMax = Math.Max(btnSend.Bottom, yMax);
+
+                sldControllerValue.Minimum = 0;
+                sldControllerValue.Maximum = MidiDefs.MAX_MIDI;
+                sldControllerValue.Resolution = 1;
+                sldControllerValue.Value = 50;
+                sldControllerValue.BorderStyle = BorderStyle.FixedSingle;
+                sldControllerValue.Orientation = Orientation.Horizontal;
+                sldControllerValue.Location = new(xPos, yPos);
+                sldControllerValue.Size = new(80, SIZE);
+                sldControllerValue.Label = "value";
+                sldControllerValue.ValueChanged += Controller_ValueChanged;
+                Controls.Add(sldControllerValue);
+
+                xPos = sldControllerValue.Right + PAD;
+                xMax = xPos;
+                yMax = Math.Max(sldControllerValue.Bottom, yMax);
+            }
+
+            if (_userRenderer is not null)
+            {
+                _userRenderer.Location = new(PAD, yMax + PAD);
+                xMax = Math.Max(_userRenderer.Right, xPos);
+                yMax = Math.Max(_userRenderer.Bottom, yMax);
+                Controls.Add(_userRenderer);
+            }
+
+            // Form itself.
+            Size = new Size(xMax + PAD, yMax + PAD);
+
+            ResumeLayout(false);
+            PerformLayout();
+
+            toolTip = new(components);
+
+            // Other inits.
+            sldVolume.Value = BoundChannel.Volume;
             UpdateUi();
 
             base.OnLoad(e);
         }
+
+        /// <summary> 
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
         #endregion
 
         #region Handlers for user selections
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Volume_ValueChanged(object? sender, EventArgs e)
+        // /// <summary>User clicked info. Maybe host would like to do something.</summary>
+        void ChannelInfo_Click(object? sender, EventArgs e)
         {
-            if (sender is not null)
-            {
-                Volume = (sender as NBagOfUis.Slider)!.Value;
-            }
+            // Notify client.
+            ChannelChange?.Invoke(this, new() { InfoChange = true });
         }
 
-        /// <summary>
-        /// Handles solo and mute.
-        /// </summary>
+        /// <summary>Handles solo and mute.</summary>
         void SoloMute_Click(object? sender, EventArgs e)
         {
-            if (sender is not null)
+            var lbl = sender as Label;
+
+            // Figure out state.
+            if (sender == lblSolo)
             {
-                var lbl = sender as Label;
-
-                // Figure out state.
-                ChannelState newState = ChannelState.Normal; // default
-
-                // Toggle control. Get current.
-                bool soloSel = lblSolo.BackColor == ControlColor;
-                bool muteSel = lblMute.BackColor == ControlColor;
-
-                if (lbl == lblSolo)
-                {
-                    if (soloSel) // unselect
-                    {
-                        if(muteSel)
-                        {
-                            newState = ChannelState.Mute;
-                        }
-                    }
-                    else // select
-                    {
-                        newState = ChannelState.Solo;
-                    }
-                }
-                else // lblMute
-                {
-                    if (muteSel) // unselect
-                    {
-                        if (soloSel)
-                        {
-                            newState = ChannelState.Solo;
-                        }
-                    }
-                    else // select
-                    {
-                        newState = ChannelState.Mute;
-                    }
-                }
-
-                if(newState != State)
-                {
-                    State = newState;
-                    UpdateUi();
-                    ChannelChange?.Invoke(this, new() { StateChange = true });
-                }
+                State = lblSolo.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Solo;
             }
+            else if (sender == lblMute)
+            {
+                State = lblMute.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Mute;
+            }
+
+            // Notify client.
+            ChannelChange?.Invoke(this, new() { StateChange = true });
         }
 
         /// <summary>
-        /// User wants to change the patch.
+        /// Notify client.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Patch_Click(object sender, EventArgs e)
+        void Controller_ValueChanged(object? sender, EventArgs e)
         {
-            PatchPicker pp = new();
-            pp.ShowDialog();
-            if (pp.PatchNumber != -1)
-            {
-                BoundChannel.Patch = pp.PatchNumber;
-                UpdateUi();
-                ChannelChange?.Invoke(this, new() { PatchChange = true });
-            }
+            // No need to check limits.
+            BoundChannel.ControllerValue = (int)(sender as Slider)!.Value;
         }
 
         /// <summary>
-        /// Handle selection.
+        /// Notify client.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelNumber_Click(object? sender, EventArgs e)
+        void Send_Click(object? sender, EventArgs e)
         {
-            Selected = !Selected;
-            UpdateUi();
+            // No need to check limits.
+            OnSendMidi(new Controller(BoundChannel.ChannelNumber, BoundChannel.ControllerId, BoundChannel.ControllerValue));
         }
         #endregion
 
         #region Misc
-        /// <summary>
-        /// Draw mode checkboxes etc.
-        /// </summary>
+        /// <summary>Draw mode checkboxes etc.</summary>
         void UpdateUi()
         {
-            // Solo/mute state.
-            switch (State)
-            {
-                case ChannelState.Normal:
-                    lblSolo.BackColor = BackColor;
-                    lblMute.BackColor = BackColor;
-                    break;
-                case ChannelState.Solo:
-                    lblSolo.BackColor = ControlColor;
-                    lblMute.BackColor = BackColor;
-                    break;
-                case ChannelState.Mute:
-                    lblSolo.BackColor = BackColor;
-                    lblMute.BackColor = ControlColor;
-                    break;
-            }
+            StringBuilder sb = new();
+            sb.AppendLine($"{ChannelHandle.Format(BoundChannel.Handle)}");
+            sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} {BoundChannel.Patch:000}");
+            txtInfo.Text = sb.ToString();
+            toolTip.SetToolTip(txtInfo, sb.ToString());
 
-            // General.
-            lblChannelNumber.Text = $"Ch{ChannelNumber}";
-            lblChannelNumber.BackColor = Selected ? ControlColor : BackColor;
-            lblPatch.Text = IsDrums ? "Drums" : MidiDefs.GetInstrumentName(BoundChannel.Patch);
+            lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
+            lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"ChannelControl: ChannelNumber:{ChannelNumber} Patch:{Patch} State:{State}";
+           return $"{ChannelHandle.Format(BoundChannel.Handle)}";
         }
         #endregion
     }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NAudio.Midi;
+//using NAudio.Midi;
 
 
 namespace Ephemera.MidiLib
@@ -14,11 +14,11 @@ namespace Ephemera.MidiLib
         /// <summary>Device name as defined by the system.</summary>
         string DeviceName { get; }
 
+        /// <summary>Internal id.</summary>
+        int Id { get; init; }
+
         /// <summary>Are we ok?</summary>
         bool Valid { get; }
-
-        /// <summary>Log traffic at Trace level.</summary>
-        bool LogEnable { get; set; }
         #endregion
     }
 
@@ -32,21 +32,22 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
-        event EventHandler<InputReceiveEventArgs>? InputReceive;
+        event EventHandler<BaseMidiEvent>? MessageReceive;
         #endregion
     }
 
     /// <summary>Abstraction layer to support output devices.</summary>
     public interface IOutputDevice : IDevice
     {
-        #region Properties
-
-        #endregion
-
         #region Functions
         /// <summary>Send midi event.</summary>
         /// <param name="evt"></param>
-        void SendEvent(MidiEvent evt);
+        void Send(BaseMidiEvent evt);
+        #endregion
+
+        #region Events
+        /// <summary>Handler for message sent.</summary>
+        event EventHandler<BaseMidiEvent>? MessageSend;
         #endregion
     }
 }

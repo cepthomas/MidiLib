@@ -6,6 +6,9 @@ using System.Windows.Forms;
 
 namespace Ephemera.MidiLib.Test
 {
+    /// <summary>Application level error.</summary>
+    public class AppException(string message) : Exception(message) { }
+
     static class Program
     {
         /// <summary>

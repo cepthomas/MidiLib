@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,154 +6,98 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.CompilerServices;
 using System.IO;
 using System.Diagnostics;
-using NAudio.Midi;
+using System.ComponentModel.DataAnnotations;
+using System.Drawing.Design;
+using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
+using Ephemera.MidiLib;
+
 
 
 namespace Ephemera.MidiLib.Test
 {
     public partial class MainForm : Form
     {
-        #region Types
-        public enum PlayState { Stop, Play, Rewind, Complete }
-        #endregion
+        #region Fields
+        /// <summary>All the channel controls.</summary>
+        readonly List<ChannelControl> _channelControls = [];
 
-        #region Fields - internal
-        /// <summary>All the channels - key is user assigned name.</summary>
-        readonly Dictionary<string, Channel> _channels = new();
-
-        /// <summary>Midi output.</summary>
-        IOutputDevice _outputDevice = new NullOutputDevice();
-
-        /// <summary>Midi input.</summary>
-        IInputDevice? _inputDevice;
-
-        /// <summary>The fast timer.</summary>
-        readonly MmTimerEx _mmTimer = new();
-
-        /// <summary>Midi events from the input file.</summary>
-        MidiDataFile _mdata = new();
-
-        /// <summary>All the channel play controls.</summary>
-        readonly List<ChannelControl> _channelControls = new();
-
-        /// <summary>My logging.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("MainForm");
-
-        /// <summary>Test stuff.</summary>
-        readonly TestSettings _settings = new();
-        #endregion
-
-        #region Fields - adjust to taste
-        /// <summary>Cosmetics.</summary>
-        readonly Color _controlColor = Color.Aquamarine;
+        /// <summary>The boss.</summary>
+        readonly Manager _mgr = new();
 
         /// <summary>Where to put things.</summary>
         readonly string _outPath = @"???";
+
+        /// <summary>Debug.</summary>
+        int _count = 0;
+
+        const string ERROR = "ERR";
+        const string WARN = "WRN";
+        const string INFO = "INF";
+
+        const string INDEV = "loopMIDI Port 1";
+        const string OUTDEV1 = "VirtualMIDISynth #1";
+        const string OUTDEV2 = "Microsoft GS Wavetable Synth";
         #endregion
 
         #region Lifecycle
         /// <summary>
-        /// Constructor. No logging allowed yet!
+        /// Constructor.
         /// </summary>
         public MainForm()
         {
-            // Must do this first before initializing.
-            _settings = (TestSettings)SettingsCore.Load(".", typeof(TestSettings));
-            MidiSettings.LibSettings = _settings.MidiSettings;
-
             InitializeComponent();
-
-            toolStrip1.Renderer = new ToolStripCheckBoxRenderer() { SelectedColor = _controlColor };
 
             // Make sure out path exists.
             _outPath = Path.Join(MiscUtils.GetSourcePath(), "out");
             DirectoryInfo di = new(_outPath);
             di.Create();
 
-            // Logger. Note: you can create this here but don't call any _logger functions until loaded.
-            LogManager.MinLevelFile = LogLevel.Trace;
-            LogManager.MinLevelNotif = LogLevel.Trace;
-            LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.Run(Path.Join(_outPath, "log.txt"), 100000);
-
             // The text output.
-            txtViewer.Font = new Font("Cascadia Code", 9);
+            txtViewer.Font = Font;
             txtViewer.WordWrap = true;
-            txtViewer.MatchText.Add("ERR", Color.LightPink);
-            txtViewer.MatchText.Add("WRN", Color.Plum);
+            txtViewer.MatchText.Add(ERROR, Color.LightPink);
+            txtViewer.MatchText.Add(WARN, Color.Plum);
 
-            // UI configs.
-            sldVolume.DrawColor = _controlColor;
-            sldVolume.Minimum = 0.0;
-            sldVolume.Maximum = MidiLibDefs.MAX_VOLUME;
-            sldVolume.Resolution = MidiLibDefs.MAX_VOLUME / 50;
-            sldVolume.Value = MidiLibDefs.DEFAULT_VOLUME;
-            sldVolume.Label = "volume";
+            // Master volume.
+            sldMasterVolume.DrawColor = Color.SpringGreen;
+            sldMasterVolume.Minimum = 0.0;
+            sldMasterVolume.Maximum = Defs.MAX_VOLUME;
+            sldMasterVolume.Resolution = Defs.MAX_VOLUME / 50;
+            sldMasterVolume.Value = Defs.DEFAULT_VOLUME;
+            sldMasterVolume.Label = "master volume";
 
-            // Time controller.
-            MidiSettings.LibSettings.Snap = SnapType.Beat;
-            barBar.ProgressColor = _controlColor;
-            barBar.CurrentTimeChanged += BarBar_CurrentTimeChanged;
+            timeBar.ControlColor = Color.Green;
+            timeBar.SelectedColor = Color.LightYellow;
+            timeBar.Snap = SnapType.Beat;
+            timeBar.StateChange += TimeBar_StateChange;
 
-            // Init channel selectors.
-            cmbDrumChannel1.Items.Add("NA");
-            cmbDrumChannel2.Items.Add("NA");
-            for (int i = 1; i <= MidiDefs.NUM_CHANNELS; i++)
-            {
-                cmbDrumChannel1.Items.Add(i);
-                cmbDrumChannel2.Items.Add(i);
-            }
+            // Simple UI handlers.
+            btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
+            chkLoop.CheckedChanged += (_, __) => { timeBar.DoLoop = chkLoop.Checked; };
+            btnRewind.Click += (_, __) => { timeBar.Rewind(); };
 
-            // Hook up some simple UI handlers.
-            btnPlay.CheckedChanged += Play_CheckedChanged;
-            btnRewind.Click += (_, __) => UpdateState(PlayState.Rewind);
-            btnKillMidi.Click += (_, __) =>
-            {
-                btnPlay.Checked = false;
-                _channels.Values.ForEach(ch => ch.Kill());
-            };
-            btnLogMidi.CheckedChanged += (_, __) => _outputDevice.LogEnable = btnLogMidi.Checked;
-            nudTempo.ValueChanged += (_, __) => SetTimer();
+            btnGo.Click += Go_Click;
+            btnGen.Click += Gen_Click;
+
+            //_mgr.MessageReceive += Mgr_MessageReceive;
+            //_mgr.MessageSend += Mgr_MessageSend;
         }
 
         /// <summary>
-        /// Window is set up now. OK to log!!
+        /// Window is set up now.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            bool ok = CreateDevices();
-            if(ok)
-            {
-                // Style file, full info:
-                OpenFile(@"C:\Dev\Misc\TestAudioFiles\_LoveSong.S474.sty");
-
-                // Plain midi, full song:
-                //OpenFile(@"C:\Dev\Misc\TestAudioFiles\WICKGAME.MID");
-
-                // Plain midi, one instrument, no patch:
-                //OpenFile(@"C:\Dev\Misc\TestAudioFiles\_bass_ch2.mid");
-
-                // Plain midi, one instrument, ??? patch:
-                //OpenFile(@"C:\Dev\Misc\TestAudioFiles\_drums_ch1.mid");
-            }
             base.OnLoad(e);
-        }
-
-        /// <summary>
-        /// Clean up on shutdown. Dispose() will get the rest.
-        /// </summary>
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            LogManager.Stop();
-            Stop();
-            base.OnFormClosing(e);
         }
 
         /// <summary>
@@ -163,14 +106,8 @@ namespace Ephemera.MidiLib.Test
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            // Resources.
-            _mmTimer.Stop();
-            _mmTimer.Dispose();
-
-            // Wait a bit in case there are some lingering events.
-            System.Threading.Thread.Sleep(100);
-
-            DestroyDevices();
+            DestroyControls();
+            _mgr.DestroyDevices();
 
             if (disposing && (components is not null))
             {
@@ -181,285 +118,451 @@ namespace Ephemera.MidiLib.Test
         }
         #endregion
 
-        #region Devices
-        /// <summary>
-        /// Create all I/O devices from user settings.
-        /// </summary>
-        /// <returns>Success</returns>
-        bool CreateDevices()
+        #region Do work
+        void Go_Click(object? sender, EventArgs e)
         {
-            bool ok = true;
+            Tell(INFO, $">>>>> Go start.");
 
-            // First...
-            DestroyDevices();
+            TestTimeBar();
 
-            // Set up input device.
-            foreach (var dev in _settings.MidiSettings.InputDevices)
-            {
-                _inputDevice = new MidiInput(dev.DeviceName);
+            //TestScriptApp();
 
-                if (!_inputDevice.Valid)
-                {
-                    _logger.Error($"Something wrong with your input device:{dev.DeviceName}");
-                    ok = false;
-                }
-                else
-                {
-                    _inputDevice.CaptureEnable = true;
-                    _inputDevice.InputReceive += Listener_InputReceive;
-                }
-            }
+            //TestDefFile();
 
-            // Set up output device.
-            foreach (var dev in _settings.MidiSettings.OutputDevices)
-            {
-                switch (dev.DeviceName)
-                {
-                    default:
-                        // Try midi.
-                        _outputDevice = new MidiOutput(dev.DeviceName);
-                        if (!_outputDevice.Valid)
-                        {
-                            _logger.Error($"Something wrong with your output device:{_outputDevice.DeviceName}");
-                            ok = false;
-                        }
-                        else
-                        {
-                            _outputDevice.LogEnable = btnLogMidi.Checked;
-                        }
-                        break;
-                }
-            }
+            //TestPropertyEditor();
 
-            return ok;
-        }
+            //TestChannel();
 
-        /// <summary>
-        /// Clean up.
-        /// </summary>
-        void DestroyDevices()
-        {
-            _inputDevice?.Dispose();
-            _outputDevice?.Dispose();
+            Tell(INFO, $">>>>> Go end.");
         }
         #endregion
 
-        #region State management
-        /// <summary>
-        /// General state management. Triggered by play button or the player via mm timer function.
-        /// </summary>
-        void UpdateState(PlayState state)
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test def file loading etc.</summary>
+        void Gen_Click(object? sender, EventArgs e)
         {
-            // Suppress recursive updates caused by manually pressing the play button.
-            btnPlay.CheckedChanged -= Play_CheckedChanged;
+            Tell(INFO, $">>>>> Gen start.");
+            // this file: C:\Dev\Libs\MidiLib\Test\MainForm.cs
 
-            switch (state)
+            string fnIni = Path.Combine(AppContext.BaseDirectory, "gm_defs.ini");
+
+            var myPath = MiscUtils.GetSourcePath();
+            // this path: C:\Dev\Libs\MidiLib\Test\
+
+            Tell(INFO, $">>>>> Gen Markdown.");
+            var smd = MidiDefs.Instance.GenMarkdown(fnIni);
+            var fnOut = Path.Join(myPath, "out", "midi_defs.md");
+            File.WriteAllText(fnOut, smd);
+            //C:\Dev\Libs\MidiLib\Test\out
+
+
+            Tell(INFO, $">>>>> Gen Lua.");
+            var sld = MidiDefs.Instance.GenLua(fnIni);
+            fnOut = Path.Join(myPath, "out", "midi_defs.lua");
+            File.WriteAllText(fnOut, sld);
+            //C:\Dev\Libs\MidiLib\midi_defs.lua
+
+
+
+            Tell(INFO, $">>>>> Gen end.");
+        }
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test time bar.</summary>
+        void TestTimeBar()
+        {
+            // Sections.
+            Dictionary<int, string> sectInfo = [];
+            sectInfo.Add(0, "sect1");
+            sectInfo.Add(128, "sect2");
+            sectInfo.Add(256, "sect3");
+            sectInfo.Add(384, "END");
+
+            timeBar.InitSectionInfo(sectInfo);
+
+            timeBar.Invalidate();
+
+            timer1.Tick += Timer1_Tick;
+            timer1.Interval = 3;
+
+            _count = 10000; // 350;
+
+            timer1.Start();
+        }
+
+        void Timer1_Tick(object? sender, EventArgs e)
+        {
+            timeBar.Increment();
+
+            if (--_count <= 0)
             {
-                case PlayState.Complete:
-                    btnPlay.Checked = false;
-                    Rewind();
-                    Stop();
-                    break;
+                Tell(INFO, $">>>>> Timer done.");
+                timer1.Stop();
+                timer1.Tick -= Timer1_Tick;
+            }
+        }
 
-                case PlayState.Play:
-                    btnPlay.Checked = true;
-                    Play();
-                    break;
+        void TimeBar_StateChange(object? sender, TimeBar.StateChangeEventArgs e)
+        {
+            Tell(INFO, $">>>>> TimeBar event. {timeBar.Current}");
+        }
 
-                case PlayState.Stop:
-                    btnPlay.Checked = false;
-                    Stop();
-                    break;
-
-                case PlayState.Rewind:
-                    Rewind();
-                    break;
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (timeBar.Valid && e.KeyData == Keys.Escape)
+            {
+                // Reset.
+                timeBar.ResetSelection();
+                Invalidate();
             }
 
-            // Rehook.
-            btnPlay.CheckedChanged += Play_CheckedChanged;
+            base.OnKeyDown(e);
         }
 
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test channel logic.</summary>
+        void TestChannel()
+        {
+            Tell(INFO, $">>>>> Channel.");
+
+            // Dummy channel.
+            var dev = new NullOutputDevice("DUMMY_DEVICE");
+
+            OutputChannel ch = new(dev, 3)
+            {
+                ChannelName = "booga-booga",
+                ControllerId = 45,
+                ControllerValue = 60
+            };
+
+            // should change the instruments list
+            var inst1 = ch.Instruments;
+            if (inst1.Count != 128) Tell(ERROR, "FAIL");
+
+            ch.AliasFile = Path.Combine(AppContext.BaseDirectory, "exp_defs.ini");
+
+            var inst2 = ch.Instruments;
+            if (inst2.Count != 66) Tell(ERROR, "FAIL");
+
+            // should send midi
+            ch.Patch = 77;
+            if (dev.CollectedEvents.Count != 1) Tell(ERROR, "FAIL");
+
+            Tell(INFO, "DONE");
+        }
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test property editing using TypeEditors.</summary>
+        void TestPropertyEditor()
+        {
+            Tell(INFO, $">>>>> Property editor.");
+
+            TargetClass td = new()
+            {
+                Patch = 77,
+                ChannelName = "booga-booga",
+                ChannelNumber = 5,
+                //AliasFile = @"..\???.ini",
+                DeviceName = "pdev1",
+                SomeOtherMidi = 88
+            };
+
+            // Set up options.
+            //var insts = MidiDefs.Instance.GetDefaultInstrumentDefs();
+            //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
+            //var instsList = orderedValues.ToList();
+
+            var instsList = CreateOrderedMidiList(MidiDefs.Instance.GetDefaultInstrumentDefs(), true, true);
+
+
+            GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
+            GenericListTypeEditor.SetOptions("Patch", instsList);
+
+            var changes = SettingsEditor.Edit(td, "TESTOMATIC", 300);
+            changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
+        }
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test def file loading etc.</summary>
+        void TestDefFile()
+        {
+            Tell(INFO, $">>>>> Low level loading.");
+            var myPath = MiscUtils.GetSourcePath();
+            string fn = Path.Join(myPath, "..", "gm_defs.ini");
+
+            var ir = new IniReader();
+            ir.ParseFile(fn);
+
+            ir.GetSectionNames().ForEach(n => Tell(INFO, $"section:{n} => {ir.GetValues(n).Count}"));
+        }
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>App driven by a script - as Nebulua/Nebulator. Creates channels and controls dynamically.</summary>
+        void TestScriptApp()
+        {
+            ///// 0 - pre-steps - only for this demo
+            ch_ctrl1.Hide();
+            ch_ctrl2.Hide();
+
+            ///// 1 - create all channels
+            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0);
+            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 4, "bass", 32);
+            //var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32);
+            var chan_in1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
+
+            ///// 2 - create a control for each channel and bind object
+            int x = sldMasterVolume.Left;
+            int y = sldMasterVolume.Bottom + 10;
+
+            List<OutputChannel> channels = [chan_out1, chan_out2];
+            channels.ForEach(chan =>
+            {
+                var rend = new CustomRenderer() { ChannelHandle = chan.Handle };
+                rend.SendMidi += ChannelControl_SendMidi;
+
+                var ctrl = new ChannelControl()
+                {
+                    //                    Name = $"Control for {chan.Config.ChannelName}",
+                    BoundChannel = chan,
+                    UserRenderer = rend,
+                    Location = new(x, y),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    ControlColor = Color.SpringGreen,
+                    SelectedColor = Color.Yellow,
+                    Volume = Defs.DEFAULT_VOLUME,
+                };
+                ctrl.ChannelChange += ChannelControl_ChannelChange;
+                ctrl.SendMidi += Mgr_MessageSend;
+                Controls.Add(ctrl);
+                x += ctrl.Width + 4; // Width is not valid until after previous statement.
+            });
+
+            ///// 3 - do work
+
+            // create all channels - script api calls like:
+            // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
+            // local hnd_synth = api.open_midi_output("loopMIDI Port 2", 3, "synth", inst.Lead1Square)
+            // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")
+
+            // call script api functions
+            // api.send_midi_note(hnd_strings, note_num, volume)
+            // api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
+
+            // callbacks from script
+            // function receive_midi_note(chan_hnd, note_num, volume)
+            // function receive_midi_controller(chan_hnd, controller, value)
+        }
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>A standard app where controls are defined in VS designer.</summary>
+        void TestStandardApp()
+        {
+            // Create channels and initialize controls.
+            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);
+            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12);
+
+            List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
+            channels.ForEach(ch =>
+            {
+                ch.Item2.BorderStyle = BorderStyle.FixedSingle;
+                ch.Item2.ControlColor = Color.SpringGreen;
+                ch.Item2.SelectedColor = Color.Yellow;
+                ch.Item2.Volume = Defs.DEFAULT_VOLUME;
+                ch.Item2.ChannelChange += ChannelControl_ChannelChange;
+                ch.Item2.SendMidi += ChannelControl_SendMidi;
+                ch.Item2.BoundChannel = ch.Item1;
+
+                var rend = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
+                rend.SendMidi += ChannelControl_SendMidi;
+                //TODO2 ideally hide this event chain in the ChannelControl itself. Prob need to add an interface for renderers.
+                ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
+            });
+
+            ///// 3 - do work
+            // ...
+        }
+
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>General purpose test class</summary>
+        [Serializable]
+        public class TargetClass
+        {
+            /// <summary>Device name.</summary>
+            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+            public string DeviceName { get; set; } = "";
+
+            /// <summary>Channel name - optional.</summary>
+            public string ChannelName { get; set; } = "";
+
+            /// <summary>Actual 1-based midi channel number.</summary>
+            [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+            [Range(1, MidiDefs.NUM_CHANNELS)]
+            public int ChannelNumber { get; set; } = 1;
+
+            /// <summary>Actual 1-based midi channel number.</summary>
+            [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+            [Range(0, MidiDefs.MAX_MIDI)]
+            public int SomeOtherMidi { get; set; } = 0;
+
+            /// <summary>Override default instrument presets.</summary>
+            [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
+            public string AliasFile { get; set; } = "";
+
+            /// <summary>Current instrument/patch number.</summary>
+            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+            [TypeConverter(typeof(GenericConverter))]
+            [Range(0, MidiDefs.MAX_MIDI)]
+            public int Patch { get; set; } = 0;
+        }
+
+
+        #region Script api functions TODO2???? Nebulua?
+
+        // /// api.send_midi_note(hnd_strings, note_num, volume)
+        // void SendMidiNote(int chnd, int note_num, double volume)
+        // {
+        //     if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note_num)); }
+
+        //     var ch = _mgr.GetOutputChannel(chnd);
+
+        //     if (ch is not null)
+        //     {
+        //         BaseMidiEvent evt = volume == 0.0 ?
+        //             new NoteOff(ChannelHandle.ChannelNumber(chnd), note_num) :
+        //             new NoteOn(ChannelHandle.ChannelNumber(chnd), note_num, (int)MathUtils.Constrain(volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI));
+        //         ch.Device.Send(evt);
+        //     }
+        //     else
+        //     {
+        //         // error?
+        //     }
+        // }
+
+        // /// api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
+        // void SendMidiController(int chnd, int controller_id, int value)
+        // {
+        //     if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controller_id)); }
+        //     if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
+        //     var ch = _mgr.GetOutputChannel(chnd);
+        //     if (ch is not null)
+        //     {
+        //         BaseMidiEvent evt = new Controller(ChannelHandle.ChannelNumber(chnd), controller_id, value);
+        //         ch.Device.Send(evt);
+        //     }
+        //     else
+        //     {
+        //         // error?
+        //     }
+        // }
+
+        // /// Callback from script: function receive_midi_note(chan_hnd, note_num, volume)
+        // void ReceiveMidiNote(int chnd, int note_num, double volume)
+        // {
+        // }
+
+        // /// Callback from script: function receive_midi_controller(chan_hnd, controller, value)
+        // void ReceiveMidiController(int chnd, int controller_id, int value)
+        // {
+        // }
+        #endregion
+
+        #region Events
         /// <summary>
-        /// Handle button presses.
+        /// Something arrived from a midi device.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Play_CheckedChanged(object? sender, EventArgs e)
+        void Mgr_MessageReceive(object? sender, BaseMidiEvent e)
         {
-            UpdateState(btnPlay.Checked ? PlayState.Play : PlayState.Stop);
+            Tell(INFO, $"Receive [{e}]");
         }
 
         /// <summary>
-        /// The user clicked something in one of the channel controls.
+        /// Something sent to a midi device. This is what was actually sent, not what the
+        /// channel thought it was sending.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Control_ChannelChange(object? sender, ChannelChangeEventArgs e)
+        void Mgr_MessageSend(object? sender, BaseMidiEvent e)
         {
-            Channel channel = ((ChannelControl)sender!).BoundChannel;
+            Tell(INFO, $"Send actual [{e}]");
+        }
+
+        /// <summary>
+        /// UI clicked something -> send some midi. Works for different sources.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ChannelControl_SendMidi(object? sender, BaseMidiEvent e)
+        {
+            var channel = sender switch
+            {
+                ChannelControl => (sender as ChannelControl)!.BoundChannel,
+                CustomRenderer => _mgr.GetOutputChannel((sender as CustomRenderer)!.ChannelHandle),
+                _ => null // should never happen
+            };
+
+            if (channel is not null && channel.Enable)
+            {
+                Tell(INFO, $"Channel send [{e}]");
+                channel.Device.Send(e);
+            }
+        }
+
+        /// <summary>
+        /// UI clicked something -> configure channel.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ChannelControl_ChannelChange(object? sender, ChannelControl.ChannelChangeEventArgs e)
+        {
+            var cc = sender as ChannelControl;
+            var channel = cc!.BoundChannel!;
 
             if (e.StateChange)
             {
-                switch (channel.State)
+                Tell(INFO, $"StateChange");
+
+                // Update all channels.
+                bool anySolo = _channelControls.Where(c => c.State == ChannelControl.ChannelState.Solo).Any();
+
+                foreach (var cciter in _channelControls)
                 {
-                    case ChannelState.Normal:
-                        break;
+                    bool enable = anySolo ?
+                        cciter.State == ChannelControl.ChannelState.Solo :
+                        cciter.State != ChannelControl.ChannelState.Mute;
 
-                    case ChannelState.Solo:
-                        // Mute any other non-solo channels.
-                        _channels.Values.ForEach(ch =>
-                        {
-                            if (channel.ChannelNumber != ch.ChannelNumber && channel.State != ChannelState.Solo)
-                            {
-                                channel.Kill();
-                            }
-                        });
-                        break;
-
-                    case ChannelState.Mute:
-                        channel.Kill();
-                        break;
+                    channel.Enable = enable;
+                    if (!enable)
+                    {
+                        // Kill just in case.
+                        _mgr.Kill(channel);
+                    }
                 }
             }
 
-            if (e.PatchChange && channel.Patch >= 0)
-            {
-                channel.SendPatch();
-            }
+            //if (e.PatchChange)
+            //{
+            //    Tell(INFO, $"PatchChange [{channel.Patch}]");
+            //    channel.Device.Send(new Patch(channel.ChannelNumber, channel.Patch));
+            //}
+
+            //if (e.AliasFileChange)
+            //{
+            //    Tell(INFO, $"AliasFileChange [{channel.AliasFile}]");
+            //}
         }
+
         #endregion
 
-        #region Transport control
+        #region Misc internals
         /// <summary>
-        /// Internal handler.
+        /// Destroy controls.
         /// </summary>
-        void Play()
+        void DestroyControls()
         {
-            _mmTimer.Start();
-        }
-
-        /// <summary>
-        /// Internal handler.
-        /// </summary>
-        void Stop()
-        {
-            _mmTimer.Stop();
-            // Send kill just in case.
-            _channels.Values.ForEach(ch => ch.Kill());
-        }
-
-        /// <summary>
-        /// Go back Jack. Doesn't affect the run state.
-        /// </summary>
-        void Rewind()
-        {
-            barBar.Current = new(0);
-        }
-
-        /// <summary>
-        /// User has changed the time.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
-        {
-            //_player.CurrentSub = barBar.Current.TotalSubs;
-        }
-        #endregion
-
-        #region File handling
-        /// <summary>
-        /// Common file opener. Initializes pattern list from contents.
-        /// </summary>
-        /// <param name="fn">The file to open.</param>
-        public bool OpenFile(string fn)
-        {
-            bool ok = true;
-
-            _logger.Info($"Reading file: {fn}");
-
-            if(btnPlay.Checked)
-            {
-                Stop();
-            }
-
-            try
-            {
-                // Reset stuff.
-                cmbDrumChannel1.SelectedIndex = MidiDefs.DEFAULT_DRUM_CHANNEL;
-                cmbDrumChannel2.SelectedIndex = 0;
-                _mdata = new MidiDataFile();
-
-                // Process the file. Set the default tempo from preferences.
-                _mdata.Read(fn, _settings.MidiSettings.DefaultTempo, false);
-
-                // Init new stuff with contents of file/pattern.
-                lbPatterns.Items.Clear();
-                var pnames = _mdata.GetPatternNames();
-
-                if(pnames.Count > 0)
-                {
-                    pnames.ForEach(pn => { lbPatterns.Items.Add(pn); });
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Something wrong with this file: {fn}");
-                }
-
-                Rewind();
-
-                Text = $"Midi Lib Test - {fn}";
-
-                // Pick first.
-                lbPatterns.SelectedIndex = 0;
-
-                // Set up timer default.
-                nudTempo.Value = 100;
-
-                btnExportMidi.Enabled = _mdata.IsStyleFile;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Couldn't open the file: {fn} because: {ex.Message}");
-                Text = "Midi Lib";
-                ok = false;
-            }
-
-            return ok;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Open_Click(object sender, EventArgs e)
-        {
-            var fileTypes = $"Midi Files|{MidiLibDefs.MIDI_FILE_TYPES}|Style Files|{MidiLibDefs.STYLE_FILE_TYPES}";
-            using OpenFileDialog openDlg = new()
-            {
-                Filter = fileTypes,
-                Title = "Select a file",
-                InitialDirectory = @"C:\Dev\Apps\TestAudioFiles"
-            };
-
-            if (openDlg.ShowDialog() == DialogResult.OK)
-            {
-                OpenFile(openDlg.FileName);
-            }
-        }
-        #endregion
-
-        #region Process pattern info into events
-        /// <summary>
-        /// Load the requested pattern and create controls.
-        /// </summary>
-        /// <param name="pinfo"></param>
-        void LoadPattern(PatternInfo pinfo)
-        {
-            Stop();
-            Rewind();
+            _mgr.Kill();
 
             // Clean out our current elements.
             _channelControls.ForEach(c =>
@@ -468,455 +571,41 @@ namespace Ephemera.MidiLib.Test
                 c.Dispose();
             });
             _channelControls.Clear();
-            _channels.Clear();
+        }
 
-            // Load the new one.
-            // Create the new controls.
-            int x = lbPatterns.Right + 5;
-            int y = lbPatterns.Top;
+        /// <summary>Tell me something good.</summary>
+        /// <param name="s">What</param>
+        void Tell(string cat, string s, [CallerFilePath] string file = "", [CallerLineNumber] int line = -1)
+        {
+            var fn = Path.GetFileName(file);
+            txtViewer.AppendLine($"{cat} {fn}({line}) {s}");
+        }
 
-            foreach(var (number, patch) in pinfo.GetChannels(true, true))
+        /// <summary>
+        /// Convert a midi dictionary into ordered list of strings.
+        /// </summary>
+        /// <param name="source">The dictionary to process</param>
+        /// <param name="addKey">Add the index number to the entry</param>
+        /// <param name="fill">Add mising midi values</param>
+        /// <returns></returns>
+        public List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill)
+        {
+            List<string> res = [];
+
+            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
             {
-                // Get events for the channel.
-                var chEvents = pinfo.GetFilteredEvents(new List<int>() { number });
-
-                // Is this channel pertinent?
-                if (chEvents.Any())
+                if (source.ContainsKey(i))
                 {
-                    // Make new channel.
-                    Channel channel = new()
-                    {
-                        ChannelName = $"chan{number}",
-                        ChannelNumber = number,
-                        Device = _outputDevice,
-                        DeviceId = _outputDevice.DeviceName,
-                        Volume = MidiLibDefs.DEFAULT_VOLUME,
-                        State = ChannelState.Normal,
-                        Patch = patch,
-                        IsDrums = number == MidiDefs.DEFAULT_DRUM_CHANNEL,
-                        Selected = false,
-                    };
-                    _channels.Add(channel.ChannelName, channel);
-                    channel.SetEvents(chEvents);
-
-                    // Make new control and bind to channel.
-                    ChannelControl control = new()
-                    {
-                        Location = new(x, y),
-                        BorderStyle = BorderStyle.FixedSingle,
-                        BoundChannel = channel
-                    };
-                    control.ChannelChange += Control_ChannelChange;
-                    Controls.Add(control);
-                    _channelControls.Add(control);
-
-                    // Good time to send initial patch.
-                    channel.SendPatch();
-
-                    // Adjust positioning.
-                    y += control.Height + 5;
+                    res.Add(addKey ? $"{i:000} {source[i]}" : $"{source[i]}");
+                }
+                else if (fill)
+                {
+                    res.Add($"{i:000}");
                 }
             }
 
-            // Add a channel for the input device.
-            if(_inputDevice is not null && _inputDevice.Valid)
-            {
-                int chnum = 16;
-                Channel channel = new()
-                {
-                    ChannelName = $"chan16",
-                    ChannelNumber = chnum,
-                    Device = _outputDevice,
-                    DeviceId = _outputDevice.DeviceName,
-                    Volume = MidiLibDefs.DEFAULT_VOLUME,
-                    State = ChannelState.Normal,
-                    Patch = MidiDefs.GetInstrumentNumber("OrchestralHarp"),
-                    IsDrums = false,
-                    Selected = false,
-                };
-                _channels.Add(channel.ChannelName, channel);
-                channel.SendPatch();
-            }
-
-            // Set timer.
-            nudTempo.Value = pinfo.Tempo;
-
-            // Update bar.
-            var tot = _channels.TotalSubs();
-            barBar.Start = new(0);
-            barBar.End = new(tot > 0 ? tot - 1 : 0);
-            barBar.Length = new(tot);
-            barBar.Current = new(0);
-
-            UpdateDrumChannels();
-        }
-
-        /// <summary>
-        /// Load pattern selection.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Patterns_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            btnPlay.Checked = false;
-
-            var pname = lbPatterns.SelectedItem.ToString()!;
-            var pinfo = _mdata.GetPattern(pname);
-
-            if (pinfo is not null)
-            {
-                LoadPattern(pinfo);
-            }
-            else
-            {
-                _logger.Warn($"Invalid pattern {pname}");
-            }
-
-            Rewind();
-        }
-
-        /// <summary>
-        /// Pattern selection.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void AllOrNone_Click(object? sender, EventArgs e)
-        {
-            bool check = sender == btnAll;
-            for(int i = 0; i < lbPatterns.Items.Count; i++)
-            {
-                lbPatterns.SetItemChecked(i, check);                
-            }
+            return res;
         }
         #endregion
-
-        #region Process tick
-        /// <summary>
-        /// Multimedia timer callback. Synchronously outputs the next midi events.
-        /// This is running on the background thread.
-        /// </summary>
-        void MmTimerCallback(double totalElapsed, double periodElapsed)
-        {
-            try
-            {
-                // Check for end of play. Client will take care of transport control.
-                if (DoNextStep())
-                {
-                    // Done playing. Bump over to main thread.
-                    this.InvokeIfRequired(_ => UpdateState(PlayState.Complete));
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Synchronously outputs the next midi events. Does solo/mute.
-        /// This is running on the background thread.
-        /// </summary>
-        /// <returns>True if sequence completed.</returns>
-        public bool DoNextStep()
-        {
-            bool done;
-
-            // Any soloes?
-            bool anySolo = _channels.AnySolo();
-
-            // Process each channel.
-            foreach (var ch in _channels.Values)
-            {
-                // Look for events to send. Any explicit solos?
-                if (ch.State == ChannelState.Solo || (!anySolo && ch.State == ChannelState.Normal))
-                {
-                    // Process any sequence steps.
-                    var playEvents = ch.GetEvents(barBar.Current.TotalSubs);
-                    foreach (var mevt in playEvents)
-                    {
-                        switch (mevt)
-                        {
-                            case NoteOnEvent evt:
-                                if (ch.IsDrums && evt.Velocity == 0)
-                                {
-                                    // Skip drum noteoffs as windows GM doesn't like them.
-                                }
-                                else
-                                {
-                                    // Adjust volume. Redirect drum channel to default.
-                                    NoteOnEvent ne = new(
-                                        evt.AbsoluteTime,
-                                        ch.IsDrums ? MidiDefs.DEFAULT_DRUM_CHANNEL : evt.Channel,
-                                        evt.NoteNumber,
-                                        Math.Min((int)(evt.Velocity * sldVolume.Value * ch.Volume), MidiDefs.MAX_MIDI),
-                                        evt.OffEvent is null ? 0 : evt.NoteLength); // Fix NAudio NoteLength bug.
-
-                                    ch.SendEvent(ne);
-                                }
-                                break;
-
-                            case NoteEvent evt: // aka NoteOff
-                                if (ch.IsDrums)
-                                {
-                                    // Skip drum noteoffs as windows GM doesn't like them.
-                                }
-                                else
-                                {
-                                    ch.SendEvent(evt);
-                                }
-                                break;
-
-                            default:
-                                // Everything else as is.
-                                ch.SendEvent(mevt);
-                                break;
-                        }
-                    }
-                }
-            }
-
-            // Bump time. Check for end of play.
-            done = barBar.IncrementCurrent(1);
-
-            return done;
-        }
-        #endregion
-
-        #region Drum channel
-        /// <summary>
-        /// User changed the drum channel.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void DrumChannel_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            UpdateDrumChannels();
-        }
-
-        /// <summary>
-        /// Update all channels based on current UI.
-        /// </summary>
-        void UpdateDrumChannels()
-        {
-            _channelControls.ForEach(ctl => ctl.IsDrums =
-                (ctl.ChannelNumber == cmbDrumChannel1.SelectedIndex) ||
-                (ctl.ChannelNumber == cmbDrumChannel2.SelectedIndex));
-        }
-        #endregion
-
-        #region Export
-        /// <summary>
-        /// Export current file to human readable or midi.
-        /// </summary>
-        void Export_Click(object? sender, EventArgs e)
-        {
-            try
-            {
-                // Get selected patterns.
-                List<string> patternNames = new();
-                if (lbPatterns.Items.Count == 1)
-                {
-                    patternNames.Add(lbPatterns.Items[0].ToString()!);
-                }
-                else if (lbPatterns.CheckedItems.Count > 0)
-                {
-                    foreach (var p in lbPatterns.CheckedItems)
-                    {
-                        patternNames.Add(p.ToString()!);
-                    }
-                }
-                else
-                {
-                    _logger.Warn("Please select at least one pattern");
-                    return;
-                }
-                List<PatternInfo> patterns = new();
-                patternNames.ForEach(p => patterns.Add(_mdata.GetPattern(p)!));
-
-                // Get selected channels.
-                List<Channel> channels = new();
-                _channelControls.Where(cc => cc.Selected).ForEach(cc => channels.Add(cc.BoundChannel));
-                if (!channels.Any()) // grab them all.
-                {
-                    _channelControls.ForEach(cc => channels.Add(cc.BoundChannel));
-                }
-
-                // Execute the requested export function.
-                if (sender == btnExportCsv)
-                {
-                    var newfn = Tools.MakeExportFileName(_outPath, _mdata.FileName, "all", "csv");
-                    MidiExport.ExportCsv(newfn, patterns, channels, _mdata.GetGlobal());
-                    _logger.Info($"Exported to {newfn}");
-                }
-                else if (sender == btnExportMidi)
-                {
-                    foreach (var pattern in patterns)
-                    {
-                        var newfn = Tools.MakeExportFileName(_outPath, _mdata.FileName, pattern.PatternName, "mid");
-                        MidiExport.ExportMidi(newfn, pattern, channels, _mdata.GetGlobal());
-                        _logger.Info($"Export midi to {newfn}");
-                    }
-                }
-                else
-                {
-                    _logger.Error($"Ooops: {sender}");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"{ex.Message}");
-            }
-        }
-        #endregion
-
-        #region Utilities
-        /// <summary>
-        /// Convert tempo to period and set mm timer.
-        /// </summary>
-        void SetTimer()
-        {
-            MidiTimeConverter mt = new(_mdata.DeltaTicksPerQuarterNote, (double)nudTempo.Value);
-            double period = mt.RoundedInternalPeriod();
-            _mmTimer.SetTimer((int)Math.Round(period), MmTimerCallback);
-        }
-
-        /// <summary>
-        /// Show log events.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
-        {
-            // Usually come from a different thread.
-            if(IsHandleCreated)
-            {
-                this.InvokeIfRequired(_ =>
-                {
-                    txtViewer.AppendLine($"{e.Message}");
-                });
-            }
-        }
-        #endregion
-
-        #region Debug stuff
-        /// <summary>
-        /// Mainly for debug.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Stuff_Click(object sender, EventArgs e)
-        {
-            // A unit test.
-
-            // If we use ppq of 8 (32nd notes):
-            // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
-            //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
-
-            MidiTimeConverter mt = new(0, 100);
-            TestClose(mt.InternalPeriod(), 75.0, 0.001);
-
-            mt = new(0, 90);
-            TestClose(mt.InternalPeriod(), 75.757, 0.001);
-
-            mt = new(384, 100);
-            TestClose(mt.MidiToSec(144000) / 60.0, 3.75, 0.001);
-
-            mt = new(96, 100);
-            TestClose(mt.MidiPeriod(), 6.25, 0.001);
-
-            _logger.Error($"MidiTimeTest done.");
-
-            void TestClose(double value1, double value2, double tolerance)
-            {
-                if (Math.Abs(value1 - value2) > tolerance)
-                {
-                    _logger.Error($"[{value1}] not close enough to [{value2}]");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Generate human info.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Docs_Click(object sender, EventArgs e)
-        {
-            List<string> docs = new()
-            {
-                "# Midi Input Devices"
-            };
-
-            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-            {
-                docs.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
-            }
-
-            docs.Add("");
-            docs.Add("# Midi Output Devices");
-
-            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-            {
-                docs.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
-            }
-            docs.Add("");
-
-            docs.AddRange(MidiDefs.FormatDoc());
-            docs.AddRange(MusicDefinitions.FormatDoc());
-
-            Tools.MarkdownToHtml(docs, Tools.MarkdownMode.DarkApi, true);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Settings_Click(object sender, EventArgs e)
-        {
-            SettingsEditor.Edit(_settings, "howdy!!!", 400);
-            _settings.Save();
-            _logger.Warn("You better restart!");
-        }
-        #endregion
-
-        #region Device input
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Listener_InputReceive(object? sender, InputReceiveEventArgs e)
-        {
-            _logger.Trace($"Listener:{sender} Note:{e.Note} Controller:{e.Controller} Value:{e.Value}");
-
-            // Translate and pass to output.
-            var channel = _channels["chan16"];
-            NoteEvent nevt = e.Value > 0 ?
-               new NoteOnEvent(0, channel.ChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Value % MidiDefs.MAX_MIDI, 0) :
-               new NoteEvent(0, channel.ChannelNumber, MidiCommandCode.NoteOff, e.Note, 0);
-            channel.SendEvent(nevt);
-        }
-        #endregion
-    }
-
-    public class TestSettings : SettingsCore
-    {
-        // [DisplayName("Background Color")]
-        // [Description("The color used for overall background.")]
-        // [Browsable(true)]
-        // [JsonConverter(typeof(JsonColorConverter))]
-        // public Color BackColor { get; set; } = Color.AliceBlue;
-
-        [DisplayName("Ignore Me")]
-        [Description("I do nothing.")]
-        [Browsable(true)]
-        public bool IgnoreMe { get; set; } = true;
-
-        [DisplayName("Midi Settings")]
-        [Description("Edit midi settings.")]
-        [Browsable(true)]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
-        public MidiSettings MidiSettings { get; set; } = new();
     }
 }

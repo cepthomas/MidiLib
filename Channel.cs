@@ -2,266 +2,182 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using NAudio.Midi;
+using System.Windows.Forms;
+using System.Windows.Forms.Design;
+using System.IO;
+using System.ComponentModel;
+using System.Drawing.Design;
+using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 using Ephemera.NBagOfTricks;
 
 
 namespace Ephemera.MidiLib
 {
-    /// <summary>Describes one midi output channel. Some properties are optional.</summary>
-    public class Channel
+    //----------------------------------------------------------------
+    /// <summary>Encode device/channel info for round trip through script.</summary>
+    public static class ChannelHandle
     {
-        #region Fields
-        ///<summary>The collection of playable events for this channel and pattern. Key is the internal sub/time.</summary>
-        readonly Dictionary<int, List<MidiEvent>> _events = [];
+        const int OUTPUT_FLAG = 0x0800;
 
-        /// <summary>Things that are executed once and disappear: NoteOffs, script send now. Key is the internal sub/time.</summary>
-        readonly Dictionary<int, List<MidiEvent>> _transients = [];
-
-        ///<summary>Current volume.</summary>
-        double _volume = MidiLibDefs.DEFAULT_VOLUME;
-        #endregion
-
-        #region Properties
-        /// <summary>Actual 1-based midi channel number - required.</summary>
-        public int ChannelNumber { get; set; } = -1;
-
-        /// <summary>For muting/soloing.</summary>
-        public ChannelState State { get; set; } = ChannelState.Normal;
-
-        /// <summary>Current patch.</summary>
-        public int Patch { get; set; } = -1;
-
-        /// <summary>Current volume constrained to legal values.</summary>
-        public double Volume
+        public static int Create(int deviceId, int channelNumber, bool output)
         {
-            get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, 0.0, MidiLibDefs.MAX_VOLUME); }
+            return (deviceId << 4) | channelNumber | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
 
-        /// <summary>Associated device.</summary>
-        public IOutputDevice? Device { get; set; } = null;
+        public static int DeviceId(int handle) { return (handle >> 4) & 0x0F; }
+        public static int ChannelNumber(int handle) { return handle & 0x0F; }
+        public static bool Output(int handle) { return (handle & OUTPUT_FLAG) > 0; }
 
-        /// <summary>Add a ghost note off for note on.</summary>
-        public bool AddNoteOff { get; set; } = false;
-
-        /// <summary>Optional UI label/reference.</summary>
-        public string ChannelName { get; set; } = "";
-
-        /// <summary>Drums may be handled differently.</summary>
-        public bool IsDrums { get; set; } = false;
-
-        /// <summary>The device used by this channel. Used to find and bind the device at runtime.</summary>
-        public string DeviceId { get; set; } = "";
-
-        /// <summary>For UI user selection.</summary>
-        public bool Selected { get; set; } = false;
-
-        ///<summary>The duration of the whole channel - calculated.</summary>
-        public int MaxSub { get; private set; } = 0;
-
-        /// <summary>Get the number of events - calculated.</summary>
-        public int NumEvents { get { return _events.Count; } }
-        #endregion
-
-        #region Functions
-        /// <summary>
-        /// Set the time-ordered events for the channel.
-        /// </summary>
-        /// <param name="events"></param>
-        public void SetEvents(IEnumerable<MidiEventDesc> events)
+        /// <summary>See me.</summary>
+        public static string Format(int handle)
         {
-            // Reset.
-            _events.Clear();
-            MaxSub = 0;
-
-            // Bin by sub.
-            foreach (var te in events)
-            {
-                // Add to our collection.
-                if (!_events.TryGetValue(te.ScaledTime, out List<MidiEvent>? value))
-                {
-                    value = [];
-                    _events.Add(te.ScaledTime, value);
-                }
-
-                value.Add(te.RawEvent);
-                MaxSub = Math.Max(MaxSub, te.ScaledTime);
-            }
+            return $"{(Output(handle) ? "OUT" : "IN")} {DeviceId(handle)}:{ChannelNumber(handle):00}";
         }
-
-        /// <summary>
-        /// Clean the events for the channel.
-        /// </summary>
-        public void Reset()
-        {
-            // Reset.
-            _events.Clear();
-            _transients.Clear();
-            MaxSub = 0;
-
-            State = ChannelState.Normal;
-            Selected = false;
-            IsDrums = false;
-            Patch = -1;
-        }
-
-        /// <summary>
-        /// Get the events for a specific sub.
-        /// </summary>
-        /// <param name="sub"></param>
-        /// <returns></returns>
-        public IEnumerable<MidiEvent> GetEvents(int sub)
-        {
-            return _events.TryGetValue(sub, out List<MidiEvent>? value) ? value : [];
-        }
-
-        /// <summary>
-        /// Get all events.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<List<MidiEvent>> GetAllEvents()
-        {
-            return _events.Values;
-        }
-
-        /// <summary>
-        /// Process any events for this time.
-        /// </summary>
-        /// <param name="sub"></param>
-        public void DoStep(int sub)
-        {
-            // Main events.
-            if(_events.TryGetValue(sub, out List<MidiEvent>? value))
-            {
-                foreach (var evt in value)
-                {
-                    switch (evt)
-                    {
-                        case FunctionMidiEvent fe:
-                            fe.ScriptFunction?.Invoke();
-                            break;
-
-                        default:
-                            SendEvent(evt);
-                            break;
-                    }
-                }
-            }
-
-            // Transient events.
-            if (_transients.TryGetValue(sub, out List<MidiEvent>? tvalue))
-            {
-                foreach (var evt in tvalue)
-                {
-                    SendEvent(evt);
-                }
-                _transients.Remove(sub);
-            }
-        }
-
-        /// <summary>
-        /// Execute any lingering transients and clear the collection.
-        /// </summary>
-        /// <param name="sub">After this time.</param>
-        public void Flush(int sub)
-        {
-            _transients.Where(t => t.Key >= sub).ForEach(t => t.Value.ForEach(evt => SendEvent(evt)));
-            _transients.Clear();
-        }
-
-        /// <summary>
-        /// General patch sender.
-        /// </summary>
-        public void SendPatch()
-        {
-            if(Patch >= MidiDefs.MIN_MIDI && Patch <= MidiDefs.MAX_MIDI)
-            {
-                PatchChangeEvent evt = new(0, ChannelNumber, Patch);
-                SendEvent(evt);
-            }
-        }
-
-        /// <summary>
-        /// Send a controller now.
-        /// </summary>
-        /// <param name="controller"></param>
-        /// <param name="val"></param>
-        public void SendController(MidiController controller, int val)
-        {
-            ControlChangeEvent evt = new(0, ChannelNumber, controller, val);
-            SendEvent(evt);
-        }
-
-        /// <summary>
-        /// Send midi all notes off.
-        /// </summary>
-        public void Kill()
-        {
-            SendController(MidiController.AllNotesOff, 0);
-        }
-
-        /// <summary>
-        /// Generic event sender.
-        /// </summary>
-        /// <param name="evt"></param>
-        /// <exception cref="InvalidOperationException"></exception>
-        public void SendEvent(MidiEvent evt)
-        {
-            if(Device is null)
-            {
-                throw new InvalidOperationException("Device not set");
-            }
-
-            // If note on, add a transient note off for later.
-            if(AddNoteOff && evt is NoteOnEvent)
-            {
-                var nevt = evt as NoteOnEvent;
-                int offTime = (int)evt.AbsoluteTime + nevt!.NoteLength;
-                if (!_transients.TryGetValue(offTime, out List<MidiEvent>? value))
-                {
-                    value = [];
-                    _transients.Add(offTime, value);
-                }
-
-                value.Add(nevt.OffEvent);
-            }
-
-            // Now send it.
-            Device.SendEvent(evt);
-        }
-        #endregion
     }
 
-    /// <summary>Helper extension methods.</summary>
-    public static class ChannelUtils
+    //----------------------------------------------------------------
+    /// <summary>Describes one midi input channel.</summary>
+    public class InputChannel
     {
+        #region Properties
+        /// <summary>Channel name - optional.</summary>
+        public string ChannelName { get; set; } = "";
+
+        /// <summary>Actual 1-based midi channel number.</summary>
+        [Range(1, MidiDefs.NUM_CHANNELS)]
+        public int ChannelNumber { get; set; } = 1;
+
+        /// <summary>Associated device.</summary>
+        public IInputDevice Device { get; init; }
+
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
+
+        /// <summary>Handle for use by scripts.</summary>
+        public int Handle { get; init; }
+        #endregion
+
         /// <summary>
-        /// Any solo in collection.
+        /// Constructor with required args.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="channels"></param>
-        /// <returns></returns>
-        public static bool AnySolo<T>(this Dictionary<string, T> channels) where T : Channel
+        /// <param name="device"></param>
+        /// <param name="channelNumber"></param>
+        public InputChannel(IInputDevice device, int channelNumber)
         {
-            var solo = channels.Values.Where(c => c.State == ChannelState.Solo).Any();
-            return solo;
+            Device = device;
+            ChannelNumber = channelNumber;
+            Handle = ChannelHandle.Create(device.Id, ChannelNumber, false);
+        }
+    }
+
+    //----------------------------------------------------------------
+    /// <summary>Describes one midi output channel.</summary>
+    public class OutputChannel
+    {
+        #region Properties
+        /// <summary>Channel name - optional.</summary>
+        public string ChannelName { get; set; } = "";
+
+        /// <summary>Actual 1-based midi channel number.</summary>
+        [Range(1, MidiDefs.NUM_CHANNELS)]
+        public int ChannelNumber { get; private set; } = 1;
+
+        /// <summary>Override default instrument presets.</summary>
+        public string AliasFile
+        {
+            get { return _aliasFile; }
+            set { _aliasFile = value; LoadInstruments(); }
+        }
+        string _aliasFile = "";
+
+        /// <summary>Current instrument/patch number.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int Patch
+        {
+            get {  return _patch; }
+            set { _patch = value; Device.Send(new Patch(ChannelNumber, _patch)); }
+        }
+        int _patch = 0;
+
+        /// <summary>Current volume.</summary>
+        [Range(0.0, Defs.MAX_VOLUME)]
+        public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
+    
+        /// <summary>Edit current controller number.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerId { get; set; } = 0;
+
+        /// <summary>Controller payload.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerValue { get; set; } = 50;
+
+        /// <summary>Associated device.</summary>
+        public IOutputDevice Device { get; init; }
+
+        /// <summary>Handle for use by scripts.</summary>
+        public int Handle { get; init; }
+
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
+
+        /// <summary>Current list for this channel.</summary>
+        public Dictionary<int, string> Instruments { get; private set; } = MidiDefs.Instance.GetDefaultInstrumentDefs();
+        #endregion
+
+        /// <summary>
+        /// Constructor with required args.
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="channelNumber"></param>
+        public OutputChannel(IOutputDevice device, int channelNumber)
+        {
+            Device = device;
+            ChannelNumber = channelNumber;
+            Volume = Defs.DEFAULT_VOLUME;
+            Handle = ChannelHandle.Create(device.Id, ChannelNumber, true);
         }
 
         /// <summary>
-        /// Get subs for the collection, rounded to beat.
+        /// Get patch name.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="channels"></param>
-        /// <returns></returns>
-        public static int TotalSubs<T>(this Dictionary<string, T> channels) where T : Channel
+        /// <param name="which"></param>
+        /// <returns>The name or a fabricated one if unknown.</returns>
+        public string GetPatchName(int which)
         {
-            var chmax = channels.Values.Max(ch => ch.MaxSub);
-            // Round total up to next beat.
-            BarTime bs = new();
-            bs.SetRounded(chmax, SnapType.Beat, true);
-            return bs.TotalSubs;
+            return Instruments.TryGetValue(which, out string? value) ? value : $"PATCH_{which}";
+        }
+
+        /// <summary>Load default or aliases.</summary>
+        void LoadInstruments()
+        {
+            // Alternate instrument names?
+            if (_aliasFile != "")
+            {
+                try
+                {
+                    Instruments.Clear();
+                    var ir = new IniReader();
+                    ir.ParseFile(_aliasFile);
+
+                    var defs = ir.GetValues("instruments");
+
+                    defs!.ForEach(kv =>
+                    {
+                        int i = int.Parse(kv.Key); // can throw
+                        i = MathUtils.Constrain(i, 0, MidiDefs.MAX_MIDI);
+                        Instruments.Add(i, kv.Value.Length > 0 ? kv.Value : "");
+                    });
+                }
+                catch (Exception ex)
+                {
+                    throw new MidiLibException($"Failed to load alias file {_aliasFile}: {ex.Message}");
+                }
+            }
+            else
+            {
+                Instruments = MidiDefs.Instance.GetDefaultInstrumentDefs();
+            }
         }
     }
 }

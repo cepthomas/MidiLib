@@ -13,7 +13,7 @@
         <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
         <OutputPath>bin\</OutputPath>
         <WarningLevel>4</WarningLevel>
-        <NoWarn>CS1591;CA1822</NoWarn>
+        <NoWarn>CS1591;CA1822;IDE0130;IDE0060</NoWarn>
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
@@ -24,13 +24,22 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="MainForm_X.cs" />
+      <Compile Remove="MainForm_X.Designer.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="MainForm_X.resx" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="NAudio" Version="2.1.0" />
         <PackageReference Include="NAudio.Midi" Version="2.1.0" />
         <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MidiLib.csproj" />
+      <ProjectReference Include="..\MidiLib.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -40,21 +49,6 @@
         <Reference Include="Ephemera.NBagOfUis">
             <HintPath>..\lib\Ephemera.NBagOfUis.dll</HintPath>
         </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Update="Properties\Resources.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.resx</DependentUpon>
-      </Compile>
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Update="Properties\Resources.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
     </ItemGroup>
 
 </Project>
