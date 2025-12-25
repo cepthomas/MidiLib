@@ -92,7 +92,7 @@ namespace Ephemera.MidiLib
         string _aliasFile = "";
 
         /// <summary>Instrument aliases - optional.</summary>
-        readonly Dictionary<int, string> Aliases { get; set; } = [];
+        public Dictionary<int, string> Aliases { get; set; } = [];
 
         /// <summary>Current instrument/patch number.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
