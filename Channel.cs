@@ -87,9 +87,12 @@ namespace Ephemera.MidiLib
         public string AliasFile
         {
             get { return _aliasFile; }
-            set { _aliasFile = value; LoadInstruments(); }
+            set { _aliasFile = value; LoadAliases(); }
         }
         string _aliasFile = "";
+
+        /// <summary>Instrument aliases - optional.</summary>
+        readonly Dictionary<int, string> Aliases { get; set; } = [];
 
         /// <summary>Current instrument/patch number.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
@@ -104,14 +107,6 @@ namespace Ephemera.MidiLib
         [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
     
-        /// <summary>Edit current controller number. TODO1 shouldn't be here</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int ControllerId { get; set; } = 0;
-
-        /// <summary>Controller payload.</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int ControllerValue { get; set; } = 50;
-
         /// <summary>Associated device.</summary>
         public IOutputDevice Device { get; init; }
 
@@ -119,16 +114,11 @@ namespace Ephemera.MidiLib
         public int Handle { get; init; }
 
         /// <summary>Meta info.</summary>
-        public bool IsDrums { get; set; } = false;
+        public bool IsDrums { get; set; } = false; //TODO1 set? from defs - DEFAULT_DRUM_CHANNEL, from script, ...
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
         #endregion
-
-        /// <summary>Current list for this channel.</summary>
-        //        public Dictionary<int, string> Instruments { get; private set; } = MidiDefs.Instance.GetDefaultInstrumentDefs();
-        Dictionary<int, string> _aliases = [];
-
 
         /// <summary>
         /// Constructor with required args.
@@ -150,15 +140,15 @@ namespace Ephemera.MidiLib
         /// <returns>The name or a fabricated one if unknown.</returns>
         public string GetPatchName(int which)
         {
-            return _aliases.Count > 0 ?
-                _aliases.TryGetValue(which, out string? value) ? value : $"INST_{which}" :
+            return Aliases.Count > 0 ?
+                Aliases.TryGetValue(which, out string? value) ? value : $"INST_{which}" :
                 MidiDefs.Instance.GetInstrumentName(which);
         }
 
-        /// <summary>Load default or aliases.</summary>
-        void LoadInstruments()
+        /// <summary>Load aliases.</summary>
+        void LoadAliases()
         {
-            _aliases.Clear();
+            Aliases.Clear();
 
             // Alternate instrument names?
             if (_aliasFile != "")
@@ -176,7 +166,7 @@ namespace Ephemera.MidiLib
                         if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
                         if (kv.Value.Length == 0) { throw new ArgumentOutOfRangeException($"{id} has no value"); }
 
-                        _aliases.Add(id, kv.Value);
+                        Aliases.Add(id, kv.Value);
                     });
                 }
                 catch (Exception ex)

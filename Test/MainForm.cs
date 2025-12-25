@@ -222,8 +222,6 @@ namespace Ephemera.MidiLib.Test
             OutputChannel ch = new(dev, 3)
             {
                 ChannelName = "booga-booga",
-                ControllerId = 45,
-                ControllerValue = 60
             };
 
             // Aliases.
@@ -313,7 +311,7 @@ namespace Ephemera.MidiLib.Test
 
                 var ctrl = new ChannelControl()
                 {
-                    //                    Name = $"Control for {chan.Config.ChannelName}",
+                    // Name = $"Control for {chan.Config.ChannelName}",
                     BoundChannel = chan,
                     UserRenderer = rend,
                     Location = new(x, y),
@@ -321,6 +319,8 @@ namespace Ephemera.MidiLib.Test
                     ControlColor = Color.SpringGreen,
                     SelectedColor = Color.Yellow,
                     Volume = Defs.DEFAULT_VOLUME,
+                    ControllerId = 10, // pan
+                    ControllerValue = 82
                 };
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
                 ctrl.SendMidi += Mgr_MessageSend;
@@ -352,6 +352,12 @@ namespace Ephemera.MidiLib.Test
             var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);
             var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12);
 
+            // Init controls.
+            ch_ctrl1.ControllerValue = 64; // Sustain
+            ch_ctrl1.ControllerValue = 45;
+            ch_ctrl2.ControllerValue = 68; // Legato
+            ch_ctrl2.ControllerValue = 90;
+
             List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
             channels.ForEach(ch =>
             {
@@ -365,7 +371,7 @@ namespace Ephemera.MidiLib.Test
 
                 var rend = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
                 rend.SendMidi += ChannelControl_SendMidi;
-                //TODO2 ideally hide this event chain in the ChannelControl itself. Prob need to add an interface for renderers.
+                //TODO1 ideally hide this event chain in the ChannelControl itself. Prob need to add an interface for renderers.
                 ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
             });
 
@@ -408,7 +414,7 @@ namespace Ephemera.MidiLib.Test
         }
 
 
-        #region Script api functions TODO2???? Nebulua?
+        #region Script api functions TODO1???? or test in Nebulua?
 
         // /// api.send_midi_note(hnd_strings, note_num, volume)
         // void SendMidiNote(int chnd, int note_num, double volume)

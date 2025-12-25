@@ -127,6 +127,14 @@ namespace Ephemera.MidiLib
             get { return sldVolume.Value; }
             set { sldVolume.Value = value; }
         }
+
+        /// <summary>Edit current controller number.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerId { get; set; } = 0;
+
+        /// <summary>Controller payload.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerValue { get; set; } = 50;
         #endregion
 
         #region Events
@@ -324,7 +332,7 @@ namespace Ephemera.MidiLib
         void Controller_ValueChanged(object? sender, EventArgs e)
         {
             // No need to check limits.
-            BoundChannel.ControllerValue = (int)(sender as Slider)!.Value;
+            ControllerValue = (int)(sender as Slider)!.Value;
         }
 
         /// <summary>
@@ -335,7 +343,7 @@ namespace Ephemera.MidiLib
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            OnSendMidi(new Controller(BoundChannel.ChannelNumber, BoundChannel.ControllerId, BoundChannel.ControllerValue));
+            OnSendMidi(new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
         }
         #endregion
 
