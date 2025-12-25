@@ -160,7 +160,7 @@ namespace Ephemera.MidiLib.Test
             // timeBar
             // 
             timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            timeBar.ControlColor = System.Drawing.Color.Red;
+            timeBar.DrawColor = System.Drawing.Color.Red;
             timeBar.DoLoop = false;
             timeBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             timeBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
@@ -194,7 +194,7 @@ namespace Ephemera.MidiLib.Test
             // timeBar1
             // 
             timeBar1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            timeBar1.ControlColor = System.Drawing.Color.Red;
+            timeBar1.DrawColor = System.Drawing.Color.Red;
             timeBar1.DoLoop = false;
             timeBar1.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             timeBar1.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);

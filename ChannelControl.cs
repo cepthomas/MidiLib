@@ -93,7 +93,7 @@ namespace Ephemera.MidiLib
         /// <summary>Drawing the active elements of a control.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Color ControlColor
+        public Color DrawColor
         {
             get { return txtInfo.BackColor; }
             set {

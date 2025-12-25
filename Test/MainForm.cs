@@ -74,7 +74,7 @@ namespace Ephemera.MidiLib.Test
             sldMasterVolume.Value = Defs.DEFAULT_VOLUME;
             sldMasterVolume.Label = "master volume";
 
-            timeBar.ControlColor = Color.Green;
+            timeBar.DrawColor = Color.Green;
             timeBar.SelectedColor = Color.LightYellow;
             timeBar.Snap = SnapType.Beat;
             timeBar.StateChange += TimeBar_StateChange;
@@ -316,7 +316,7 @@ namespace Ephemera.MidiLib.Test
                     UserRenderer = rend,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
-                    ControlColor = Color.SpringGreen,
+                    DrawColor = Color.SpringGreen,
                     SelectedColor = Color.Yellow,
                     Volume = Defs.DEFAULT_VOLUME,
                     ControllerId = 10, // pan
@@ -362,7 +362,7 @@ namespace Ephemera.MidiLib.Test
             channels.ForEach(ch =>
             {
                 ch.Item2.BorderStyle = BorderStyle.FixedSingle;
-                ch.Item2.ControlColor = Color.SpringGreen;
+                ch.Item2.DrawColor = Color.SpringGreen;
                 ch.Item2.SelectedColor = Color.Yellow;
                 ch.Item2.Volume = Defs.DEFAULT_VOLUME;
                 ch.Item2.ChannelChange += ChannelControl_ChannelChange;

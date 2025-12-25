@@ -70,8 +70,8 @@ namespace Ephemera.MidiLib
         public Font FontSmall { get; set; } = new("Microsoft Sans Serif", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Drawing the active elements of a control.</summary>
-        public Color ControlColor { get { return _controlColor; } set { _controlColor = value; Invalidate(); } }
-        Color _controlColor = Color.Red;
+        public Color DrawColor { get { return _drawColor; } set { _drawColor = value; Invalidate(); } }
+        Color _drawColor = Color.Red;
 
         /// <summary>Drawing the control when selected.</summary>
         public Color SelectedColor { get { return _selectedColor; } set { _selectedColor = value; Invalidate(); } }
@@ -239,7 +239,7 @@ namespace Ephemera.MidiLib
                 return;
             }
 
-            _penMarker.Color = ControlColor;
+            _penMarker.Color = DrawColor;
             _penSel.Color = SelectedColor;
 
             ///// Loop area.
