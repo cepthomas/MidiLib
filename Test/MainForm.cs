@@ -123,46 +123,37 @@ namespace Ephemera.MidiLib.Test
         {
             Tell(INFO, $">>>>> Go start.");
 
+            TestScriptApp();
+
+            TestDefFile();
+
+            TestPropertyEditor();
+
+            TestChannel();
+
             TestTimeBar();
-
-            //TestScriptApp();
-
-            //TestDefFile();
-
-            //TestPropertyEditor();
-
-            //TestChannel();
 
             Tell(INFO, $">>>>> Go end.");
         }
         #endregion
 
         //-------------------------------------------------------------------------------//
-        /// <summary>Test def file loading etc.</summary>
+        /// <summary>Test gen aux files.</summary>
         void Gen_Click(object? sender, EventArgs e)
         {
             Tell(INFO, $">>>>> Gen start.");
-            // this file: C:\Dev\Libs\MidiLib\Test\MainForm.cs
-
-            string fnIni = Path.Combine(AppContext.BaseDirectory, "gm_defs.ini");
-
             var myPath = MiscUtils.GetSourcePath();
-            // this path: C:\Dev\Libs\MidiLib\Test\
+            string fnIni = Path.Combine(myPath, "..", "gm_defs.ini");
 
             Tell(INFO, $">>>>> Gen Markdown.");
             var smd = MidiDefs.Instance.GenMarkdown(fnIni);
             var fnOut = Path.Join(myPath, "out", "midi_defs.md");
             File.WriteAllText(fnOut, smd);
-            //C:\Dev\Libs\MidiLib\Test\out
-
 
             Tell(INFO, $">>>>> Gen Lua.");
             var sld = MidiDefs.Instance.GenLua(fnIni);
             fnOut = Path.Join(myPath, "out", "midi_defs.lua");
             File.WriteAllText(fnOut, sld);
-            //C:\Dev\Libs\MidiLib\midi_defs.lua
-
-
 
             Tell(INFO, $">>>>> Gen end.");
         }
@@ -235,14 +226,12 @@ namespace Ephemera.MidiLib.Test
                 ControllerValue = 60
             };
 
-            // should change the instruments list
-            var inst1 = ch.Instruments;
-            if (inst1.Count != 128) Tell(ERROR, "FAIL");
+            // Aliases.
+            var myPath = MiscUtils.GetSourcePath();
+            ch.AliasFile = Path.Combine(myPath, "test_defs.ini");
 
-            ch.AliasFile = Path.Combine(AppContext.BaseDirectory, "exp_defs.ini");
-
-            var inst2 = ch.Instruments;
-            if (inst2.Count != 66) Tell(ERROR, "FAIL");
+            if (ch.GetPatchName(40) != "SynthGuitar1") Tell(ERROR, "FAIL");
+            if (ch.GetPatchName(101) != "INST_101") Tell(ERROR, "FAIL");
 
             // should send midi
             ch.Patch = 77;
@@ -272,11 +261,13 @@ namespace Ephemera.MidiLib.Test
             //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
             //var instsList = orderedValues.ToList();
 
-            var instsList = CreateOrderedMidiList(MidiDefs.Instance.GetDefaultInstrumentDefs(), true, true);
+            Dictionary<int, string> vals = [];
+            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, MidiDefs.Instance.GetInstrumentName(i)));
 
+            var instList = CreateOrderedMidiList(vals, true, true);
 
             GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
-            GenericListTypeEditor.SetOptions("Patch", instsList);
+            GenericListTypeEditor.SetOptions("Patch", instList);
 
             var changes = SettingsEditor.Edit(td, "TESTOMATIC", 300);
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
