@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Ephemera.NBagOfTricks;
+using NAudio.Midi;
 
 
 namespace Ephemera.MidiLib
@@ -16,7 +17,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <inheritdoc />
-        public event EventHandler<BaseMidiEvent>? MessageReceive;
+        public event EventHandler<BaseMidi>? MessageReceive;
         #endregion
 
         #region Properties
@@ -91,12 +92,12 @@ namespace Ephemera.MidiLib
 
             e.Messages.ForEach(m =>
             {
-                BaseMidiEvent evt = (m.Address, m.Data.Count) switch
+                BaseMidi evt = (m.Address, m.Data.Count) switch
                 {
                     ("/noteon/", 3) => new NoteOn((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
                     ("/noteoff/", 2) => new NoteOff((int)m.Data[0], (int)m.Data[1]),
                     ("/controller/", 3) => new Controller((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
-                    _ => new BaseMidiEvent() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
+                    _ => new BaseMidi() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
                 };
 
                 MessageReceive?.Invoke(this, evt);
@@ -118,7 +119,7 @@ namespace Ephemera.MidiLib
         #endregion
 
         /// <inheritdoc />
-        public event EventHandler<BaseMidiEvent>? MessageSend;
+        public event EventHandler<BaseMidi>? MessageSend;
 
         #region Properties
         /// <inheritdoc />
@@ -160,7 +161,7 @@ namespace Ephemera.MidiLib
 
         #region Public functions
         /// <inheritdoc />
-        public void Send(BaseMidiEvent mevt)
+        public void Send(BaseMidi mevt)
         {
             // Critical code section.
             if (_oscOutput is not null)
@@ -211,6 +212,12 @@ namespace Ephemera.MidiLib
                     _oscOutput.Send(msg);
                 }
             }
+        }
+
+        /// <inheritdoc />
+        public void Send(MidiEvent evt)
+        {
+            throw new NotImplementedException();
         }
         #endregion
 

@@ -35,7 +35,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<BaseMidiEvent>? MessageReceive;
+        public event EventHandler<BaseMidi>? MessageReceive;
         #endregion
 
         #region Lifecycle
@@ -82,14 +82,14 @@ namespace Ephemera.MidiLib
             // Decode the message. We only care about a few.
             var mevt = MidiEvent.FromRawMessage(e.RawMessage);
 
-            BaseMidiEvent evt = mevt switch
+            BaseMidi evt = mevt switch
             {
                 NoteOnEvent onevt => new NoteOn(onevt.Channel, onevt.NoteNumber, onevt.Velocity),
                 NoteEvent offevt => offevt.Velocity == 0 ?
                     new NoteOff(offevt.Channel, offevt.NoteNumber) :
                     new NoteOn(offevt.Channel, offevt.NoteNumber, offevt.Velocity),
                 ControlChangeEvent ctlevt => new Controller(ctlevt.Channel, (int)ctlevt.Controller, ctlevt.ControllerValue),
-                _ => new BaseMidiEvent() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
+                _ => new BaseMidi() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
             };
 
             // Tell the boss.
@@ -132,7 +132,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<BaseMidiEvent>? MessageSend;
+        public event EventHandler<BaseMidi>? MessageSend;
         #endregion
 
         #region Properties
@@ -179,10 +179,8 @@ namespace Ephemera.MidiLib
         }
         #endregion
 
-        /// <summary>
-        /// Send midi event.
-        /// </summary>
-        public void Send(BaseMidiEvent evt)
+        /// <inheritdoc />
+        public void Send(BaseMidi evt)
         {
             MidiEvent mevt = evt switch
             {
@@ -193,10 +191,16 @@ namespace Ephemera.MidiLib
                 _ => throw new MidiLibException($"Invalid event: {evt}")
             };
 
-            _midiOut?.Send(mevt.GetAsShortMessage());
+            Send(mevt);
 
             // Tell the boss.
             MessageSend?.Invoke(this, evt);
+        }
+
+        /// <inheritdoc />
+        public void Send(MidiEvent evt)
+        {
+            _midiOut?.Send(evt.GetAsShortMessage());
         }
 
         /// <summary>

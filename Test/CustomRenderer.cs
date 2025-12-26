@@ -36,7 +36,7 @@ namespace Ephemera.MidiLib.Test
 
         #region Events
         /// <summary>UI midi send.</summary>
-        public event EventHandler<BaseMidiEvent>? SendMidi;
+        public event EventHandler<BaseMidi>? SendMidi;
         #endregion
 
         /// <summary>Constructor.</summary>

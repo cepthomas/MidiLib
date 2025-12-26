@@ -39,10 +39,10 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
-        public event EventHandler<BaseMidiEvent>? MessageReceive;
+        public event EventHandler<BaseMidi>? MessageReceive;
 
         /// <summary>Handler for message sent. This is the actual message on the wire.</summary>
-        public event EventHandler<BaseMidiEvent>? MessageSend;
+        public event EventHandler<BaseMidi>? MessageSend;
         #endregion
 
         #region Script => Host API
@@ -112,7 +112,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="deviceName"></param>
         /// <returns>The device or null if invalid.</returns>
-        IInputDevice? GetInputDevice(string deviceName)
+        public IInputDevice? GetInputDevice(string deviceName)
         {
             IInputDevice? dev = null;
 
@@ -163,7 +163,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="deviceName"></param>
         /// <returns>The device or null if invalid.</returns>
-        IOutputDevice? GetOutputDevice(string deviceName)
+        public IOutputDevice? GetOutputDevice(string deviceName)
         {
             IOutputDevice? dev = null;
 

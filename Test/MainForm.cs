@@ -470,7 +470,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Mgr_MessageReceive(object? sender, BaseMidiEvent e)
+        void Mgr_MessageReceive(object? sender, BaseMidi e)
         {
             Tell(INFO, $"Receive [{e}]");
         }
@@ -481,7 +481,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Mgr_MessageSend(object? sender, BaseMidiEvent e)
+        void Mgr_MessageSend(object? sender, BaseMidi e)
         {
             Tell(INFO, $"Send actual [{e}]");
         }
@@ -491,7 +491,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControl_SendMidi(object? sender, BaseMidiEvent e)
+        void ChannelControl_SendMidi(object? sender, BaseMidi e)
         {
             var channel = sender switch
             {

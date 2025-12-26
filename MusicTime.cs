@@ -141,7 +141,8 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="tick"></param>
         /// <param name="snapType"></param>
-        public void Set(int tick, SnapType snapType = SnapType.Tick)
+        /// <param name="up">T = round up</param>
+        public void Set(int tick, SnapType snapType = SnapType.Tick, bool up = false)
         {
             if (tick > 0 && snapType != SnapType.Tick)
             {
@@ -150,7 +151,7 @@ namespace Ephemera.MidiLib
 
                 int floor = tick / res;
                 int delta = tick % res;
-                if (delta > res / 2)
+                if (delta > res / 2 || up)
                 {
                     floor++;
                 }

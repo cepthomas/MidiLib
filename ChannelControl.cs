@@ -16,33 +16,32 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
+    #region Types
+    /// <summary>Channel playing.</summary>
+    public enum ChannelState { Normal, Solo, Mute }
+
+    /// <summary>Some flavors of control may need to be defeatured.</summary>
+    [Flags]
+    public enum DisplayOptions
+    {
+        SoloMute = 0x01,    // solo and mute buttons
+        Controller = 0x02,  // controller select and send
+        All = 0x0F,         // all of above
+    }
+
+    /// <summary>Notify host of UI changes.</summary>
+    public class ChannelChangeEventArgs : EventArgs
+    {
+        public bool InfoChange { get; set; } = false;
+        public bool StateChange { get; set; } = false;
+        public bool PatchChange { get; set; } = false;
+        public bool ChannelNumberChange { get; set; } = false;
+    }
+    #endregion
+
     [DesignTimeVisible(true)]
     public class ChannelControl : UserControl
     {
-        #region Types
-        /// <summary>Channel playing.</summary>
-        public enum ChannelState { Normal, Solo, Mute }
-
-        /// <summary>Notify host of UI changes.</summary>
-        public class ChannelChangeEventArgs : EventArgs
-        {
-            public bool InfoChange { get; set; } = false;
-            public bool StateChange { get; set; } = false;
-            public bool PatchChange { get; set; } = false;
-            public bool ChannelNumberChange { get; set; } = false;
-        }
-
-        /// <summary>Some flavors of control may need to be defeatured.</summary>
-        [Flags]
-        public enum DisplayOptions
-        {
-            //Notes = 0x01,     // NA
-            SoloMute = 0x02,    // solo and mute buttons
-            Controller = 0x04,  // controller select and send
-            All = 0x0F,         // all of above
-        }
-        #endregion
-
         #region Fields
         ChannelState _state = ChannelState.Normal;
         const int PAD = 4;
@@ -142,10 +141,10 @@ namespace Ephemera.MidiLib
         public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
 
         /// <summary>UI midi send.</summary>
-        public event EventHandler<BaseMidiEvent>? SendMidi;
+        public event EventHandler<BaseMidi>? SendMidi;
 
         /// <summary>Derived class helper.</summary>
-        protected virtual void OnSendMidi(BaseMidiEvent e) { SendMidi?.Invoke(this, e); }
+        protected virtual void OnSendMidi(BaseMidi e) { SendMidi?.Invoke(this, e); }
         #endregion
 
         #region Lifecycle

@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 namespace Ephemera.MidiLib
 {
     //----------------------------------------------------------------
-    public class BaseMidiEvent
+    public class BaseMidi
     {
         /// <summary>Channel number.</summary>
         [Range(1, MidiDefs.NUM_CHANNELS)]
@@ -24,12 +24,12 @@ namespace Ephemera.MidiLib
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"BaseMidiEvent:{ChannelNumber} {ErrorInfo}";
+            return $"BaseMidi:{ChannelNumber} {ErrorInfo}";
         }
     }
 
     //----------------------------------------------------------------
-    public class NoteOn : BaseMidiEvent
+    public class NoteOn : BaseMidi
     {
         /// <summary>The note number to play.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
@@ -58,7 +58,7 @@ namespace Ephemera.MidiLib
     }
 
     //----------------------------------------------------------------
-    public class NoteOff : BaseMidiEvent
+    public class NoteOff : BaseMidi
     {
         /// <summary>The note number to play.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
@@ -81,7 +81,7 @@ namespace Ephemera.MidiLib
     }
 
     //----------------------------------------------------------------
-    public class Controller : BaseMidiEvent
+    public class Controller : BaseMidi
     {
         /// <summary>Specific controller id.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
@@ -110,7 +110,7 @@ namespace Ephemera.MidiLib
     }
 
     //----------------------------------------------------------------
-    public class Patch : BaseMidiEvent
+    public class Patch : BaseMidi
     {
         /// <summary>Payload.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
