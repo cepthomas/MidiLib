@@ -60,12 +60,6 @@ namespace Ephemera.MidiLib.Properties {
             }
         }
 
-        internal static string def_keymap {
-            get {
-                return ResourceManager.GetString("def_keymap", resourceCulture);
-            }
-        }
-
         internal static string gm_defs {
             get {
                 return ResourceManager.GetString("gm_defs", resourceCulture);
