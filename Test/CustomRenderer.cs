@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ComponentModel.DataAnnotations;
 using Ephemera.NBagOfTricks;
+using System.Runtime.CompilerServices;
 
 
 namespace Ephemera.MidiLib.Test
 {
-    public class CustomRenderer : UserControl
+    public class CustomRenderer : UserRenderer
     {
         #region Fields
         /// <summary>Required designer variable.</summary>
@@ -29,15 +30,17 @@ namespace Ephemera.MidiLib.Test
         int _lastNote = -1;
         #endregion
 
-        #region Properties
-        /// <summary>Context.</summary>
-        public int ChannelHandle { get; init; }
-        #endregion
+        //#region Properties
+        ///// <summary>Context.</summary>
+        //public int ChannelNumber { get; init; }
+        //#endregion
 
-        #region Events
-        /// <summary>UI midi send.</summary>
-        public event EventHandler<BaseMidi>? SendMidi;
-        #endregion
+        //#region Events
+        ///// <summary>UI midi send.</summary>
+        //public event EventHandler<BaseMidi>? SendMidi;
+        //#endregion
+
+        
 
         /// <summary>Constructor.</summary>
         public CustomRenderer()
@@ -45,6 +48,7 @@ namespace Ephemera.MidiLib.Test
             toolTip = new(components);
             Size = new(231, 174);
         }
+
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -105,12 +109,12 @@ namespace Ephemera.MidiLib.Test
                         if (_lastNote != -1)
                         {
                             // Turn off last note.
-                            SendMidi?.Invoke(this, new NoteOff(MidiLib.ChannelHandle.ChannelNumber(ChannelHandle), _lastNote));
+                            OnSendMidi(new NoteOff(ChannelNumber, _lastNote));
                         }
 
                         // Start the new note.
                         _lastNote = res.Value.ux;
-                        SendMidi?.Invoke(this, new NoteOn(MidiLib.ChannelHandle.ChannelNumber(ChannelHandle), res.Value.ux, res.Value.uy));
+                        OnSendMidi(new NoteOn(ChannelNumber, res.Value.ux, res.Value.uy));
                     }
                 }
             }
@@ -128,7 +132,7 @@ namespace Ephemera.MidiLib.Test
             if (res is not null)
             {
                 _lastNote = res.Value.ux;
-                SendMidi?.Invoke(this, new NoteOn(MidiLib.ChannelHandle.ChannelNumber(ChannelHandle), res.Value.ux, res.Value.uy));
+                OnSendMidi(new NoteOn(ChannelNumber, res.Value.ux, res.Value.uy));
             }
 
             base.OnMouseDown(e);
@@ -142,7 +146,7 @@ namespace Ephemera.MidiLib.Test
         {
             if (_lastNote != -1)
             {
-                SendMidi?.Invoke(this, new NoteOff(MidiLib.ChannelHandle.ChannelNumber(ChannelHandle), _lastNote));
+                OnSendMidi(new NoteOff(ChannelNumber, _lastNote));
                 _lastNote = -1;
             }
 
@@ -158,7 +162,7 @@ namespace Ephemera.MidiLib.Test
             // Turn off last click.
             if (_lastNote != -1)
             {
-                SendMidi?.Invoke(this, new NoteOff(MidiLib.ChannelHandle.ChannelNumber(ChannelHandle), _lastNote));
+                OnSendMidi(new NoteOff(ChannelNumber, _lastNote));
             }
 
             // Reset and tell client.

@@ -16,6 +16,25 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
+    /// <summary>Base class for custom renderers. Probably should have a better home.</summary>
+    public class UserRenderer : UserControl
+    {
+        /// <summary>For midi sends.</summary>
+        public int ChannelNumber { get; init; }
+
+        /// <summary>Parent hooks this.</summary>
+        public event EventHandler<BaseMidi>? SendMidi;
+
+        /// <summary>Derived control helper.</summary>
+        protected void OnSendMidi(BaseMidi e)
+        {
+            SendMidi?.Invoke(this, e);
+        }
+    }
+
+
+
+
     #region Types
     /// <summary>Channel playing.</summary>
     public enum ChannelState { Normal, Solo, Mute }
@@ -69,7 +88,7 @@ namespace Ephemera.MidiLib
         /// <summary>My custom renderer - optional.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public UserControl? UserRenderer
+        public UserRenderer? UserRenderer
         {
             get { return _userRenderer; }
             set {
@@ -82,7 +101,7 @@ namespace Ephemera.MidiLib
                 }
             }
         }
-        UserControl? _userRenderer = null;
+        UserRenderer? _userRenderer = null;
 
         /// <summary>Display options.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

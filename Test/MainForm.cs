@@ -123,17 +123,24 @@ namespace Ephemera.MidiLib.Test
         {
             Tell(INFO, $">>>>> Go start.");
 
-            TestScriptApp();
+            try
+            {
+                TestScriptApp();
 
-            TestDefFile();
+                //TestDefFile();
 
-            TestPropertyEditor();
+                //TestPropertyEditor();
 
-            TestChannel();
+                //TestChannel();
 
-            TestTimeBar();
+                //TestTimeBar();
+            }
+            catch (Exception ex)
+            {
+                Tell(ERROR, ex.ToString());
+            }
 
-            Tell(INFO, $">>>>> Go end.");
+            Tell(INFO, $">>>>> Go done.");
         }
         #endregion
 
@@ -155,7 +162,7 @@ namespace Ephemera.MidiLib.Test
             fnOut = Path.Join(myPath, "out", "midi_defs.lua");
             File.WriteAllText(fnOut, sld);
 
-            Tell(INFO, $">>>>> Gen end.");
+            Tell(INFO, $">>>>> Gen done.");
         }
 
         //-------------------------------------------------------------------------------//
@@ -306,7 +313,7 @@ namespace Ephemera.MidiLib.Test
             List<OutputChannel> channels = [chan_out1, chan_out2];
             channels.ForEach(chan =>
             {
-                var rend = new CustomRenderer() { ChannelHandle = chan.Handle };
+                var rend = new CustomRenderer() { ChannelNumber = chan.ChannelNumber };
                 rend.SendMidi += ChannelControl_SendMidi;
 
                 var ctrl = new ChannelControl()
@@ -348,32 +355,36 @@ namespace Ephemera.MidiLib.Test
         /// <summary>A standard app where controls are defined in VS designer.</summary>
         void TestStandardApp()
         {
-            // Create channels and initialize controls.
+            // Create channels.
             var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);
             var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12);
 
             // Init controls.
+            ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
+            ch_ctrl1.DrawColor = Color.SpringGreen;
+            ch_ctrl1.SelectedColor = Color.Yellow;
+            ch_ctrl1.Volume = Defs.DEFAULT_VOLUME;
+            ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
+            ch_ctrl1.SendMidi += ChannelControl_SendMidi;
+            ch_ctrl1.BoundChannel = chan_out1;
             ch_ctrl1.ControllerValue = 64; // Sustain
             ch_ctrl1.ControllerValue = 45;
+            var rend1 = new CustomRenderer() { ChannelNumber = chan_out1.ChannelNumber };
+            rend1.SendMidi += ChannelControl_SendMidi;
+            ch_ctrl1.UserRenderer = rend1;
+
+            ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
+            ch_ctrl2.DrawColor = Color.SpringGreen;
+            ch_ctrl2.SelectedColor = Color.Yellow;
+            ch_ctrl2.Volume = Defs.DEFAULT_VOLUME;
+            ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
+            ch_ctrl2.SendMidi += ChannelControl_SendMidi;
+            ch_ctrl2.BoundChannel = chan_out1;
             ch_ctrl2.ControllerValue = 68; // Legato
             ch_ctrl2.ControllerValue = 90;
-
-            List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
-            channels.ForEach(ch =>
-            {
-                ch.Item2.BorderStyle = BorderStyle.FixedSingle;
-                ch.Item2.DrawColor = Color.SpringGreen;
-                ch.Item2.SelectedColor = Color.Yellow;
-                ch.Item2.Volume = Defs.DEFAULT_VOLUME;
-                ch.Item2.ChannelChange += ChannelControl_ChannelChange;
-                ch.Item2.SendMidi += ChannelControl_SendMidi;
-                ch.Item2.BoundChannel = ch.Item1;
-
-                var rend = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
-                rend.SendMidi += ChannelControl_SendMidi;
-                //TODO1 ideally hide this event chain in the ChannelControl itself. Prob need to add an interface for renderers.
-                ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
-            });
+            var rend2 = new CustomRenderer() { ChannelNumber = chan_out2.ChannelNumber };
+            rend2.SendMidi += ChannelControl_SendMidi;
+            ch_ctrl2.UserRenderer = rend2;
 
             ///// 3 - do work
             // ...
@@ -413,57 +424,6 @@ namespace Ephemera.MidiLib.Test
             public int Patch { get; set; } = 0;
         }
 
-
-        #region Script api functions TODO1???? or test in Nebulua?
-
-        // /// api.send_midi_note(hnd_strings, note_num, volume)
-        // void SendMidiNote(int chnd, int note_num, double volume)
-        // {
-        //     if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note_num)); }
-
-        //     var ch = _mgr.GetOutputChannel(chnd);
-
-        //     if (ch is not null)
-        //     {
-        //         BaseMidiEvent evt = volume == 0.0 ?
-        //             new NoteOff(ChannelHandle.ChannelNumber(chnd), note_num) :
-        //             new NoteOn(ChannelHandle.ChannelNumber(chnd), note_num, (int)MathUtils.Constrain(volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI));
-        //         ch.Device.Send(evt);
-        //     }
-        //     else
-        //     {
-        //         // error?
-        //     }
-        // }
-
-        // /// api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
-        // void SendMidiController(int chnd, int controller_id, int value)
-        // {
-        //     if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controller_id)); }
-        //     if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
-        //     var ch = _mgr.GetOutputChannel(chnd);
-        //     if (ch is not null)
-        //     {
-        //         BaseMidiEvent evt = new Controller(ChannelHandle.ChannelNumber(chnd), controller_id, value);
-        //         ch.Device.Send(evt);
-        //     }
-        //     else
-        //     {
-        //         // error?
-        //     }
-        // }
-
-        // /// Callback from script: function receive_midi_note(chan_hnd, note_num, volume)
-        // void ReceiveMidiNote(int chnd, int note_num, double volume)
-        // {
-        // }
-
-        // /// Callback from script: function receive_midi_controller(chan_hnd, controller, value)
-        // void ReceiveMidiController(int chnd, int controller_id, int value)
-        // {
-        // }
-        #endregion
-
         #region Events
         /// <summary>
         /// Something arrived from a midi device.
@@ -496,7 +456,7 @@ namespace Ephemera.MidiLib.Test
             var channel = sender switch
             {
                 ChannelControl => (sender as ChannelControl)!.BoundChannel,
-                CustomRenderer => _mgr.GetOutputChannel((sender as CustomRenderer)!.ChannelHandle),
+                CustomRenderer => _mgr.GetOutputChannel((sender as CustomRenderer)!.ChannelNumber),
                 _ => null // should never happen
             };
 
@@ -512,7 +472,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControl_ChannelChange(object? sender, ChannelControl.ChannelChangeEventArgs e)
+        void ChannelControl_ChannelChange(object? sender, ChannelChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
             var channel = cc!.BoundChannel!;
@@ -522,13 +482,13 @@ namespace Ephemera.MidiLib.Test
                 Tell(INFO, $"StateChange");
 
                 // Update all channels.
-                bool anySolo = _channelControls.Where(c => c.State == ChannelControl.ChannelState.Solo).Any();
+                bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
 
                 foreach (var cciter in _channelControls)
                 {
                     bool enable = anySolo ?
-                        cciter.State == ChannelControl.ChannelState.Solo :
-                        cciter.State != ChannelControl.ChannelState.Mute;
+                        cciter.State == ChannelState.Solo :
+                        cciter.State != ChannelState.Mute;
 
                     channel.Enable = enable;
                     if (!enable)
@@ -585,7 +545,7 @@ namespace Ephemera.MidiLib.Test
         /// <param name="addKey">Add the index number to the entry</param>
         /// <param name="fill">Add mising midi values</param>
         /// <returns></returns>
-        public List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill)
+        public List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill) //TODO1 put in MidiDefs???
         {
             List<string> res = [];
 
