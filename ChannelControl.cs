@@ -142,9 +142,6 @@ namespace Ephemera.MidiLib
 
         /// <summary>UI midi send.</summary>
         public event EventHandler<BaseMidi>? SendMidi;
-
-        /// <summary>Derived class helper.</summary>
-        protected virtual void OnSendMidi(BaseMidi e) { SendMidi?.Invoke(this, e); }
         #endregion
 
         #region Lifecycle
@@ -342,7 +339,7 @@ namespace Ephemera.MidiLib
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            OnSendMidi(new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
+            SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
         }
         #endregion
 

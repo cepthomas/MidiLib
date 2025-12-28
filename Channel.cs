@@ -99,7 +99,7 @@ namespace Ephemera.MidiLib
         public int Patch
         {
             get {  return _patch; }
-            set { _patch = value; Device.Send(new Patch(ChannelNumber, _patch)); }
+            set { _patch = value;  Device.Send(new Patch(ChannelNumber, _patch)); }
         }
         int _patch = 0;
 

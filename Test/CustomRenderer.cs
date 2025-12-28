@@ -42,7 +42,6 @@ namespace Ephemera.MidiLib.Test
         /// <summary>Constructor.</summary>
         public CustomRenderer()
         {
-            //InitializeComponent();
             toolTip = new(components);
             Size = new(231, 174);
         }

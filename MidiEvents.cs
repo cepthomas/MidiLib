@@ -11,12 +11,15 @@ using System.Runtime.CompilerServices;
 
 namespace Ephemera.MidiLib
 {
+    // TODO1 smart? [if (channel is < 0] is allowed so controls can gen events without knowing their own chan num
+    // Gets filled in by the client eventually.
+
     //----------------------------------------------------------------
     public class BaseMidi
     {
         /// <summary>Channel number.</summary>
         [Range(1, MidiDefs.NUM_CHANNELS)]
-        public int ChannelNumber { get; init; }
+        public int ChannelNumber { get; set; }
 
         /// <summary>Something to tell the client.</summary>
         public string ErrorInfo { get; set; } = "";
@@ -41,7 +44,7 @@ namespace Ephemera.MidiLib
 
         public NoteOn(int channel, int note, int velocity)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (channel is < 0 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
             if (velocity is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(velocity)); }
 
@@ -66,7 +69,7 @@ namespace Ephemera.MidiLib
 
         public NoteOff(int channel, int note)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (channel is < 0 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
 
             ChannelNumber = channel;
@@ -93,7 +96,7 @@ namespace Ephemera.MidiLib
 
         public Controller(int channel, int controllerId, int value)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (channel is < 0 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (controllerId is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controllerId)); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
 
@@ -118,7 +121,7 @@ namespace Ephemera.MidiLib
 
         public Patch(int channel, int value)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (channel is < 0 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
 
             ChannelNumber = channel;
