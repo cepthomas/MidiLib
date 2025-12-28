@@ -70,21 +70,6 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Public
-        ///// <summary>Default instruments.</summary>
-        ///// <returns></returns>
-        //public Dictionary<int, string> GetInstrumentDefs()
-        //{
-        //    return _instruments;
-        //}
-
-        ///// <summary>All controllers.</summary>
-        ///// <param name="includeUnnamed"></param>
-        ///// <returns></returns>
-        //public Dictionary<int, string> GetControllerIdDefs(bool includeUnnamed)
-        //{
-        //    return includeUnnamed ? _controllerIdsAll : _controllerIds;
-        //}
-
         /// <summary>
         /// Get controller name.
         /// </summary>
@@ -225,6 +210,32 @@ namespace Ephemera.MidiLib
             ls.Add("return M");
 
             return string.Join(Environment.NewLine, ls);
+        }
+
+        /// <summary>
+        /// Convert a midi dictionary into ordered list of strings.
+        /// </summary>
+        /// <param name="source">The dictionary to process</param>
+        /// <param name="addKey">Add the index number to the entry</param>
+        /// <param name="fill">Add mising midi values</param>
+        /// <returns></returns>
+        public List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill)
+        {
+            List<string> res = [];
+
+            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
+            {
+                if (source.ContainsKey(i))
+                {
+                    res.Add(addKey ? $"{i:000} {source[i]}" : $"{source[i]}");
+                }
+                else if (fill)
+                {
+                    res.Add($"{i:000}");
+                }
+            }
+
+            return res;
         }
         #endregion
     }

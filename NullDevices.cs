@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Ephemera.NBagOfTricks;
-using NAudio.Midi;
+//using NAudio.Midi;
 
 
 namespace Ephemera.MidiLib
@@ -10,6 +10,7 @@ namespace Ephemera.MidiLib
     public class NullInputDevice : IInputDevice
     {
         /// <inheritdoc />
+        /// Uses nullout:name for DeviceName.
         public string DeviceName { get; }
 
         /// <inheritdoc />
@@ -49,6 +50,7 @@ namespace Ephemera.MidiLib
     public class NullOutputDevice : IOutputDevice
     {
         /// <inheritdoc />
+        /// Uses nullin:name for DeviceName.
         public string DeviceName { get; }
 
         /// <inheritdoc />
@@ -86,12 +88,6 @@ namespace Ephemera.MidiLib
             MessageSend?.Invoke(this, evt);
 
             CollectedEvents.Add(evt);        
-        }
-
-        /// <inheritdoc />
-        public void Send(MidiEvent evt)
-        {
-            throw new NotImplementedException();
         }
     }
 }

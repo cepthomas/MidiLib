@@ -1,9 +1,7 @@
-﻿using NAudio.Midi;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-//using NAudio.Midi;
 
 
 namespace Ephemera.MidiLib
@@ -44,10 +42,6 @@ namespace Ephemera.MidiLib
         /// <summary>Send midi event.</summary>
         /// <param name="evt"></param>
         void Send(BaseMidi evt);
-
-        /// <summary>Send low level NAudio midi event.</summary>
-        /// <param name="evt"></param>
-        void Send(MidiEvent evt);
         #endregion
 
         #region Events

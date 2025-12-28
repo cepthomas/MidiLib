@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Ephemera.NBagOfTricks;
-using NAudio.Midi;
+//using NAudio.Midi;
 
 
 namespace Ephemera.MidiLib
@@ -22,6 +22,7 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <inheritdoc />
+        /// Uses oscin:port for DeviceName.
         public string DeviceName { get; private set; } = "Invalid";
 
         /// <inheritdoc />
@@ -123,6 +124,7 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <inheritdoc />
+        /// Uses oscout:host:port for DeviceName.
         public string DeviceName { get; private set; } = "Invalid";
 
         /// <inheritdoc />
@@ -212,12 +214,6 @@ namespace Ephemera.MidiLib
                     _oscOutput.Send(msg);
                 }
             }
-        }
-
-        /// <inheritdoc />
-        public void Send(MidiEvent evt)
-        {
-            throw new NotImplementedException();
         }
         #endregion
 

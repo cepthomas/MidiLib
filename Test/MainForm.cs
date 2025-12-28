@@ -125,7 +125,9 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
-                TestScriptApp();
+                TestMusicTime();
+
+                // TestScriptApp();
 
                 //TestDefFile();
 
@@ -268,8 +270,7 @@ namespace Ephemera.MidiLib.Test
 
             Dictionary<int, string> vals = [];
             Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, MidiDefs.Instance.GetInstrumentName(i)));
-
-            var instList = CreateOrderedMidiList(vals, true, true);
+            var instList = MidiDefs.Instance.CreateOrderedMidiList(vals, true, true);
 
             GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
             GenericListTypeEditor.SetOptions("Patch", instList);
@@ -388,6 +389,38 @@ namespace Ephemera.MidiLib.Test
 
             ///// 3 - do work
             // ...
+        }
+
+        //-------------------------------------------------------------------------------//
+        void TestMusicTime()
+        {
+            var bt = new MusicTime("23.2.6");
+            //UT_EQUAL(bt, 23 * MusicTime.SUBS_PER_BAR + 2 * MusicTime.SUBS_PER_BEAT + 6);
+            Tell(INFO, $"bt [{bt}]");
+
+            bt = new MusicTime("146.1");
+            //UT_EQUAL(bt, 146 * MusicTime.SUBS_PER_BAR + 1 * MusicTime.SUBS_PER_BEAT);
+            Tell(INFO, $"bt [{bt}]");
+
+            bt = new MusicTime("71");
+            //UT_EQUAL(bt, 71 * MusicTime.SUBS_PER_BAR);
+            Tell(INFO, $"bt [{bt}]");
+
+            bt = new MusicTime("49.55.8");
+            //UT_EQUAL(bt, -1);
+            Tell(INFO, $"bt [{bt}]");
+
+            bt = new MusicTime("111.3.88");
+            //UT_EQUAL(bt, -1);
+            Tell(INFO, $"bt [{bt}]");
+
+            bt = new MusicTime(12345);
+            //UT_EQUAL(sbt, "385.3.1");
+            Tell(INFO, $"bt [{bt}]");
+
+            bt = new MusicTime("invalid");
+            //UT_EQUAL(bt, -1);
+            Tell(INFO, $"bt [{bt}]");
         }
 
 
@@ -536,32 +569,6 @@ namespace Ephemera.MidiLib.Test
         {
             var fn = Path.GetFileName(file);
             txtViewer.AppendLine($"{cat} {fn}({line}) {s}");
-        }
-
-        /// <summary>
-        /// Convert a midi dictionary into ordered list of strings.
-        /// </summary>
-        /// <param name="source">The dictionary to process</param>
-        /// <param name="addKey">Add the index number to the entry</param>
-        /// <param name="fill">Add mising midi values</param>
-        /// <returns></returns>
-        public List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill) //TODO1 put in MidiDefs???
-        {
-            List<string> res = [];
-
-            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
-            {
-                if (source.ContainsKey(i))
-                {
-                    res.Add(addKey ? $"{i:000} {source[i]}" : $"{source[i]}");
-                }
-                else if (fill)
-                {
-                    res.Add($"{i:000}");
-                }
-            }
-
-            return res;
         }
         #endregion
     }

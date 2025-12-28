@@ -191,16 +191,10 @@ namespace Ephemera.MidiLib
                 _ => throw new MidiLibException($"Invalid event: {evt}")
             };
 
-            Send(mevt);
+            _midiOut?.Send(mevt.GetAsShortMessage());
 
             // Tell the boss.
             MessageSend?.Invoke(this, evt);
-        }
-
-        /// <inheritdoc />
-        public void Send(MidiEvent evt)
-        {
-            _midiOut?.Send(evt.GetAsShortMessage());
         }
 
         /// <summary>

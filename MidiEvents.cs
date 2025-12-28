@@ -11,9 +11,6 @@ using System.Runtime.CompilerServices;
 
 namespace Ephemera.MidiLib
 {
-    // TODO1 smart? [if (channel is < 0] is allowed so controls can gen events without knowing their own chan num
-    // Gets filled in by the client eventually.
-
     //----------------------------------------------------------------
     public class BaseMidi
     {
