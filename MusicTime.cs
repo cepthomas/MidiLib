@@ -23,13 +23,13 @@ namespace Ephemera.MidiLib
         /// <summary>Only 4/4 time supported currently.</summary>
         public static int BeatsPerBar { get { return 4; } }
 
-        /// <summary>Our resolution => 32nd note.</summary>
-        public static int TicksPerBeat { get { return 32; } }
+        /// <summary>Our resolution where 8 => 32nd note.</summary>
+        public static int TicksPerBeat { get { return 8; } }
 
         /// <summary>Convenience.</summary>
         public static int TicksPerBar { get { return TicksPerBeat * BeatsPerBar; } }
 
-        /// <summary>The total time in ticks. Zero-based.</summary>
+        /// <summary>Absolute tick. Zero-based.</summary>
         public int Tick { get; private set; }
 
         /// <summary>Accessor.</summary>

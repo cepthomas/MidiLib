@@ -125,9 +125,9 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
-                TestMusicTime();
+                TestScriptApp();
 
-                // TestScriptApp();
+                //TestMusicTime();
 
                 //TestDefFile();
 
@@ -319,9 +319,10 @@ namespace Ephemera.MidiLib.Test
 
                 var ctrl = new ChannelControl()
                 {
-                    // Name = $"Control for {chan.Config.ChannelName}",
+                    Name = $"Control for {chan.ChannelName}",
                     BoundChannel = chan,
                     UserRenderer = rend,
+                    Options = DisplayOptions.All,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
                     DrawColor = Color.SpringGreen,
@@ -510,9 +511,9 @@ namespace Ephemera.MidiLib.Test
             var cc = sender as ChannelControl;
             var channel = cc!.BoundChannel!;
 
-            if (e.StateChange)
+            if (e.State)
             {
-                Tell(INFO, $"StateChange");
+                Tell(INFO, $"State change");
 
                 // Update all channels.
                 bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();

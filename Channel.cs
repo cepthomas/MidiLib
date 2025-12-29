@@ -16,7 +16,7 @@ namespace Ephemera.MidiLib
 {
     //----------------------------------------------------------------
     /// <summary>Encode device/channel info for round trip through script.</summary>
-    public static class ChannelHandle
+    public static class HandleOps
     {
         const int OUTPUT_FLAG = 0x0800;
 
@@ -32,7 +32,7 @@ namespace Ephemera.MidiLib
         /// <summary>See me.</summary>
         public static string Format(int handle)
         {
-            return $"{(Output(handle) ? "OUT" : "IN")} {DeviceId(handle)}:{ChannelNumber(handle):00}";
+            return $"{(Output(handle) ? "out" : "in")} {ChannelNumber(handle)}{Environment.NewLine}on D{DeviceId(handle)}";
         }
     }
 
@@ -67,7 +67,7 @@ namespace Ephemera.MidiLib
         {
             Device = device;
             ChannelNumber = channelNumber;
-            Handle = ChannelHandle.Create(device.Id, ChannelNumber, false);
+            Handle = HandleOps.Create(device.Id, ChannelNumber, false);
         }
     }
 
@@ -113,8 +113,8 @@ namespace Ephemera.MidiLib
         /// <summary>Handle for use by scripts.</summary>
         public int Handle { get; init; }
 
-        /// <summary>Meta info.</summary>
-        public bool IsDrums { get; set; } = false; //TODO1 set? from defs - DEFAULT_DRUM_CHANNEL, from script, ...
+        /// <summary>Meta info only client knows.</summary>
+        public bool IsDrums { get; set; } = false;
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
@@ -130,7 +130,7 @@ namespace Ephemera.MidiLib
             Device = device;
             ChannelNumber = channelNumber;
             Volume = Defs.DEFAULT_VOLUME;
-            Handle = ChannelHandle.Create(device.Id, ChannelNumber, true);
+            Handle = HandleOps.Create(device.Id, ChannelNumber, true);
         }
 
         /// <summary>

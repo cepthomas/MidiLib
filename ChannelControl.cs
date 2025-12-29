@@ -16,25 +16,6 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
-    /// <summary>Base class for custom renderers. Probably should have a better home.</summary>
-    public class UserRenderer : UserControl
-    {
-        /// <summary>For midi sends.</summary>
-        public int ChannelNumber { get; init; }
-
-        /// <summary>Parent hooks this.</summary>
-        public event EventHandler<BaseMidi>? SendMidi;
-
-        /// <summary>Derived control helper.</summary>
-        protected void OnSendMidi(BaseMidi e)
-        {
-            SendMidi?.Invoke(this, e);
-        }
-    }
-
-
-
-
     #region Types
     /// <summary>Channel playing.</summary>
     public enum ChannelState { Normal, Solo, Mute }
@@ -43,6 +24,7 @@ namespace Ephemera.MidiLib
     [Flags]
     public enum DisplayOptions
     {
+        None = 0x00,        // none
         SoloMute = 0x01,    // solo and mute buttons
         Controller = 0x02,  // controller select and send
         All = 0x0F,         // all of above
@@ -51,10 +33,10 @@ namespace Ephemera.MidiLib
     /// <summary>Notify host of UI changes.</summary>
     public class ChannelChangeEventArgs : EventArgs
     {
-        public bool InfoChange { get; set; } = false;
-        public bool StateChange { get; set; } = false;
-        public bool PatchChange { get; set; } = false;
-        public bool ChannelNumberChange { get; set; } = false;
+        /// <summary>User clicked info.</summary>
+        public bool Info { get; set; } = false;
+        /// <summary>Solo/mute.</summary>
+        public bool State { get; set; } = false;
     }
     #endregion
 
@@ -64,7 +46,7 @@ namespace Ephemera.MidiLib
         #region Fields
         ChannelState _state = ChannelState.Normal;
         const int PAD = 4;
-        const int SIZE = 48;
+        const int SIZE = 42;
 
         readonly Container components = new();
         protected ToolTip toolTip = new();
@@ -317,7 +299,7 @@ namespace Ephemera.MidiLib
         void ChannelInfo_Click(object? sender, EventArgs e)
         {
             // Notify client.
-            ChannelChange?.Invoke(this, new() { InfoChange = true });
+            ChannelChange?.Invoke(this, new() { Info = true });
         }
 
         /// <summary>Handles solo and mute.</summary>
@@ -336,7 +318,7 @@ namespace Ephemera.MidiLib
             }
 
             // Notify client.
-            ChannelChange?.Invoke(this, new() { StateChange = true });
+            ChannelChange?.Invoke(this, new() { State = true });
         }
 
         /// <summary>
@@ -367,10 +349,13 @@ namespace Ephemera.MidiLib
         void UpdateUi()
         {
             StringBuilder sb = new();
-            sb.AppendLine($"{ChannelHandle.Format(BoundChannel.Handle)}");
+
+            sb.AppendLine($"Channel {BoundChannel.ChannelNumber} {BoundChannel.ChannelName}");
             sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} {BoundChannel.Patch:000}");
-            txtInfo.Text = sb.ToString();
+            sb.AppendLine($"Dev{BoundChannel.Device.Id} {BoundChannel.Device.DeviceName}");
             toolTip.SetToolTip(txtInfo, sb.ToString());
+
+            txtInfo.Text = HandleOps.Format(BoundChannel.Handle);
 
             lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
             lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
@@ -379,7 +364,7 @@ namespace Ephemera.MidiLib
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-           return $"{ChannelHandle.Format(BoundChannel.Handle)}";
+           return $"{HandleOps.Format(BoundChannel.Handle)}";
         }
         #endregion
     }
