@@ -92,7 +92,7 @@ namespace Ephemera.MidiLib
         string _aliasFile = "";
 
         /// <summary>Instrument aliases - optional.</summary>
-        /*public*/ Dictionary<int, string> Aliases { get; set; } = [];
+        Dictionary<int, string> _aliases = [];
 
         /// <summary>Current instrument/patch number.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
@@ -118,6 +118,9 @@ namespace Ephemera.MidiLib
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
+
+        /// <summary>Generic just like Control.</summary>
+        public object? Tag = null;
         #endregion
 
         /// <summary>
@@ -140,15 +143,15 @@ namespace Ephemera.MidiLib
         /// <returns>The name or a fabricated one if unknown.</returns>
         public string GetPatchName(int which)
         {
-            return Aliases.Count > 0 ?
-                Aliases.TryGetValue(which, out string? value) ? value : $"INST_{which}" :
+            return _aliases.Count > 0 ?
+                _aliases.TryGetValue(which, out string? value) ? value : $"INST_{which}" :
                 MidiDefs.Instance.GetInstrumentName(which);
         }
 
         /// <summary>Load aliases.</summary>
         void LoadAliases()
         {
-            Aliases.Clear();
+            _aliases.Clear();
 
             // Alternate instrument names?
             if (_aliasFile != "")
@@ -166,7 +169,7 @@ namespace Ephemera.MidiLib
                         if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
                         if (kv.Value.Length == 0) { throw new ArgumentOutOfRangeException($"{id} has no value"); }
 
-                        Aliases.Add(id, kv.Value);
+                        _aliases.Add(id, kv.Value);
                     });
                 }
                 catch (Exception ex)

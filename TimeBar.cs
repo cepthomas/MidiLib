@@ -1,5 +1,3 @@
-#define _NEW_ML
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

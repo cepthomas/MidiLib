@@ -180,21 +180,21 @@ namespace Ephemera.MidiLib
         #endregion
 
         /// <inheritdoc />
-        public void Send(BaseMidi evt)
+        public void Send(BaseMidi bevt)
         {
-            MidiEvent mevt = evt switch
+            MidiEvent mevt = bevt switch
             {
-                NoteOn onevt => new NoteOnEvent(0, onevt.ChannelNumber, onevt.Note, onevt.Velocity, 0),
-                NoteOff onevt => new NoteEvent(0, onevt.ChannelNumber, MidiCommandCode.NoteOff, onevt.Note, 0),
-                Controller ctlevt => new ControlChangeEvent(0, ctlevt.ChannelNumber, (MidiController)ctlevt.ControllerId, ctlevt.Value),
-                Patch pevt => new PatchChangeEvent(0, pevt.ChannelNumber, pevt.Value),
-                _ => throw new MidiLibException($"Invalid event: {evt}")
+                NoteOn evt => new NoteOnEvent(0, evt.ChannelNumber, evt.Note, evt.Velocity, 0),
+                NoteOff evt => new NoteEvent(0, evt.ChannelNumber, MidiCommandCode.NoteOff, evt.Note, 0),
+                Controller evt => new ControlChangeEvent(0, evt.ChannelNumber, (MidiController)evt.ControllerId, evt.Value),
+                Patch evt => new PatchChangeEvent(0, evt.ChannelNumber, evt.Value),
+                _ => throw new MidiLibException($"Invalid event: {bevt}")
             };
 
             _midiOut?.Send(mevt.GetAsShortMessage());
 
             // Tell the boss.
-            MessageSend?.Invoke(this, evt);
+            MessageSend?.Invoke(this, bevt);
         }
 
         /// <summary>

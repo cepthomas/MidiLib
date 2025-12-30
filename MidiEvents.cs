@@ -5,8 +5,8 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 using System.ComponentModel.DataAnnotations;
-using Ephemera.NBagOfTricks;
 using System.Runtime.CompilerServices;
+using Ephemera.NBagOfTricks;
 
 
 namespace Ephemera.MidiLib

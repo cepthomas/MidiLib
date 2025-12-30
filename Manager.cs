@@ -45,7 +45,7 @@ namespace Ephemera.MidiLib
         public event EventHandler<BaseMidi>? MessageSend;
         #endregion
 
-        #region Script => Host API
+        #region Channels
         /// <summary>
         /// Open an input channel. Lazy inits the device. Throws if anything is invalid.
         /// </summary>
@@ -53,7 +53,7 @@ namespace Ephemera.MidiLib
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
         /// <returns></returns>
-        public InputChannel OpenMidiInput(string deviceName, int channelNumber, string channelName)
+        public InputChannel OpenInputChannel(string deviceName, int channelNumber, string channelName)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -81,7 +81,7 @@ namespace Ephemera.MidiLib
         /// <param name="channelName"></param>
         /// <param name="patch"></param>
         /// <returns></returns>
-        public OutputChannel OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patch)
+        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, int patch)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -103,6 +103,15 @@ namespace Ephemera.MidiLib
             //outdev.Send(new Patch(channelNumber, patch));
 
             return ch;
+        }
+
+        /// <summary>
+        /// Clean up.
+        /// </summary>
+        public void DestroyChannels()
+        {
+            _inputChannels.Clear();
+            _outputChannels.Clear();
         }
         #endregion
 

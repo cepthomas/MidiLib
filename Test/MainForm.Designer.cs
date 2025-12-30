@@ -38,7 +38,6 @@ namespace Ephemera.MidiLib.Test
             timer1 = new System.Windows.Forms.Timer(components);
             chkLoop = new System.Windows.Forms.CheckBox();
             btnRewind = new System.Windows.Forms.Button();
-            timeBar1 = new TimeBar();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -191,26 +190,11 @@ namespace Ephemera.MidiLib.Test
             btnRewind.Text = "<=";
             btnRewind.UseVisualStyleBackColor = true;
             // 
-            // timeBar1
-            // 
-            timeBar1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            timeBar1.DrawColor = System.Drawing.Color.Red;
-            timeBar1.DoLoop = false;
-            timeBar1.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            timeBar1.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            timeBar1.Location = new System.Drawing.Point(846, 178);
-            timeBar1.Name = "timeBar1";
-            timeBar1.SelectedColor = System.Drawing.Color.Blue;
-            timeBar1.Size = new System.Drawing.Size(172, 67);
-            timeBar1.Snap = SnapType.Bar;
-            timeBar1.TabIndex = 113;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1092, 600);
-            Controls.Add(timeBar1);
             Controls.Add(btnRewind);
             Controls.Add(chkLoop);
             Controls.Add(timeBar);
@@ -245,7 +229,6 @@ namespace Ephemera.MidiLib.Test
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.CheckBox chkLoop;
         private System.Windows.Forms.Button btnRewind;
-        private TimeBar timeBar1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton btnGen;

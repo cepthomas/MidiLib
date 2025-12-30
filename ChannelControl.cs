@@ -51,11 +51,14 @@ namespace Ephemera.MidiLib
         readonly Container components = new();
         protected ToolTip toolTip = new();
 
-        readonly TextBox txtInfo = new();
+        // always:
+        readonly Label lblInfo = new();
         readonly Slider sldVolume = new();
+
         // optional:
         readonly Label lblSolo = new();
         readonly Label lblMute = new();
+
         // optional:
         readonly Slider sldControllerValue = new();
         readonly Button btnSend = new();
@@ -95,9 +98,8 @@ namespace Ephemera.MidiLib
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Color DrawColor
         {
-            get { return txtInfo.BackColor; }
+            get { return sldVolume.DrawColor; }
             set {
-                txtInfo.BackColor = value;
                 sldVolume.DrawColor = value;
                 sldControllerValue.DrawColor = value;
                 btnSend.BackColor = value;
@@ -107,7 +109,12 @@ namespace Ephemera.MidiLib
         /// <summary>Drawing the control when selected.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Color SelectedColor { get; set; }
+        public Color SelectedColor
+        {
+            get { return _selectedColor; }
+            set { _selectedColor = value; }
+        }
+        Color _selectedColor = Color.Red;
 
         /// <summary>For muting/soloing.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -135,6 +142,14 @@ namespace Ephemera.MidiLib
         /// <summary>Controller payload.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
         public int ControllerValue { get; set; } = 50;
+
+        /// <summary>User selection.</summary>
+        public bool Selected
+        {
+            get { return _selected; }
+            private set { _selected = value; lblInfo.BackColor = _selected ? SelectedColor : BackColor; }
+        }
+        bool _selected = false;
         #endregion
 
         #region Events
@@ -174,20 +189,16 @@ namespace Ephemera.MidiLib
 
             // The standard stuff.
             {
-                txtInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-                txtInfo.BorderStyle = BorderStyle.FixedSingle;
-                txtInfo.Location = new(xPos, yPos);
-                txtInfo.Size = new(100, SIZE);
-                txtInfo.ReadOnly = true;
-                txtInfo.Multiline = true;
-                txtInfo.WordWrap = false;
-                txtInfo.Text = "Hello world\nWhat's up?";
-                txtInfo.Click += ChannelInfo_Click;
-                Controls.Add(txtInfo);
+                lblInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+                lblInfo.BorderStyle = BorderStyle.FixedSingle;
+                lblInfo.Location = new(xPos, yPos);
+                lblInfo.Size = new(50, SIZE);
+                lblInfo.Click += ChannelInfo_Click;
+                Controls.Add(lblInfo);
 
-                xPos = txtInfo.Right + PAD;
+                xPos = lblInfo.Right + PAD;
                 xMax = xPos;
-                yMax = Math.Max(txtInfo.Bottom, yMax);
+                yMax = Math.Max(lblInfo.Bottom, yMax);
             }
 
             {
@@ -295,9 +306,11 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Handlers for user selections
-        // /// <summary>User clicked info. Maybe host would like to do something.</summary>
+        // /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
         void ChannelInfo_Click(object? sender, EventArgs e)
         {
+            Selected = !Selected;
+
             // Notify client.
             ChannelChange?.Invoke(this, new() { Info = true });
         }
@@ -353,9 +366,9 @@ namespace Ephemera.MidiLib
             sb.AppendLine($"Channel {BoundChannel.ChannelNumber} {BoundChannel.ChannelName}");
             sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} {BoundChannel.Patch:000}");
             sb.AppendLine($"Dev{BoundChannel.Device.Id} {BoundChannel.Device.DeviceName}");
-            toolTip.SetToolTip(txtInfo, sb.ToString());
+            toolTip.SetToolTip(lblInfo, sb.ToString());
 
-            txtInfo.Text = HandleOps.Format(BoundChannel.Handle);
+            lblInfo.Text = HandleOps.Format(BoundChannel.Handle);
 
             lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
             lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;

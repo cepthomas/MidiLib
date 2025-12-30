@@ -139,7 +139,7 @@ namespace Ephemera.MidiLib.Test
             }
             catch (Exception ex)
             {
-                Tell(ERROR, ex.ToString());
+                Tell(ERROR, ex.Message);
             }
 
             Tell(INFO, $">>>>> Go done.");
@@ -155,14 +155,18 @@ namespace Ephemera.MidiLib.Test
             string fnIni = Path.Combine(myPath, "..", "gm_defs.ini");
 
             Tell(INFO, $">>>>> Gen Markdown.");
-            var smd = MidiDefs.Instance.GenMarkdown(fnIni);
+            var smd = MidiUtils.GenMarkdown(fnIni);
             var fnOut = Path.Join(myPath, "out", "midi_defs.md");
             File.WriteAllText(fnOut, smd);
 
             Tell(INFO, $">>>>> Gen Lua.");
-            var sld = MidiDefs.Instance.GenLua(fnIni);
+            var sld = MidiUtils.GenLua(fnIni);
             fnOut = Path.Join(myPath, "out", "midi_defs.lua");
             File.WriteAllText(fnOut, sld);
+
+            Tell(INFO, $">>>>> Gen Device Info.");
+            var sdi = MidiUtils.GenUserDeviceInfo();
+            Tell(INFO, sdi);
 
             Tell(INFO, $">>>>> Gen done.");
         }
@@ -270,7 +274,7 @@ namespace Ephemera.MidiLib.Test
 
             Dictionary<int, string> vals = [];
             Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, MidiDefs.Instance.GetInstrumentName(i)));
-            var instList = MidiDefs.Instance.CreateOrderedMidiList(vals, true, true);
+            var instList = MidiUtils.CreateOrderedMidiList(vals, true, true);
 
             GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
             GenericListTypeEditor.SetOptions("Patch", instList);
@@ -302,10 +306,10 @@ namespace Ephemera.MidiLib.Test
             ch_ctrl2.Hide();
 
             ///// 1 - create all channels
-            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0);
-            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 4, "bass", 32);
-            //var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32);
-            var chan_in1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
+            var chan_out1 = _mgr.OpenMidiOutputChannel(OUTDEV1, 1, "keys", 0);
+            var chan_out2 = _mgr.OpenMidiOutputChannel(OUTDEV1, 4, "bass", 32);
+            //var chan_out2 = _mgr.OpenMidiOutputChannel(OUTDEV1, 10, "drums", 32);
+            var chan_in1 = _mgr.OpenMidiInputChannel(INDEV, 1, "my input");
 
             ///// 2 - create a control for each channel and bind object
             int x = sldMasterVolume.Left;
@@ -358,8 +362,8 @@ namespace Ephemera.MidiLib.Test
         void TestStandardApp()
         {
             // Create channels.
-            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);
-            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12);
+            var chan_out1 = _mgr.OpenMidiOutputChannel(OUTDEV1, 1, "channel 1!", 0);
+            var chan_out2 = _mgr.OpenMidiOutputChannel(OUTDEV1, 2, "channel 2!", 12);
 
             // Init controls.
             ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
@@ -532,17 +536,6 @@ namespace Ephemera.MidiLib.Test
                     }
                 }
             }
-
-            //if (e.PatchChange)
-            //{
-            //    Tell(INFO, $"PatchChange [{channel.Patch}]");
-            //    channel.Device.Send(new Patch(channel.ChannelNumber, channel.Patch));
-            //}
-
-            //if (e.AliasFileChange)
-            //{
-            //    Tell(INFO, $"AliasFileChange [{channel.AliasFile}]");
-            //}
         }
 
         #endregion
