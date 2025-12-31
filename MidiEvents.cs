@@ -18,13 +18,14 @@ namespace Ephemera.MidiLib
         [Range(1, MidiDefs.NUM_CHANNELS)]
         public int ChannelNumber { get; set; }
 
-        /// <summary>Something to tell the client.</summary>
-        public string ErrorInfo { get; set; } = "";
+        ///// <summary>Something to tell the client.</summary>
+        //public string ErrorInfo { get; set; } = "";
 
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"BaseMidi:{ChannelNumber} {ErrorInfo}";
+            return $"BaseMidi:{ChannelNumber}";
+            //return $"BaseMidi:{ChannelNumber} {ErrorInfo}";
         }
     }
 
@@ -60,7 +61,7 @@ namespace Ephemera.MidiLib
     //----------------------------------------------------------------
     public class NoteOff : BaseMidi
     {
-        /// <summary>The note number to play.</summary>
+        /// <summary>The note number to stop.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Note { get; init; }
 
@@ -129,6 +130,30 @@ namespace Ephemera.MidiLib
         public override string ToString()
         {
             return $"Channel:{ChannelNumber} Patch:{Value}"; // get patch name from channel?
+        }
+    }
+
+
+    //----------------------------------------------------------------
+    /// <summary>Container for other midi messages.</summary>
+    public class Other : BaseMidi
+    {
+        /// <summary>Payload.</summary>
+        //[Range(0, MidiDefs.MAX_MIDI)]
+        public int RawMessage { get; init; }
+
+        public Other(int channel, int rawMessage)
+        {
+            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+
+            ChannelNumber = channel;
+            RawMessage = rawMessage;
+        }
+
+        /// <summary>Read me.</summary>
+        public override string ToString()
+        {
+            return $"Channel:{ChannelNumber}";
         }
     }
 }
