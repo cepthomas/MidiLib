@@ -113,13 +113,13 @@ namespace Ephemera.MidiLib
         /// <summary>Handle for use by scripts.</summary>
         public int Handle { get; init; }
 
-        /// <summary>Meta info only client knows. TODO1 need to do this!!! General solution?</summary>
+        /// <summary>Meta info only client knows. TODO1 all need to do this!!! General solution? </summary>
         public bool IsDrums { get; set; } = false;
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 
-        /// <summary>Generic just like Control.</summary>
+        /// <summary>Generic hook just like Control.Tag.</summary>
         public object? Tag = null;
         #endregion
 
@@ -143,9 +143,19 @@ namespace Ephemera.MidiLib
         /// <returns>The name or a fabricated one if unknown.</returns>
         public string GetPatchName(int which)
         {
-            return _aliases.Count > 0 ?
-                _aliases.TryGetValue(which, out string? value) ? value : $"INST_{which}" :
-                MidiDefs.Instance.GetInstrumentName(which);
+            string res;
+
+            if (IsDrums)
+            {
+                res = MidiDefs.Instance.GetDrumKitName(which);
+            }
+            else
+            {
+                res = _aliases.Count > 0 ?
+                        _aliases.TryGetValue(which, out string? value) ? value : $"INST_{which}" :
+                        MidiDefs.Instance.GetInstrumentName(which);
+            }
+            return res;
         }
 
         /// <summary>Load aliases.</summary>

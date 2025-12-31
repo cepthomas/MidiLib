@@ -81,15 +81,16 @@ namespace Ephemera.MidiLib
 
             // Decode the message. We only care about a few.
             var mevt = MidiEvent.FromRawMessage(e.RawMessage);
+            var chnum = mevt.Channel;
 
             BaseMidi evt = mevt switch
             {
-                NoteOnEvent onevt => new NoteOn(onevt.Channel, onevt.NoteNumber, onevt.Velocity),
+                NoteOnEvent onevt => new NoteOn(chnum, onevt.NoteNumber, onevt.Velocity),
                 NoteEvent offevt => offevt.Velocity == 0 ?
-                    new NoteOff(offevt.Channel, offevt.NoteNumber) :
-                    new NoteOn(offevt.Channel, offevt.NoteNumber, offevt.Velocity),
-                ControlChangeEvent ctlevt => new Controller(ctlevt.Channel, (int)ctlevt.Controller, ctlevt.ControllerValue),
-                _ => new BaseMidi() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
+                    new NoteOff(chnum, offevt.NoteNumber) :
+                    new NoteOn(chnum, offevt.NoteNumber, offevt.Velocity),
+                ControlChangeEvent ctlevt => new Controller(chnum, (int)ctlevt.Controller, ctlevt.ControllerValue),
+                _ => new Other(chnum, e.RawMessage)
             };
 
             // Tell the boss.

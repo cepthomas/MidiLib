@@ -192,7 +192,7 @@ namespace Ephemera.MidiLib
                 lblInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
                 lblInfo.BorderStyle = BorderStyle.FixedSingle;
                 lblInfo.Location = new(xPos, yPos);
-                lblInfo.Size = new(50, SIZE);
+                lblInfo.Size = new(55, SIZE);
                 lblInfo.Click += ChannelInfo_Click;
                 Controls.Add(lblInfo);
 
