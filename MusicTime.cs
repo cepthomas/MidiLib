@@ -110,6 +110,27 @@ namespace Ephemera.MidiLib
                 throw new ArgumentException($"Invalid MusicTime format [{s}]");
             }
         }
+
+        ///// <summary>
+        ///// Construct a MusicTime from Beat.Sub representation as a double. 
+        ///// </summary>
+        ///// <param name="beat"></param>
+        ///// <returns>New BarTime.</returns>
+        //public MusicTime(double beat) //TODO2 remove doubles
+        //{
+        //    var (integral, fractional) = MathUtils.SplitDouble(beat);
+        //    var beats = (int)integral;
+        //    var subs = (int)Math.Round(fractional * 10.0);
+
+        //    if (subs >= LOW_RES_PPQ)
+        //    {
+        //        throw new Exception($"Invalid sub value: {beat}");
+        //    }
+
+        //    // Scale subs to native.
+        //    subs = subs * MidiSettings.LibSettings.InternalPPQ / LOW_RES_PPQ;
+        //    TotalSubs = beats * MidiSettings.LibSettings.SubsPerBeat + subs;
+        //}
         #endregion
 
         #region Public functions

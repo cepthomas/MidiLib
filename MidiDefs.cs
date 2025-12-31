@@ -83,7 +83,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Get controller name.
+        /// Get controller name. Throws if invalid.
         /// </summary>
         /// <param name="id"></param>
         /// <returns>The controller name or a fabricated one if unknown.</returns>
@@ -95,7 +95,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Get drum name.
+        /// Get drum name. Throws if invalid.
         /// </summary>
         /// <param name="id"></param>
         /// <returns>The drum name or a fabricated one if unknown.</returns>
@@ -107,7 +107,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Get GM drum kit name.
+        /// Get GM drum kit name. Throws if invalid.
         /// </summary>
         /// <param name="id"></param>
         /// <returns>The drumkit name or a fabricated one if unknown.</returns>
@@ -116,6 +116,43 @@ namespace Ephemera.MidiLib
             if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
 
             return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
+        }
+
+        /// <summary>
+        /// Get corresponding number. Throws if invalid.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public int GetInstrumentNumber(string name)
+        {
+            return -1;
+            //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
+
+            //return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
+        }
+
+        /// <summary>
+        /// Get corresponding number. Throws if invalid.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public int GetControllerNumber(string name)
+        {
+            return -1;
+            //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
+            //return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
+        }
+
+        /// <summary>
+        /// Get corresponding number. Throws if invalid.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public int GetDrumKitNumber(string name)
+        {
+            return -1;
+            //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
+            //return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
         }
         #endregion
     }
