@@ -113,7 +113,7 @@ namespace Ephemera.MidiLib
         /// <summary>Handle for use by scripts.</summary>
         public int Handle { get; init; }
 
-        /// <summary>Meta info only client knows.</summary>
+        /// <summary>Meta info only client knows. TODO1 need to do this!!! General solution?</summary>
         public bool IsDrums { get; set; } = false;
 
         /// <summary>True if channel is active.</summary>
