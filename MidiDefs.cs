@@ -123,8 +123,10 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public int GetInstrumentNumber(string name)
+        public int GetInstrumentNumber(string name)// TODO1 all these
         {
+            if (_instruments)
+
             return -1;
             //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
 
@@ -137,6 +139,18 @@ namespace Ephemera.MidiLib
         /// <param name="name"></param>
         /// <returns></returns>
         public int GetControllerNumber(string name)
+        {
+            return -1;
+            //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
+            //return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
+        }
+
+        /// <summary>
+        /// Get corresponding number. Throws if invalid.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public int GetDrumNumber(string name)
         {
             return -1;
             //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }

@@ -240,6 +240,16 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
+        /// Helper.
+        /// </summary>
+        /// <param name="chname"></param>
+        /// <returns>The channel or null if invalid handle.</returns>
+        public OutputChannel? GetOutputChannel(string chname)
+        {
+            return _outputChannels.Find(ch => ch.ChannelName == chname);
+        }
+
+        /// <summary>
         /// Stop all midi. Doesn't throw.
         /// </summary>
         /// <param name="channel">Specific channel or all if null.</param>

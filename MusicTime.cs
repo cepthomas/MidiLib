@@ -111,26 +111,26 @@ namespace Ephemera.MidiLib
             }
         }
 
-        ///// <summary>
-        ///// Construct a MusicTime from Beat.Sub representation as a double. 
-        ///// </summary>
-        ///// <param name="beat"></param>
-        ///// <returns>New BarTime.</returns>
-        //public MusicTime(double beat) //TODO2 remove doubles
-        //{
-        //    var (integral, fractional) = MathUtils.SplitDouble(beat);
-        //    var beats = (int)integral;
-        //    var subs = (int)Math.Round(fractional * 10.0);
+        /// <summary>
+        /// Construct a MusicTime from Beat.Sub representation as a double in the range N.0 to N.7
+        /// </summary>
+        /// <param name="beat"></param>
+        /// <returns>New BarTime.</returns>
+        public MusicTime(double beat)
+        {
+            var (integral, fractional) = MathUtils.SplitDouble(beat);
+            var beats = (int)integral;
+            var subs = (int)Math.Round(fractional * 10.0);
 
-        //    if (subs >= LOW_RES_PPQ)
-        //    {
-        //        throw new Exception($"Invalid sub value: {beat}");
-        //    }
+            if (subs >= 8)
+            {
+                throw new Exception($"Invalid sub value: {beat}");
+            }
 
-        //    // Scale subs to native.
-        //    subs = subs * MidiSettings.LibSettings.InternalPPQ / LOW_RES_PPQ;
-        //    TotalSubs = beats * MidiSettings.LibSettings.SubsPerBeat + subs;
-        //}
+            // Scale to native.
+            subs = subs * TicksPerBeat / 8;
+            Tick = beats * TicksPerBeat + subs;
+        }
         #endregion
 
         #region Public functions
