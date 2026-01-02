@@ -19,6 +19,11 @@ namespace Ephemera.MidiLib
         static int _nextId = 1;
         #endregion
 
+
+        /// <summary>Convenience.</summary>
+        public static readonly MusicTime ZERO = new();
+
+
         #region Properties
         /// <summary>Only 4/4 time supported currently.</summary>
         public static int BeatsPerBar { get { return 4; } }
@@ -148,7 +153,7 @@ namespace Ephemera.MidiLib
         /// Update current value.
         /// </summary>
         /// <param name="ticks">By this number of ticks. Can be negative = decrement.</param>
-        public void Update(int ticks)
+        public void Add(int ticks)
         {
             Tick += ticks;
             if (Tick < 0)
@@ -156,6 +161,23 @@ namespace Ephemera.MidiLib
                 Tick = 0;
             }
         }
+
+        /// <summary>
+        /// Reset.
+        /// </summary>
+        public void Reset()
+        {
+            Tick = 0;
+        }   
+
+        /// <summary>
+        /// Set the value from another MusicTime. Value assignment.
+        /// </summary>
+        /// <param name="other"></param>
+        public void Set(MusicTime other)
+        {
+            Tick = other.Tick;
+        }   
 
         /// <summary>
         /// Set the value using specified rounding.

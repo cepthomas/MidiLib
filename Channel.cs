@@ -119,9 +119,16 @@ namespace Ephemera.MidiLib
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 
-        /// <summary>Generic hook just like Control.Tag.</summary>
-        public object? Tag = null;
+        ///// <summary>Generic hook just like Control.Tag.</summary>
+        //public object? Tag = null;
         #endregion
+
+
+
+        /// <summary>Associated events - optional depending on implementation.</summary>
+        public Dictionary<int, List<BaseMidi>> Events { get; set; } = [];
+
+
 
         /// <summary>
         /// Constructor with required args.

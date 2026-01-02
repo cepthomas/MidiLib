@@ -52,19 +52,20 @@ namespace Ephemera.MidiLib
         /// <summary>Where we be now.</summary>
         readonly MusicTime _current = new();
 
-        /// <summary>Convenience.</summary>
-        readonly MusicTime ZERO = new();
-
         /// <summary>Avoid creating many transient objects.</summary>
         readonly MusicTime TEMP = new();
         #endregion
 
         #region Properties
         /// <summary>Big font.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public Font FontLarge { get { return _fontLarge; } set { _fontLarge = value; Invalidate(); } }
         Font _fontLarge = new("Microsoft Sans Serif", 16, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Baby font.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public Font FontSmall { get; set; } = new("Microsoft Sans Serif", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Drawing the active elements of a control.</summary>
@@ -79,16 +80,24 @@ namespace Ephemera.MidiLib
         public SnapType Snap { get; set; } = SnapType.Beat;
 
         /// <summary>Keep going at end.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public bool DoLoop { get { return _doLoop; } set { _doLoop = value; Invalidate(); } }
         bool _doLoop = false;
 
         /// <summary>Convenience for readability.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public bool Valid { get { return _length.Tick > 0; } }
 
         /// <summary>Convenience for readability.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public MusicTime Length { get { return _length; } }
 
         /// <summary>Convenience for readability.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public MusicTime Current { get { return _current; } }
         #endregion
 
@@ -145,10 +154,10 @@ namespace Ephemera.MidiLib
         public void InitSectionInfo(Dictionary<int, string> sectInfo)
         {
             _sectionInfo.Clear();
-            _length.Set(0);
-            _selStart.Set(0);
-            _selEnd.Set(0);
-            _current.Set(0);
+            _length.Reset();
+            _selStart.Reset();
+            _selEnd.Reset();
+            _current.Reset();
 
             if (sectInfo.Count > 0)
             {
@@ -156,7 +165,7 @@ namespace Ephemera.MidiLib
                 var spos = sectInfo.Keys.OrderBy(k => k).ToList();
                 spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
                 _length.Set(_sectionInfo.Last().tick);
-                _selEnd.Set(_length.Tick);
+                _selEnd.Set(_length);
 
                 ValidateTimes();
                 Invalidate();
@@ -168,8 +177,8 @@ namespace Ephemera.MidiLib
         /// </summary>
         public void ResetSelection()
         {
-            _selStart.Set(0);
-            _selEnd.Set(_length.Tick);
+            _selStart.Reset();
+            _selEnd.Set(_length);
 
             ValidateTimes();
             Invalidate();
@@ -180,7 +189,8 @@ namespace Ephemera.MidiLib
         /// </summary>
         public void Rewind()
         {
-            _current.Set(_doLoop ? _selStart.Tick : 0);
+            if (_doLoop) _current.Set(_selStart);
+            else _current.Reset();
 
             ValidateTimes();
             Invalidate();
@@ -200,7 +210,7 @@ namespace Ephemera.MidiLib
                 {
                     if (_doLoop) // continue from start
                     {
-                        _current.Set(_selStart.Tick);
+                        _current.Set(_selStart);
                     }
                     else // stop
                     {
@@ -209,7 +219,7 @@ namespace Ephemera.MidiLib
                 }
                 else // continue
                 {
-                    _current.Update(1);
+                    _current.Add(1);
                 }
             }
 
@@ -359,8 +369,8 @@ namespace Ephemera.MidiLib
         void ValidateTimes()
         {
             // Maybe fix loop points.
-            _selEnd.Constrain(ZERO, _length);
-            _selStart.Constrain(ZERO, _selEnd);
+            _selEnd.Constrain(MusicTime.ZERO, _length);
+            _selStart.Constrain(MusicTime.ZERO, _selEnd);
             _current.Constrain(_selStart, _selEnd);
         }
 
