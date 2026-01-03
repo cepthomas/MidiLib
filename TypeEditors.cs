@@ -6,7 +6,6 @@ using System.Drawing.Design;
 using System.ComponentModel;
 using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;
-using System.Reflection;
 
 
 // Shut up warnings in this file. Using manual checking where needed.

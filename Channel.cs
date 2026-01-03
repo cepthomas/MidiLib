@@ -1,13 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Windows.Forms.Design;
-using System.IO;
-using System.ComponentModel;
-using System.Drawing.Design;
-using System.Text.Json.Serialization;
 using System.ComponentModel.DataAnnotations;
 using Ephemera.NBagOfTricks;
 
@@ -99,16 +92,19 @@ namespace Ephemera.MidiLib
         public int Patch
         {
             get {  return _patch; }
-            set { _patch = value;  Device.Send(new Patch(ChannelNumber, _patch)); }
+            set { _patch = value;  Device.Send(new Patch(ChannelNumber, _patch, MusicTime.ZERO)); }
         }
         int _patch = 0;
 
         /// <summary>Current volume.</summary>
-        [Range(0.0, Defs.MAX_VOLUME)]
-        public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
+        [Range(0.0, VolumeDefs.MAX_VOLUME)]
+        public double Volume { get; set; } = VolumeDefs.DEFAULT_VOLUME;
     
         /// <summary>Associated device.</summary>
         public IOutputDevice Device { get; init; }
+
+        /// <summary>Associated events - optional depending on implementation.</summary>
+        public List<BaseEvent> Events { get; set; } = [];
 
         /// <summary>Handle for use by scripts.</summary>
         public int Handle { get; init; }
@@ -118,17 +114,7 @@ namespace Ephemera.MidiLib
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
-
-        ///// <summary>Generic hook just like Control.Tag.</summary>
-        //public object? Tag = null;
         #endregion
-
-
-
-        /// <summary>Associated events - optional depending on implementation.</summary>
-        public Dictionary<int, List<BaseMidi>> Events { get; set; } = [];
-
-
 
         /// <summary>
         /// Constructor with required args.
@@ -139,7 +125,7 @@ namespace Ephemera.MidiLib
         {
             Device = device;
             ChannelNumber = channelNumber;
-            Volume = Defs.DEFAULT_VOLUME;
+            Volume = VolumeDefs.DEFAULT_VOLUME;
             Handle = HandleOps.Create(device.Id, ChannelNumber, true);
         }
 

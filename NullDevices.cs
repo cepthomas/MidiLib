@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Ephemera.NBagOfTricks;
-//using NAudio.Midi;
 
 
 namespace Ephemera.MidiLib
@@ -23,10 +22,10 @@ namespace Ephemera.MidiLib
         public int Id { get; init; }
 
         /// <inheritdoc />
-        public event EventHandler<BaseMidi>? MessageReceive;
+        public event EventHandler<BaseEvent>? MessageReceive;
 
         /// <summary>For test use.</summary>
-        public List<BaseMidi> EventsToSend = [];
+        public List<BaseEvent> EventsToSend = [];
 
         #region Lifecycle
         /// <summary>
@@ -60,10 +59,10 @@ namespace Ephemera.MidiLib
         public int Id { get; init; }
 
         /// <inheritdoc />
-        public event EventHandler<BaseMidi>? MessageSend;
+        public event EventHandler<BaseEvent>? MessageSend;
 
         /// <summary>For test use.</summary>
-        public List<BaseMidi> CollectedEvents = [];
+        public List<BaseEvent> CollectedEvents = [];
 
         #region Lifecycle
         /// <summary>
@@ -83,7 +82,7 @@ namespace Ephemera.MidiLib
         #endregion
 
         /// <inheritdoc />
-        public void Send(BaseMidi evt)
+        public void Send(BaseEvent evt)
         {
             MessageSend?.Invoke(this, evt);
 

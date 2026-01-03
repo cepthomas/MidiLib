@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
-using NAudio.CoreAudioApi;
-using System.Diagnostics;
 
 
 namespace Ephemera.MidiLib
@@ -35,7 +34,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<BaseMidi>? MessageReceive;
+        public event EventHandler<BaseEvent>? MessageReceive;
         #endregion
 
         #region Lifecycle
@@ -83,14 +82,14 @@ namespace Ephemera.MidiLib
             var mevt = MidiEvent.FromRawMessage(e.RawMessage);
             var chnum = mevt.Channel;
 
-            BaseMidi evt = mevt switch
+            BaseEvent evt = mevt switch
             {
-                NoteOnEvent onevt => new NoteOn(chnum, onevt.NoteNumber, onevt.Velocity),
+                NoteOnEvent onevt => new NoteOn(chnum, onevt.NoteNumber, onevt.Velocity, MusicTime.ZERO),
                 NoteEvent offevt => offevt.Velocity == 0 ?
-                    new NoteOff(chnum, offevt.NoteNumber) :
-                    new NoteOn(chnum, offevt.NoteNumber, offevt.Velocity),
-                ControlChangeEvent ctlevt => new Controller(chnum, (int)ctlevt.Controller, ctlevt.ControllerValue),
-                _ => new Other(chnum, e.RawMessage)
+                    new NoteOff(chnum, offevt.NoteNumber, MusicTime.ZERO) :
+                    new NoteOn(chnum, offevt.NoteNumber, offevt.Velocity, MusicTime.ZERO),
+                ControlChangeEvent ctlevt => new Controller(chnum, (int)ctlevt.Controller, ctlevt.ControllerValue, MusicTime.ZERO),
+                _ => new Other(chnum, e.RawMessage, MusicTime.ZERO)
             };
 
             // Tell the boss.
@@ -133,7 +132,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<BaseMidi>? MessageSend;
+        public event EventHandler<BaseEvent>? MessageSend;
         #endregion
 
         #region Properties
@@ -181,7 +180,7 @@ namespace Ephemera.MidiLib
         #endregion
 
         /// <inheritdoc />
-        public void Send(BaseMidi bevt)
+        public void Send(BaseEvent bevt)
         {
             MidiEvent mevt = bevt switch
             {

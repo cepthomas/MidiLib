@@ -1,24 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.IO;
-using System.Windows.Forms;
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
 using Ephemera.NBagOfTricks;
 
 
 namespace Ephemera.MidiLib
 {
     //----------------------------------------------------------------
-    public class BaseMidi
+    /// <summary>Base class for internal representation of midi events.</summary>
+    public class BaseEvent
     {
         /// <summary>Channel number.</summary>
         [Range(1, MidiDefs.NUM_CHANNELS)]
         public int ChannelNumber { get; set; } = 0;
 
-        /// <summary>When to send.</summary>
+        /// <summary>When to send. ZERO means unknown or don't care.</summary>
         public MusicTime When { get; set; } = MusicTime.ZERO;
 
         /// <summary>Read me.</summary>
@@ -29,7 +26,7 @@ namespace Ephemera.MidiLib
     }
 
     //----------------------------------------------------------------
-    public class NoteOn : BaseMidi
+    public class NoteOn : BaseEvent
     {
         /// <summary>The note number to play.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
@@ -39,14 +36,14 @@ namespace Ephemera.MidiLib
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Velocity { get; set; }
 
-        public NoteOn(int channel, int note, int velocity, MusicTime? when = null) // TODO1 double volume
+        public NoteOn(int channel, int note, int velocity, MusicTime when)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
             if (velocity is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(velocity)); }
-            if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
+            if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when ?? new();
+            When = when;// ?? new();
             ChannelNumber = channel;
             Note  = note;
             Velocity = velocity;
@@ -60,19 +57,19 @@ namespace Ephemera.MidiLib
     }
 
     //----------------------------------------------------------------
-    public class NoteOff : BaseMidi
+    public class NoteOff : BaseEvent
     {
         /// <summary>The note number to stop.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Note { get; init; }
 
-        public NoteOff(int channel, int note, MusicTime? when = null)
+        public NoteOff(int channel, int note, MusicTime when)// = null)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
-            if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
+            if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when ?? new();
+            When = when;// ?? new();
             ChannelNumber = channel;
             Note  = note;
         }
@@ -85,7 +82,7 @@ namespace Ephemera.MidiLib
     }
 
     //----------------------------------------------------------------
-    public class Controller : BaseMidi
+    public class Controller : BaseEvent
     {
         /// <summary>Specific controller id.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
@@ -95,14 +92,14 @@ namespace Ephemera.MidiLib
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Value { get; init; }
 
-        public Controller(int channel, int controllerId, int value, MusicTime? when = null)
+        public Controller(int channel, int controllerId, int value, MusicTime when)// = null)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (controllerId is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controllerId)); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
-            if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
+            if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when ?? new();
+            When = when;// ?? new();
             ChannelNumber = channel;
             ControllerId = controllerId;
             Value = value;
@@ -116,19 +113,19 @@ namespace Ephemera.MidiLib
     }
 
     //----------------------------------------------------------------
-    public class Patch : BaseMidi
+    public class Patch : BaseEvent
     {
         /// <summary>Payload.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Value { get; init; }
 
-        public Patch(int channel, int value, MusicTime? when = null)
+        public Patch(int channel, int value, MusicTime when)// = null)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
-            if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
+            if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when ?? new();
+            When = when;// ?? new();
             ChannelNumber = channel;
             Value = value;
         }
@@ -141,19 +138,19 @@ namespace Ephemera.MidiLib
     }
 
     //----------------------------------------------------------------
-    /// <summary>Container for other midi messages.</summary>
-    public class Other : BaseMidi
+    /// <summary>Container for other real midi messages.</summary>
+    public class Other : BaseEvent
     {
         /// <summary>Payload.</summary>
         //[Range(0, MidiDefs.MAX_MIDI)]
         public int RawMessage { get; init; }
 
-        public Other(int channel, int rawMessage, MusicTime? when = null)
+        public Other(int channel, int rawMessage, MusicTime when)// = null)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
-            if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
+            if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when ?? new();
+            When = when;// ?? new();
             ChannelNumber = channel;
             RawMessage = rawMessage;
         }
@@ -165,21 +162,20 @@ namespace Ephemera.MidiLib
         }
     }
 
-
     //----------------------------------------------------------------
     /// <summary>Custom type to support runtime functions.</summary>
-    public class Function : BaseMidi 
+    public class Function : BaseEvent 
     {
         /// <summary>The function to call.</summary>
         public Action ScriptFunction { get; init; }
 
-        public Function(int channel, Action scriptFunc, MusicTime? when = null)
+        public Function(int channel, Action scriptFunc, MusicTime when)// = null)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (scriptFunc is null) { throw new ArgumentOutOfRangeException(nameof(scriptFunc)); }
-            if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
+            if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when ?? new();
+            When = when;// ?? new();
             ChannelNumber = channel;
             ScriptFunction = scriptFunc;
         }

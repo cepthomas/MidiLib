@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Ephemera.NBagOfTricks;
-//using NAudio.Midi;
 
 
 namespace Ephemera.MidiLib
@@ -17,7 +16,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <inheritdoc />
-        public event EventHandler<BaseMidi>? MessageReceive;
+        public event EventHandler<BaseEvent>? MessageReceive;
         #endregion
 
         #region Properties
@@ -93,12 +92,12 @@ namespace Ephemera.MidiLib
 
             e.Messages.ForEach(m =>
             {
-                BaseMidi evt = (m.Address, m.Data.Count) switch
+                BaseEvent evt = (m.Address, m.Data.Count) switch
                 {
-                    ("/noteon/", 3) => new NoteOn((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
-                    ("/noteoff/", 2) => new NoteOff((int)m.Data[0], (int)m.Data[1]),
-                    ("/controller/", 3) => new Controller((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
-                    _ => new BaseMidi() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
+                    ("/noteon/", 3) => new NoteOn((int)m.Data[0], (int)m.Data[1], (int)m.Data[2], MusicTime.ZERO),
+                    ("/noteoff/", 2) => new NoteOff((int)m.Data[0], (int)m.Data[1], MusicTime.ZERO),
+                    ("/controller/", 3) => new Controller((int)m.Data[0], (int)m.Data[1], (int)m.Data[2], MusicTime.ZERO),
+                    _ => new BaseEvent() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
                 };
 
                 MessageReceive?.Invoke(this, evt);
@@ -120,7 +119,7 @@ namespace Ephemera.MidiLib
         #endregion
 
         /// <inheritdoc />
-        public event EventHandler<BaseMidi>? MessageSend;
+        public event EventHandler<BaseEvent>? MessageSend;
 
         #region Properties
         /// <inheritdoc />
@@ -163,7 +162,7 @@ namespace Ephemera.MidiLib
 
         #region Public functions
         /// <inheritdoc />
-        public void Send(BaseMidi mevt)
+        public void Send(BaseEvent mevt)
         {
             // Critical code section.
             if (_oscOutput is not null)

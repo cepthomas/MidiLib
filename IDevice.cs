@@ -31,7 +31,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
-        event EventHandler<BaseMidi>? MessageReceive;
+        event EventHandler<BaseEvent>? MessageReceive;
         #endregion
     }
 
@@ -41,12 +41,12 @@ namespace Ephemera.MidiLib
         #region Functions
         /// <summary>Send midi event.</summary>
         /// <param name="evt"></param>
-        void Send(BaseMidi evt);
+        void Send(BaseEvent evt);
         #endregion
 
         #region Events
         /// <summary>Handler for message sent.</summary>
-        event EventHandler<BaseMidi>? MessageSend;
+        event EventHandler<BaseEvent>? MessageSend;
         #endregion
     }
 }

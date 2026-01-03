@@ -8,7 +8,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
@@ -128,7 +127,7 @@ namespace Ephemera.MidiLib
         /// <summary>Current volume.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [Range(0.0, Defs.MAX_VOLUME)]
+        [Range(0.0, VolumeDefs.MAX_VOLUME)]
         public double Volume
         {
             get { return sldVolume.Value; }
@@ -157,7 +156,7 @@ namespace Ephemera.MidiLib
         public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
 
         /// <summary>UI midi send.</summary>
-        public event EventHandler<BaseMidi>? SendMidi;
+        public event EventHandler<BaseEvent>? SendMidi;
         #endregion
 
         #region Lifecycle
@@ -203,7 +202,7 @@ namespace Ephemera.MidiLib
 
             {
                 sldVolume.Minimum = 0.0;
-                sldVolume.Maximum = Defs.MAX_VOLUME;
+                sldVolume.Maximum = VolumeDefs.MAX_VOLUME;
                 sldVolume.Resolution = 0.05;
                 sldVolume.Value = 1.0;
                 sldVolume.BorderStyle = BorderStyle.FixedSingle;
@@ -353,7 +352,7 @@ namespace Ephemera.MidiLib
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
+            SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue, MusicTime.ZERO));
         }
         #endregion
 

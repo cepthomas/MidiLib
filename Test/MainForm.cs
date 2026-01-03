@@ -29,9 +29,6 @@ namespace Ephemera.MidiLib.Test
         /// <summary>All the channel controls.</summary>
         readonly List<ChannelControl> _channelControls = [];
 
-        /// <summary>The boss.</summary>
-        readonly Manager _mgr = new();
-
         /// <summary>Where to put things.</summary>
         readonly string _outPath = @"???";
 
@@ -69,9 +66,9 @@ namespace Ephemera.MidiLib.Test
             // Master volume.
             sldMasterVolume.DrawColor = Color.SpringGreen;
             sldMasterVolume.Minimum = 0.0;
-            sldMasterVolume.Maximum = Defs.MAX_VOLUME;
-            sldMasterVolume.Resolution = Defs.MAX_VOLUME / 50;
-            sldMasterVolume.Value = Defs.DEFAULT_VOLUME;
+            sldMasterVolume.Maximum = VolumeDefs.MAX_VOLUME;
+            sldMasterVolume.Resolution = VolumeDefs.MAX_VOLUME / 50;
+            sldMasterVolume.Value = VolumeDefs.DEFAULT_VOLUME;
             sldMasterVolume.Label = "master volume";
 
             timeBar.DrawColor = Color.Green;
@@ -80,15 +77,15 @@ namespace Ephemera.MidiLib.Test
             timeBar.StateChange += TimeBar_StateChange;
 
             // Simple UI handlers.
-            btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
+            btnKillMidi.Click += (_, __) => { Manager.Instance.Kill(); };
             chkLoop.CheckedChanged += (_, __) => { timeBar.DoLoop = chkLoop.Checked; };
             btnRewind.Click += (_, __) => { timeBar.Rewind(); };
 
             btnGo.Click += Go_Click;
             btnGen.Click += Gen_Click;
 
-            //_mgr.MessageReceive += Mgr_MessageReceive;
-            //_mgr.MessageSend += Mgr_MessageSend;
+            //Manager.Instance.MessageReceive += Mgr_MessageReceive;
+            //Manager.Instance.MessageSend += Mgr_MessageSend;
         }
 
         /// <summary>
@@ -107,7 +104,7 @@ namespace Ephemera.MidiLib.Test
         protected override void Dispose(bool disposing)
         {
             DestroyControls();
-            _mgr.DestroyDevices();
+            Manager.Instance.DestroyDevices();
 
             if (disposing && (components is not null))
             {
@@ -155,18 +152,18 @@ namespace Ephemera.MidiLib.Test
             string fnIni = Path.Combine(myPath, "..", "gm_defs.ini");
 
             Tell(INFO, $">>>>> Gen Markdown.");
-            var smd = MidiUtils.GenMarkdown(fnIni);
+            var smd = MidiDefs.Instance.GenMarkdown();
             var fnOut = Path.Join(myPath, "out", "midi_defs.md");
-            File.WriteAllText(fnOut, smd);
+            File.WriteAllText(fnOut, string.Join(Environment.NewLine, smd));
 
             Tell(INFO, $">>>>> Gen Lua.");
-            var sld = MidiUtils.GenLua(fnIni);
+            var sld = MidiDefs.Instance.GenLua();
             fnOut = Path.Join(myPath, "out", "midi_defs.lua");
-            File.WriteAllText(fnOut, sld);
+            File.WriteAllText(fnOut, string.Join(Environment.NewLine, sld));
 
             Tell(INFO, $">>>>> Gen Device Info.");
-            var sdi = MidiUtils.GenUserDeviceInfo();
-            Tell(INFO, sdi);
+            var sdi = MidiDefs.Instance.GenUserDeviceInfo();
+            Tell(INFO, string.Join(Environment.NewLine, sdi));
 
             Tell(INFO, $">>>>> Gen done.");
         }
@@ -274,7 +271,7 @@ namespace Ephemera.MidiLib.Test
 
             Dictionary<int, string> vals = [];
             Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, MidiDefs.Instance.GetInstrumentName(i)));
-            var instList = MidiUtils.CreateOrderedMidiList(vals, true, true);
+            var instList = MidiDefs.Instance.CreateOrderedMidiList(vals, true, true);
 
             GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
             GenericListTypeEditor.SetOptions("Patch", instList);
@@ -306,10 +303,10 @@ namespace Ephemera.MidiLib.Test
             ch_ctrl2.Hide();
 
             ///// 1 - create all channels
-            var chan_out1 = _mgr.OpenMidiOutputChannel(OUTDEV1, 1, "keys", 0);
-            var chan_out2 = _mgr.OpenMidiOutputChannel(OUTDEV1, 4, "bass", 32);
-            //var chan_out2 = _mgr.OpenMidiOutputChannel(OUTDEV1, 10, "drums", 32);
-            var chan_in1 = _mgr.OpenMidiInputChannel(INDEV, 1, "my input");
+            var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", 0);
+            var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "bass", 32);
+            //var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 10, "drums", 32);
+            var chan_in1 = Manager.Instance.OpenInputChannel(INDEV, 1, "my input");
 
             ///// 2 - create a control for each channel and bind object
             int x = sldMasterVolume.Left;
@@ -331,7 +328,7 @@ namespace Ephemera.MidiLib.Test
                     BorderStyle = BorderStyle.FixedSingle,
                     DrawColor = Color.SpringGreen,
                     SelectedColor = Color.Yellow,
-                    Volume = Defs.DEFAULT_VOLUME,
+                    Volume = VolumeDefs.DEFAULT_VOLUME,
                     ControllerId = 10, // pan
                     ControllerValue = 82
                 };
@@ -362,14 +359,14 @@ namespace Ephemera.MidiLib.Test
         void TestStandardApp()
         {
             // Create channels.
-            var chan_out1 = _mgr.OpenMidiOutputChannel(OUTDEV1, 1, "channel 1!", 0);
-            var chan_out2 = _mgr.OpenMidiOutputChannel(OUTDEV1, 2, "channel 2!", 12);
+            var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", 0);
+            var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", 12);
 
             // Init controls.
             ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
             ch_ctrl1.DrawColor = Color.SpringGreen;
             ch_ctrl1.SelectedColor = Color.Yellow;
-            ch_ctrl1.Volume = Defs.DEFAULT_VOLUME;
+            ch_ctrl1.Volume = VolumeDefs.DEFAULT_VOLUME;
             ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
             ch_ctrl1.SendMidi += ChannelControl_SendMidi;
             ch_ctrl1.BoundChannel = chan_out1;
@@ -382,7 +379,7 @@ namespace Ephemera.MidiLib.Test
             ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
             ch_ctrl2.DrawColor = Color.SpringGreen;
             ch_ctrl2.SelectedColor = Color.Yellow;
-            ch_ctrl2.Volume = Defs.DEFAULT_VOLUME;
+            ch_ctrl2.Volume = VolumeDefs.DEFAULT_VOLUME;
             ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
             ch_ctrl2.SendMidi += ChannelControl_SendMidi;
             ch_ctrl2.BoundChannel = chan_out1;
@@ -468,7 +465,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Mgr_MessageReceive(object? sender, BaseMidi e)
+        void Mgr_MessageReceive(object? sender, BaseEvent e)
         {
             Tell(INFO, $"Receive [{e}]");
         }
@@ -479,7 +476,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Mgr_MessageSend(object? sender, BaseMidi e)
+        void Mgr_MessageSend(object? sender, BaseEvent e)
         {
             Tell(INFO, $"Send actual [{e}]");
         }
@@ -489,12 +486,12 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControl_SendMidi(object? sender, BaseMidi e)
+        void ChannelControl_SendMidi(object? sender, BaseEvent e)
         {
             var channel = sender switch
             {
                 ChannelControl => (sender as ChannelControl)!.BoundChannel,
-                CustomRenderer => _mgr.GetOutputChannel((sender as CustomRenderer)!.ChannelNumber),
+                CustomRenderer => Manager.Instance.GetOutputChannel((sender as CustomRenderer)!.ChannelNumber),
                 _ => null // should never happen
             };
 
@@ -532,7 +529,7 @@ namespace Ephemera.MidiLib.Test
                     if (!enable)
                     {
                         // Kill just in case.
-                        _mgr.Kill(channel);
+                        Manager.Instance.Kill(channel);
                     }
                 }
             }
@@ -546,7 +543,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         void DestroyControls()
         {
-            _mgr.Kill();
+            Manager.Instance.Kill();
 
             // Clean out our current elements.
             _channelControls.ForEach(c =>

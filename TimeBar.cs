@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Runtime.CompilerServices;
 using System.Drawing.Drawing2D;
 using Ephemera.NBagOfTricks;
 
@@ -106,6 +104,7 @@ namespace Ephemera.MidiLib
         public event EventHandler<StateChangeEventArgs>? StateChange;
         public class StateChangeEventArgs : EventArgs
         {
+            /// <summary>User changed current time.</summary>
             public bool CurrentTimeChange { get; set; } = false;
         }
         #endregion
@@ -148,16 +147,24 @@ namespace Ephemera.MidiLib
 
         #region Public functions
         /// <summary>
-        /// Client supplies metadata about sections in the time range.
+        /// Reset everything.
         /// </summary>
-        /// <param name="sectInfo"></param>
-        public void InitSectionInfo(Dictionary<int, string> sectInfo)
+        public void Reset()
         {
             _sectionInfo.Clear();
             _length.Reset();
             _selStart.Reset();
             _selEnd.Reset();
             _current.Reset();
+        }
+
+        /// <summary>
+        /// Client supplies metadata about sections in the time range.
+        /// </summary>
+        /// <param name="sectInfo"></param>
+        public void InitSectionInfo(Dictionary<int, string> sectInfo)
+        {
+            Reset();
 
             if (sectInfo.Count > 0)
             {

@@ -1,14 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
 using System.Diagnostics;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
@@ -18,6 +12,12 @@ namespace Ephemera.MidiLib
 {
     public class Manager
     {
+        #region Singleton
+        public static Manager Instance { get { _instance ??= new Manager(); return _instance; } }
+        static Manager? _instance;
+        Manager() { }
+        #endregion
+
         #region Fields
         /// <summary>All midi devices to use for send. Index is the id.</summary>
         readonly List<IOutputDevice> _outputDevices = [];
@@ -38,11 +38,11 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Events
-        /// <summary>Handler for message arrived.</summary>
-        public event EventHandler<BaseMidi>? MessageReceive;
+        /// <summary>Handler for midi message arrived.</summary>
+        public event EventHandler<BaseEvent>? MessageReceive;
 
-        /// <summary>Handler for message sent. This is the actual message on the wire.</summary>
-        public event EventHandler<BaseMidi>? MessageSend;
+        /// <summary>Handler for midi message sent.</summary>
+        public event EventHandler<BaseEvent>? MessageSend;
         #endregion
 
         #region Channels
@@ -95,7 +95,7 @@ namespace Ephemera.MidiLib
                 ChannelName = channelName,
                 Patch = patch,
                 Enable = true,
-                Volume = Defs.DEFAULT_VOLUME
+                Volume = VolumeDefs.DEFAULT_VOLUME
             };
             _outputChannels.Add(ch);
 
@@ -259,11 +259,11 @@ namespace Ephemera.MidiLib
 
             if (channel is null)
             {
-                _outputChannels.ForEach(ch => ch.Device.Send(new Controller(ch.ChannelNumber, cc, 0)));
+                _outputChannels.ForEach(ch => ch.Device.Send(new Controller(ch.ChannelNumber, cc, 0, MusicTime.ZERO)));
             }
             else
             {
-                channel.Device.Send(new Controller(channel.ChannelNumber, cc, 0));
+                channel.Device.Send(new Controller(channel.ChannelNumber, cc, 0, MusicTime.ZERO));
             }
         }
         #endregion

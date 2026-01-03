@@ -1,12 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.IO;
-using System.Windows.Forms;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
-using Ephemera.NBagOfTricks;
 
 
 namespace Ephemera.MidiLib
@@ -18,7 +12,7 @@ namespace Ephemera.MidiLib
     public enum SnapType { Bar, Beat, Tick }
 
     /// <summary>Misc definitions.</summary>
-    public class Defs
+    public class VolumeDefs
     {
         /// <summary>Default value.</summary>
         public const double DEFAULT_VOLUME = 0.8;
