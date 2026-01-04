@@ -8,10 +8,10 @@ namespace Ephemera.MidiLib
 {
     public class MidiDefs
     {
-        #region Singleton
-        public static MidiDefs Instance { get { _instance ??= new MidiDefs(); return _instance; } }
-        static MidiDefs? _instance;
-        #endregion
+        // #region Singleton
+        // public static MidiDefs Instance { get { _instance ??= new MidiDefs(); return _instance; } }
+        // static MidiDefs? _instance;
+        // #endregion
 
         #region Fields
         /// <summary>Midi constant.</summary>
@@ -24,24 +24,24 @@ namespace Ephemera.MidiLib
         public const int DEFAULT_DRUM_CHANNEL = 10;
 
         /// <summary>All the GM instruments.</summary>
-        readonly Dictionary<int, string> _instruments = [];
+        static readonly Dictionary<int, string> _instruments = [];
 
         /// <summary>All the GM controllers.</summary>
-        readonly Dictionary<int, string> _controllerIds = [];
+        static readonly Dictionary<int, string> _controllerIds = [];
 
         /// <summary>Standard set plus unnamed ones.</summary>
-        readonly Dictionary<int, string> _controllerIdsAll = [];
+        static readonly Dictionary<int, string> _controllerIdsAll = [];
 
         /// <summary>All the GM drums.</summary>
-        readonly Dictionary<int, string> _drums = [];
+        static readonly Dictionary<int, string> _drums = [];
 
         /// <summary>All the GM drum kits.</summary>
-        readonly Dictionary<int, string> _drumKits = [];
+        static readonly Dictionary<int, string> _drumKits = [];
         #endregion
 
         #region Lifecycle
         /// <summary>Initialize some collections.</summary>
-        MidiDefs()
+        static MidiDefs()
         {
             var ir = new IniReader();
             ir.ParseString(Properties.Resources.gm_defs);
@@ -70,7 +70,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="id"></param>
         /// <returns>The controller name or a fabricated one if unknown.</returns>
-        public string GetInstrumentName(int id)
+        public static string GetInstrumentName(int id)
         {
             if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
 
@@ -82,7 +82,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="id"></param>
         /// <returns>The controller name or a fabricated one if unknown.</returns>
-        public string GetControllerName(int id)
+        public static string GetControllerName(int id)
         {
             if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
 
@@ -94,7 +94,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="id"></param>
         /// <returns>The drum name or a fabricated one if unknown.</returns>
-        public string GetDrumName(int id)
+        public static string GetDrumName(int id)
         {
             if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
 
@@ -106,7 +106,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="id"></param>
         /// <returns>The drumkit name or a fabricated one if unknown.</returns>
-        public string GetDrumKitName(int id)
+        public static string GetDrumKitName(int id)
         {
             if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
 
@@ -114,47 +114,47 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Get corresponding number. Throws if invalid.
+        /// Get corresponding number.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public int GetInstrumentNumber(string name) // TODO1 handle Channel aliases
+        public static int GetInstrumentId(string name) // TODO1 handle Channel aliases
         {
             var i = _instruments.Where(v => v.Value == name);
-            return i is null ? throw new ArgumentOutOfRangeException(nameof(name)) : i.First().Key;
+            return i.Any() ? i.First().Key : -1;
         }
 
         /// <summary>
-        /// Get corresponding number. Throws if invalid.
+        /// Get corresponding number.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public int GetControllerNumber(string name)
+        public static int GetControllerId(string name)
         {
             var i = _controllerIds.Where(v => v.Value == name);
-            return i is null ? throw new ArgumentOutOfRangeException(nameof(name)) : i.First().Key;
+            return i.Any() ? i.First().Key : -1;
         }
 
         /// <summary>
-        /// Get corresponding number. Throws if invalid.
+        /// Get corresponding number.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public int GetDrumNumber(string name)
+        public static int GetDrumId(string name)
         {
             var i = _drums.Where(v => v.Value == name);
-            return i is null ? throw new ArgumentOutOfRangeException(nameof(name)) : i.First().Key;
+            return i.Any() ? i.First().Key : -1;
         }
 
         /// <summary>
-        /// Get corresponding number. Throws if invalid.
+        /// Get corresponding number.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public int GetDrumKitNumber(string name)
+        public static int GetDrumKitId(string name)
         {
             var i = _drumKits.Where(v => v.Value == name);
-            return i is null ? throw new ArgumentOutOfRangeException(nameof(name)) : i.First().Key;
+            return i.Any() ? i.First().Key : -1;
         }
         #endregion
 
@@ -163,7 +163,7 @@ namespace Ephemera.MidiLib
         /// Make content from the definitions.
         /// </summary>
         /// <returns>Content.</returns>
-        public List<string> GenMarkdown()
+        public static List<string> GenMarkdown()
         {
             var ir = new IniReader();
             ir.ParseString(Properties.Resources.gm_defs);
@@ -204,7 +204,7 @@ namespace Ephemera.MidiLib
         /// Make content from the definitions.
         /// </summary>
         /// <returns>Content.</returns>
-        public List<string> GenLua()
+        public static List<string> GenLua()
         {
             var ir = new IniReader();
             ir.ParseString(Properties.Resources.gm_defs);
@@ -257,7 +257,7 @@ namespace Ephemera.MidiLib
         /// Make content from user configuration.
         /// </summary>
         /// <returns>Content.</returns>
-        public List<string> GenUserDeviceInfo()
+        public static List<string> GenUserDeviceInfo()
         {
             // Show them what they have.
             var outs = MidiOutputDevice.GetAvailableDevices();
@@ -284,7 +284,7 @@ namespace Ephemera.MidiLib
         /// <param name="addKey">Add the index number to the entry</param>
         /// <param name="fill">Add mising midi values</param>
         /// <returns></returns>
-        public List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill)
+        public static List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill)
         {
             List<string> res = [];
 
@@ -302,9 +302,6 @@ namespace Ephemera.MidiLib
 
             return res;
         }
-
-
         #endregion
-
     }
 }
