@@ -104,7 +104,8 @@ namespace Ephemera.MidiLib
         public IOutputDevice Device { get; init; }
 
         /// <summary>Associated events - optional depending on implementation.</summary>
-        public List<BaseEvent> Events { get; set; } = [];
+//        public List<BaseEvent> Events { get; set; } = [];
+        public EventCollection Events { get; set; } = new();
 
         /// <summary>Handle for use by scripts.</summary>
         public int Handle { get; init; }
@@ -144,7 +145,7 @@ namespace Ephemera.MidiLib
             }
             else
             {
-                res = _aliases.Count > 0 ?
+                res = _aliases.Any() ?
                         _aliases.TryGetValue(which, out string? value) ? value : $"INST_{which}" :
                         MidiDefs.Instance.GetInstrumentName(which);
             }

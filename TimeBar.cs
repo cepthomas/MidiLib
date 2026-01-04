@@ -166,7 +166,7 @@ namespace Ephemera.MidiLib
         {
             Reset();
 
-            if (sectInfo.Count > 0)
+            if (sectInfo.Any())
             {
                 List<(int tick, string name)> sinfo = [];
                 var spos = sectInfo.Keys.OrderBy(k => k).ToList();

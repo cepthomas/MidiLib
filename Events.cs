@@ -18,6 +18,9 @@ namespace Ephemera.MidiLib
         /// <summary>When to send. ZERO means unknown or don't care.</summary>
         public MusicTime When { get; set; } = MusicTime.ZERO;
 
+        /// <summary>If true, delete after sending.</summary>
+        public bool Transient { get; set; } = false;
+
         /// <summary>Read me.</summary>
         public override string ToString()
         {
@@ -43,7 +46,7 @@ namespace Ephemera.MidiLib
             if (velocity is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(velocity)); }
             if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when;// ?? new();
+            When = when;
             ChannelNumber = channel;
             Note  = note;
             Velocity = velocity;
@@ -63,13 +66,13 @@ namespace Ephemera.MidiLib
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Note { get; init; }
 
-        public NoteOff(int channel, int note, MusicTime when)// = null)
+        public NoteOff(int channel, int note, MusicTime when)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
             if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when;// ?? new();
+            When = when;
             ChannelNumber = channel;
             Note  = note;
         }
@@ -92,14 +95,14 @@ namespace Ephemera.MidiLib
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Value { get; init; }
 
-        public Controller(int channel, int controllerId, int value, MusicTime when)// = null)
+        public Controller(int channel, int controllerId, int value, MusicTime when)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (controllerId is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controllerId)); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
             if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when;// ?? new();
+            When = when;
             ChannelNumber = channel;
             ControllerId = controllerId;
             Value = value;
@@ -119,13 +122,13 @@ namespace Ephemera.MidiLib
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Value { get; init; }
 
-        public Patch(int channel, int value, MusicTime when)// = null)
+        public Patch(int channel, int value, MusicTime when)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
             if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when;// ?? new();
+            When = when;
             ChannelNumber = channel;
             Value = value;
         }
@@ -142,15 +145,14 @@ namespace Ephemera.MidiLib
     public class Other : BaseEvent
     {
         /// <summary>Payload.</summary>
-        //[Range(0, MidiDefs.MAX_MIDI)]
         public int RawMessage { get; init; }
 
-        public Other(int channel, int rawMessage, MusicTime when)// = null)
+        public Other(int channel, int rawMessage, MusicTime when)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when;// ?? new();
+            When = when;
             ChannelNumber = channel;
             RawMessage = rawMessage;
         }
@@ -169,13 +171,13 @@ namespace Ephemera.MidiLib
         /// <summary>The function to call.</summary>
         public Action ScriptFunction { get; init; }
 
-        public Function(int channel, Action scriptFunc, MusicTime when)// = null)
+        public Function(int channel, Action scriptFunc, MusicTime when)
         {
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (scriptFunc is null) { throw new ArgumentOutOfRangeException(nameof(scriptFunc)); }
             if (when.Tick is < 0) { throw new ArgumentOutOfRangeException(nameof(when)); }
 
-            When = when;// ?? new();
+            When = when;
             ChannelNumber = channel;
             ScriptFunction = scriptFunc;
         }
@@ -184,6 +186,60 @@ namespace Ephemera.MidiLib
         public override string ToString()
         {
             return $"Function: {ScriptFunction} {base.ToString()}";
+        }
+    }
+
+
+    /// <summary>
+    /// Helper for managing groups of events - mainly sugar.
+    /// </summary>
+    public class EventCollection
+    {
+        readonly Dictionary<MusicTime, List<BaseEvent>> _allEvents = [];
+
+        public void Add(BaseEvent evt)
+        {
+            if (!_allEvents.TryGetValue(evt.When, out List<BaseEvent>? events))
+            {
+                _allEvents.Add(evt.When, new([evt]));
+            }
+            else
+            {
+                events.Add(evt);
+            }
+        }
+
+        public void AddRange(IEnumerable<BaseEvent> evts)
+        {
+            evts.ForEach(e => Add(e));
+        }
+
+        public IEnumerable<BaseEvent> Get(MusicTime when)
+        {
+            IEnumerable<BaseEvent> res = [];
+
+            if (_allEvents.TryGetValue(when, out List<BaseEvent>? events))
+            {
+                res = events;
+            }
+
+            return res;
+        }
+
+        public void RemoveTransients(MusicTime when)
+        {
+            if (_allEvents.TryGetValue(when, out List<BaseEvent>? value))
+            {
+                value.RemoveAll(e => e.Transient);
+                _allEvents.Remove(when);
+            }
+        }
+
+        public int Count()
+        {
+            int total = 0;
+            _allEvents.ForEach(e => total += e.Value.Count);
+            return total;
         }
     }
 }

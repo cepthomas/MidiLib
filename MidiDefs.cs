@@ -118,14 +118,10 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public int GetInstrumentNumber(string name)// TODO1 all these
+        public int GetInstrumentNumber(string name) // TODO1 handle Channel aliases
         {
-           // if (_instruments)
-
-            return -1;
-            //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
-
-            //return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
+            var i = _instruments.Where(v => v.Value == name);
+            return i is null ? throw new ArgumentOutOfRangeException(nameof(name)) : i.First().Key;
         }
 
         /// <summary>
@@ -135,9 +131,8 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public int GetControllerNumber(string name)
         {
-            return -1;
-            //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
-            //return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
+            var i = _controllerIds.Where(v => v.Value == name);
+            return i is null ? throw new ArgumentOutOfRangeException(nameof(name)) : i.First().Key;
         }
 
         /// <summary>
@@ -147,9 +142,8 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public int GetDrumNumber(string name)
         {
-            return -1;
-            //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
-            //return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
+            var i = _drums.Where(v => v.Value == name);
+            return i is null ? throw new ArgumentOutOfRangeException(nameof(name)) : i.First().Key;
         }
 
         /// <summary>
@@ -159,12 +153,10 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public int GetDrumKitNumber(string name)
         {
-            return -1;
-            //if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
-            //return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
+            var i = _drumKits.Where(v => v.Value == name);
+            return i is null ? throw new ArgumentOutOfRangeException(nameof(name)) : i.First().Key;
         }
         #endregion
-
 
         #region Utilities
         /// <summary>
@@ -275,11 +267,11 @@ namespace Ephemera.MidiLib
             ls.Add($"# Your Midi Devices");
 
             ls.Add($"## Inputs");
-            if (ins.Count == 0) { ls.Add($"None"); }
+            if (!ins.Any()) { ls.Add($"None"); }
             else { ins.ForEach(d => ls.Add($"[{d}]")); }
 
             ls.Add($"## Outputs");
-            if (outs.Count == 0) { ls.Add($"None"); }
+            if (!outs.Any()) { ls.Add($"None"); }
             else { outs.ForEach(d => ls.Add($"[{d}]")); }
 
             return ls;
