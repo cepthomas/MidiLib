@@ -79,10 +79,10 @@ namespace Ephemera.MidiLib
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-        /// <param name="patch"></param>
-        /// <param name="isDrums"></param>
+    //    /// <param name="patch"></param>
+        /// <param name="isDrums">TODO1 fix all isDrums </param>
         /// <returns></returns>
-        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, string patch, bool isDrums)
+        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, bool isDrums)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -97,7 +97,7 @@ namespace Ephemera.MidiLib
                 IsDrums = isDrums,
                 Enable = true,
                 Volume = VolumeDefs.DEFAULT_VOLUME,
-                PatchName = patch,
+              //  PatchName = patch,
             };
             _outputChannels.Add(ch);
 

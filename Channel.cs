@@ -40,7 +40,8 @@ namespace Ephemera.MidiLib
         public int ChannelNumber
         {
             get { return _channelNumber; }
-            set { if (value is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(value)); } }
+            set { if (value is < 1 or > MidiDefs.NUM_CHANNELS) throw new ArgumentOutOfRangeException(nameof(value));
+                _channelNumber = value; }
         }
         int _channelNumber;
 
@@ -79,9 +80,10 @@ namespace Ephemera.MidiLib
         public int ChannelNumber
         {
             get { return _channelNumber; }
-            set { if (value is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(value)); } }
+            set { if (value is < 1 or > MidiDefs.NUM_CHANNELS) throw new ArgumentOutOfRangeException(nameof(value));
+                    _channelNumber = value; }
         }
-        readonly int _channelNumber;
+        int _channelNumber;
 
         /// <summary>Override default instrument list.</summary>
         public string InstrumentFile
@@ -124,29 +126,29 @@ namespace Ephemera.MidiLib
 
         //Patch = i;
 
-        /// <summary>
-        /// Get patch name.
-        /// </summary>
-        /// <param name="which"></param>
-        /// <returns>The name or a fabricated one if unknown.</returns>
-        public string GetPatchName(int which)
-        {
-            string res;
-            res = GetInstrumentName(which);
+        ///// <summary>
+        ///// Get patch name.
+        ///// </summary>
+        ///// <param name="which"></param>
+        ///// <returns>The name or a fabricated one if unknown.</returns>
+        //public string GetPatchName(int which)
+        //{
+        //    //string res;
+        //    return GetInstrumentName(which);
 
 
-            //if (IsDrums)
-            //{
-            //    res = MidiDefs.GetDrumKitName(which);
-            //}
-            //else
-            //{
-            //    res = _aliases.Any() ?
-            //            _aliases.TryGetValue(which, out string? value) ? value : $"INST_{which}" :
-            //            MidiDefs.GetInstrumentName(which);
-            //}
-            return res;
-        }
+        //    //if (IsDrums)
+        //    //{
+        //    //    res = MidiDefs.GetDrumKitName(which);
+        //    //}
+        //    //else
+        //    //{
+        //    //    res = _aliases.Any() ?
+        //    //            _aliases.TryGetValue(which, out string? value) ? value : $"INST_{which}" :
+        //    //            MidiDefs.GetInstrumentName(which);
+        //    //}
+        //    //return res;
+        //}
 
 
 
@@ -227,25 +229,25 @@ namespace Ephemera.MidiLib
 
 
 
-
+        #region Lifecycle
         /// <summary>
         /// Constructor with required args.
         /// </summary>
         /// <param name="device"></param>
         /// <param name="channelNumber"></param>
-        public OutputChannel(IOutputDevice device, int channelNumber)//, string patch)
+        public OutputChannel(IOutputDevice device, int channelNumber)
         {
             Device = device;
             ChannelNumber = channelNumber;
             Volume = VolumeDefs.DEFAULT_VOLUME;
             Handle = HandleOps.Create(device.Id, ChannelNumber, true);
 
-            ////TODO1 decode/process patch >>> Patch
-            //int i = GetInstrumentId(patch);
-            //if (i < 0) { throw new ArgumentException($"Invalid patch: {patch}"); }
-
-            //Patch = i;
+            var ir = new IniReader();
+            ir.ParseString(Properties.Resources.gm_defs);
+            ir.GetValues("instruments").ForEach(kv => { _instruments[int.Parse(kv.Key)] = kv.Value; });
         }
+
+        #endregion
 
 
 

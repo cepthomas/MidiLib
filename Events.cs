@@ -14,7 +14,8 @@ namespace Ephemera.MidiLib
         public int ChannelNumber
         {
             get { return _channelNumber; }
-            set { if (value is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(value)); } }
+            set { if (value is < 1 or > MidiDefs.NUM_CHANNELS) throw new ArgumentOutOfRangeException(nameof(value));
+                  _channelNumber = value; }
         }
         int _channelNumber = 0;
 
@@ -38,11 +39,8 @@ namespace Ephemera.MidiLib
         public int Note
         {
             get { return _note; }
-            set
-            {
-                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
-                _note = value;
-            }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                  _note = value; }
         }
         int _note = 0;
 
@@ -50,11 +48,8 @@ namespace Ephemera.MidiLib
         public int Velocity
         {
             get { return _velocity; }
-            set
-            {
-                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
-                _velocity = value;
-            }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                  _velocity = value; }
         }
         int _velocity = 0;
 
@@ -85,11 +80,8 @@ namespace Ephemera.MidiLib
         public int Note
         {
             get { return _note; }
-            set
-            {
-                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
-                _note = value;
-            }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                  _note = value; }
         }
         int _note = 0;
 
@@ -118,11 +110,8 @@ namespace Ephemera.MidiLib
         public int ControllerId
         {
             get { return _controllerId; }
-            set
-            {
-                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
-                _controllerId = value;
-            }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                  _controllerId = value; }
         }
         int _controllerId = 0;
 
@@ -130,11 +119,8 @@ namespace Ephemera.MidiLib
         public int Value
         {
             get { return _value; }
-            set
-            {
-                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
-                _value = value;
-            }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                  _value = value; }
         }
         int _value = 0;
 
@@ -165,11 +151,8 @@ namespace Ephemera.MidiLib
         public int Value
         {
             get { return _value; }
-            set
-            {
-                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
-                _value = value;
-            }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                  _value = value; }
         }
         int _value = 0;
 
@@ -239,7 +222,6 @@ namespace Ephemera.MidiLib
             return $"Function: {ScriptFunction} {base.ToString()}";
         }
     }
-
 
     /// <summary>
     /// Helper for managing groups of events - mainly sugar.

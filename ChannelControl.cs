@@ -136,7 +136,7 @@ namespace Ephemera.MidiLib
         public int ControllerId
         {
             get { return _controllerId; }
-            private set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
                 _controllerId = value; }
         }
         int _controllerId = 0;
@@ -145,7 +145,7 @@ namespace Ephemera.MidiLib
         public int ControllerValue
         {
             get { return _controllerId; }
-            private set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
                 _controllerValue = value; }
         }
         int _controllerValue = 0;
@@ -371,7 +371,7 @@ namespace Ephemera.MidiLib
             StringBuilder sb = new();
 
             sb.AppendLine($"Channel {BoundChannel.ChannelNumber} {BoundChannel.ChannelName}");
-            sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} {BoundChannel.Patch:000}");
+            sb.AppendLine($"{BoundChannel.GetInstrumentName(BoundChannel.Patch)} {BoundChannel.Patch:000}");
             sb.AppendLine($"Dev{BoundChannel.Device.Id} {BoundChannel.Device.DeviceName}");
             toolTip.SetToolTip(lblInfo, sb.ToString());
 

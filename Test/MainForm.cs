@@ -93,6 +93,27 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
+            Tell(INFO, $">>>>> OnLoad start.");
+
+            try
+            {
+                //TestScriptApp();
+                //TestPropertyEditor();
+                //TestTimeBar();
+
+                //TestMusicTime();
+
+                //TestDefFile();
+
+                TestChannel();
+            }
+            catch (Exception ex)
+            {
+                Tell(ERROR, ex.Message);
+            }
+
+            Tell(INFO, $">>>>> OnLoad done.");
+
             base.OnLoad(e);
         }
 
@@ -135,7 +156,7 @@ namespace Ephemera.MidiLib.Test
             }
             catch (Exception ex)
             {
-                Tell(ERROR, ex.Message);
+                Tell(ERROR, ex.ToString());//.Message);
             }
 
             Tell(INFO, $">>>>> Go done.");
@@ -151,17 +172,17 @@ namespace Ephemera.MidiLib.Test
             string fnIni = Path.Combine(myPath, "..", "gm_defs.ini");
 
             Tell(INFO, $">>>>> Gen Markdown.");
-            var smd = MidiDefs.Instance.GenMarkdown();
+            var smd = MidiDefs.GenMarkdown();
             var fnOut = Path.Join(myPath, "out", "midi_defs.md");
             File.WriteAllText(fnOut, string.Join(Environment.NewLine, smd));
 
             Tell(INFO, $">>>>> Gen Lua.");
-            var sld = MidiDefs.Instance.GenLua();
+            var sld = MidiDefs.GenLua();
             fnOut = Path.Join(myPath, "out", "midi_defs.lua");
             File.WriteAllText(fnOut, string.Join(Environment.NewLine, sld));
 
             Tell(INFO, $">>>>> Gen Device Info.");
-            var sdi = MidiDefs.Instance.GenUserDeviceInfo();
+            var sdi = MidiDefs.GenUserDeviceInfo();
             Tell(INFO, string.Join(Environment.NewLine, sdi));
 
             Tell(INFO, $">>>>> Gen done.");
@@ -224,28 +245,47 @@ namespace Ephemera.MidiLib.Test
         void TestChannel()
         {
             Tell(INFO, $">>>>> Channel.");
-
-            // Dummy channel.
-            var dev = new NullOutputDevice("DUMMY_DEVICE");
-
-            OutputChannel ch = new(dev, 3)
-            {
-                ChannelName = "booga-booga",
-            };
-
-            // Aliases.
             var myPath = MiscUtils.GetSourcePath();
-            ch.AliasFile = Path.Combine(myPath, "test_defs.ini");
 
-            if (ch.GetPatchName(40) != "SynthGuitar1") Tell(ERROR, "FAIL");
-            if (ch.GetPatchName(101) != "INST_101") Tell(ERROR, "FAIL");
+            // Dummy device.
+            var outdev = "nullout:test1";
+            //var dev = new NullOutputDevice("DUMMY_DEVICE");
 
-            // should send midi
-            ch.Patch = 77;
-            if (dev.CollectedEvents.Count != 1) Tell(ERROR, "FAIL");
+            var chan_out1 = Manager.Instance.OpenOutputChannel(outdev, 1, "keys", false);
+            // GM instruments
+            chan_out1.PatchName = "HonkyTonkPiano";
+
+            // GM drums
+            var chan_out2 = Manager.Instance.OpenOutputChannel(outdev, 10, "drums", true);
+            // TODO1 needs built in drumss or file
+            chan_out2.PatchName = "Electronic";
+
+            // Alt instruments
+            var chan_out3 = Manager.Instance.OpenOutputChannel(outdev, 4, "bass", false);
+            chan_out3.InstrumentFile = Path.Combine(myPath, "test_defs.ini");
+            chan_out3.PatchName = "WaterWhistle2";
+
+            // Input
+            var chan_in1 = Manager.Instance.OpenInputChannel(outdev, 1, "my input");
+
+            // Test aliases.
+            if (chan_out1.GetInstrumentName(40) != "SynthGuitar1") Tell(ERROR, "FAIL");
+            if (chan_out2.GetInstrumentName(101) != "INST_101") Tell(ERROR, "FAIL");
+
+            // Should send midi.
+            chan_out3.Patch = 77;
+            //if (dev.CollectedEvents.Count != 1) Tell(ERROR, "FAIL");
 
             Tell(INFO, "DONE");
         }
+
+
+
+        //var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", "HonkyTonkPiano", false);
+        ////var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "bass", "ElectricBassPick");
+        //var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 10, "drums", "Electronic", true);
+        //var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord", false);
+        //var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin", false);
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test property editing using TypeEditors.</summary>
@@ -264,13 +304,15 @@ namespace Ephemera.MidiLib.Test
             };
 
             // Set up options.
-            //var insts = MidiDefs.Instance.GetDefaultInstrumentDefs();
+            //var insts = MidiDefs.GetDefaultInstrumentDefs();
             //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
             //var instsList = orderedValues.ToList();
 
+            var chan = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", false);
+            chan.PatchName = "HonkyTonkPiano";
             Dictionary<int, string> vals = [];
-            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, MidiDefs.Instance.GetInstrumentName(i)));
-            var instList = MidiDefs.Instance.CreateOrderedMidiList(vals, true, true);
+            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, chan.GetInstrumentName(i)));
+            var instList = MidiDefs.CreateOrderedMidiList(vals, true, true);
 
             GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
             GenericListTypeEditor.SetOptions("Patch", instList);
@@ -302,9 +344,11 @@ namespace Ephemera.MidiLib.Test
             ch_ctrl2.Hide();
 
             ///// 1 - create all channels
-            var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", 0);
-            var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "bass", 32);
-            //var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 10, "drums", 32);
+            var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", false);
+            chan_out1.PatchName = "HonkyTonkPiano";
+            var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 10, "drums", true);
+            chan_out2.PatchName = "Electronic";
+            //var chan_out3 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "bass", "ElectricBassPick");
             var chan_in1 = Manager.Instance.OpenInputChannel(INDEV, 1, "my input");
 
             ///// 2 - create a control for each channel and bind object
@@ -358,8 +402,11 @@ namespace Ephemera.MidiLib.Test
         void TestStandardApp()
         {
             // Create channels.
-            var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", 0);
-            var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", 12);
+            var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", false);
+            chan_out1.PatchName = "Harpsichord";
+
+            var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", false);
+            chan_out2.PatchName = "Violin";
 
             // Init controls.
             ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
@@ -439,12 +486,10 @@ namespace Ephemera.MidiLib.Test
 
             /// <summary>Actual 1-based midi channel number.</summary>
             [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-            [Range(1, MidiDefs.NUM_CHANNELS)]
             public int ChannelNumber { get; set; } = 1;
 
             /// <summary>Actual 1-based midi channel number.</summary>
             [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-            [Range(0, MidiDefs.MAX_MIDI)]
             public int SomeOtherMidi { get; set; } = 0;
 
             /// <summary>Override default instrument presets.</summary>
@@ -454,7 +499,6 @@ namespace Ephemera.MidiLib.Test
             /// <summary>Current instrument/patch number.</summary>
             [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
             [TypeConverter(typeof(GenericConverter))]
-            [Range(0, MidiDefs.MAX_MIDI)]
             public int Patch { get; set; } = 0;
         }
 
