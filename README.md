@@ -22,7 +22,7 @@ Requires VS2022 and .NET8.
     - Everything associated with GM midi definitions plus conversion functions.
     - Generate markdown and lua files.
 
-- BaseMidi and derived
+- BaseEvent and derived
     - Higher level event specifiers for use by apps.
 
 - MidiOutputDevice/MidiInputDevice

@@ -9,7 +9,7 @@ namespace Ephemera.MidiLib
     public class NullInputDevice : IInputDevice
     {
         /// <inheritdoc />
-        /// Uses nullout:name for DeviceName.
+        /// Uses nullin:name for DeviceName.
         public string DeviceName { get; }
 
         /// <inheritdoc />
@@ -49,7 +49,7 @@ namespace Ephemera.MidiLib
     public class NullOutputDevice : IOutputDevice
     {
         /// <inheritdoc />
-        /// Uses nullin:name for DeviceName.
+        /// Uses nullout:name for DeviceName.
         public string DeviceName { get; }
 
         /// <inheritdoc />
