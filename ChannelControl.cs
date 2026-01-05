@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -127,7 +126,6 @@ namespace Ephemera.MidiLib
         /// <summary>Current volume.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [Range(0.0, VolumeDefs.MAX_VOLUME)]
         public double Volume
         {
             get { return sldVolume.Value; }
@@ -135,12 +133,22 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>Edit current controller number.</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int ControllerId { get; set; } = 0;
+        public int ControllerId
+        {
+            get { return _controllerId; }
+            private set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                _controllerId = value; }
+        }
+        int _controllerId = 0;
 
         /// <summary>Controller payload.</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int ControllerValue { get; set; } = 50;
+        public int ControllerValue
+        {
+            get { return _controllerId; }
+            private set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                _controllerValue = value; }
+        }
+        int _controllerValue = 0;
 
         /// <summary>User selection.</summary>
         public bool Selected

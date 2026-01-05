@@ -18,7 +18,7 @@ namespace Ephemera.MidiLib
         Manager() { }
         #endregion
 
-        #region Fields
+        #region Fields TODO1 should these all be Dicts for fast lookup?
         /// <summary>All midi devices to use for send. Index is the id.</summary>
         readonly List<IOutputDevice> _outputDevices = [];
 
@@ -80,8 +80,9 @@ namespace Ephemera.MidiLib
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
         /// <param name="patch"></param>
+        /// <param name="isDrums"></param>
         /// <returns></returns>
-        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, int patch)
+        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, string patch, bool isDrums)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -90,17 +91,15 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            OutputChannel ch = new(outdev, channelNumber)
+            OutputChannel ch = new(outdev, channelNumber)//, patch, )
             {
                 ChannelName = channelName,
-                Patch = patch,
+                IsDrums = isDrums,
                 Enable = true,
-                Volume = VolumeDefs.DEFAULT_VOLUME
+                Volume = VolumeDefs.DEFAULT_VOLUME,
+                PatchName = patch,
             };
             _outputChannels.Add(ch);
-
-            // Send patch now. 
-            //outdev.Send(new Patch(channelNumber, patch));
 
             return ch;
         }

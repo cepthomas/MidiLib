@@ -12,7 +12,6 @@ using System.Windows.Forms;
 using System.Runtime.CompilerServices;
 using System.IO;
 using System.Diagnostics;
-using System.ComponentModel.DataAnnotations;
 using System.Drawing.Design;
 using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;

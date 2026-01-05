@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.ComponentModel.DataAnnotations;
 using Ephemera.NBagOfTricks;
 
 
@@ -12,8 +11,12 @@ namespace Ephemera.MidiLib
     public class BaseEvent
     {
         /// <summary>Channel number.</summary>
-        [Range(1, MidiDefs.NUM_CHANNELS)]
-        public int ChannelNumber { get; set; } = 0;
+        public int ChannelNumber
+        {
+            get { return _channelNumber; }
+            set { if (value is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(value)); } }
+        }
+        int _channelNumber = 0;
 
         /// <summary>When to send. ZERO means unknown or don't care.</summary>
         public MusicTime When { get; set; } = MusicTime.ZERO;
@@ -32,12 +35,28 @@ namespace Ephemera.MidiLib
     public class NoteOn : BaseEvent
     {
         /// <summary>The note number to play.</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int Note { get; init; }
+        public int Note
+        {
+            get { return _note; }
+            set
+            {
+                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                _note = value;
+            }
+        }
+        int _note = 0;
 
-        /// <summary>0 to 127.</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int Velocity { get; set; }
+        /// <summary>Note velocity, 0 to 127.</summary>
+        public int Velocity
+        {
+            get { return _velocity; }
+            set
+            {
+                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                _velocity = value;
+            }
+        }
+        int _velocity = 0;
 
         public NoteOn(int channel, int note, int velocity, MusicTime when)
         {
@@ -63,8 +82,16 @@ namespace Ephemera.MidiLib
     public class NoteOff : BaseEvent
     {
         /// <summary>The note number to stop.</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int Note { get; init; }
+        public int Note
+        {
+            get { return _note; }
+            set
+            {
+                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                _note = value;
+            }
+        }
+        int _note = 0;
 
         public NoteOff(int channel, int note, MusicTime when)
         {
@@ -88,12 +115,28 @@ namespace Ephemera.MidiLib
     public class Controller : BaseEvent
     {
         /// <summary>Specific controller id.</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int ControllerId { get; init; }
+        public int ControllerId
+        {
+            get { return _controllerId; }
+            set
+            {
+                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                _controllerId = value;
+            }
+        }
+        int _controllerId = 0;
 
         /// <summary>Payload.</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int Value { get; init; }
+        public int Value
+        {
+            get { return _value; }
+            set
+            {
+                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                _value = value;
+            }
+        }
+        int _value = 0;
 
         public Controller(int channel, int controllerId, int value, MusicTime when)
         {
@@ -119,8 +162,16 @@ namespace Ephemera.MidiLib
     public class Patch : BaseEvent
     {
         /// <summary>Payload.</summary>
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int Value { get; init; }
+        public int Value
+        {
+            get { return _value; }
+            set
+            {
+                if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
+                _value = value;
+            }
+        }
+        int _value = 0;
 
         public Patch(int channel, int value, MusicTime when)
         {
@@ -216,13 +267,13 @@ namespace Ephemera.MidiLib
 
         public IEnumerable<BaseEvent> Get(MusicTime when)
         {
-            IEnumerable<BaseEvent> res = [];
+            // IEnumerable<BaseEvent> res = [];
+            // if (_allEvents.TryGetValue(when, out List<BaseEvent>? events))
+            // {
+            //     res = events;
+            // }
 
-            if (_allEvents.TryGetValue(when, out List<BaseEvent>? events))
-            {
-                res = events;
-            }
-
+            _allEvents.TryGetValue(when, out List<BaseEvent>? res);
             return res;
         }
 
