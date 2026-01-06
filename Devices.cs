@@ -188,8 +188,8 @@ namespace Ephemera.MidiLib
                 NoteOff evt => new NoteEvent(0, evt.ChannelNumber, MidiCommandCode.NoteOff, evt.Note, 0),
                 Controller evt => new ControlChangeEvent(0, evt.ChannelNumber, (MidiController)evt.ControllerId, evt.Value),
                 Patch evt => new PatchChangeEvent(0, evt.ChannelNumber, evt.Value),
-                Other evt => MidiEvent.FromRawMessage(evt.RawMessage),
-                _ => throw new MidiLibException($"Invalid event: {bevt}")
+                //Other evt => MidiEvent.FromRawMessage(evt.RawMessage),
+                _ => throw new MidiLibException($"Invalid send event: {bevt}")
             };
 
             _midiOut?.Send(mevt.GetAsShortMessage());

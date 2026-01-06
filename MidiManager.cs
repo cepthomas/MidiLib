@@ -10,12 +10,12 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
-    public class Manager
+    public class MidiManager
     {
         #region Singleton
-        public static Manager Instance { get { _instance ??= new Manager(); return _instance; } }
-        static Manager? _instance;
-        Manager() { }
+        public static MidiManager Instance { get { _instance ??= new MidiManager(); return _instance; } }
+        static MidiManager? _instance;
+        MidiManager() { }
         #endregion
 
         #region Fields TODO1 should these all be Dicts for fast lookup?
@@ -79,7 +79,6 @@ namespace Ephemera.MidiLib
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-    //    /// <param name="patch"></param>
         /// <param name="isDrums">TODO1 fix all isDrums </param>
         /// <returns></returns>
         public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, bool isDrums)
@@ -139,15 +138,18 @@ namespace Ephemera.MidiLib
 
                 // Others?
                 var parts = deviceName.SplitByToken(":");
-                switch (parts[0].ToLower(), parts.Count)
+                if (parts.Count > 0)
                 {
-                    case ("oscin", 2):
-                        dev = new OscInputDevice(parts[1]) { Id = _inputDevices.Count + 1 };
-                        break;
+                    switch (parts[0].ToLower(), parts.Count)
+                    {
+                        case ("oscin", 2):
+                            dev = new OscInputDevice(parts[1]) { Id = _inputDevices.Count + 1 };
+                            break;
 
-                    case ("nullin", 2):
-                        dev = new NullInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
-                        break;
+                        case ("nullin", 2):
+                            dev = new NullInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
+                            break;
+                    }
                 }
 
                 if (dev is not null)
@@ -190,15 +192,18 @@ namespace Ephemera.MidiLib
 
                 // Others?
                 var parts = deviceName.SplitByToken(":");
-                switch (parts[0].ToLower(), parts.Count)
+                if (parts.Count > 0)
                 {
-                    case ("oscout", 3):
-                        dev = new OscOutputDevice(parts[1], parts[2]) { Id = _outputDevices.Count + 1 };
-                        break;
+                    switch (parts[0].ToLower(), parts.Count)
+                    {
+                        case ("oscout", 3):
+                            dev = new OscOutputDevice(parts[1], parts[2]) { Id = _outputDevices.Count + 1 };
+                            break;
 
-                    case ("nullout", 2):
-                        dev = new NullOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
-                        break;
+                        case ("nullout", 2):
+                            dev = new NullOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
+                            break;
+                    }
                 }
 
                 if (dev is not null)

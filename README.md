@@ -40,6 +40,9 @@ Requires VS2022 and .NET8.
 - OutputChannel/InputChannel
     - Represents physical channels in a way usable by ChannelControl UI and MidiOutput.
 
+- MidiTimeConverter
+    - Used for mapping between data sets using different resolutions.
+
 ## UI
 
 - ChannelControl

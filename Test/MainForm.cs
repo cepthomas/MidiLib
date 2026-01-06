@@ -76,7 +76,7 @@ namespace Ephemera.MidiLib.Test
             timeBar.StateChange += TimeBar_StateChange;
 
             // Simple UI handlers.
-            btnKillMidi.Click += (_, __) => { Manager.Instance.Kill(); };
+            btnKillMidi.Click += (_, __) => { MidiManager.Instance.Kill(); };
             chkLoop.CheckedChanged += (_, __) => { timeBar.DoLoop = chkLoop.Checked; };
             btnRewind.Click += (_, __) => { timeBar.Rewind(); };
 
@@ -97,6 +97,8 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
+                TestX();
+
                 //TestScriptApp();
                 //TestPropertyEditor();
                 //TestTimeBar();
@@ -105,7 +107,7 @@ namespace Ephemera.MidiLib.Test
 
                 //TestDefFile();
 
-                TestChannel();
+                //TestChannel();
             }
             catch (Exception ex)
             {
@@ -124,7 +126,7 @@ namespace Ephemera.MidiLib.Test
         protected override void Dispose(bool disposing)
         {
             DestroyControls();
-            Manager.Instance.DestroyDevices();
+            MidiManager.Instance.DestroyDevices();
 
             if (disposing && (components is not null))
             {
@@ -134,6 +136,15 @@ namespace Ephemera.MidiLib.Test
             base.Dispose(disposing);
         }
         #endregion
+
+        void TestX()
+        {
+            var _outputDevice = MidiManager.Instance.GetOutputDevice("");
+
+
+
+        }
+
 
         #region Do work
         void Go_Click(object? sender, EventArgs e)
@@ -165,7 +176,7 @@ namespace Ephemera.MidiLib.Test
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test gen aux files.</summary>
-        void Gen_Click(object? sender, EventArgs e)
+        void Gen_Click(object? sender, EventArgs e) // TODO1 -> UT
         {
             Tell(INFO, $">>>>> Gen start.");
             var myPath = MiscUtils.GetSourcePath();
@@ -242,7 +253,7 @@ namespace Ephemera.MidiLib.Test
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test channel logic.</summary>
-        void TestChannel()
+        void TestChannel() // TODO1 -> UT
         {
             Tell(INFO, $">>>>> Channel.");
             var myPath = MiscUtils.GetSourcePath();
@@ -251,22 +262,22 @@ namespace Ephemera.MidiLib.Test
             var outdev = "nullout:test1";
             //var dev = new NullOutputDevice("DUMMY_DEVICE");
 
-            var chan_out1 = Manager.Instance.OpenOutputChannel(outdev, 1, "keys", false);
+            var chan_out1 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys", false);
             // GM instruments
             chan_out1.PatchName = "HonkyTonkPiano";
 
             // GM drums
-            var chan_out2 = Manager.Instance.OpenOutputChannel(outdev, 10, "drums", true);
+            var chan_out2 = MidiManager.Instance.OpenOutputChannel(outdev, 10, "drums", true);
             // TODO1 needs built in drumss or file
             chan_out2.PatchName = "Electronic";
 
             // Alt instruments
-            var chan_out3 = Manager.Instance.OpenOutputChannel(outdev, 4, "bass", false);
+            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "bass", false);
             chan_out3.InstrumentFile = Path.Combine(myPath, "test_defs.ini");
             chan_out3.PatchName = "WaterWhistle2";
 
             // Input
-            var chan_in1 = Manager.Instance.OpenInputChannel(outdev, 1, "my input");
+            var chan_in1 = MidiManager.Instance.OpenInputChannel(outdev, 1, "my input");
 
             // Test aliases.
             if (chan_out1.GetInstrumentName(40) != "SynthGuitar1") Tell(ERROR, "FAIL");
@@ -308,7 +319,7 @@ namespace Ephemera.MidiLib.Test
             //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
             //var instsList = orderedValues.ToList();
 
-            var chan = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", false);
+            var chan = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", false);
             chan.PatchName = "HonkyTonkPiano";
             Dictionary<int, string> vals = [];
             Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, chan.GetInstrumentName(i)));
@@ -323,7 +334,7 @@ namespace Ephemera.MidiLib.Test
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test def file loading etc.</summary>
-        void TestDefFile()
+        void TestDefFile() // TODO1 -> UT
         {
             Tell(INFO, $">>>>> Low level loading.");
             var myPath = MiscUtils.GetSourcePath();
@@ -344,12 +355,12 @@ namespace Ephemera.MidiLib.Test
             ch_ctrl2.Hide();
 
             ///// 1 - create all channels
-            var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", false);
+            var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", false);
             chan_out1.PatchName = "HonkyTonkPiano";
-            var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 10, "drums", true);
+            var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 10, "drums", true);
             chan_out2.PatchName = "Electronic";
             //var chan_out3 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "bass", "ElectricBassPick");
-            var chan_in1 = Manager.Instance.OpenInputChannel(INDEV, 1, "my input");
+            var chan_in1 = MidiManager.Instance.OpenInputChannel(INDEV, 1, "my input");
 
             ///// 2 - create a control for each channel and bind object
             int x = sldMasterVolume.Left;
@@ -402,10 +413,10 @@ namespace Ephemera.MidiLib.Test
         void TestStandardApp()
         {
             // Create channels.
-            var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", false);
+            var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", false);
             chan_out1.PatchName = "Harpsichord";
 
-            var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", false);
+            var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", false);
             chan_out2.PatchName = "Violin";
 
             // Init controls.
@@ -440,7 +451,7 @@ namespace Ephemera.MidiLib.Test
         }
 
         //-------------------------------------------------------------------------------//
-        void TestMusicTime()
+        void TestMusicTime() // TODO1 -> UT
         {
             var bt = new MusicTime("23.2.6");
             //UT_EQUAL(bt, 23 * MusicTime.SUBS_PER_BAR + 2 * MusicTime.SUBS_PER_BEAT + 6);
@@ -471,6 +482,28 @@ namespace Ephemera.MidiLib.Test
             Tell(INFO, $"bt [{bt}]");
         }
 
+        //----------------------------------------------------------------
+        void TestConverter() // TODO1 -> UT
+        {
+            //UT_STOP_ON_FAIL(false);
+
+            //////////////////////////////////////////////////////////
+            // A unit test. If we use ppq of 8 (32nd notes):
+            // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
+            //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
+
+            MidiTimeConverter mt = new(0, 100);
+            //UT_CLOSE(mt.InternalPeriod(), 75.0, 0.001);
+
+            mt = new(0, 99);
+            //UT_CLOSE(mt.InternalPeriod(), 75.757, 0.001);
+
+            mt = new(384, 100);
+            //UT_CLOSE(mt.MidiToSec(144000) / 60.0, 3.75, 0.001);
+
+            mt = new(96, 100);
+            //UT_CLOSE(mt.MidiPeriod(), 6.25, 0.001);
+        }
 
         //-------------------------------------------------------------------------------//
         /// <summary>General purpose test class</summary>
@@ -534,7 +567,7 @@ namespace Ephemera.MidiLib.Test
             var channel = sender switch
             {
                 ChannelControl => (sender as ChannelControl)!.BoundChannel,
-                CustomRenderer => Manager.Instance.GetOutputChannel((sender as CustomRenderer)!.ChannelNumber),
+                CustomRenderer => MidiManager.Instance.GetOutputChannel((sender as CustomRenderer)!.ChannelNumber),
                 _ => null // should never happen
             };
 
@@ -572,7 +605,7 @@ namespace Ephemera.MidiLib.Test
                     if (!enable)
                     {
                         // Kill just in case.
-                        Manager.Instance.Kill(channel);
+                        MidiManager.Instance.Kill(channel);
                     }
                 }
             }
@@ -586,7 +619,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         void DestroyControls()
         {
-            Manager.Instance.Kill();
+            MidiManager.Instance.Kill();
 
             // Clean out our current elements.
             _channelControls.ForEach(c =>
