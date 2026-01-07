@@ -19,9 +19,9 @@ namespace Ephemera.MidiLib.Test
 
             if (ui)
             {
-                Application.SetHighDpiMode(HighDpiMode.SystemAware);
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
+                //Application.SetHighDpiMode(HighDpiMode.SystemAware);
+                //Application.EnableVisualStyles();
+                //Application.SetCompatibleTextRenderingDefault(false);
                 var f = new MainForm();
                 Application.Run(f);
             }

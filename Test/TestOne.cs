@@ -41,33 +41,23 @@ namespace Ephemera.MidiLib.Test
             var outdev = "nullout:test1";
             var indev = "nullin:test1";
 
-            var chan_out1 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys", false);
+            var chan_out1 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys");
             // 1 is GM instruments
             chan_out1.PatchName = "HonkyTonkPiano";
 
-            try
-            {
-                chan_out1.PatchName = "Invalid!";
-
-            }
-            catch (Exception ex)
-            {
-            }
-
             // 2 is GM drums1
-            var chan_out2 = MidiManager.Instance.OpenOutputChannel(outdev, 10, "drums", true);
-            // TODO1 needs built in drums or file
+            var chan_out2 = MidiManager.Instance.OpenOutputChannelDrums(outdev, 10, "drums");
             chan_out2.PatchName = "Electronic";
 
             // 3 is Alt instruments
-            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "bass", false);
+            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "bass");
             chan_out3.InstrumentFile = Path.Combine(myPath, "test_defs.ini");
             chan_out3.PatchName = "WaterWhistle2";
 
             // Input
             var chan_in1 = MidiManager.Instance.OpenInputChannel(indev, 1, "my input");
 
-            // Test aliases. TODO1 test drum note names
+            // Test aliases.
             UT_EQUAL(chan_out1.GetInstrumentName(40), "Violin");
             UT_EQUAL(chan_out2.GetInstrumentName(25), "TR808");
             UT_EQUAL(chan_out3.GetInstrumentName(28), "OctaveStringPad2");

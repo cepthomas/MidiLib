@@ -250,7 +250,7 @@ namespace Ephemera.MidiLib.Test
             //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
             //var instsList = orderedValues.ToList();
 
-            var chan = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", false);
+            var chan = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys");
             chan.PatchName = "HonkyTonkPiano";
             Dictionary<int, string> vals = [];
             Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, chan.GetInstrumentName(i)));
@@ -273,9 +273,9 @@ namespace Ephemera.MidiLib.Test
             ch_ctrl2.Hide();
 
             ///// 1 - create all channels
-            var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", false);
+            var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys");
             chan_out1.PatchName = "HonkyTonkPiano";
-            var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 10, "drums", true);
+            var chan_out2 = MidiManager.Instance.OpenOutputChannelDrums(OUTDEV1, 10, "drums");
             chan_out2.PatchName = "Electronic";
             //var chan_out3 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "bass", "ElectricBassPick");
             var chan_in1 = MidiManager.Instance.OpenInputChannel(INDEV, 1, "my input");
@@ -331,10 +331,10 @@ namespace Ephemera.MidiLib.Test
         void TestStandardApp()
         {
             // Create channels.
-            var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", false);
+            var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!");
             chan_out1.PatchName = "Harpsichord";
 
-            var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", false);
+            var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!");
             chan_out2.PatchName = "Violin";
 
             // Init controls.

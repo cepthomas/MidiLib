@@ -74,14 +74,13 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Open an output channel. Lazy inits the device. Throws if anything is invalid.
+        /// Open a normal output channel. Lazy inits the device. Throws if anything is invalid.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-        /// <param name="isDrums">Handled differently TODO1 or use overload func?</param>
         /// <returns></returns>
-        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, bool isDrums)
+        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -90,7 +89,35 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            OutputChannel ch = new(outdev, channelNumber, isDrums ? ChannelFlavor.Drums : ChannelFlavor.Normal)
+            OutputChannel ch = new(outdev, channelNumber, ChannelFlavor.Normal)
+            {
+                ChannelName = channelName,
+                Enable = true,
+                Volume = VolumeDefs.DEFAULT_VOLUME,
+            };
+            
+            _outputChannels.Add(ch);
+
+            return ch;
+        }
+
+        /// <summary>
+        /// Open a drums output channel. Lazy inits the device. Throws if anything is invalid.
+        /// </summary>
+        /// <param name="deviceName"></param>
+        /// <param name="channelNumber"></param>
+        /// <param name="channelName"></param>
+        /// <returns></returns>
+        public OutputChannel OpenOutputChannelDrums(string deviceName, int channelNumber, string channelName)
+        {
+            // Check args.
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
+            if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+
+            var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
+
+            // Add the channel.
+            OutputChannel ch = new(outdev, channelNumber, ChannelFlavor.Drums)
             {
                 ChannelName = channelName,
                 Enable = true,
