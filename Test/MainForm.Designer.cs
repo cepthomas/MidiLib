@@ -25,8 +25,6 @@ namespace Ephemera.MidiLib.Test
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            btnGen = new System.Windows.Forms.ToolStripButton();
-            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             btnGo = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
@@ -44,7 +42,7 @@ namespace Ephemera.MidiLib.Test
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator1, btnGen, toolStripSeparator3, btnGo, toolStripSeparator4 });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator1, btnGo, toolStripSeparator4 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(1092, 26);
@@ -79,20 +77,6 @@ namespace Ephemera.MidiLib.Test
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
             toolStripSeparator1.Size = new System.Drawing.Size(6, 26);
-            // 
-            // btnGen
-            // 
-            btnGen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            btnGen.Image = (System.Drawing.Image)resources.GetObject("btnGen.Image");
-            btnGen.ImageTransparentColor = System.Drawing.Color.Magenta;
-            btnGen.Name = "btnGen";
-            btnGen.Size = new System.Drawing.Size(36, 23);
-            btnGen.Text = "gen";
-            // 
-            // toolStripSeparator3
-            // 
-            toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(6, 26);
             // 
             // btnGo
             // 
@@ -231,8 +215,6 @@ namespace Ephemera.MidiLib.Test
         private System.Windows.Forms.Button btnRewind;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton btnGen;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton btnGo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     }

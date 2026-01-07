@@ -8,11 +8,6 @@ namespace Ephemera.MidiLib
 {
     public class MidiDefs
     {
-        // #region Singleton
-        // public static MidiDefs Instance { get { _instance ??= new MidiDefs(); return _instance; } }
-        // static MidiDefs? _instance;
-        // #endregion
-
         #region Fields
         /// <summary>Midi constant.</summary>
         public const int MAX_MIDI = 127;
@@ -23,9 +18,6 @@ namespace Ephemera.MidiLib
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
 
-        // /// <summary>All the GM instruments.</summary>
-        // static readonly Dictionary<int, string> _instruments = [];
-
         /// <summary>All the GM controllers. TODO future custom list like instruments?</summary>
         static readonly Dictionary<int, string> _controllerIds = [];
 
@@ -34,9 +26,6 @@ namespace Ephemera.MidiLib
 
         /// <summary>All the GM drums.</summary>
         static readonly Dictionary<int, string> _drums = [];
-
-        // /// <summary>All the GM drum kits.</summary>
-        // static readonly Dictionary<int, string> _drumKits = [];
         #endregion
 
         #region Lifecycle
@@ -47,10 +36,8 @@ namespace Ephemera.MidiLib
             ir.ParseString(Properties.Resources.gm_defs);
 
             // Populate the defs.
-//            DoSection("instruments", _instruments);
             DoSection("controllers", _controllerIds);
             DoSection("drums", _drums);
-//            DoSection("drumkits", _drumKits);
 
             void DoSection(string section, Dictionary<int, string> target)
             {
@@ -65,18 +52,6 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Public
-        // /// <summary>
-        // /// Get instrument name.
-        // /// </summary>
-        // /// <param name="id"></param>
-        // /// <returns>The instrument name or a fabricated one if unknown.</returns>
-        // public static string GetInstrumentName(int id)
-        // {
-        //     if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
-
-        //     return _instruments.TryGetValue(id, out string? value) ? value : $"INST_{id}";
-        // }
-
         /// <summary>
         /// Get controller name. Throws if invalid.
         /// </summary>
@@ -84,7 +59,7 @@ namespace Ephemera.MidiLib
         /// <returns>The controller name or a fabricated one if unknown.</returns>
         public static string GetControllerName(int id)
         {
-            if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
+            if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException($"Controller:{id}"); }
 
             return _controllerIds.TryGetValue(id, out string? value) ? value : $"CTLR_{id}";
         }
@@ -96,33 +71,10 @@ namespace Ephemera.MidiLib
         /// <returns>The drum name or a fabricated one if unknown.</returns>
         public static string GetDrumName(int id)
         {
-            if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
+            if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException($"Drum:{id}"); }
 
             return _drums.TryGetValue(id, out string? value) ? value : $"DRUM_{id}";
         }
-
-        // /// <summary>
-        // /// Get GM drum kit name. Throws if invalid.
-        // /// </summary>
-        // /// <param name="id"></param>
-        // /// <returns>The drumkit name or a fabricated one if unknown.</returns>
-        // public static string GetDrumKitName(int id)
-        // {
-        //     if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(id)); }
-
-        //     return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
-        // }
-
-        // /// <summary>
-        // /// Get corresponding number.
-        // /// </summary>
-        // /// <param name="name"></param>
-        // /// <returns></returns>
-        // public static int GetInstrumentId(string name) // TODO1 handle Channel aliases
-        // {
-        //     var i = _instruments.Where(v => v.Value == name);
-        //     return i.Any() ? i.First().Key : -1;
-        // }
 
         /// <summary>
         /// Get corresponding number.
@@ -145,17 +97,6 @@ namespace Ephemera.MidiLib
             var i = _drums.Where(v => v.Value == name);
             return i.Any() ? i.First().Key : -1;
         }
-
-        // /// <summary>
-        // /// Get corresponding number.
-        // /// </summary>
-        // /// <param name="name"></param>
-        // /// <returns></returns>
-        // public static int GetDrumKitId(string name)
-        // {
-        //     var i = _drumKits.Where(v => v.Value == name);
-        //     return i.Any() ? i.First().Key : -1;
-        // }
         #endregion
 
         #region Utilities
@@ -278,7 +219,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Convert a midi dictionary into ordered list of strings.
+        /// Convert a midi dictionary into ordered list of strings. TODO doesn't really belong here.
         /// </summary>
         /// <param name="source">The dictionary to process</param>
         /// <param name="addKey">Add the index number to the entry</param>

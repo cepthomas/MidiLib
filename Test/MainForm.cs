@@ -81,7 +81,6 @@ namespace Ephemera.MidiLib.Test
             btnRewind.Click += (_, __) => { timeBar.Rewind(); };
 
             btnGo.Click += Go_Click;
-            btnGen.Click += Gen_Click;
 
             //Manager.Instance.MessageReceive += Mgr_MessageReceive;
             //Manager.Instance.MessageSend += Mgr_MessageSend;
@@ -174,30 +173,6 @@ namespace Ephemera.MidiLib.Test
         }
         #endregion
 
-        //-------------------------------------------------------------------------------//
-        /// <summary>Test gen aux files.</summary>
-        void Gen_Click(object? sender, EventArgs e) // TODO1 -> UT
-        {
-            Tell(INFO, $">>>>> Gen start.");
-            var myPath = MiscUtils.GetSourcePath();
-            string fnIni = Path.Combine(myPath, "..", "gm_defs.ini");
-
-            Tell(INFO, $">>>>> Gen Markdown.");
-            var smd = MidiDefs.GenMarkdown();
-            var fnOut = Path.Join(myPath, "out", "midi_defs.md");
-            File.WriteAllText(fnOut, string.Join(Environment.NewLine, smd));
-
-            Tell(INFO, $">>>>> Gen Lua.");
-            var sld = MidiDefs.GenLua();
-            fnOut = Path.Join(myPath, "out", "midi_defs.lua");
-            File.WriteAllText(fnOut, string.Join(Environment.NewLine, sld));
-
-            Tell(INFO, $">>>>> Gen Device Info.");
-            var sdi = MidiDefs.GenUserDeviceInfo();
-            Tell(INFO, string.Join(Environment.NewLine, sdi));
-
-            Tell(INFO, $">>>>> Gen done.");
-        }
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test time bar.</summary>
@@ -252,51 +227,7 @@ namespace Ephemera.MidiLib.Test
         }
 
         //-------------------------------------------------------------------------------//
-        /// <summary>Test channel logic.</summary>
-        void TestChannel() // TODO1 -> UT
-        {
-            Tell(INFO, $">>>>> Channel.");
-            var myPath = MiscUtils.GetSourcePath();
 
-            // Dummy device.
-            var outdev = "nullout:test1";
-            //var dev = new NullOutputDevice("DUMMY_DEVICE");
-
-            var chan_out1 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys", false);
-            // GM instruments
-            chan_out1.PatchName = "HonkyTonkPiano";
-
-            // GM drums
-            var chan_out2 = MidiManager.Instance.OpenOutputChannel(outdev, 10, "drums", true);
-            // TODO1 needs built in drumss or file
-            chan_out2.PatchName = "Electronic";
-
-            // Alt instruments
-            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "bass", false);
-            chan_out3.InstrumentFile = Path.Combine(myPath, "test_defs.ini");
-            chan_out3.PatchName = "WaterWhistle2";
-
-            // Input
-            var chan_in1 = MidiManager.Instance.OpenInputChannel(outdev, 1, "my input");
-
-            // Test aliases.
-            if (chan_out1.GetInstrumentName(40) != "SynthGuitar1") Tell(ERROR, "FAIL");
-            if (chan_out2.GetInstrumentName(101) != "INST_101") Tell(ERROR, "FAIL");
-
-            // Should send midi.
-            chan_out3.Patch = 77;
-            //if (dev.CollectedEvents.Count != 1) Tell(ERROR, "FAIL");
-
-            Tell(INFO, "DONE");
-        }
-
-
-
-        //var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", "HonkyTonkPiano", false);
-        ////var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "bass", "ElectricBassPick");
-        //var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 10, "drums", "Electronic", true);
-        //var chan_out1 = Manager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord", false);
-        //var chan_out2 = Manager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin", false);
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test property editing using TypeEditors.</summary>
@@ -332,19 +263,6 @@ namespace Ephemera.MidiLib.Test
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
 
-        //-------------------------------------------------------------------------------//
-        /// <summary>Test def file loading etc.</summary>
-        void TestDefFile() // TODO1 -> UT
-        {
-            Tell(INFO, $">>>>> Low level loading.");
-            var myPath = MiscUtils.GetSourcePath();
-            string fn = Path.Join(myPath, "..", "gm_defs.ini");
-
-            var ir = new IniReader();
-            ir.ParseFile(fn);
-
-            ir.GetSectionNames().ForEach(n => Tell(INFO, $"section:{n} => {ir.GetValues(n).Count}"));
-        }
 
         //-------------------------------------------------------------------------------//
         /// <summary>App driven by a script - as Nebulua/Nebulator. Creates channels and controls dynamically.</summary>
@@ -448,61 +366,6 @@ namespace Ephemera.MidiLib.Test
 
             ///// 3 - do work
             // ...
-        }
-
-        //-------------------------------------------------------------------------------//
-        void TestMusicTime() // TODO1 -> UT
-        {
-            var bt = new MusicTime("23.2.6");
-            //UT_EQUAL(bt, 23 * MusicTime.SUBS_PER_BAR + 2 * MusicTime.SUBS_PER_BEAT + 6);
-            Tell(INFO, $"bt [{bt}]");
-
-            bt = new MusicTime("146.1");
-            //UT_EQUAL(bt, 146 * MusicTime.SUBS_PER_BAR + 1 * MusicTime.SUBS_PER_BEAT);
-            Tell(INFO, $"bt [{bt}]");
-
-            bt = new MusicTime("71");
-            //UT_EQUAL(bt, 71 * MusicTime.SUBS_PER_BAR);
-            Tell(INFO, $"bt [{bt}]");
-
-            bt = new MusicTime("49.55.8");
-            //UT_EQUAL(bt, -1);
-            Tell(INFO, $"bt [{bt}]");
-
-            bt = new MusicTime("111.3.88");
-            //UT_EQUAL(bt, -1);
-            Tell(INFO, $"bt [{bt}]");
-
-            bt = new MusicTime(12345);
-            //UT_EQUAL(sbt, "385.3.1");
-            Tell(INFO, $"bt [{bt}]");
-
-            bt = new MusicTime("invalid");
-            //UT_EQUAL(bt, -1);
-            Tell(INFO, $"bt [{bt}]");
-        }
-
-        //----------------------------------------------------------------
-        void TestConverter() // TODO1 -> UT
-        {
-            //UT_STOP_ON_FAIL(false);
-
-            //////////////////////////////////////////////////////////
-            // A unit test. If we use ppq of 8 (32nd notes):
-            // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
-            //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
-
-            MidiTimeConverter mt = new(0, 100);
-            //UT_CLOSE(mt.InternalPeriod(), 75.0, 0.001);
-
-            mt = new(0, 99);
-            //UT_CLOSE(mt.InternalPeriod(), 75.757, 0.001);
-
-            mt = new(384, 100);
-            //UT_CLOSE(mt.MidiToSec(144000) / 60.0, 3.75, 0.001);
-
-            mt = new(96, 100);
-            //UT_CLOSE(mt.MidiPeriod(), 6.25, 0.001);
         }
 
         //-------------------------------------------------------------------------------//

@@ -20,13 +20,13 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <inheritdoc />
-        public string DeviceName { get; }
+        public string DeviceName { get; } = "???";
 
         /// <inheritdoc />
-        public int Id { get; init; }
+        public int Id { get; init; } = -1;
 
         /// <inheritdoc />
-        public bool CaptureEnable { get; set; }
+        public bool CaptureEnable { get; set; } = false;
 
         /// <inheritdoc />
         public bool Valid { get { return _midiIn is not null; } }
@@ -137,10 +137,10 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <inheritdoc />
-        public string DeviceName { get; }
+        public string DeviceName { get; } = "???";
 
         /// <inheritdoc />
-        public int Id { get; init; }
+        public int Id { get; init; } = -1;
 
         /// <inheritdoc />
         public bool Valid { get { return _midiOut is not null;} }

@@ -1,0 +1,140 @@
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfTricks.PNUT;
+using Ephemera.MidiLib;
+
+
+
+namespace Ephemera.MidiLib.Test
+{
+
+    //----------------------------------------------------------------
+    public class MIDILIB_BASIC : TestSuite
+    {
+        string myPath = MiscUtils.GetSourcePath();
+
+        public override void RunSuite()
+        {
+            UT_STOP_ON_FAIL(true);
+
+            ///// Test gen aux files.
+
+            string fnIni = Path.Combine(myPath, "..", "gm_defs.ini");
+
+            var smd = MidiDefs.GenMarkdown();
+            var fnOut = Path.Join(myPath, "out", "midi_defs.md");
+            File.WriteAllText(fnOut, string.Join(Environment.NewLine, smd));
+
+            var sld = MidiDefs.GenLua();
+            fnOut = Path.Join(myPath, "out", "midi_defs.lua");
+            File.WriteAllText(fnOut, string.Join(Environment.NewLine, sld));
+
+            var sdi = MidiDefs.GenUserDeviceInfo();
+
+            ///// Test channel logic.
+
+            // Dummy device.
+            var outdev = "nullout:test1";
+            var indev = "nullin:test1";
+
+            var chan_out1 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys", false);
+            // 1 is GM instruments
+            chan_out1.PatchName = "HonkyTonkPiano";
+
+            try
+            {
+                chan_out1.PatchName = "Invalid!";
+
+            }
+            catch (Exception ex)
+            {
+            }
+
+            // 2 is GM drums1
+            var chan_out2 = MidiManager.Instance.OpenOutputChannel(outdev, 10, "drums", true);
+            // TODO1 needs built in drums or file
+            chan_out2.PatchName = "Electronic";
+
+            // 3 is Alt instruments
+            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "bass", false);
+            chan_out3.InstrumentFile = Path.Combine(myPath, "test_defs.ini");
+            chan_out3.PatchName = "WaterWhistle2";
+
+            // Input
+            var chan_in1 = MidiManager.Instance.OpenInputChannel(indev, 1, "my input");
+
+            // Test aliases. TODO1 test drum note names
+            UT_EQUAL(chan_out1.GetInstrumentName(40), "Violin");
+            UT_EQUAL(chan_out2.GetInstrumentName(25), "TR808");
+            UT_EQUAL(chan_out3.GetInstrumentName(28), "OctaveStringPad2");
+
+            // Should send midi.
+            chan_out3.Patch = 77;
+            //if (dev.CollectedEvents.Count != 1) Tell(ERROR, "FAIL");
+
+
+            ///// Test def file loading etc.
+
+            string fn = Path.Join(myPath, "..", "gm_defs.ini");
+
+            var ir = new IniReader();
+            ir.ParseFile(fn);
+
+            var sn = ir.GetSectionNames();
+            UT_EQUAL(sn.Count, 4);
+
+
+            ///// TestMusicTime
+
+            var bt = new MusicTime("23.2.6");
+            UT_EQUAL(bt.Tick, 23 * MusicTime.TicksPerBar + 2 * MusicTime.TicksPerBeat + 6);
+
+            bt = new MusicTime("146.1");
+            UT_EQUAL(bt.Tick, 146 * MusicTime.TicksPerBar + 1 * MusicTime.TicksPerBeat);
+
+            bt = new MusicTime("71");
+            UT_EQUAL(bt.Tick, 71 * MusicTime.TicksPerBar);
+
+            bt = new MusicTime(12345);
+            UT_EQUAL(bt.ToString(), "385.3.1");
+
+            UT_THROWS(typeof(ArgumentException), () =>
+            {
+                bt = new MusicTime("49.55.8");
+            });
+
+            UT_THROWS(typeof(ArgumentException), () =>
+            {
+                bt = new MusicTime("111.3.88");
+            });
+
+            UT_THROWS(typeof(ArgumentException), () =>
+            {
+                bt = new MusicTime("invalid");
+            });
+
+
+            ///// TestConverter
+
+            // A unit test. If we use ppq of 8 (32nd notes):
+            // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
+            //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
+
+            MidiTimeConverter mt = new(0, 100);
+            UT_CLOSE(mt.InternalPeriod(), 75.0, 0.001);
+
+            mt = new(0, 99);
+            UT_CLOSE(mt.InternalPeriod(), 75.757, 0.001);
+
+            mt = new(384, 100);
+            UT_CLOSE(mt.MidiToSec(144000) / 60.0, 3.75, 0.001);
+
+            mt = new(96, 100);
+            UT_CLOSE(mt.MidiPeriod(), 6.25, 0.001);
+        }
+    }
+}

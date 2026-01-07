@@ -60,6 +60,15 @@ namespace Ephemera.MidiLib
         // optional:
         readonly Slider sldControllerValue = new();
         readonly Button btnSend = new();
+
+        // backing:
+        UserRenderer? _userRenderer = null;
+        Color _selectedColor = Color.Red;
+        int _controllerId = 0;
+        int _controllerValue = 0;
+        bool _selected = false;
+
+
         #endregion
 
         #region Properties
@@ -74,17 +83,15 @@ namespace Ephemera.MidiLib
         public UserRenderer? UserRenderer
         {
             get { return _userRenderer; }
-            set {
-                _userRenderer = value;
-                if (_userRenderer is not null)
-                {
-                    _userRenderer.Location = new(PAD, Height);
-                    Height += _userRenderer.Height + PAD;
-                    Controls.Add(_userRenderer);
+            set { _userRenderer = value;
+                  if (_userRenderer is not null)
+                  {
+                      _userRenderer.Location = new(PAD, Height);
+                      Height += _userRenderer.Height + PAD;
+                      Controls.Add(_userRenderer);
+                  }
                 }
-            }
         }
-        UserRenderer? _userRenderer = null;
 
         /// <summary>Display options.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -97,11 +104,10 @@ namespace Ephemera.MidiLib
         public Color DrawColor
         {
             get { return sldVolume.DrawColor; }
-            set {
-                sldVolume.DrawColor = value;
-                sldControllerValue.DrawColor = value;
-                btnSend.BackColor = value;
-            }
+            set { sldVolume.DrawColor = value;
+                  sldControllerValue.DrawColor = value;
+                  btnSend.BackColor = value;
+                }
         }
 
         /// <summary>Drawing the control when selected.</summary>
@@ -112,7 +118,6 @@ namespace Ephemera.MidiLib
             get { return _selectedColor; }
             set { _selectedColor = value; }
         }
-        Color _selectedColor = Color.Red;
 
         /// <summary>For muting/soloing.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -136,19 +141,17 @@ namespace Ephemera.MidiLib
         public int ControllerId
         {
             get { return _controllerId; }
-            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
-                _controllerId = value; }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerId:{value}");
+                  else _controllerId = value; }
         }
-        int _controllerId = 0;
 
         /// <summary>Controller payload.</summary>
         public int ControllerValue
         {
             get { return _controllerId; }
-            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException(nameof(value));
-                _controllerValue = value; }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerValue:{value}");
+                  else _controllerValue = value; }
         }
-        int _controllerValue = 0;
 
         /// <summary>User selection.</summary>
         public bool Selected
@@ -156,7 +159,6 @@ namespace Ephemera.MidiLib
             get { return _selected; }
             private set { _selected = value; lblInfo.BackColor = _selected ? SelectedColor : BackColor; }
         }
-        bool _selected = false;
         #endregion
 
         #region Events
@@ -177,7 +179,7 @@ namespace Ephemera.MidiLib
 
             // Dummy channel to satisfy designer. Will be overwritten by the real one.
             var dev = new NullOutputDevice("DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(dev, 9);
+            BoundChannel = new OutputChannel(dev, 9, ChannelFlavor.Normal);
         }
 
         /// <summary>

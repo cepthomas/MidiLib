@@ -57,12 +57,12 @@ namespace Ephemera.MidiLib
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
+            if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
 
             var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
 
             // Add the channel.
-            InputChannel ch = new(indev, channelNumber)
+            InputChannel ch = new(indev, channelNumber, ChannelFlavor.Normal)
             {
                 ChannelName = channelName,
                 Enable = true,
@@ -79,25 +79,24 @@ namespace Ephemera.MidiLib
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-        /// <param name="isDrums">TODO1 fix all isDrums </param>
+        /// <param name="isDrums">Handled differently TODO1 or use overload func?</param>
         /// <returns></returns>
         public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, bool isDrums)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
+            if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            OutputChannel ch = new(outdev, channelNumber)//, patch, )
+            OutputChannel ch = new(outdev, channelNumber, isDrums ? ChannelFlavor.Drums : ChannelFlavor.Normal)
             {
                 ChannelName = channelName,
-                IsDrums = isDrums,
                 Enable = true,
                 Volume = VolumeDefs.DEFAULT_VOLUME,
-              //  PatchName = patch,
             };
+            
             _outputChannels.Add(ch);
 
             return ch;

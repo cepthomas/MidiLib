@@ -15,12 +15,10 @@ namespace Ephemera.MidiLib
 
         /// <summary>Increment for unique value.</summary>
         static int _nextId = 1;
-        #endregion
-
 
         /// <summary>Convenience.</summary>
         public static readonly MusicTime ZERO = new();
-
+        #endregion
 
         #region Properties
         /// <summary>Only 4/4 time supported currently.</summary>
@@ -96,9 +94,7 @@ namespace Ephemera.MidiLib
             int ticks = 0;
 
             if (ok && parts.Count > 0) ok = int.TryParse(parts[0], out bars);
-
             if (ok && parts.Count > 1) ok = int.TryParse(parts[1], out beats);
-
             if (ok && parts.Count > 2) ok = int.TryParse(parts[2], out ticks);
 
             if (ok &&
@@ -127,7 +123,7 @@ namespace Ephemera.MidiLib
 
             if (subs >= 8)
             {
-                throw new Exception($"Invalid sub value: {beat}");
+                throw new ArgumentException($"beat:{beat}");
             }
 
             // Scale to native.
@@ -212,7 +208,7 @@ namespace Ephemera.MidiLib
         public override string ToString()
         {
             var p = Parts;
-            return $"{p.bar}.{p.beat}.{p.tick:00}";
+            return $"{p.bar}.{p.beat}.{p.tick:0}";
         }
         #endregion
 
