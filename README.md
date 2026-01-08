@@ -11,6 +11,13 @@ Requires VS2022 and .NET8.
 - NAudio `NoteEvent` is used to represent Note Off and Key After Touch messages. It is also the base class for `NoteOnEvent`. Not sure why it was done that way.
 - Midi devices are limited to the ones available on your box. (Hint - try VirtualMidiSynth).
 
+
+// Uses nullin:name for DeviceName.
+// Uses nullout:name for DeviceName.
+// Uses oscin:port for DeviceName.
+// Uses oscout:host:port for DeviceName.
+
+
 # Components
 
 ## Core

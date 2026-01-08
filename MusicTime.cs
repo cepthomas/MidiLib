@@ -212,9 +212,16 @@ namespace Ephemera.MidiLib
         }
         #endregion
 
-        #region Operator overloads
-        public override int GetHashCode() { return _id; }
+        #region Overrides - IEquatable etc
+        // Override GetHashCode() for dictionary lookups.
+        public override int GetHashCode() { return Tick; }
 
+        // Override Equals() for value equality comparison.
+        public override bool Equals(object? obj) => Equals(obj as MusicTime);
+        public bool Equals(MusicTime? other) { return other is not null && Tick == other.Tick; }
+        #endregion
+
+        #region Operator overloads
         public static bool operator ==(MusicTime a, MusicTime b) { return a.Tick == b.Tick; }
 
         public static bool operator !=(MusicTime a, MusicTime b) { return !(a == b); }
@@ -230,12 +237,6 @@ namespace Ephemera.MidiLib
         public static bool operator <=(MusicTime a, MusicTime b) { return a.Tick <= b.Tick; }
 
         public static bool operator >=(MusicTime a, MusicTime b) { return a.Tick >= b.Tick; }
-        #endregion
-
-        #region IEquatable
-        public bool Equals(MusicTime? other) { return other is MusicTime tm && tm.Tick == Tick; }
-
-        public override bool Equals(object? obj) { return obj is MusicTime time && Equals(time); }
         #endregion
     }
 }

@@ -249,14 +249,8 @@ namespace Ephemera.MidiLib
 
         public IEnumerable<BaseEvent> Get(MusicTime when)
         {
-            // IEnumerable<BaseEvent> res = [];
-            // if (_allEvents.TryGetValue(when, out List<BaseEvent>? events))
-            // {
-            //     res = events;
-            // }
-
             _allEvents.TryGetValue(when, out List<BaseEvent>? res);
-            return res;
+            return res ?? [];
         }
 
         public void RemoveTransients(MusicTime when)

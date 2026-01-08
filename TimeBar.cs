@@ -140,7 +140,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            var s = $"C:{_current.Tick} L:{_length.Tick} {_selStart.Tick}=>{_selEnd.Tick}";
+            var s = $"current:{_current.Tick} length:{_length.Tick} start:{_selStart.Tick} end:{_selEnd.Tick}";
             return s;
         }
         #endregion

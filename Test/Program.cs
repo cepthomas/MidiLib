@@ -7,6 +7,7 @@ using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 
+
 namespace Ephemera.MidiLib.Test
 {
     static class Program
@@ -28,7 +29,7 @@ namespace Ephemera.MidiLib.Test
             else
             {
                 TestRunner runner = new(OutputFormat.Readable);
-                var cases = new[] { "MIDILIB" };
+                var cases = new[] { "MIDILIB" };  // MIDILIB_MUSTIME
                 runner.RunSuites(cases);
                 File.WriteAllLines(Path.Join(MiscUtils.GetSourcePath(), "out", "test.txt"), runner.Context.OutputLines);
             }

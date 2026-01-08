@@ -19,7 +19,6 @@ using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
 
 
-
 namespace Ephemera.MidiLib.Test
 {
     public partial class MainForm : Form
@@ -96,17 +95,11 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
-                TestX();
-
                 //TestScriptApp();
+
                 //TestPropertyEditor();
+
                 //TestTimeBar();
-
-                //TestMusicTime();
-
-                //TestDefFile();
-
-                //TestChannel();
             }
             catch (Exception ex)
             {
@@ -136,15 +129,6 @@ namespace Ephemera.MidiLib.Test
         }
         #endregion
 
-        void TestX()
-        {
-            var _outputDevice = MidiManager.Instance.GetOutputDevice("");
-
-
-
-        }
-
-
         #region Do work
         void Go_Click(object? sender, EventArgs e)
         {
@@ -154,13 +138,7 @@ namespace Ephemera.MidiLib.Test
             {
                 TestScriptApp();
 
-                //TestMusicTime();
-
-                //TestDefFile();
-
                 //TestPropertyEditor();
-
-                //TestChannel();
 
                 //TestTimeBar();
             }
