@@ -166,11 +166,10 @@ namespace Ephemera.MidiLib
         {
             Reset();
 
-            if (sectInfo.Any())
+            if (sectInfo.Any()) // beat
             {
-                List<(int tick, string name)> sinfo = [];
                 var spos = sectInfo.Keys.OrderBy(k => k).ToList();
-                spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
+                spos.ForEach(sp => _sectionInfo.Add((sp * MusicTime.TicksPerBeat, sectInfo[sp])));
                 _length.Set(_sectionInfo.Last().tick);
                 _selEnd.Set(_length);
 
