@@ -194,7 +194,7 @@ namespace Ephemera.MidiLib.Test
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (timeBar.Valid && e.KeyData == Keys.Escape)
+            if (!timeBar.FreeRunning && e.KeyData == Keys.Escape)
             {
                 // Reset.
                 timeBar.ResetSelection();
