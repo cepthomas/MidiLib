@@ -86,7 +86,7 @@ namespace Ephemera.MidiLib
         /// <summary>Convenience for readability.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool Valid { get { return _length.Tick > 0; } }
+        public bool FreeRunning { get { return _length == MusicTime.ZERO; } }
 
         /// <summary>Convenience for readability.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -208,9 +208,15 @@ namespace Ephemera.MidiLib
         /// <returns>True if still running.</returns>
         public bool Increment()
         {
-            bool running = Valid;
+           // if (!Valid) return false;
 
-            if (running)
+            bool running = true;
+
+            if (FreeRunning) // Update and keep going.
+            {
+                _current.Add(1);
+            }
+            else // selection
             {
                 if (_current >= _selEnd) // at end
                 {
@@ -223,7 +229,7 @@ namespace Ephemera.MidiLib
                         running = false;
                     }
                 }
-                else // continue
+                else // just continue
                 {
                     _current.Add(1);
                 }
@@ -245,11 +251,16 @@ namespace Ephemera.MidiLib
             // Setup.
             pe.Graphics.Clear(BackColor);
 
-            if (!Valid)
+            if (FreeRunning)
             {
                 _format.Alignment = StringAlignment.Center;
-                _format.LineAlignment = StringAlignment.Center;
-                pe.Graphics.DrawString("Invalid", FontLarge, Brushes.Black, ClientRectangle, _format);
+                _format.LineAlignment = StringAlignment.Near;
+                //pe.Graphics.DrawString("Free Running", FontSmall, Brushes.Black, ClientRectangle, _format);
+
+                _format.Alignment = StringAlignment.Center;
+                _format.LineAlignment = StringAlignment.Near; // Center;
+                pe.Graphics.DrawString(_current.ToString(), FontLarge, Brushes.Black, ClientRectangle, _format);
+
                 return;
             }
 
@@ -257,7 +268,6 @@ namespace Ephemera.MidiLib
             _penSel.Color = SelectedColor;
 
             ///// Loop area.
-            // box:
             int lstart = GetClientFromTick(_selStart.Tick);
             int lend = GetClientFromTick(_selEnd.Tick);
             PointF[] ploc = [new(lstart, 0), new(lend, 0), new(lend, Height), new(lstart, Height)];
@@ -314,7 +324,7 @@ namespace Ephemera.MidiLib
         protected override void OnMouseMove(MouseEventArgs e)
         {
             // SetToolTip triggers mouse move event - infernal loop.
-            if (Valid && e.X != _lastXPos)
+            if (!FreeRunning && e.X != _lastXPos)
             {
                 _lastXPos = e.X;
 
@@ -341,7 +351,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            if (Valid)
+            if (!FreeRunning)
             {
                 int newval = GetTickFromClient(e.X);
 
@@ -356,7 +366,6 @@ namespace Ephemera.MidiLib
                 else
                 {
                     _current.Set(newval, Snap);
-
                     StateChange?.Invoke(this, new() { CurrentTimeChange = true });
                 }
 
@@ -374,10 +383,13 @@ namespace Ephemera.MidiLib
         /// </summary>
         void ValidateTimes()
         {
-            // Maybe fix loop points.
-            _selEnd.Constrain(MusicTime.ZERO, _length);
-            _selStart.Constrain(MusicTime.ZERO, _selEnd);
-            _current.Constrain(_selStart, _selEnd);
+            if (!FreeRunning)
+            {
+                // Maybe fix loop points.
+                _selEnd.Constrain(MusicTime.ZERO, _length);
+                _selStart.Constrain(MusicTime.ZERO, _selEnd);
+                _current.Constrain(_selStart, _selEnd);
+            }
         }
 
         /// <summary>
