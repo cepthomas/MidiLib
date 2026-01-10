@@ -21,7 +21,7 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <inheritdoc />
-        /// Uses oscin:port for DeviceName.
+        /// Uses 'oscin:{port}' for DeviceName.
         public string DeviceName { get; private set; } = "Invalid";
 
         /// <inheritdoc />
@@ -37,17 +37,36 @@ namespace Ephemera.MidiLib
         #region Lifecycle
         /// <summary>
         /// Constructor. Throws for invalid args etc.
-        /// <param name="port">Client port.</param>
+        /// <param name="deviceName">Client must supply name of device.</param>
         /// </summary>
-        public OscInputDevice(string port)
+        public OscInputDevice(string deviceName)
         {
-            // Check for properly formed port.
-            if (int.TryParse(port, out int iport))
+            bool valid = false;
+            var parts = deviceName.SplitByToken(":");
+            if (parts.Count == 2)
             {
-                _oscInput = new NebOsc.Input(iport);
-                DeviceName = _oscInput.DeviceName;
-                _oscInput.InputReceived += OscInput_InputReceived;
-                _oscInput.Notification += OscInput_Notification;
+                if (parts[0] == "oscin")
+                {
+                    // Check for properly formed port.
+                    if (int.TryParse(parts[1], out int iport))
+                    {
+                        try
+                        {
+                            _oscInput = new NebOsc.Input(iport);
+                            DeviceName = deviceName;
+                            _oscInput.Notification += OscInput_Notification;
+                            valid = true;
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
+            }
+
+            if (!valid)
+            {
+                throw new ArgumentException($"Invalid device name [{deviceName}]");
             }
         }
 
@@ -123,7 +142,7 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <inheritdoc />
-        /// Uses oscout:host:port for DeviceName.
+        /// Uses 'oscout:{host}:{port}' for DeviceName.
         public string DeviceName { get; private set; } = "Invalid";
 
         /// <inheritdoc />
@@ -137,16 +156,35 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Constructor. Throws for invalid args etc.
         /// </summary>
-        /// <param name="host">Client host.</param>
-        /// <param name="port">Client port.</param>
-        public OscOutputDevice(string host, string port)
+        /// <param name="deviceName">Client must supply name of device.</param>
+        public OscOutputDevice(string deviceName)
         {
-            // Check for properly formed port.
-            if (int.TryParse(port, out int iport))
+            bool valid = false;
+            var parts = deviceName.SplitByToken(":");
+            if (parts.Count == 3)
             {
-                _oscOutput = new NebOsc.Output(host, iport);
-                DeviceName = _oscOutput.DeviceName;
-                _oscOutput.Notification += OscOutput_Notification;
+                if (parts[0] == "oscout")
+                {
+                    // Check for properly formed port.
+                    if (int.TryParse(parts[2], out int iport))
+                    {
+                        try
+                        {
+                            _oscOutput = new NebOsc.Output(parts[1], iport);
+                            DeviceName = deviceName;
+                            _oscOutput.Notification += OscOutput_Notification;
+                            valid = true;
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
+            }
+
+            if (!valid)
+            {
+                throw new ArgumentException($"Invalid device name [{deviceName}]");
             }
         }
 

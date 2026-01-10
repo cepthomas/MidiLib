@@ -154,36 +154,33 @@ namespace Ephemera.MidiLib
 
             if (!indevs.Any())
             {
-                // Is it a new device? Try to create it.
-
-                // Midi input device?
-                if (MidiInputDevice.GetAvailableDevices().Contains(deviceName))
+                // Is it a new device? Try to create specific flavor based on name.
+                try
                 {
-                    dev = new MidiInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
-                }
-
-                // Others?
-                var parts = deviceName.SplitByToken(":");
-                if (parts.Count > 0)
-                {
-                    switch (parts[0].ToLower(), parts.Count)
+                    if (MidiInputDevice.GetAvailableDevices().Contains(deviceName))
                     {
-                        case ("oscin", 2):
-                            dev = new OscInputDevice(parts[1]) { Id = _inputDevices.Count + 1 };
-                            break;
+                        dev = new MidiInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
+                    }
+                    else if (deviceName.Contains("oscin"))
+                    {
+                        dev = new OscInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
+                    }
+                    else if (deviceName.Contains("nullin"))
+                    {
+                        dev = new NullInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
+                    }
 
-                        case ("nullin", 2):
-                            dev = new NullInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
-                            break;
+                    if (dev is not null)
+                    {
+                        _inputDevices.Add(dev);
+                        dev.CaptureEnable = true;
+                        // Just pass inputs up.
+                        dev.MessageReceive += (sender, e) => MessageReceive?.Invoke((MidiInputDevice)sender!, e);
                     }
                 }
-
-                if (dev is not null)
+                catch (Exception ex)
                 {
-                    _inputDevices.Add(dev);
-                    dev.CaptureEnable = true;
-                    // Just pass inputs up.
-                    dev.MessageReceive += (sender, e) => MessageReceive?.Invoke((MidiInputDevice)sender!, e);
+                    dev = null;
                 }
             }
             else
@@ -208,34 +205,31 @@ namespace Ephemera.MidiLib
 
             if (!outdevs.Any())
             {
-                // Is it a new device? Try to create it.
-
-                // Midi output device?
-                if (MidiOutputDevice.GetAvailableDevices().Contains(deviceName))
+                // Is it a new device? Try to create specific flavor based on name.
+                try
                 {
-                    dev = new MidiOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
-                }
-
-                // Others?
-                var parts = deviceName.SplitByToken(":");
-                if (parts.Count > 0)
-                {
-                    switch (parts[0].ToLower(), parts.Count)
+                    if (MidiOutputDevice.GetAvailableDevices().Contains(deviceName))
                     {
-                        case ("oscout", 3):
-                            dev = new OscOutputDevice(parts[1], parts[2]) { Id = _outputDevices.Count + 1 };
-                            break;
+                        dev = new MidiOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
+                    }
+                    else if (deviceName.Contains("oscout"))
+                    {
+                        dev = new OscOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
+                    }
+                    else if (deviceName.Contains("nullout"))
+                    {
+                        dev = new NullOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
+                    }
 
-                        case ("nullout", 2):
-                            dev = new NullOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
-                            break;
+                    if (dev is not null)
+                    {
+                        _outputDevices.Add(dev);
+                        dev.MessageSend += (sender, e) => MessageSend?.Invoke((MidiOutputDevice)sender!, e);
                     }
                 }
-
-                if (dev is not null)
+                catch (Exception ex)
                 {
-                    _outputDevices.Add(dev);
-                    dev.MessageSend += (sender, e) => MessageSend?.Invoke((MidiOutputDevice)sender!, e);
+                    dev = null;
                 }
             }
             else

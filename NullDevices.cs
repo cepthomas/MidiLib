@@ -9,11 +9,11 @@ namespace Ephemera.MidiLib
     public class NullInputDevice : IInputDevice
     {
         /// <inheritdoc />
-        /// Uses nullin:name for DeviceName.
-        public string DeviceName { get; }
+        /// Uses 'nullin:{name}' for DeviceName.
+        public string DeviceName { get; } = "Invalid";
 
         /// <inheritdoc />
-        public bool Valid { get; set; } = true;
+        public bool Valid { get; set; } = false;
 
         /// <inheritdoc />
         public bool CaptureEnable { get; set; } = true;
@@ -34,9 +34,20 @@ namespace Ephemera.MidiLib
         /// <param name="deviceName">Client must supply name of device.</param>
         public NullInputDevice(string deviceName)
         {
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
+            var parts = deviceName.SplitByToken(":");
+            if (parts.Count == 2)
+            {
+                if (parts[0] == "nullin" && !string.IsNullOrEmpty(parts[1]))
+                {
+                    DeviceName = deviceName;
+                    Valid = true;
+                }
+            }
 
-            DeviceName = deviceName;
+            if (!Valid)
+            {
+                throw new ArgumentException($"Invalid device name [{deviceName}]");
+            }
         }
 
         public void Dispose()
@@ -49,11 +60,11 @@ namespace Ephemera.MidiLib
     public class NullOutputDevice : IOutputDevice
     {
         /// <inheritdoc />
-        /// Uses nullout:name for DeviceName.
-        public string DeviceName { get; }
+        /// Uses 'nullout:{name}' for DeviceName.
+        public string DeviceName { get; } = "Invalid";
 
         /// <inheritdoc />
-        public bool Valid { get; set; } = true;
+        public bool Valid { get; set; } = false;
 
         /// <inheritdoc />
         public int Id { get; init; }
@@ -71,9 +82,20 @@ namespace Ephemera.MidiLib
         /// <param name="deviceName">Client must supply name of device.</param>
         public NullOutputDevice(string deviceName)
         {
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
+            var parts = deviceName.SplitByToken(":");
+            if (parts.Count == 2)
+            {
+                if (parts[0] == "nullout" && !string.IsNullOrEmpty(parts[1]))
+                {
+                    DeviceName = deviceName;
+                    Valid = true;
+                }
+            }
 
-            DeviceName = deviceName;
+            if (!Valid)
+            {
+                throw new ArgumentException($"Invalid device name [{deviceName}]");
+            }
         }
 
         public void Dispose()
