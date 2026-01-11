@@ -62,7 +62,7 @@ namespace Ephemera.MidiLib
             var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
 
             // Add the channel.
-            InputChannel ch = new(indev, channelNumber, ChannelFlavor.Normal)
+            InputChannel ch = new(indev, channelNumber)
             {
                 ChannelName = channelName,
                 Enable = true,

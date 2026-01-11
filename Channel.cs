@@ -7,7 +7,7 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLib
 {
     #region Types
-    /// <summary>Some chanels have specialized behavior.</summary>
+    /// <summary>Some channels have specialized behavior.</summary>
     public enum ChannelFlavor { Normal, Drums }
 
     /// <summary>Encode device/channel info for round trip through script.</summary>
@@ -53,9 +53,6 @@ namespace Ephemera.MidiLib
                   else _channelNumber = value; }
         }
 
-        /// <summary>Optional variation.</summary>
-        public ChannelFlavor Flavor  { get; init; } = ChannelFlavor.Normal;
-
         /// <summary>Associated device.</summary>
         public IInputDevice Device { get; init; }
 
@@ -71,12 +68,10 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="device"></param>
         /// <param name="channelNumber"></param>
-        /// <param name="flavor"></param>
-        public InputChannel(IInputDevice device, int channelNumber, ChannelFlavor flavor)
+        public InputChannel(IInputDevice device, int channelNumber)
         {
             Device = device;
             ChannelNumber = channelNumber;
-            Flavor = flavor;
             Handle = HandleOps.Create(device.Id, ChannelNumber, false);
         }
     }
