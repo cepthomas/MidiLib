@@ -108,8 +108,6 @@ namespace Ephemera.MidiLib
             return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
         }
 
-        ////////////////////////////////////////////////////////////////////////
-
         /// <summary>
         /// Get corresponding number.
         /// </summary>
@@ -117,7 +115,7 @@ namespace Ephemera.MidiLib
         /// <returns>The id or -1 if not valid</returns>
         public static int GetInstrumentId(string name)
         {
-            var i = _instruments.Where(v => v.Value == name);
+            var i = _instruments.Where(v => v.Value == name); // TODO1 reverse lookup instead?
             return i.Any() ? i.First().Key : -1;
         }
 
