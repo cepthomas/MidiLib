@@ -179,7 +179,7 @@ namespace Ephemera.MidiLib
 
             // Dummy channel to satisfy designer. Will be overwritten by the real one.
             var dev = new NullOutputDevice("DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(dev, 9, ChannelFlavor.Normal);
+            BoundChannel = new OutputChannel(dev, 9, "AcousticGrandPiano");
         }
 
         /// <summary>

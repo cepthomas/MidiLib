@@ -49,16 +49,14 @@ namespace Ephemera.MidiLib.Test
             var outdev = "nullout:test1";
             var indev = "nullin:test1";
 
-            var chan_out1 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys");
             // 1 is GM instruments
-            chan_out1.PatchName = "HonkyTonkPiano";
+            var chan_out1 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys", "HonkyTonkPiano");
 
             // 2 is GM drums1
-            var chan_out2 = MidiManager.Instance.OpenOutputChannelDrums(outdev, 10, "drums");
-            chan_out2.PatchName = "Electronic";
+            var chan_out2 = MidiManager.Instance.OpenOutputChannel(outdev, 10, "drums", "Electronic");
 
             // 3 is Alt instruments
-            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "bass");
+            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "alt", "AcousticBass");
             chan_out3.InstrumentFile = Path.Combine(myPath, "test_defs.ini");
             chan_out3.PatchName = "WaterWhistle2";
 

@@ -8,7 +8,7 @@ namespace Ephemera.MidiLib
 {
     #region Types
     /// <summary>Some channels have specialized behavior.</summary>
-    public enum ChannelFlavor { Normal, Drums }
+    //public enum ChannelFlavor { Normal, Drums }
 
     /// <summary>Encode device/channel info for round trip through script.</summary>
     public static class HandleOps
@@ -84,15 +84,19 @@ namespace Ephemera.MidiLib
         /// <summary>All the possible instruments. May be GM, from alias file, drum kits, ...</summary>
         Dictionary<int, string> _instruments = [];
 
-        /// <summary>If it's a drum channel use drum names instead of notes.</summary>
-        Dictionary<int, string> _drums = [];
+        ///// <summary>If it's a drum channel use drum names instead of notes. TODO1</summary>
+        //Dictionary<int, string> _drums = [];
 
         // Backing fields.
         int _channelNumber;
         int _patch = 0;
         double _volume = VolumeDefs.DEFAULT_VOLUME;
         string _instrumentFile = "";
+        bool _isDrums = false;
         #endregion
+
+
+
 
         #region Properties
         /// <summary>Channel name - optional.</summary>
@@ -106,8 +110,8 @@ namespace Ephemera.MidiLib
                   else _channelNumber = value; }
         }
 
-        /// <summary>Optional variation.</summary>
-        public ChannelFlavor Flavor  { get; init; } = ChannelFlavor.Normal;
+        ///// <summary>Optional variation.</summary>
+        //public ChannelFlavor Flavor  { get; init; } = ChannelFlavor.Normal;
 
         /// <summary>Associated device.</summary>
         public IOutputDevice Device { get; init; }
@@ -118,20 +122,73 @@ namespace Ephemera.MidiLib
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 
+
+
+
+
+
+        public bool IsDrums
+        {
+            get { return _isDrums; }
+            set
+            {
+                //if (_isDrums != value)
+                {
+                    _isDrums = value;
+
+                    // Load specific instruments list.
+                    var ir = new IniReader();
+                    ir.ParseString(Properties.Resources.gm_defs);
+
+                    if (_isDrums)
+                    {
+                        ir.GetValues("drumkits").ForEach(kv => { _instruments[int.Parse(kv.Key)] = kv.Value; });
+                        //ir.GetValues("drums").ForEach(kv => { _drums[int.Parse(kv.Key)] = kv.Value; });
+                    }
+                    else
+                    {
+                        ir.GetValues("instruments").ForEach(kv => { _instruments[int.Parse(kv.Key)] = kv.Value; });
+                    }
+                }
+            }
+        }
+
+
+        // prop PatchName.set()
+        //
+
+
         /// <summary>Current instrument/patch number. Set sends a midi patch message.</summary>
-        public int Patch
+        public int Patch // TODO1 use only PatchName?
         {
             get { return _patch; }
             set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"Patch:{value}");
                   else _patch = value;  Device.Send(new Patch(ChannelNumber, _patch, MusicTime.ZERO)); }
         }
 
-        /// <summary>Current instrument/patch name. Set sends a midi patch message.</summary>
+
+
+
+
+        /// <summary>Current instrument/patch name. Set may update internal collection and sends a midi patch message.</summary>
         public string PatchName
         {
             get { return GetInstrumentName(_patch); }
-            set { Patch = GetInstrumentId(value); }
+            set
+            {
+                var id = GetInstrumentId(value);
+                if (id < 0)
+                {
+                    // TODO1 reload instruments and IsDrums?
+                }
+                Patch = id;
+            }
         }
+
+
+
+
+
 
         /// <summary>Current volume.</summary>
         public double Volume
@@ -156,28 +213,18 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="device"></param>
         /// <param name="channelNumber"></param>
-        /// <param name="flavor"></param>
-        public OutputChannel(IOutputDevice device, int channelNumber, ChannelFlavor flavor)
+        /// <param name="patch"></param>
+        public OutputChannel(IOutputDevice device, int channelNumber, string patch)//, ChannelFlavor flavor)
         {
             Device = device;
             ChannelNumber = channelNumber;
-            Flavor = flavor;
+            //Flavor = flavor;
             Volume = VolumeDefs.DEFAULT_VOLUME;
             Handle = HandleOps.Create(device.Id, ChannelNumber, true);
 
-            // Load default instruments list.
-            var ir = new IniReader();
-            ir.ParseString(Properties.Resources.gm_defs);
 
-            if (flavor == ChannelFlavor.Drums)
-            {
-                ir.GetValues("drumkits").ForEach(kv => { _instruments[int.Parse(kv.Key)] = kv.Value; });
-                ir.GetValues("drums").ForEach(kv => { _drums[int.Parse(kv.Key)] = kv.Value; });
-            }
-            else // normal
-            {
-                ir.GetValues("instruments").ForEach(kv => { _instruments[int.Parse(kv.Key)] = kv.Value; });
-            }
+
+
         }
         #endregion
 
@@ -197,7 +244,7 @@ namespace Ephemera.MidiLib
         /// Get corresponding number.
         /// </summary>
         /// <param name="name"></param>
-        /// <returns></returns>
+        /// <returns>The id or -1 if not valid</returns>
         public int GetInstrumentId(string name)
         {
             var i = _instruments.Where(v => v.Value == name);

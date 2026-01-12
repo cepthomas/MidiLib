@@ -80,7 +80,7 @@ namespace Ephemera.MidiLib
         /// Get corresponding number.
         /// </summary>
         /// <param name="name"></param>
-        /// <returns></returns>
+        /// <returns>The id or -1 if not valid</returns>
         public static int GetControllerId(string name)
         {
             var i = _controllerIds.Where(v => v.Value == name);
@@ -91,7 +91,7 @@ namespace Ephemera.MidiLib
         /// Get corresponding number.
         /// </summary>
         /// <param name="name"></param>
-        /// <returns></returns>
+        /// <returns>The id or -1 if not valid</returns>
         public static int GetDrumId(string name)
         {
             var i = _drums.Where(v => v.Value == name);
