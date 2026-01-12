@@ -178,8 +178,8 @@ namespace Ephemera.MidiLib
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
             // Dummy channel to satisfy designer. Will be overwritten by the real one.
-            var dev = new NullOutputDevice("DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(dev, 9, "AcousticGrandPiano");
+            var dev = new NullOutputDevice("nullout:DUMMY_DEVICE");
+            BoundChannel = new OutputChannel(dev, 9);//, "AcousticGrandPiano");
         }
 
         /// <summary>
@@ -362,7 +362,7 @@ namespace Ephemera.MidiLib
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue, MusicTime.ZERO));
+            SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
         }
         #endregion
 
@@ -373,8 +373,8 @@ namespace Ephemera.MidiLib
             StringBuilder sb = new();
 
             sb.AppendLine($"Channel {BoundChannel.ChannelNumber} {BoundChannel.ChannelName}");
-            sb.AppendLine($"{BoundChannel.GetInstrumentName(BoundChannel.Patch)} {BoundChannel.Patch:000}");
-            sb.AppendLine($"Dev{BoundChannel.Device.Id} {BoundChannel.Device.DeviceName}");
+            sb.AppendLine($"{BoundChannel.PatchName} {BoundChannel.Patch:000}");
+            sb.AppendLine(BoundChannel.DeviceInfo);
             toolTip.SetToolTip(lblInfo, sb.ToString());
 
             lblInfo.Text = HandleOps.Format(BoundChannel.Handle);

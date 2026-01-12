@@ -18,7 +18,10 @@ namespace Ephemera.MidiLib
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
 
-        /// <summary>All the GM controllers. TODO future custom list like instruments?</summary>
+        /// <summary>All the GM instruments.</summary>
+        static readonly Dictionary<int, string> _instruments = [];
+
+        /// <summary>All the known GM controllers. TODO future custom list like instruments?</summary>
         static readonly Dictionary<int, string> _controllerIds = [];
 
         /// <summary>Standard set plus unnamed ones.</summary>
@@ -26,6 +29,9 @@ namespace Ephemera.MidiLib
 
         /// <summary>All the GM drums.</summary>
         static readonly Dictionary<int, string> _drums = [];
+
+        /// <summary>All the GM drum kits.</summary>
+        static readonly Dictionary<int, string> _drumKits = [];
         #endregion
 
         #region Lifecycle
@@ -36,8 +42,10 @@ namespace Ephemera.MidiLib
             ir.ParseString(Properties.Resources.gm_defs);
 
             // Populate the defs.
+            DoSection("instruments", _instruments);
             DoSection("controllers", _controllerIds);
             DoSection("drums", _drums);
+            DoSection("drumkits", _drumKits);
 
             void DoSection(string section, Dictionary<int, string> target)
             {
@@ -52,6 +60,18 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Public
+        /// <summary>
+        /// Get instrument name. Throws if invalid.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>The instrument name or a fabricated one if unknown.</returns>
+        public static string GetInstrumentName(int id)
+        {
+            if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException($"Instrument:{id}"); }
+
+            return _instruments[id];
+        }
+
         /// <summary>
         /// Get controller name. Throws if invalid.
         /// </summary>
@@ -77,6 +97,31 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
+        /// Get drum kit name. Throws if invalid.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>The drum kit name or a fabricated one if unknown.</returns>
+        public static string GetDrumKitName(int id)
+        {
+            if (id is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException($"DrumKit:{id}"); }
+
+            return _drumKits.TryGetValue(id, out string? value) ? value : $"DKIT_{id}";
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Get corresponding number.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>The id or -1 if not valid</returns>
+        public static int GetInstrumentId(string name)
+        {
+            var i = _instruments.Where(v => v.Value == name);
+            return i.Any() ? i.First().Key : -1;
+        }
+
+        /// <summary>
         /// Get corresponding number.
         /// </summary>
         /// <param name="name"></param>
@@ -97,6 +142,19 @@ namespace Ephemera.MidiLib
             var i = _drums.Where(v => v.Value == name);
             return i.Any() ? i.First().Key : -1;
         }
+
+        /// <summary>
+        /// Get corresponding number.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>The id or -1 if not valid</returns>
+        public static int GetDrumKitId(string name)
+        {
+            var i = _drumKits.Where(v => v.Value == name);
+            return i.Any() ? i.First().Key : -1;
+        }
+
+
         #endregion
 
         #region Utilities
@@ -106,14 +164,11 @@ namespace Ephemera.MidiLib
         /// <returns>Content.</returns>
         public static List<string> GenMarkdown()
         {
-            var ir = new IniReader();
-            ir.ParseString(Properties.Resources.gm_defs);
-
             List<string> ls = [];
             ls.Add("# Midi GM Instruments");
             ls.Add("|Instrument   | Number|");
             ls.Add("|----------   | ------|");
-            ir.GetValues("instruments").ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            _instruments.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
             ls.Add("");
 
             ls.Add("# Midi GM Controllers");
@@ -121,21 +176,21 @@ namespace Ephemera.MidiLib
             ls.Add("- For most controllers marked on/off, on=127 and off=0");
             ls.Add("|Controller   | Number|");
             ls.Add("|----------   | ------|");
-            ir.GetValues("controllers").ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            _controllerIds.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
             ls.Add("");
 
             ls.Add("# Midi GM Drums");
-            ls.Add("- These will vary depending on your Soundfont file.");
+            ls.Add("- These may vary depending on your Soundfont file.");
             ls.Add("|Drum         | Number|");
             ls.Add("|----         | ------|");
-            ir.GetValues("drums").ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            _drums.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
             ls.Add("");
 
             ls.Add("# Midi GM Drum Kits");
-            ls.Add("- These will vary depending on your Soundfont file.");
+            ls.Add("- These may vary depending on your Soundfont file.");
             ls.Add("|Kit          | Number|");
             ls.Add("|---          | ------|");
-            ir.GetValues("drumkits").ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            _drumKits.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
             ls.Add("");
 
             return ls;
@@ -147,9 +202,6 @@ namespace Ephemera.MidiLib
         /// <returns>Content.</returns>
         public static List<string> GenLua()
         {
-            var ir = new IniReader();
-            ir.ParseString(Properties.Resources.gm_defs);
-
             List<string> ls = [];
             ls.Add("-------------- GM midi definitions ----------------");
             ls.Add("-- Autogenerated from midi_defs.ini -- do not edit!");
@@ -164,28 +216,28 @@ namespace Ephemera.MidiLib
             ls.Add("-- Instruments");
             ls.Add("M.instruments =");
             ls.Add("{");
-            ir.GetValues("instruments").ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
+            _instruments.ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
             ls.Add("}");
 
             ls.Add("");
             ls.Add("-- Controllers");
             ls.Add("M.controllers =");
             ls.Add("{");
-            ir.GetValues("controllers").ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
+            _controllerIds.ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
             ls.Add("}");
 
             ls.Add("");
             ls.Add("-- Drums");
             ls.Add("M.drums =");
             ls.Add("{");
-            ir.GetValues("drums").ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
+            _drums.ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
             ls.Add("}");
 
             ls.Add("");
             ls.Add("-- Drum kits");
             ls.Add("M.drum_kits =");
             ls.Add("{");
-            ir.GetValues("drumkits").ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
+            _drumKits.ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
             ls.Add("}");
 
             ls.Add("");

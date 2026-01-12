@@ -84,12 +84,12 @@ namespace Ephemera.MidiLib
 
             BaseEvent evt = mevt switch
             {
-                NoteOnEvent onevt => new NoteOn(chnum, onevt.NoteNumber, onevt.Velocity, MusicTime.ZERO),
+                NoteOnEvent onevt => new NoteOn(chnum, onevt.NoteNumber, onevt.Velocity),
                 NoteEvent offevt => offevt.Velocity == 0 ?
-                    new NoteOff(chnum, offevt.NoteNumber, MusicTime.ZERO) :
-                    new NoteOn(chnum, offevt.NoteNumber, offevt.Velocity, MusicTime.ZERO),
-                ControlChangeEvent ctlevt => new Controller(chnum, (int)ctlevt.Controller, ctlevt.ControllerValue, MusicTime.ZERO),
-                _ => new Other(chnum, e.RawMessage, MusicTime.ZERO)
+                    new NoteOff(chnum, offevt.NoteNumber) :
+                    new NoteOn(chnum, offevt.NoteNumber, offevt.Velocity),
+                ControlChangeEvent ctlevt => new Controller(chnum, (int)ctlevt.Controller, ctlevt.ControllerValue),
+                _ => new Other(chnum, e.RawMessage)
             };
 
             // Tell the boss.

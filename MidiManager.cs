@@ -80,9 +80,10 @@ namespace Ephemera.MidiLib
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-        /// <param name="patch"></param>
+        /// <param name="patchName"></param>
+        /// <param name="aliasFile"></param>
         /// <returns></returns>
-        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, string patch)
+        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, string patchName, string? aliasFile = null)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -91,22 +92,26 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            OutputChannel ch = new(outdev, channelNumber, patch)//, ChannelFlavor.Normal)
+            OutputChannel ch = new(outdev, channelNumber)//, patchName)
             {
                 ChannelName = channelName,
                 Enable = true,
                 Volume = VolumeDefs.DEFAULT_VOLUME,
             };
 
-            // Set channel specific stuff.
-            var patchId = MidiDefs.GetDrumId(patch);
-            ch.IsDrums = patchId >= 0;
-            ch.PatchName = patch;
+            // Init channel type specific stuff.
+            ch.InitInstruments(patchName, aliasFile);
 
             _outputChannels.Add(ch);
 
             return ch;
         }
+
+        // public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, int patch)
+        // {
+        //     return OpenOutputChannel(deviceName, channelNumber, channelName, patch.ToString()); // needed?
+        // }
+
 
         ///// <summary>
         ///// Open a drums output channel. Lazy inits the device. Throws if anything is invalid.
@@ -130,7 +135,7 @@ namespace Ephemera.MidiLib
         //        Enable = true,
         //        Volume = VolumeDefs.DEFAULT_VOLUME,
         //    };
-            
+
         //    _outputChannels.Add(ch);
 
         //    return ch;
@@ -290,11 +295,11 @@ namespace Ephemera.MidiLib
 
             if (channel is null)
             {
-                _outputChannels.ForEach(ch => ch.Device.Send(new Controller(ch.ChannelNumber, cc, 0, MusicTime.ZERO)));
+                _outputChannels.ForEach(ch => ch.Send(new Controller(ch.ChannelNumber, cc, 0)));
             }
             else
             {
-                channel.Device.Send(new Controller(channel.ChannelNumber, cc, 0, MusicTime.ZERO));
+                channel.Send(new Controller(channel.ChannelNumber, cc, 0));
             }
         }
         #endregion

@@ -410,7 +410,7 @@ namespace Ephemera.MidiLib.Test
             if (channel is not null && channel.Enable)
             {
                 Tell(INFO, $"Channel send [{e}]");
-                channel.Device.Send(e);
+                channel.Send(e);
             }
         }
 
