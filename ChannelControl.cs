@@ -179,7 +179,7 @@ namespace Ephemera.MidiLib
 
             // Dummy channel to satisfy designer. Will be overwritten by the real one.
             var dev = new NullOutputDevice("nullout:DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(dev, 9);//, "AcousticGrandPiano");
+            BoundChannel = new OutputChannel(dev, 9, 0);
         }
 
         /// <summary>
@@ -363,7 +363,7 @@ namespace Ephemera.MidiLib
         {
             // No need to check limits.
             SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
-        }
+        }   
         #endregion
 
         #region Misc

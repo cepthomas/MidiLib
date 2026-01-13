@@ -27,6 +27,7 @@ Requires VS2022 and .NET8.
 
 - OutputChannel/InputChannel
     - Represents physical channels in a way usable by `ChannelControl` and output devices.
+    - Intelligent handling of patch names.
 
 - BaseEvent and derived
     - Higher level event classes for use by client apps.

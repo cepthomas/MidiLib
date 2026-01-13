@@ -96,9 +96,7 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 //TestScriptApp();
-
                 //TestPropertyEditor();
-
                 //TestTimeBar();
             }
             catch (Exception ex)
@@ -136,11 +134,11 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
-                TestScriptApp();
+                //TestScriptApp();
 
                 //TestPropertyEditor();
 
-                //TestTimeBar();
+                TestTimeBar();
             }
             catch (Exception ex)
             {
@@ -163,8 +161,9 @@ namespace Ephemera.MidiLib.Test
             sectInfo.Add(256, "sect3");
             sectInfo.Add(384, "END");
 
+            timeBar.Snap = SnapType.FourBar;
+            timeBar.GridLines = 4 * MusicTime.TicksPerBar;
             timeBar.InitSectionInfo(sectInfo);
-
             timeBar.Invalidate();
 
             timer1.Tick += Timer1_Tick;

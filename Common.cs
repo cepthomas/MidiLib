@@ -9,7 +9,7 @@ namespace Ephemera.MidiLib
     public class MidiLibException(string message) : Exception(message) { }
 
     /// <summary>User selection options.</summary>
-    public enum SnapType { Bar, Beat, Tick }
+    public enum SnapType { Tick, Beat, Bar, FourBar }
 
     /// <summary>Misc definitions.</summary>
     public class VolumeDefs

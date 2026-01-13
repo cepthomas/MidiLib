@@ -48,6 +48,8 @@ namespace Ephemera.MidiLib
             {
                 throw new ArgumentException($"Invalid device name [{deviceName}]");
             }
+
+            MessageReceive?.Invoke(this, new BaseEvent());
         }
 
         public void Dispose()

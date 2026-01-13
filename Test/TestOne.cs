@@ -8,11 +8,10 @@ using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.MidiLib;
 
 
-
 namespace Ephemera.MidiLib.Test
 {
-    //////////////////// Test gen aux files.
     //----------------------------------------------------------------
+    /// <summary>Test gen aux files.</summary>
     public class MIDILIB_GEN : TestSuite
     {
         string myPath = MiscUtils.GetSourcePath();
@@ -35,8 +34,8 @@ namespace Ephemera.MidiLib.Test
         }
     }
 
-    //////////////////// Test channel logic.
     //----------------------------------------------------------------
+    /// <summary>Test channel logic.</summary>
     public class MIDILIB_CHANNEL : TestSuite
     {
         string myPath = MiscUtils.GetSourcePath();
@@ -48,32 +47,47 @@ namespace Ephemera.MidiLib.Test
             // Dummy device.
             var outdev = "nullout:test1";
             var indev = "nullin:test1";
-
-            // 1 is GM instruments
-            var chan_out1 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys", "HonkyTonkPiano");
-
-            // 2 is GM drums1
-            var chan_out2 = MidiManager.Instance.OpenOutputChannel(outdev, 10, "drums", "Electronic");
-
-            // 3 is Alt instruments
-            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "alt", "WaterWhistle2", "test_defs.ini");
+            BaseEvent? sent = null;
+            MidiManager.Instance.MessageSend += (object? sender, BaseEvent e) => sent = e;
+            BaseEvent? rcvd = null;
+            MidiManager.Instance.MessageReceive += (object? sender, BaseEvent e) => rcvd = e;
 
             // Input
             var chan_in1 = MidiManager.Instance.OpenInputChannel(indev, 1, "my input");
 
-            // Test aliases.
-            UT_EQUAL(chan_out1.GetInstrumentName(40), "Violin");
-            UT_EQUAL(chan_out2.GetInstrumentName(25), "TR808");
-            UT_EQUAL(chan_out3.GetInstrumentName(28), "OctaveStringPad2");
 
-            // Should send midi.
-            chan_out3.PatchName = "booga77";
-            //if (dev.CollectedEvents.Count != 1) Tell(ERROR, "FAIL");
+            ///// Named instrument mode
+            // 1 is GM instruments
+            var chan_out1 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys", "HonkyTonkPiano");
+            // 2 is GM drums1
+            var chan_out2 = MidiManager.Instance.OpenOutputChannel(outdev, 10, "drums", "Electronic");
+            // 3 is Alt instruments
+            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "alt", "WaterWhistle1", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+
+            UT_EQUAL(chan_out1.PatchName, "HonkyTonkPiano");
+            UT_EQUAL(chan_out2.PatchName, "Electronic");
+            UT_EQUAL(chan_out3.PatchName, "WaterWhistle1");
+
+            // Should send midi patch.
+            chan_out1.PatchName = "Trumpet";
+            UT_TRUE(sent is Patch);
+            Patch pevt = (sent as Patch)!;
+            UT_EQUAL(pevt.ChannelNumber, chan_out1.ChannelNumber);
+            UT_EQUAL(pevt.Value, 56);
+
+            ///// Anonymous mode
+            sent = null;
+            var chan_out4 = MidiManager.Instance.OpenOutputChannel(outdev, 1, "keys", 38);
+            UT_EQUAL(chan_out4.PatchName, "INST_38");
+            UT_TRUE(sent is Patch);
+            pevt = (sent as Patch)!;
+            UT_EQUAL(pevt.ChannelNumber, chan_out4.ChannelNumber);
+            UT_EQUAL(pevt.Value, 38);
         }
     }
 
-    //////////////////// Test def file loading etc.
     //----------------------------------------------------------------
+    /// <summary>Test def file loading etc.</summary>
     public class MIDILIB_DEF : TestSuite
     {
         string myPath = MiscUtils.GetSourcePath();
@@ -92,8 +106,8 @@ namespace Ephemera.MidiLib.Test
         }
     }
 
-    //////////////////// TestMusicTime
     //----------------------------------------------------------------
+    /// <summary>Test MusicTime.</summary>
     public class MIDILIB_MUSTIME : TestSuite
     {
         // string myPath = MiscUtils.GetSourcePath();
@@ -158,8 +172,8 @@ namespace Ephemera.MidiLib.Test
         }
     }
 
-    //////////////////// TestConverter MidiTimeConverter
     //----------------------------------------------------------------
+    /// <summary>Test MidiTimeConverter.</summary>
     public class MIDILIB_TIMECONV : TestSuite
     {
         // string myPath = MiscUtils.GetSourcePath();

@@ -16,23 +16,15 @@ namespace Ephemera.MidiLib.Test
         [STAThread]
         static void Main()
         {
-            bool ui = false;
+            // UI
+            var f = new MainForm();
+            Application.Run(f);
 
-            if (ui)
-            {
-                //Application.SetHighDpiMode(HighDpiMode.SystemAware);
-                //Application.EnableVisualStyles();
-                //Application.SetCompatibleTextRenderingDefault(false);
-                var f = new MainForm();
-                Application.Run(f);
-            }
-            else
-            {
-                TestRunner runner = new(OutputFormat.Readable);
-                var cases = new[] { "MIDILIB" };  // MIDILIB_MUSTIME
-                runner.RunSuites(cases);
-                File.WriteAllLines(Path.Join(MiscUtils.GetSourcePath(), "out", "test.txt"), runner.Context.OutputLines);
-            }
+            //// PNUT
+            //TestRunner runner = new(OutputFormat.Readable);
+            //var cases = new[] { "MIDILIB" };  // MIDILIB_MUSTIME
+            //runner.RunSuites(cases);
+            //File.WriteAllLines(Path.Join(MiscUtils.GetSourcePath(), "out", "test.txt"), runner.Context.OutputLines);
         }
     }
 }

@@ -4,9 +4,9 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Diagnostics;
+using System.Security;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-using System.Security;
 
 
 namespace Ephemera.MidiLib
@@ -92,14 +92,14 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            OutputChannel ch = new(outdev, channelNumber)//, patchName)
+            OutputChannel ch = new(outdev, channelNumber)
             {
                 ChannelName = channelName,
                 Enable = true,
                 Volume = VolumeDefs.DEFAULT_VOLUME,
             };
 
-            // Init channel type specific stuff.
+            // Init instrument name stuff.
             ch.InitInstruments(patchName, aliasFile);
 
             _outputChannels.Add(ch);
@@ -107,39 +107,36 @@ namespace Ephemera.MidiLib
             return ch;
         }
 
-        // public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, int patch)
-        // {
-        //     return OpenOutputChannel(deviceName, channelNumber, channelName, patch.ToString()); // needed?
-        // }
+        /// <summary>
+        /// Like full function but opens a channel in anonymous mode.
+        /// </summary>
+        /// <param name="deviceName"></param>
+        /// <param name="channelNumber"></param>
+        /// <param name="channelName"></param>
+        /// <param name="patch"></param>
+        /// <returns></returns>
+        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, int patch)
+        {
+            // Check args.
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
+            if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+            if (patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patch:{patch}"); }
 
+            var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
-        ///// <summary>
-        ///// Open a drums output channel. Lazy inits the device. Throws if anything is invalid.
-        ///// </summary>
-        ///// <param name="deviceName"></param>
-        ///// <param name="channelNumber"></param>
-        ///// <param name="channelName"></param>
-        ///// <returns></returns>
-        //public OutputChannel OpenOutputChannelDrums(string deviceName, int channelNumber, string channelName)
-        //{
-        //    // Check args.
-        //    if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-        //    if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+            // Add the channel.
+            OutputChannel ch = new(outdev, channelNumber, patch)
+            {
+                ChannelName = channelName,
+                Enable = true,
+                Volume = VolumeDefs.DEFAULT_VOLUME,
+            };
 
-        //    var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
+            outdev.Send(new Patch(channelNumber, patch));
+            _outputChannels.Add(ch);
 
-        //    // Add the channel.
-        //    OutputChannel ch = new(outdev, channelNumber, ChannelFlavor.Drums)
-        //    {
-        //        ChannelName = channelName,
-        //        Enable = true,
-        //        Volume = VolumeDefs.DEFAULT_VOLUME,
-        //    };
-
-        //    _outputChannels.Add(ch);
-
-        //    return ch;
-        //}
+            return ch;
+        }
 
         /// <summary>
         /// Clean up.
@@ -190,7 +187,7 @@ namespace Ephemera.MidiLib
                         dev.MessageReceive += (sender, e) => MessageReceive?.Invoke((MidiInputDevice)sender!, e);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     dev = null;
                 }
@@ -236,10 +233,10 @@ namespace Ephemera.MidiLib
                     if (dev is not null)
                     {
                         _outputDevices.Add(dev);
-                        dev.MessageSend += (sender, e) => MessageSend?.Invoke((MidiOutputDevice)sender!, e);
+                        dev.MessageSend += (sender, e) => MessageSend?.Invoke((IOutputDevice)sender!, e);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     dev = null;
                 }

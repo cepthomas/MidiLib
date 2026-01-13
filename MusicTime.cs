@@ -69,6 +69,21 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
+        /// Constructor from tick.
+        /// </summary>
+        /// <param name="tick">Number of ticks.</param>
+        public MusicTime(long tick)
+        {
+            if (tick < 0)
+            {
+                throw new ArgumentException("Negative value is invalid");
+            }
+
+            Tick = (int)tick;
+            _id = _nextId++;
+        }
+
+        /// <summary>
         /// Constructor from bar/beat/tick.
         /// </summary>
         /// <param name="bar"></param>
@@ -184,7 +199,15 @@ namespace Ephemera.MidiLib
             if (tick > 0 && snapType != SnapType.Tick)
             {
                 // res:32 in:27 floor=(in%aim)*aim  ceiling=floor+aim
-                int res = snapType == SnapType.Bar ? TicksPerBar : TicksPerBeat;
+
+                int res = snapType switch
+                {
+                    SnapType.Tick => 1,
+                    SnapType.Beat => TicksPerBeat,
+                    SnapType.Bar => TicksPerBar,
+                    SnapType.FourBar => 4 * TicksPerBar,
+                    _ => 1
+                };
 
                 int floor = tick / res;
                 int delta = tick % res;

@@ -77,6 +77,9 @@ namespace Ephemera.MidiLib
         /// <summary>How to select times.</summary>
         public SnapType Snap { get; set; } = SnapType.Beat;
 
+        /// <summary>Vertical line spacing for visual interest. 0 means none.</summary>
+        public int GridLines { get; set; } = 0;
+
         /// <summary>Keep going at end.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -253,6 +256,7 @@ namespace Ephemera.MidiLib
 
             if (FreeRunning)
             {
+                // Just the current time.
                 _format.Alignment = StringAlignment.Center;
                 _format.LineAlignment = StringAlignment.Near;
                 //pe.Graphics.DrawString("Free Running", FontSmall, Brushes.Black, ClientRectangle, _format);
@@ -285,15 +289,18 @@ namespace Ephemera.MidiLib
             }
 
             ///// Some vertical lines.
-            var incr = MusicTime.TicksPerBeat; // TODO or bar if dense.
-            _penMarker.DashStyle = DashStyle.Custom;
-            _penMarker.DashPattern = [5, 5]; 
-            for (int i = 0; i < _length.Tick; i += incr)
+            if (GridLines > 0)
             {
-                int x = GetClientFromTick(i);
-                pe.Graphics.DrawLine(_penMarker, x, 0, x, Height);
+                var incr = 4 * MusicTime.TicksPerBar; // TODO or bar if dense.
+                _penMarker.DashStyle = DashStyle.Custom;
+                _penMarker.DashPattern = [5, 2];
+                for (int i = 0; i < _length.Tick; i += incr)
+                {
+                    int x = GetClientFromTick(i);
+                    pe.Graphics.DrawLine(_penMarker, x, 0, x, Height);
+                }
+                _penMarker.DashStyle = DashStyle.Solid;
             }
-            _penMarker.DashStyle = DashStyle.Solid;
 
             ///// Current pos.
             int markSize = 7;
@@ -428,7 +435,14 @@ namespace Ephemera.MidiLib
         {
             if (tick > 0 && Snap != SnapType.Tick)
             {
-                int res = Snap == SnapType.Bar ? MusicTime.TicksPerBar : MusicTime.TicksPerBeat;
+                int res = Snap switch
+                {
+                    SnapType.Tick => 1,
+                    SnapType.Beat => MusicTime.TicksPerBeat,
+                    SnapType.Bar => MusicTime.TicksPerBar,
+                    SnapType.FourBar => 4 * MusicTime.TicksPerBar,
+                    _  => 1
+                };
 
                 double dtick = Math.Floor((double)tick);
                 int floor = (int)(dtick / res) * res;

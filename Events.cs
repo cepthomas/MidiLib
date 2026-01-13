@@ -223,9 +223,8 @@ namespace Ephemera.MidiLib
         }
     }
 
-    /// <summary>
-    /// Helper for managing groups of events - mainly sugar.
-    /// </summary>
+    //----------------------------------------------------------------
+    /// <summary>Helper for managing groups of events - mainly sugar.</summary>
     public class EventCollection
     {
         readonly Dictionary<MusicTime, List<BaseEvent>> _allEvents = [];
