@@ -140,7 +140,7 @@ namespace Ephemera.MidiLib
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"ControllerId:{MidiDefs.GetControllerName(ControllerId)}({ControllerId}):{Value} {base.ToString()}";
+            return $"ControllerId:{MidiDefs.ControllerIds.GetName(ControllerId)}({ControllerId}):{Value} {base.ToString()}";
         }
     }
 

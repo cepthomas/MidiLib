@@ -189,11 +189,11 @@ namespace Ephemera.MidiLib
             }
             else if (IsDrums)
             {
-                name = MidiDefs.GetDrumKitName(id);
+                name = MidiDefs.DrumKits.GetName(id);
             }
             else
             {
-                name = MidiDefs.GetInstrumentName(id);
+                name = MidiDefs.Instruments.GetName(id);
             }
 
             if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }
@@ -242,7 +242,7 @@ namespace Ephemera.MidiLib
             }
             else
             {
-                var id = MidiDefs.GetDrumKitId(patchName);
+                var id = MidiDefs.DrumKits.GetId(patchName);
                 if (id >= 0) // it's GM drum kit
                 {
                     IsDrums = true;
@@ -250,7 +250,7 @@ namespace Ephemera.MidiLib
                 }
                 else
                 {
-                    id = MidiDefs.GetInstrumentId(patchName);
+                    id = MidiDefs.Instruments.GetId(patchName);
                     if (id >= 0) // it's plain GM instrument
                     {
                         IsDrums = false;
@@ -280,15 +280,12 @@ namespace Ephemera.MidiLib
 
         #region Private functions
         /// <summary>
-        /// 
+        /// Sort out possible sources of id.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
         int GetInstrumentId(string name)
         {
-            //if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Instrument:{id}"); }
-
             int id = -1;
 
             if (_aliases is not null)
@@ -298,12 +295,11 @@ namespace Ephemera.MidiLib
             }
             else if (IsDrums)
             {
-                id = MidiDefs.GetDrumId(name);
+                id = MidiDefs.Drums.GetId(name);
             }
             else
             {
-                id = MidiDefs.GetInstrumentId(name);
-
+                id = MidiDefs.Instruments.GetId(name);
             }
 
             if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }

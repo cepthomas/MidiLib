@@ -19,7 +19,7 @@ namespace Ephemera.MidiLib
         MidiManager() { }
         #endregion
 
-        #region Fields TODO1 should these all be Dicts for fast lookup?
+        #region Fields
         /// <summary>All midi devices to use for send. Index is the id.</summary>
         readonly List<IOutputDevice> _outputDevices = [];
 

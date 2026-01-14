@@ -134,11 +134,11 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
-                //TestScriptApp();
+                TestScriptApp();
 
                 //TestPropertyEditor();
 
-                TestTimeBar();
+                //TestTimeBar();
             }
             catch (Exception ex)
             {
@@ -231,7 +231,7 @@ namespace Ephemera.MidiLib.Test
             chan.PatchName = "HonkyTonkPiano";
             Dictionary<int, string> vals = [];
             Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, chan.GetInstrumentName(i)));
-            var instList = MidiDefs.CreateOrderedMidiList(vals, true, true);
+            var instList = MidiUtils.CreateOrderedMidiList(vals, true, true);
 
             GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
             GenericListTypeEditor.SetOptions("Patch", instList);

@@ -20,7 +20,7 @@ namespace Ephemera.MidiLib.Test
             var f = new MainForm();
             Application.Run(f);
 
-            //// PNUT
+            // PNUT
             //TestRunner runner = new(OutputFormat.Readable);
             //var cases = new[] { "MIDILIB" };  // MIDILIB_MUSTIME
             //runner.RunSuites(cases);
