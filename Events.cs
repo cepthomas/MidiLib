@@ -14,7 +14,7 @@ namespace Ephemera.MidiLib
         public int ChannelNumber
         {
             get { return _channelNumber; }
-            set { if (value is < 1 or > MidiDefs.NUM_CHANNELS) throw new ArgumentOutOfRangeException($"ChannelNumber:{value}");
+            set { if (value is < MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) throw new ArgumentOutOfRangeException($"ChannelNumber:{value}");
                   _channelNumber = value; }
         }
         int _channelNumber = 0;
@@ -55,7 +55,7 @@ namespace Ephemera.MidiLib
 
         public NoteOn(int channel, int note, int velocity, MusicTime? when = null)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{channel}"); }
+            if (channel is < MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{channel}"); }
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"note:{note}"); }
             if (velocity is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"velocity:{velocity}"); }
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); }
@@ -87,7 +87,7 @@ namespace Ephemera.MidiLib
 
         public NoteOff(int channel, int note, MusicTime? when = null)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{channel}"); };
+            if (channel is < MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{channel}"); };
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"notec:{note}"); };
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); };
 
@@ -126,7 +126,7 @@ namespace Ephemera.MidiLib
 
         public Controller(int channel, int controllerId, int value, MusicTime? when = null)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
+            if (channel is < MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
             if (controllerId is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"controllerId:{(controllerId)}"); };
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"value:{value}"); }
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); };
@@ -158,7 +158,7 @@ namespace Ephemera.MidiLib
 
         public Patch(int channel, int value, MusicTime? when = null)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
+            if (channel is < MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"value:{value}"); }
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); };
 
@@ -183,7 +183,7 @@ namespace Ephemera.MidiLib
 
         public Other(int channel, int rawMessage, MusicTime? when = null)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
+            if (channel is < MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); };
 
             When = when ?? MusicTime.ZERO;
@@ -207,7 +207,7 @@ namespace Ephemera.MidiLib
 
         public Function(int channel, Action scriptFunc, MusicTime? when = null)
         {
-            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
+            if (channel is < MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
             if (scriptFunc is null) { throw new ArgumentOutOfRangeException($"scriptFunc:{(scriptFunc)}"); };
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{(when)}"); };
 

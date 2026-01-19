@@ -15,6 +15,9 @@ namespace Ephemera.MidiLib
         /// <summary>Per device.</summary>
         public const int NUM_CHANNELS = 16;
 
+        /// <summary>Invalid channel number is ok in transition.</summary>
+        public const int TEMP_CHANNEL = 0;
+
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
         #endregion

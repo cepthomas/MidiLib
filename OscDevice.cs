@@ -16,7 +16,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <inheritdoc />
-        public event EventHandler<BaseEvent>? MessageReceive;
+        public event EventHandler<BaseEvent>? MessageReceived;
         #endregion
 
         #region Properties
@@ -119,7 +119,7 @@ namespace Ephemera.MidiLib
                     _ => new BaseEvent() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
                 };
 
-                MessageReceive?.Invoke(this, evt);
+                MessageReceived?.Invoke(this, evt);
              });
         }
         #endregion
@@ -138,7 +138,7 @@ namespace Ephemera.MidiLib
         #endregion
 
         /// <inheritdoc />
-        public event EventHandler<BaseEvent>? MessageSend;
+        public event EventHandler<BaseEvent>? MessageSent;
 
         #region Properties
         /// <inheritdoc />
@@ -205,7 +205,7 @@ namespace Ephemera.MidiLib
             // Critical code section.
             if (_oscOutput is not null)
             {
-                MessageSend?.Invoke(this, mevt);
+                MessageSent?.Invoke(this, mevt);
 
                 lock (_lock)
                 {

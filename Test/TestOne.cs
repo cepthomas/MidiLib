@@ -48,9 +48,9 @@ namespace Ephemera.MidiLib.Test
             var outdev = "nullout:test1";
             var indev = "nullin:test1";
             BaseEvent? sent = null;
-            MidiManager.Instance.MessageSend += (object? sender, BaseEvent e) => sent = e;
+            MidiManager.Instance.MessageSent += (object? sender, BaseEvent e) => sent = e;
             BaseEvent? rcvd = null;
-            MidiManager.Instance.MessageReceive += (object? sender, BaseEvent e) => rcvd = e;
+            MidiManager.Instance.MessageReceived += (object? sender, BaseEvent e) => rcvd = e;
 
             // Input
             var chan_in1 = MidiManager.Instance.OpenInputChannel(indev, 1, "my input");

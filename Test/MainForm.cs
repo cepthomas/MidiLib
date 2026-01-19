@@ -77,8 +77,9 @@ namespace Ephemera.MidiLib.Test
 
             btnGo.Click += Go_Click;
 
-            //Manager.Instance.MessageReceive += Mgr_MessageReceive;
-            //Manager.Instance.MessageSend += Mgr_MessageSend;
+            // Report on midi action.
+            MidiManager.Instance.MessageReceived += Mgr_MessageReceived;
+            MidiManager.Instance.MessageSent += Mgr_MessageSent;
         }
 
         /// <summary>
@@ -87,7 +88,7 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            Tell(INFO, $">>>>> OnLoad start.");
+            Tell(INFO, $">>> OnLoad start.");
 
             try
             {
@@ -100,7 +101,7 @@ namespace Ephemera.MidiLib.Test
                 Tell(ERROR, ex.Message);
             }
 
-            Tell(INFO, $">>>>> OnLoad done.");
+            Tell(INFO, $">>> OnLoad done.");
 
             base.OnLoad(e);
         }
@@ -126,7 +127,7 @@ namespace Ephemera.MidiLib.Test
         #region Do work
         void Go_Click(object? sender, EventArgs e)
         {
-            Tell(INFO, $">>>>> Go start.");
+            Tell(INFO, $">>> Go start.");
 
             try
             {
@@ -138,10 +139,10 @@ namespace Ephemera.MidiLib.Test
             }
             catch (Exception ex)
             {
-                Tell(ERROR, ex.ToString());//.Message);
+                Tell(ERROR, ex.ToString());
             }
 
-            Tell(INFO, $">>>>> Go done.");
+            Tell(INFO, $">>> Go done.");
         }
         #endregion
 
@@ -176,7 +177,7 @@ namespace Ephemera.MidiLib.Test
 
             if (--_count <= 0)
             {
-                Tell(INFO, $">>>>> Timer done.");
+                Tell(INFO, $">>> Timer done.");
                 timer1.Stop();
                 timer1.Tick -= Timer1_Tick;
             }
@@ -184,7 +185,7 @@ namespace Ephemera.MidiLib.Test
 
         void TimeBar_StateChange(object? sender, TimeBar.StateChangeEventArgs e)
         {
-            Tell(INFO, $">>>>> TimeBar event. {timeBar.Current}");
+            Tell(INFO, $">>> TimeBar event. {timeBar.Current}");
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -206,7 +207,7 @@ namespace Ephemera.MidiLib.Test
         /// <summary>Test property editing using TypeEditors.</summary>
         void TestPropertyEditor()
         {
-            Tell(INFO, $">>>>> Property editor.");
+            Tell(INFO, $">>> Property editor.");
 
             TargetClass td = new()
             {
@@ -258,14 +259,10 @@ namespace Ephemera.MidiLib.Test
             List<OutputChannel> channels = [chan_out1, chan_out2];
             channels.ForEach(chan =>
             {
-                var rend = new CustomRenderer() { ChannelNumber = chan.ChannelNumber };
-                rend.SendMidi += ChannelControl_SendMidi;
-
                 var ctrl = new ChannelControl()
                 {
                     Name = $"Control for {chan.ChannelName}",
                     BoundChannel = chan,
-                    UserRenderer = rend,
                     Options = DisplayOptions.All,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
@@ -275,8 +272,8 @@ namespace Ephemera.MidiLib.Test
                     ControllerId = 10, // pan
                     ControllerValue = 82
                 };
+                ctrl.SetRenderer(new CustomRenderer());
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
-                ctrl.SendMidi += Mgr_MessageSend;
                 Controls.Add(ctrl);
                 x += ctrl.Width + 4; // Width is not valid until after previous statement.
             });
@@ -296,26 +293,20 @@ namespace Ephemera.MidiLib.Test
             ch_ctrl1.SelectedColor = Color.Yellow;
             ch_ctrl1.Volume = VolumeDefs.DEFAULT_VOLUME;
             ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
-            ch_ctrl1.SendMidi += ChannelControl_SendMidi;
             ch_ctrl1.BoundChannel = chan_out1;
             ch_ctrl1.ControllerValue = 64; // Sustain
             ch_ctrl1.ControllerValue = 45;
-            var rend1 = new CustomRenderer() { ChannelNumber = chan_out1.ChannelNumber };
-            rend1.SendMidi += ChannelControl_SendMidi;
-            ch_ctrl1.UserRenderer = rend1;
+            ch_ctrl1.SetRenderer(new CustomRenderer());
 
             ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
             ch_ctrl2.DrawColor = Color.SpringGreen;
             ch_ctrl2.SelectedColor = Color.Yellow;
             ch_ctrl2.Volume = VolumeDefs.DEFAULT_VOLUME;
             ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
-            ch_ctrl2.SendMidi += ChannelControl_SendMidi;
             ch_ctrl2.BoundChannel = chan_out1;
             ch_ctrl2.ControllerValue = 68; // Legato
             ch_ctrl2.ControllerValue = 90;
-            var rend2 = new CustomRenderer() { ChannelNumber = chan_out2.ChannelNumber };
-            rend2.SendMidi += ChannelControl_SendMidi;
-            ch_ctrl2.UserRenderer = rend2;
+            ch_ctrl2.SetRenderer(new CustomRenderer());
         }
 
         //-------------------------------------------------------------------------------//
@@ -354,41 +345,19 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Mgr_MessageReceive(object? sender, BaseEvent e)
+        void Mgr_MessageReceived(object? sender, BaseEvent e)
         {
-            Tell(INFO, $"Receive [{e}]");
+            Tell(INFO, $"MM Received [{e}]");
         }
 
         /// <summary>
-        /// Something sent to a midi device. This is what was actually sent, not what the
-        /// channel thought it was sending.
+        /// Something sent to a midi device.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Mgr_MessageSend(object? sender, BaseEvent e)
+        void Mgr_MessageSent(object? sender, BaseEvent e)
         {
-            Tell(INFO, $"Send actual [{e}]");
-        }
-
-        /// <summary>
-        /// UI clicked something -> send some midi. Works for different sources.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ChannelControl_SendMidi(object? sender, BaseEvent e)
-        {
-            var channel = sender switch
-            {
-                ChannelControl => (sender as ChannelControl)!.BoundChannel,
-                CustomRenderer => MidiManager.Instance.GetOutputChannel((sender as CustomRenderer)!.Handle),//ChannelNumber),
-                _ => null // should never happen
-            };
-
-            if (channel is not null && channel.Enable)
-            {
-                Tell(INFO, $"Channel send [{e}]");
-                channel.Send(e);
-            }
+            Tell(INFO, $"MM Sent [{e}]");
         }
 
         /// <summary>

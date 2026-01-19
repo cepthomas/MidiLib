@@ -40,10 +40,10 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Handler for midi message arrived.</summary>
-        public event EventHandler<BaseEvent>? MessageReceive;
+        public event EventHandler<BaseEvent>? MessageReceived;
 
         /// <summary>Handler for midi message sent.</summary>
-        public event EventHandler<BaseEvent>? MessageSend;
+        public event EventHandler<BaseEvent>? MessageSent;
         #endregion
 
         #region Channels
@@ -184,7 +184,7 @@ namespace Ephemera.MidiLib
                         _inputDevices.Add(dev);
                         dev.CaptureEnable = true;
                         // Just pass inputs up.
-                        dev.MessageReceive += (sender, e) => MessageReceive?.Invoke((MidiInputDevice)sender!, e);
+                        dev.MessageReceived += (sender, e) => MessageReceived?.Invoke((MidiInputDevice)sender!, e);
                     }
                 }
                 catch (Exception)
@@ -233,7 +233,7 @@ namespace Ephemera.MidiLib
                     if (dev is not null)
                     {
                         _outputDevices.Add(dev);
-                        dev.MessageSend += (sender, e) => MessageSend?.Invoke((IOutputDevice)sender!, e);
+                        dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
                     }
                 }
                 catch (Exception)

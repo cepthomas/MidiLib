@@ -75,22 +75,6 @@ namespace Ephemera.MidiLib
         [EditorBrowsable(EditorBrowsableState.Never)]
         public OutputChannel BoundChannel { get; set; }
 
-        /// <summary>My custom renderer - optional.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public UserRenderer? UserRenderer
-        {
-            get { return _userRenderer; }
-            set { _userRenderer = value;
-                  if (_userRenderer is not null)
-                  {
-                      _userRenderer.Location = new(PAD, Height);
-                      Height += _userRenderer.Height + PAD;
-                      Controls.Add(_userRenderer);
-                  }
-                }
-        }
-
         /// <summary>Display options.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -139,7 +123,7 @@ namespace Ephemera.MidiLib
         public int ControllerId
         {
             get { return _controllerId; }
-            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerId:{value}");
+            set { if (value is <= MidiDefs.TEMP_CHANNEL or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerId:{value}");
                   else _controllerId = value; }
         }
 
@@ -147,7 +131,7 @@ namespace Ephemera.MidiLib
         public int ControllerValue
         {
             get { return _controllerId; }
-            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerValue:{value}");
+            set { if (value is <= MidiDefs.TEMP_CHANNEL or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerValue:{value}");
                   else _controllerValue = value; }
         }
 
@@ -162,9 +146,6 @@ namespace Ephemera.MidiLib
         #region Events
         /// <summary>UI channel config change.</summary>
         public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
-
-        /// <summary>UI midi send.</summary>
-        public event EventHandler<BaseEvent>? SendMidi;
         #endregion
 
         #region Lifecycle
@@ -310,6 +291,27 @@ namespace Ephemera.MidiLib
             }
             base.Dispose(disposing);
         }
+
+        /// <summary>
+        /// A custom renderer - optional.
+        /// </summary>
+        /// <param name="rend"></param>
+        public void SetRenderer(UserRenderer rend)
+        {
+            _userRenderer = rend;
+
+            // Handle custom renderer events. Fix the channel number.
+            rend.SendMidi += (object? sender, BaseEvent e) =>
+            {
+                e.ChannelNumber = BoundChannel.ChannelNumber;
+                BoundChannel.Send(e);
+             //   SendMidi?.Invoke(this, e);
+            };
+
+            rend.Location = new(PAD, Height);
+            Height += rend.Height + PAD;
+            Controls.Add(rend);
+        }
         #endregion
 
         #region Handlers for user selections
@@ -360,8 +362,9 @@ namespace Ephemera.MidiLib
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
-        }   
+            BoundChannel.Send(new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
+   //         SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
+        }
         #endregion
 
         #region Misc

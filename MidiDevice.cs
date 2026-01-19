@@ -34,7 +34,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<BaseEvent>? MessageReceive;
+        public event EventHandler<BaseEvent>? MessageReceived;
         #endregion
 
         #region Lifecycle
@@ -93,7 +93,7 @@ namespace Ephemera.MidiLib
             };
 
             // Tell the boss.
-            MessageReceive?.Invoke(this, evt);
+            MessageReceived?.Invoke(this, evt);
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<BaseEvent>? MessageSend;
+        public event EventHandler<BaseEvent>? MessageSent;
         #endregion
 
         #region Properties
@@ -194,8 +194,8 @@ namespace Ephemera.MidiLib
 
             _midiOut?.Send(mevt.GetAsShortMessage());
 
-            // Tell the boss.
-            MessageSend?.Invoke(this, bevt);
+            // Tell the boss we sent something.
+            MessageSent?.Invoke(this, bevt);
         }
 
         /// <summary>

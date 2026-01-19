@@ -91,12 +91,12 @@ namespace Ephemera.MidiLib.Test
                         if (_lastNote != -1)
                         {
                             // Turn off last note.
-                            OnSendMidi(new NoteOff(ChannelNumber, _lastNote));
+                            OnSendMidi(new NoteOff(MidiDefs.TEMP_CHANNEL, _lastNote));
                         }
 
                         // Start the new note.
                         _lastNote = res.Value.ux;
-                        OnSendMidi(new NoteOn(ChannelNumber, res.Value.ux, res.Value.uy));
+                        OnSendMidi(new NoteOn(MidiDefs.TEMP_CHANNEL, res.Value.ux, res.Value.uy));
                     }
                 }
             }
@@ -114,7 +114,7 @@ namespace Ephemera.MidiLib.Test
             if (res is not null)
             {
                 _lastNote = res.Value.ux;
-                OnSendMidi(new NoteOn(ChannelNumber, res.Value.ux, res.Value.uy));
+                OnSendMidi(new NoteOn(MidiDefs.TEMP_CHANNEL, res.Value.ux, res.Value.uy));
             }
 
             base.OnMouseDown(e);
@@ -128,7 +128,7 @@ namespace Ephemera.MidiLib.Test
         {
             if (_lastNote != -1)
             {
-                OnSendMidi(new NoteOff(ChannelNumber, _lastNote));
+                OnSendMidi(new NoteOff(MidiDefs.TEMP_CHANNEL, _lastNote));
                 _lastNote = -1;
             }
 
@@ -144,7 +144,7 @@ namespace Ephemera.MidiLib.Test
             // Turn off last click.
             if (_lastNote != -1)
             {
-                OnSendMidi(new NoteOff(ChannelNumber, _lastNote));
+                OnSendMidi(new NoteOff(MidiDefs.TEMP_CHANNEL, _lastNote));
             }
 
             // Reset and tell client.

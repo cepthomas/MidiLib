@@ -31,7 +31,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
-        event EventHandler<BaseEvent>? MessageReceive;
+        event EventHandler<BaseEvent>? MessageReceived;
         #endregion
     }
 
@@ -46,7 +46,7 @@ namespace Ephemera.MidiLib
 
         #region Events
         /// <summary>Handler for message sent.</summary>
-        event EventHandler<BaseEvent>? MessageSend;
+        event EventHandler<BaseEvent>? MessageSent;
         #endregion
     }
 }

@@ -22,7 +22,7 @@ namespace Ephemera.MidiLib
         public int Id { get; init; }
 
         /// <inheritdoc />
-        public event EventHandler<BaseEvent>? MessageReceive;
+        public event EventHandler<BaseEvent>? MessageReceived;
 
         /// <summary>For test use.</summary>
         public List<BaseEvent> EventsToSend = [];
@@ -49,7 +49,7 @@ namespace Ephemera.MidiLib
                 throw new ArgumentException($"Invalid device name [{deviceName}]");
             }
 
-            MessageReceive?.Invoke(this, new BaseEvent());
+            MessageReceived?.Invoke(this, new BaseEvent());
         }
 
         public void Dispose()
@@ -72,7 +72,7 @@ namespace Ephemera.MidiLib
         public int Id { get; init; }
 
         /// <inheritdoc />
-        public event EventHandler<BaseEvent>? MessageSend;
+        public event EventHandler<BaseEvent>? MessageSent;
 
         /// <summary>For test use.</summary>
         public List<BaseEvent> CollectedEvents = [];
@@ -108,7 +108,7 @@ namespace Ephemera.MidiLib
         /// <inheritdoc />
         public void Send(BaseEvent evt)
         {
-            MessageSend?.Invoke(this, evt);
+            MessageSent?.Invoke(this, evt);
 
             CollectedEvents.Add(evt);        
         }
