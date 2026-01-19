@@ -4,10 +4,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.CompilerServices;
 using System.IO;
@@ -284,21 +280,6 @@ namespace Ephemera.MidiLib.Test
                 Controls.Add(ctrl);
                 x += ctrl.Width + 4; // Width is not valid until after previous statement.
             });
-
-            ///// 3 - do work
-
-            // create all channels - script api calls like:
-            // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
-            // local hnd_synth = api.open_midi_output("loopMIDI Port 2", 3, "synth", inst.Lead1Square)
-            // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")
-
-            // call script api functions
-            // api.send_midi_note(hnd_strings, note_num, volume)
-            // api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
-
-            // callbacks from script
-            // function receive_midi_note(chan_hnd, note_num, volume)
-            // function receive_midi_controller(chan_hnd, controller, value)
         }
 
         //-------------------------------------------------------------------------------//
@@ -335,9 +316,6 @@ namespace Ephemera.MidiLib.Test
             var rend2 = new CustomRenderer() { ChannelNumber = chan_out2.ChannelNumber };
             rend2.SendMidi += ChannelControl_SendMidi;
             ch_ctrl2.UserRenderer = rend2;
-
-            ///// 3 - do work
-            // ...
         }
 
         //-------------------------------------------------------------------------------//
@@ -402,7 +380,7 @@ namespace Ephemera.MidiLib.Test
             var channel = sender switch
             {
                 ChannelControl => (sender as ChannelControl)!.BoundChannel,
-                CustomRenderer => MidiManager.Instance.GetOutputChannel((sender as CustomRenderer)!.ChannelNumber),
+                CustomRenderer => MidiManager.Instance.GetOutputChannel((sender as CustomRenderer)!.Handle),//ChannelNumber),
                 _ => null // should never happen
             };
 

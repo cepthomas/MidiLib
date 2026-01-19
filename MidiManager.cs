@@ -265,11 +265,11 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Helper.
         /// </summary>
-        /// <param name="chnum"></param>
+        /// <param name="chnd"></param>
         /// <returns>The channel or null if invalid handle.</returns>
-        public OutputChannel? GetOutputChannel(int chnum)
+        public OutputChannel? GetOutputChannel(int chnd)
         {
-           return _outputChannels.Find(ch => ch.ChannelNumber == chnum);
+           return _outputChannels.Find(ch => ch.Handle == chnd);
         }
 
         /// <summary>

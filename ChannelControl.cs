@@ -67,8 +67,6 @@ namespace Ephemera.MidiLib
         int _controllerId = 0;
         int _controllerValue = 0;
         bool _selected = false;
-
-
         #endregion
 
         #region Properties

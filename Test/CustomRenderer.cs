@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Runtime.CompilerServices;
 using Ephemera.NBagOfTricks;
 
 
@@ -29,25 +25,12 @@ namespace Ephemera.MidiLib.Test
         int _lastNote = -1;
         #endregion
 
-        //#region Properties
-        ///// <summary>Context.</summary>
-        //public int ChannelNumber { get; init; }
-        //#endregion
-
-        //#region Events
-        ///// <summary>UI midi send.</summary>
-        //public event EventHandler<BaseMidi>? SendMidi;
-        //#endregion
-
-        
-
         /// <summary>Constructor.</summary>
         public CustomRenderer()
         {
             toolTip = new(components);
             Size = new(231, 174);
         }
-
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -178,8 +161,8 @@ namespace Ephemera.MidiLib.Test
         {
             // Map and check.
             var mp = PointToClient(MousePosition);
-            int x = NBagOfTricks.MathUtils.Map(mp.X, ClientRectangle.Left, ClientRectangle.Right, 0, MidiDefs.MAX_MIDI);
-            int y = NBagOfTricks.MathUtils.Map(mp.Y, ClientRectangle.Bottom, ClientRectangle.Top, 0, MidiDefs.MAX_MIDI);
+            int x = MathUtils.Map(mp.X, ClientRectangle.Left, ClientRectangle.Right, 0, MidiDefs.MAX_MIDI);
+            int y = MathUtils.Map(mp.Y, ClientRectangle.Bottom, ClientRectangle.Top, 0, MidiDefs.MAX_MIDI);
             return (x, y);
         }
     }

@@ -13,7 +13,8 @@ namespace Ephemera.MidiLib
     public class UserRenderer : UserControl
     {
         /// <summary>For midi sends.</summary>
-        public int ChannelNumber { get; init; }
+//        public int ChannelNumber { get; init; }
+        public int Handle { get; init; }
 
         /// <summary>Parent hooks this.</summary>
         public event EventHandler<BaseEvent>? SendMidi;
