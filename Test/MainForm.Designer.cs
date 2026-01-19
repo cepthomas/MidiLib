@@ -36,13 +36,15 @@ namespace Ephemera.MidiLib.Test
             timer1 = new System.Windows.Forms.Timer(components);
             chkLoop = new System.Windows.Forms.CheckBox();
             btnRewind = new System.Windows.Forms.Button();
+            btnTimebar = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator1, btnGo, toolStripSeparator4 });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator1, btnGo, toolStripSeparator4, btnTimebar, toolStripSeparator3 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(1092, 26);
@@ -81,7 +83,6 @@ namespace Ephemera.MidiLib.Test
             // btnGo
             // 
             btnGo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            btnGo.Image = (System.Drawing.Image)resources.GetObject("btnGo.Image");
             btnGo.ImageTransparentColor = System.Drawing.Color.Magenta;
             btnGo.Name = "btnGo";
             btnGo.Size = new System.Drawing.Size(49, 23);
@@ -121,16 +122,20 @@ namespace Ephemera.MidiLib.Test
             // 
             // ch_ctrl1
             // 
+            ch_ctrl1.ControllerId = 0;
+            ch_ctrl1.ControllerValue = 0;
             ch_ctrl1.Location = new System.Drawing.Point(8, 101);
             ch_ctrl1.Name = "ch_ctrl1";
-            ch_ctrl1.Size = new System.Drawing.Size(356, 56);
+            ch_ctrl1.Size = new System.Drawing.Size(305, 50);
             ch_ctrl1.TabIndex = 105;
             // 
             // ch_ctrl2
             // 
+            ch_ctrl2.ControllerId = 0;
+            ch_ctrl2.ControllerValue = 0;
             ch_ctrl2.Location = new System.Drawing.Point(409, 101);
             ch_ctrl2.Name = "ch_ctrl2";
-            ch_ctrl2.Size = new System.Drawing.Size(356, 56);
+            ch_ctrl2.Size = new System.Drawing.Size(305, 50);
             ch_ctrl2.TabIndex = 106;
             // 
             // propGrid
@@ -144,9 +149,7 @@ namespace Ephemera.MidiLib.Test
             // 
             timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             timeBar.DrawColor = System.Drawing.Color.Red;
-            timeBar.DoLoop = false;
-            timeBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            timeBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            timeBar.GridLines = 0;
             timeBar.Location = new System.Drawing.Point(434, 41);
             timeBar.Name = "timeBar";
             timeBar.SelectedColor = System.Drawing.Color.Blue;
@@ -173,6 +176,20 @@ namespace Ephemera.MidiLib.Test
             btnRewind.TabIndex = 112;
             btnRewind.Text = "<=";
             btnRewind.UseVisualStyleBackColor = true;
+            // 
+            // btnTimebar
+            // 
+            btnTimebar.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            btnTimebar.Image = (System.Drawing.Image)resources.GetObject("btnTimebar.Image");
+            btnTimebar.ImageTransparentColor = System.Drawing.Color.Magenta;
+            btnTimebar.Name = "btnTimebar";
+            btnTimebar.Size = new System.Drawing.Size(60, 23);
+            btnTimebar.Text = "timebar";
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(6, 26);
             // 
             // MainForm
             // 
@@ -217,6 +234,8 @@ namespace Ephemera.MidiLib.Test
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton btnGo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripButton btnTimebar;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }
 

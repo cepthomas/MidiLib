@@ -76,6 +76,7 @@ namespace Ephemera.MidiLib.Test
             btnRewind.Click += (_, __) => { timeBar.Rewind(); };
 
             btnGo.Click += Go_Click;
+            btnTimebar.Click += (_, _) => TestTimeBar();
 
             // Report on midi action.
             MidiManager.Instance.MessageReceived += Mgr_MessageReceived;
@@ -131,11 +132,11 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
-                TestScriptApp();
+                //TestScriptApp();
 
                 //TestPropertyEditor();
 
-                //TestTimeBar();
+                TestTimeBar();
             }
             catch (Exception ex)
             {
@@ -188,17 +189,17 @@ namespace Ephemera.MidiLib.Test
             Tell(INFO, $">>> TimeBar event. {timeBar.Current}");
         }
 
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            if (!timeBar.FreeRunning && e.KeyData == Keys.Escape)
-            {
-                // Reset.
-                timeBar.ResetSelection();
-                Invalidate();
-            }
+        //protected override void OnKeyDown(KeyEventArgs e)
+        //{
+        //    if (!timeBar.FreeRunning && e.KeyData == Keys.Escape)
+        //    {
+        //        // Reset.
+        //        timeBar.ResetSelection();
+        //        Invalidate();
+        //    }
 
-            base.OnKeyDown(e);
-        }
+        //    base.OnKeyDown(e);
+        //}
 
         //-------------------------------------------------------------------------------//
 

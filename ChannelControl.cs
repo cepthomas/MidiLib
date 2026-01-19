@@ -123,7 +123,7 @@ namespace Ephemera.MidiLib
         public int ControllerId
         {
             get { return _controllerId; }
-            set { if (value is <= MidiDefs.TEMP_CHANNEL or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerId:{value}");
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerId:{value}");
                   else _controllerId = value; }
         }
 
@@ -131,7 +131,7 @@ namespace Ephemera.MidiLib
         public int ControllerValue
         {
             get { return _controllerId; }
-            set { if (value is <= MidiDefs.TEMP_CHANNEL or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerValue:{value}");
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerValue:{value}");
                   else _controllerValue = value; }
         }
 

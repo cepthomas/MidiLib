@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using Ephemera.NBagOfTricks;
+using System.Windows.Forms.VisualStyles;
 
 
 // TODO zoom, drag, shift
