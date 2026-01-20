@@ -77,7 +77,7 @@ namespace Ephemera.MidiLib
         /// <summary>Instruments from alias file.</summary>
         Dictionary<int, string>? _aliases;
 
-        /// <summary>Is the channel instrument-name-aware?</summary>
+        /// <summary>True if the channel doesn't support named instruments/patches.</summary>
         readonly bool _anonymous = false;
 
         // Backing fields.
@@ -202,7 +202,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// 
+        /// Fix up instrument and patch names - depends on flavor is GM/drums/aliased.
         /// </summary>
         /// <param name="patchName"></param>
         /// <param name="aliasFile"></param>

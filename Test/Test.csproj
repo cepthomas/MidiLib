@@ -26,6 +26,7 @@
     <ItemGroup>
       <Compile Remove="MainForm_X.cs" />
       <Compile Remove="MainForm_X.Designer.cs" />
+      <Compile Remove="MockNAudio.cs" />
     </ItemGroup>
 
     <ItemGroup>
