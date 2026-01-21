@@ -270,7 +270,7 @@ namespace Ephemera.MidiLib.Test
                     DrawColor = Color.SpringGreen,
                     SelectedColor = Color.Yellow,
                     Volume = VolumeDefs.DEFAULT_VOLUME,
-                    ControllerId = 10, // pan
+                    Controller = 10, // pan
                     ControllerValue = 82
                 };
                 ctrl.SetRenderer(new CustomRenderer());

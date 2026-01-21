@@ -64,7 +64,7 @@ namespace Ephemera.MidiLib
         // backing:
         UserRenderer? _userRenderer = null;
         Color _selectedColor = Color.Red;
-        int _controllerId = 0;
+        int _controller = 0;
         int _controllerValue = 0;
         bool _selected = false;
         #endregion
@@ -120,17 +120,17 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>Edit current controller number.</summary>
-        public int ControllerId
+        public int Controller
         {
-            get { return _controllerId; }
-            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerId:{value}");
-                  else _controllerId = value; }
+            get { return _controller; }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"Controller:{value}");
+                  else _controller = value; }
         }
 
         /// <summary>Controller payload.</summary>
         public int ControllerValue
         {
-            get { return _controllerId; }
+            get { return _controller; }
             set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerValue:{value}");
                   else _controllerValue = value; }
         }
@@ -362,8 +362,8 @@ namespace Ephemera.MidiLib
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            BoundChannel.Send(new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
-   //         SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, ControllerId, ControllerValue));
+            BoundChannel.Send(new Controller(BoundChannel.ChannelNumber, Controller, ControllerValue));
+   //         SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, Controller, ControllerValue));
         }
         #endregion
 

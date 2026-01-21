@@ -39,7 +39,7 @@ namespace Ephemera.MidiLib
     public interface IOutputDevice : IDevice
     {
         #region Functions
-        /// <summary>Send midi event.</summary>
+        /// <summary>Send midi event. Converts internal to NAudio format.</summary>
         /// <param name="evt"></param>
         void Send(BaseEvent evt);
         #endregion

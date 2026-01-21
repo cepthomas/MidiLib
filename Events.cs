@@ -107,13 +107,13 @@ namespace Ephemera.MidiLib
     public class Controller : BaseEvent
     {
         /// <summary>Specific controller id.</summary>
-        public int ControllerId
+        public int Id
         {
-            get { return _controllerId; }
-            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerId:{value}");
-                  _controllerId = value; }
+            get { return _id; }
+            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"Id:{value}");
+                  _id = value; }
         }
-        int _controllerId = 0;
+        int _id = 0;
 
         /// <summary>Payload.</summary>
         public int Value
@@ -124,23 +124,23 @@ namespace Ephemera.MidiLib
         }
         int _value = 0;
 
-        public Controller(int channel, int controllerId, int value, MusicTime? when = null)
+        public Controller(int channel, int id, int value, MusicTime? when = null)
         {
             if (channel is < MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
-            if (controllerId is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"controllerId:{(controllerId)}"); };
+            if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"controllerId:{(id)}"); };
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"value:{value}"); }
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); };
 
             When = when ?? MusicTime.ZERO;
             ChannelNumber = channel;
-            ControllerId = controllerId;
+            Id = id;
             Value = value;
         }
 
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"ControllerId:{MidiDefs.ControllerIds.GetName(ControllerId)}({ControllerId}):{Value} {base.ToString()}";
+            return $"Controller:{MidiDefs.Controllers.GetName(Id)}({Id}):{Value} {base.ToString()}";
         }
     }
 

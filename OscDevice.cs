@@ -232,7 +232,7 @@ namespace Ephemera.MidiLib
                             // /controller/ channel ctlnum val
                             msg = new NebOsc.Message() { Address = "/controller" };
                             msg.Data.Add(evt.ChannelNumber);
-                            msg.Data.Add(evt.ControllerId);
+                            msg.Data.Add(evt.Id);
                             msg.Data.Add(evt.Value);
                             break;
 

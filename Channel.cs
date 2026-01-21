@@ -122,10 +122,7 @@ namespace Ephemera.MidiLib
             set
             {
                 var id = GetInstrumentId(value);
-                if (id < 0)
-                {
-                    throw new ArgumentException($"Invalid patch:{value}");
-                }
+                if (id < 0) { throw new ArgumentException($"Invalid patch:{value}"); }
                 Patch = id;
                 _device.Send(new Patch(ChannelNumber, Patch));
             }
@@ -240,10 +237,10 @@ namespace Ephemera.MidiLib
                     throw new MidiLibException($"Failed to load alias file {aliasFile}: {ex.Message}");
                 }
             }
-            else
+            else // internal set
             {
                 var id = MidiDefs.DrumKits.GetId(patchName);
-                if (id >= 0) // it's GM drum kit
+                if (id >= 0) // GM drum kit
                 {
                     IsDrums = true;
                     Patch = id;
@@ -251,7 +248,7 @@ namespace Ephemera.MidiLib
                 else
                 {
                     id = MidiDefs.Instruments.GetId(patchName);
-                    if (id >= 0) // it's plain GM instrument
+                    if (id >= 0) // plain GM instrument
                     {
                         IsDrums = false;
                         Patch = id;
@@ -301,8 +298,6 @@ namespace Ephemera.MidiLib
             {
                 id = MidiDefs.Instruments.GetId(name);
             }
-
-            if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }
 
             return id;
         }

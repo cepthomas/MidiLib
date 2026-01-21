@@ -122,7 +122,7 @@ namespace Ephemera.MidiLib.Test
             // 
             // ch_ctrl1
             // 
-            ch_ctrl1.ControllerId = 0;
+            ch_ctrl1.Controller = 0;
             ch_ctrl1.ControllerValue = 0;
             ch_ctrl1.Location = new System.Drawing.Point(8, 101);
             ch_ctrl1.Name = "ch_ctrl1";
@@ -131,7 +131,7 @@ namespace Ephemera.MidiLib.Test
             // 
             // ch_ctrl2
             // 
-            ch_ctrl2.ControllerId = 0;
+            ch_ctrl2.Controller = 0;
             ch_ctrl2.ControllerValue = 0;
             ch_ctrl2.Location = new System.Drawing.Point(409, 101);
             ch_ctrl2.Name = "ch_ctrl2";

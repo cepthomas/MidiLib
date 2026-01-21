@@ -27,7 +27,7 @@ namespace Ephemera.MidiLib
         public static BiLut Instruments { get; } = new();
 
         /// <summary>All the known GM controllers.</summary>
-        public static BiLut ControllerIds { get; } = new();
+        public static BiLut Controllers { get; } = new();
 
         /// <summary>All the GM drums.</summary>
         public static BiLut Drums { get; } = new();
@@ -45,7 +45,7 @@ namespace Ephemera.MidiLib
 
             // Populate the defs.
             DoSection("instruments", Instruments);
-            DoSection("controllers", ControllerIds);
+            DoSection("controllers", Controllers);
             DoSection("drums", Drums);
             DoSection("drumkits", DrumKits);
 
@@ -80,7 +80,7 @@ namespace Ephemera.MidiLib
             ls.Add("- For most controllers marked on/off, on=127 and off=0");
             ls.Add("|Controller   | Number|");
             ls.Add("|----------   | ------|");
-            ControllerIds.Contents.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            Controllers.Contents.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
             ls.Add("");
 
             ls.Add("# Midi GM Drums");
@@ -127,7 +127,7 @@ namespace Ephemera.MidiLib
             ls.Add("-- Controllers");
             ls.Add("M.controllers =");
             ls.Add("{");
-            ControllerIds.Contents.ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
+            Controllers.Contents.ForEach(kv => ls.Add($"    {kv.Value} = {kv.Key},"));
             ls.Add("}");
 
             ls.Add("");
