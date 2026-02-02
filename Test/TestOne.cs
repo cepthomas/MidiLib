@@ -62,7 +62,8 @@ namespace Ephemera.MidiLib.Test
             // 2 is GM drums1
             var chan_out2 = MidiManager.Instance.OpenOutputChannel(outdev, 10, "drums", "Electronic");
             // 3 is Alt instruments
-            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "alt", "WaterWhistle1", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+            var instFn = Path.Join(MiscUtils.GetSourcePath(), "test_defs.ini");
+            var chan_out3 = MidiManager.Instance.OpenOutputChannel(outdev, 4, "alt", "WaterWhistle1", instFn);
 
             UT_EQUAL(chan_out1.PatchName, "HonkyTonkPiano");
             UT_EQUAL(chan_out2.PatchName, "Electronic");
