@@ -104,6 +104,8 @@ namespace Ephemera.MidiLib.Test
 
             Tell(INFO, $">>> OnLoad done.");
 
+            Tell(INFO, string.Join(Environment.NewLine, MidiDefs.GenUserDeviceInfo()));
+
             base.OnLoad(e);
         }
 
