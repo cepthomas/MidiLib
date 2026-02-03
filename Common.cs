@@ -62,7 +62,7 @@ namespace Ephemera.MidiLib
     public class MidiUtils
     {
         /// <summary>
-        /// Convert a midi dictionary into ordered list of strings. TODO doesn't really belong here.
+        /// Convert a midi dictionary into ordered list of strings.
         /// </summary>
         /// <param name="source">The dictionary to process</param>
         /// <param name="addKey">Add the index number to the entry</param>
