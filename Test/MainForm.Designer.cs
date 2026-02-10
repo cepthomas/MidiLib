@@ -27,7 +27,7 @@ namespace Ephemera.MidiLib.Test
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             btnGo = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            txtViewer = new Ephemera.NBagOfUis.TextViewer();
+            tvInfo = new Ephemera.NBagOfUis.TextViewer();
             sldMasterVolume = new Ephemera.NBagOfUis.Slider();
             ch_ctrl1 = new ChannelControl();
             ch_ctrl2 = new ChannelControl();
@@ -95,15 +95,15 @@ namespace Ephemera.MidiLib.Test
             // 
             // txtViewer
             // 
-            txtViewer.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            txtViewer.Location = new System.Drawing.Point(12, 345);
-            txtViewer.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            txtViewer.MaxText = 5000;
-            txtViewer.Name = "txtViewer";
-            txtViewer.Prompt = "";
-            txtViewer.Size = new System.Drawing.Size(753, 242);
-            txtViewer.TabIndex = 58;
-            txtViewer.WordWrap = true;
+            tvInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            tvInfo.Location = new System.Drawing.Point(12, 345);
+            tvInfo.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            tvInfo.MaxText = 5000;
+            tvInfo.Name = "txtViewer";
+            tvInfo.Prompt = "";
+            tvInfo.Size = new System.Drawing.Size(753, 242);
+            tvInfo.TabIndex = 58;
+            tvInfo.WordWrap = true;
             // 
             // sldMasterVolume
             // 
@@ -203,7 +203,7 @@ namespace Ephemera.MidiLib.Test
             Controls.Add(ch_ctrl1);
             Controls.Add(ch_ctrl2);
             Controls.Add(sldMasterVolume);
-            Controls.Add(txtViewer);
+            Controls.Add(tvInfo);
             Controls.Add(toolStrip1);
             Location = new System.Drawing.Point(300, 50);
             Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -220,7 +220,7 @@ namespace Ephemera.MidiLib.Test
 
         private System.Windows.Forms.ToolStrip toolStrip1;
         private NBagOfUis.Slider sldMasterVolume;
-        private NBagOfUis.TextViewer txtViewer;
+        private NBagOfUis.TextViewer tvInfo;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;
         private ChannelControl ch_ctrl1;

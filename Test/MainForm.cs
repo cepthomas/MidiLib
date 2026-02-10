@@ -52,10 +52,14 @@ namespace Ephemera.MidiLib.Test
             di.Create();
 
             // The text output.
-            txtViewer.Font = Font;
-            txtViewer.WordWrap = true;
-            txtViewer.MatchText.Add(ERROR, Color.LightPink);
-            txtViewer.MatchText.Add(WARN, Color.Plum);
+            tvInfo.Font = Font;
+            tvInfo.WordWrap = true;
+            List<TextViewer.Matcher> matchers =
+            [
+                new(ERROR, BgColor: Color.LightPink),
+                new(WARN, BgColor: Color.Plum),
+            ];
+            tvInfo.Matchers = matchers;
 
             // Master volume.
             sldMasterVolume.DrawColor = Color.SpringGreen;
@@ -420,7 +424,7 @@ namespace Ephemera.MidiLib.Test
         void Tell(string cat, string s, [CallerFilePath] string file = "", [CallerLineNumber] int line = -1)
         {
             var fn = Path.GetFileName(file);
-            txtViewer.AppendLine($"{cat} {fn}({line}) {s}");
+            tvInfo.Append($"{cat} {fn}({line}) {s}");
         }
         #endregion
     }
