@@ -54,12 +54,11 @@ namespace Ephemera.MidiLib.Test
             // The text output.
             tvInfo.Font = Font;
             tvInfo.WordWrap = true;
-            List<TextViewer.Matcher> matchers =
+            tvInfo.Matchers =
             [
                 new(ERROR, BgColor: Color.LightPink),
                 new(WARN, BgColor: Color.Plum),
             ];
-            tvInfo.Matchers = matchers;
 
             // Master volume.
             sldMasterVolume.DrawColor = Color.SpringGreen;
