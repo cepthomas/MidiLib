@@ -46,10 +46,7 @@ namespace Ephemera.MidiLib.Test
         {
             InitializeComponent();
 
-            // Make sure out path exists.
-            _outPath = Path.Join(MiscUtils.GetSourcePath(), "out");
-            DirectoryInfo di = new(_outPath);
-            di.Create();
+            _outPath = MiscUtils.GetSourcePath();
 
             // The text output.
             tvInfo.Font = Font;

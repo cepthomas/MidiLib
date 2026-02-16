@@ -22,9 +22,9 @@ namespace Ephemera.MidiLib.Test
 
             // PNUT
             //TestRunner runner = new(OutputFormat.Readable);
-            //var cases = new[] { "MIDILIB" };  // MIDILIB_MUSTIME
-            //runner.RunSuites(cases);
-            //File.WriteAllLines(Path.Join(MiscUtils.GetSourcePath(), "out", "test.txt"), runner.Context.OutputLines);
+            //var torun = new[] { "MIDILIB" };  // MIDILIB_MUSTIME
+            //runner.RunSuites(torun);
+            //File.WriteAllLines(Path.Join(MiscUtils.GetSourcePath(), "test.txt"), runner.Context.OutputLines);
         }
     }
 }
