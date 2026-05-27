@@ -18,8 +18,8 @@
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
         <StartupObject>Ephemera.MidiLib.Test.Program</StartupObject>
-        <NoWin32Manifest>true</NoWin32Manifest>
-        <IsPublishable>False</IsPublishable>
+        <!-- <NoWin32Manifest>true</NoWin32Manifest>
+        <IsPublishable>False</IsPublishable> -->
         <!-- en none -->
     </PropertyGroup>
 
