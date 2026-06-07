@@ -231,14 +231,7 @@ namespace Ephemera.MidiLib
 
         public void Add(BaseEvent evt)
         {
-            if (!_allEvents.TryGetValue(evt.When, out List<BaseEvent>? events))
-            {
-                _allEvents.Add(evt.When, new([evt]));
-            }
-            else
-            {
-                events.Add(evt);
-            }
+            _allEvents.Add(evt.When, new([evt]));
         }
 
         public void AddRange(IEnumerable<BaseEvent> evts)
