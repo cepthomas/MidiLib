@@ -40,13 +40,18 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Conversion function. TODO should round?
+        /// Conversion function.
         /// </summary>
         /// <param name="t"></param>
+        /// <param name="roundup"></param>
         /// <returns></returns>
-        public int MidiToInternal(long t)
+        public int MidiToInternal(long t, bool roundup)
         {
             long itime = t * MusicTime.TicksPerBeat / _midiPpq;
+            if (roundup && ((t * MusicTime.TicksPerBeat) % _midiPpq > 0))
+            {
+                itime++;
+            }
             return (int)itime;
         }
 
