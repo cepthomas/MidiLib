@@ -12,6 +12,7 @@ using System.Windows.Forms.VisualStyles;
 
 // TODO zoom, drag, shift
 
+//TODO1 combine with simple one or put in new home??
 
 namespace Ephemera.MidiLib
 {
@@ -292,7 +293,7 @@ namespace Ephemera.MidiLib
             ///// Some vertical lines.
             if (GridLines > 0)
             {
-                var incr = 4 * MusicTime.TicksPerBar; // TODO or bar if dense.
+                var incr = 4 * MusicTime.TicksPerBar; // TODO1 or bar if dense.
                 _penMarker.DashStyle = DashStyle.Custom;
                 _penMarker.DashPattern = [5, 2];
                 for (int i = 0; i < _length.Tick; i += incr)
