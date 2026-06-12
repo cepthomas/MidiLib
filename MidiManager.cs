@@ -288,7 +288,7 @@ namespace Ephemera.MidiLib
         /// <param name="channel">Specific channel or all if null.</param>
         public void Kill(OutputChannel? channel = null)
         {
-            int cc = 123; // TODO1 fix magical knowledge => "AllNotesOff"
+            int cc = 123; // => AllNotesOff
 
             if (channel is null)
             {

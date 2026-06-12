@@ -231,7 +231,7 @@ namespace Ephemera.MidiLib
 
         public void Add(BaseEvent evt)
         {
-            _allEvents.Add(evt.When, new([evt]));
+            _allEvents.AddLazy(evt.When, evt);
         }
 
         public void AddRange(IEnumerable<BaseEvent> evts)
