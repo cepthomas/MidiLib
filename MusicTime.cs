@@ -24,22 +24,22 @@ namespace Ephemera.MidiLib
         /// <summary>Only 4/4 time supported currently.</summary>
         public static int BeatsPerBar { get { return 4; } }
 
-        /// <summary>Our resolution where 8 <=> 32nd note.</summary>
-        public static int TicksPerBeat { get { return 8; } }
+        /// <summary>Our resolution where 8 => 32nd note.</summary>
+        public static int SubbeatsPerBeat { get { return 8; } }
 
         /// <summary>Convenience.</summary>
-        public static int TicksPerBar { get { return TicksPerBeat * BeatsPerBar; } }
+        public static int SubbeatsPerBar { get { return SubbeatsPerBeat * BeatsPerBar; } }
 
-        /// <summary>Absolute tick. Zero-based.</summary>
+        /// <summary>Absolute tick => total Subbeats. Zero-based.</summary>
         public int Tick { get; private set; }
 
         /// <summary>Accessor.</summary>
         public int Id { get { return _id; } }
 
         /// <summary>The time in music form.</summary>
-        public (int bar, int beat, int tick) Parts
+        public (int bar, int beat, int subbeat) Parts
         {
-            get { return (Tick / TicksPerBar, Tick / TicksPerBeat % BeatsPerBar, Tick % TicksPerBeat); }
+            get { return (Tick / SubbeatsPerBar, Tick / SubbeatsPerBeat % BeatsPerBar, Tick % SubbeatsPerBeat); }
         }
         #endregion
 
@@ -84,14 +84,14 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Constructor from bar/beat/tick.
+        /// Constructor from bar/beat/subbeat.
         /// </summary>
         /// <param name="bar"></param>
         /// <param name="beat"></param>
-        /// <param name="tick"></param>
-        public MusicTime(int bar, int beat, int tick)
+        /// <param name="subbeat"></param>
+        public MusicTime(int bar, int beat, int subbeat)
         {
-            Tick = (bar * TicksPerBar) + (beat * TicksPerBeat) + tick;
+            Tick = (bar * SubbeatsPerBar) + (beat * SubbeatsPerBeat) + subbeat;
             _id = _nextId++;
         }
 
@@ -106,18 +106,18 @@ namespace Ephemera.MidiLib
             bool ok = true;
             int bars = 0;
             int beats = 0;
-            int ticks = 0;
+            int subbeats = 0;
 
             if (ok && parts.Count > 0) ok = int.TryParse(parts[0], out bars);
             if (ok && parts.Count > 1) ok = int.TryParse(parts[1], out beats);
-            if (ok && parts.Count > 2) ok = int.TryParse(parts[2], out ticks);
+            if (ok && parts.Count > 2) ok = int.TryParse(parts[2], out subbeats);
 
             if (ok &&
                 bars >= 0 && bars <= 9999 &&
                 beats >= 0 && beats < BeatsPerBar &&
-                ticks >= 0 && ticks <= TicksPerBeat)
+                subbeats >= 0 && subbeats <= SubbeatsPerBeat)
             {
-                Tick = bars * TicksPerBar + beats * TicksPerBeat + ticks;
+                Tick = bars * SubbeatsPerBar + beats * SubbeatsPerBeat + subbeats;
             }
             else
             {
@@ -126,7 +126,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Construct a MusicTime from Beat.Sub representation as a double in the range N.0 to N.7
+        /// Construct a MusicTime from Beat.Subbeat representation as a double in the range N.0 to N.7
         /// </summary>
         /// <param name="beat"></param>
         /// <returns>New BarTime.</returns>
@@ -134,16 +134,16 @@ namespace Ephemera.MidiLib
         {
             var (integral, fractional) = MathUtils.SplitDouble(beat);
             var beats = (int)integral;
-            var subs = (int)Math.Round(fractional * 10.0);
+            var subbeats = (int)Math.Round(fractional * 10.0);
 
-            if (subs >= 8)
+            if (subbeats >= 8)
             {
                 throw new ArgumentException($"beat:{beat}");
             }
 
             // Scale to native.
-            subs = subs * TicksPerBeat / 8;
-            Tick = beats * TicksPerBeat + subs;
+            subbeats = subbeats * SubbeatsPerBeat / 8;
+            Tick = beats * SubbeatsPerBeat + subbeats;
         }
         #endregion
 
@@ -161,10 +161,10 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Update current value.
         /// </summary>
-        /// <param name="ticks">By this number of ticks. Can be negative = decrement.</param>
-        public void Add(int ticks)
+        /// <param name="subbeats">By this number of subbeats. Can be negative = decrement.</param>
+        public void Add(int subbeats)
         {
-            Tick += ticks;
+            Tick += subbeats;
             if (Tick < 0)
             {
                 Tick = 0;
@@ -203,9 +203,9 @@ namespace Ephemera.MidiLib
                 int res = snapType switch
                 {
                     SnapType.Tick => 1,
-                    SnapType.Beat => TicksPerBeat,
-                    SnapType.Bar => TicksPerBar,
-                    SnapType.FourBar => 4 * TicksPerBar,
+                    SnapType.Beat => SubbeatsPerBeat,
+                    SnapType.Bar => SubbeatsPerBar,
+                    SnapType.FourBar => 4 * SubbeatsPerBar,
                     _ => 1
                 };
 
@@ -230,8 +230,8 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            var p = Parts;
-            return $"{p.bar}.{p.beat}.{p.tick:0}";
+            var (bar, beat, subbeat) = Parts;
+            return $"{bar}.{beat}.{subbeat:0}";
         }
         #endregion
 

@@ -174,7 +174,7 @@ namespace Ephemera.MidiLib
             if (sectInfo.Any()) // beat
             {
                 var spos = sectInfo.Keys.OrderBy(k => k).ToList();
-                spos.ForEach(sp => _sectionInfo.Add((sp * MusicTime.TicksPerBeat, sectInfo[sp])));
+                spos.ForEach(sp => _sectionInfo.Add((sp * MusicTime.SubbeatsPerBeat, sectInfo[sp])));
                 _length.Set(_sectionInfo.Last().tick);
                 _selEnd.Set(_length);
 
@@ -293,7 +293,7 @@ namespace Ephemera.MidiLib
             ///// Some vertical lines.
             if (GridLines > 0)
             {
-                var incr = 4 * MusicTime.TicksPerBar; // TODO1 or bar if dense.
+                var incr = 4 * MusicTime.SubbeatsPerBar; // TODO1 or bar if dense.
                 _penMarker.DashStyle = DashStyle.Custom;
                 _penMarker.DashPattern = [5, 2];
                 for (int i = 0; i < _length.Tick; i += incr)
@@ -440,9 +440,9 @@ namespace Ephemera.MidiLib
                 int res = Snap switch
                 {
                     SnapType.Tick => 1,
-                    SnapType.Beat => MusicTime.TicksPerBeat,
-                    SnapType.Bar => MusicTime.TicksPerBar,
-                    SnapType.FourBar => 4 * MusicTime.TicksPerBar,
+                    SnapType.Beat => MusicTime.SubbeatsPerBeat,
+                    SnapType.Bar => MusicTime.SubbeatsPerBar,
+                    SnapType.FourBar => 4 * MusicTime.SubbeatsPerBar,
                     _  => 1
                 };
 

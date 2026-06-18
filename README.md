@@ -19,7 +19,7 @@ Requires VS2022 and .NET8.
     - Generate markdown and lua files.
 
 - MusicTime
-    - Time is represented by `bar.beat.tick` but 0-based, unlike typical music representation.
+    - Time is represented by `bar.beat.subbeat` but 0-based, unlike typical music representation.
     - Resolution is limited to 32nd notes due to accuracy of the windows multimedia timer.
 
 - OutputChannel/InputChannel

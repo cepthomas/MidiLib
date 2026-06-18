@@ -269,7 +269,7 @@ namespace Ephemera.MidiLib
         /// <returns>The channel or null if invalid handle.</returns>
         public OutputChannel? GetOutputChannel(int chnd)
         {
-           return _outputChannels.Find(ch => ch.Handle == chnd);
+            return _outputChannels.Find(ch => ch.Handle == chnd);
         }
 
         /// <summary>
@@ -292,7 +292,13 @@ namespace Ephemera.MidiLib
 
             if (channel is null)
             {
-                _outputChannels.ForEach(ch => ch.Send(new Controller(ch.ChannelNumber, cc, 0)));
+                _outputDevices.ForEach((dev) =>
+                {
+                    for (int i = 1; i <= MidiDefs.NUM_CHANNELS; i++)
+                    {
+                        dev.Send(new Controller(i, cc, 0));
+                    }
+                });
             }
             else
             {
