@@ -22,9 +22,6 @@ Requires VS2022 and .NET8.
     - Time is represented by `bar.beat.tick` but 0-based, unlike typical music representation.
     - Resolution is limited to 32nd notes due to accuracy of the windows multimedia timer.
 
-- MidiTimeConverter
-    - Mapping between data using different resolutions.
-
 - OutputChannel/InputChannel
     - Represents physical channels in a way usable by `ChannelControl` and output devices.
     - Intelligent handling of patch names.

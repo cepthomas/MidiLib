@@ -170,31 +170,4 @@ namespace Ephemera.MidiLib.Test
             }
         }
     }
-
-    //----------------------------------------------------------------
-    /// <summary>Test MidiTimeConverter.</summary>
-    public class MIDILIB_TIMECONV : TestSuite
-    {
-        public override void RunSuite()
-        {
-            StopOnFail(true);
-
-            // A unit test. If we use ppq of 8 (32nd notes):
-            // 100 bpm = 800 ticks/min = 13.33 ticks/sec = 0.01333 ticks/msec = 75.0 msec/tick
-            //  99 bpm = 792 ticks/min = 13.20 ticks/sec = 0.0132 ticks/msec  = 75.757 msec/tick
-
-            MidiTimeConverter mt = new(0, 100);
-
-            Assert(mt.InternalPeriod().IsClose(75.0, 0.001));
-
-            mt = new(0, 99);
-            Assert(mt.InternalPeriod().IsClose(75.757, 0.001));
-
-            mt = new(384, 100);
-            Assert((mt.MidiToSec(144000) / 60.0).IsClose(3.75, 0.001));
-
-            mt = new(96, 100);
-            Assert(mt.MidiPeriod().IsClose(6.25, 0.001));
-        }
-    }
 }

@@ -6,7 +6,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLib
 {
-    /// <summary>Sort of like DateTime but for musical terminology.</summary>
+    /// <summary>Sort of like DateTime but for musical terminology in midi.</summary>
     public class MusicTime : IEquatable<MusicTime>
     {
         #region Fields
@@ -24,7 +24,7 @@ namespace Ephemera.MidiLib
         /// <summary>Only 4/4 time supported currently.</summary>
         public static int BeatsPerBar { get { return 4; } }
 
-        /// <summary>Our resolution where 8 => 32nd note.</summary>
+        /// <summary>Our resolution where 8 <=> 32nd note.</summary>
         public static int TicksPerBeat { get { return 8; } }
 
         /// <summary>Convenience.</summary>
