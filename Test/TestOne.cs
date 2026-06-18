@@ -14,7 +14,7 @@ namespace Ephemera.MidiLib.Test
     /// <summary>Test gen aux files.</summary>
     public class MIDILIB_GEN : TestSuite
     {
-        string myPath = MiscUtils.GetSourcePath();
+        readonly string myPath = MiscUtils.GetSourcePath();
 
         public override void RunSuite()
         {
@@ -38,7 +38,7 @@ namespace Ephemera.MidiLib.Test
     /// <summary>Test channel logic.</summary>
     public class MIDILIB_CHANNEL : TestSuite
     {
-        string myPath = MiscUtils.GetSourcePath();
+        readonly string myPath = MiscUtils.GetSourcePath();
 
         public override void RunSuite()
         {
@@ -48,9 +48,9 @@ namespace Ephemera.MidiLib.Test
             var outdev = "nullout:test1";
             var indev = "nullin:test1";
             BaseEvent? sent = null;
-            MidiManager.Instance.MessageSent += (object? sender, BaseEvent e) => sent = e;
+            MidiManager.Instance.MessageSent += (sender, e) => sent = e;
             BaseEvent? rcvd = null;
-            MidiManager.Instance.MessageReceived += (object? sender, BaseEvent e) => rcvd = e;
+            MidiManager.Instance.MessageReceived += (sender, e) => rcvd = e;
 
             // Input
             var chan_in1 = MidiManager.Instance.OpenInputChannel(indev, 1, "my input");
@@ -91,7 +91,7 @@ namespace Ephemera.MidiLib.Test
     /// <summary>Test def file loading etc.</summary>
     public class MIDILIB_DEF : TestSuite
     {
-        string myPath = MiscUtils.GetSourcePath();
+        readonly string myPath = MiscUtils.GetSourcePath();
 
         public override void RunSuite()
         {
@@ -117,13 +117,13 @@ namespace Ephemera.MidiLib.Test
 
             ///// Basic parse and format.
             var mt = new MusicTime("23.2.6");
-            Assert(mt.Tick == 23 * MusicTime.TicksPerBar + 2 * MusicTime.TicksPerBeat + 6);
+            Assert(mt.Tick == 23 * MusicTime.SubbeatsPerBar + 2 * MusicTime.SubbeatsPerBeat + 6);
 
             mt = new MusicTime("146.1");
-            Assert(mt.Tick == 146 * MusicTime.TicksPerBar + 1 * MusicTime.TicksPerBeat);
+            Assert(mt.Tick == 146 * MusicTime.SubbeatsPerBar + 1 * MusicTime.SubbeatsPerBeat);
 
             mt = new MusicTime("71");
-            Assert(mt.Tick == 71 * MusicTime.TicksPerBar);
+            Assert(mt.Tick == 71 * MusicTime.SubbeatsPerBar);
 
             mt = new MusicTime(12345);
             Assert(mt.ToString() == "385.3.1");

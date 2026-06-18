@@ -162,7 +162,7 @@ namespace Ephemera.MidiLib.Test
             sectInfo.Add(384, "END");
 
             timeBar.Snap = SnapType.FourBar;
-            timeBar.GridLines = 4 * MusicTime.TicksPerBar;
+            timeBar.GridLines = 4 * MusicTime.SubbeatsPerBar;
             timeBar.InitSectionInfo(sectInfo);
             timeBar.Invalidate();
 
