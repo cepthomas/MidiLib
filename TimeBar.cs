@@ -67,17 +67,21 @@ namespace Ephemera.MidiLib
         public Font FontSmall { get; set; } = new("Microsoft Sans Serif", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Drawing the active elements of a control.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color DrawColor { get { return _drawColor; } set { _drawColor = value; Invalidate(); } }
         Color _drawColor = Color.Red;
 
         /// <summary>Drawing the control when selected.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color SelectedColor { get { return _selectedColor; } set { _selectedColor = value; Invalidate(); } }
         Color _selectedColor = Color.Blue;
 
         /// <summary>How to select times.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SnapType Snap { get; set; } = SnapType.Beat;
 
         /// <summary>Vertical line spacing for visual interest. 0 means none.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int GridLines { get; set; } = 0;
 
         /// <summary>Keep going at end.</summary>

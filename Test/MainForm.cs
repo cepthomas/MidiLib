@@ -93,6 +93,7 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
+                TestStandardApp();
                 //TestScriptApp();
                 //TestPropertyEditor();
                 //TestTimeBar();

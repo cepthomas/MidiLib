@@ -120,6 +120,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>Edit current controller number.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int Controller
         {
             get { return _controller; }
@@ -128,6 +129,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>Controller payload.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int ControllerValue
         {
             get { return _controller; }
