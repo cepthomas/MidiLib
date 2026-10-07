@@ -45,6 +45,7 @@ namespace Ephemera.MidiLib.Test
         public MainForm()
         {
             InitializeComponent();
+            Text = "MidiLib Test";
 
             _outPath = MiscUtils.GetSourcePath();
 
