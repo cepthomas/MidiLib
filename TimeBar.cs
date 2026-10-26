@@ -185,21 +185,6 @@ namespace Ephemera.MidiLib
                 Invalidate();
             }
         }
-        //public void InitSectionInfo(Dictionary<int, string> sectInfo)
-        //{
-        //    Reset();
-
-        //    if (sectInfo.Any()) // beat
-        //    {
-        //        var spos = sectInfo.Keys.OrderBy(k => k).ToList();
-        //        spos.ForEach(sp => _sectionInfo.Add((sp * MusicTime.SubbeatsPerBeat, sectInfo[sp])));
-        //        _length.Set(_sectionInfo.Last().tick);
-        //        _selEnd.Set(_length);
-
-        //        ValidateTimes();
-        //        Invalidate();
-        //    }
-        //}
 
         /// <summary>
         ///
