@@ -24,7 +24,8 @@ namespace Ephemera.MidiLib
         int _lastXPos = 0;
 
         /// <summary>Metadata.</summary>
-        readonly List<(int tick, string name)> _sectionInfo = [];
+        readonly List<(MusicTime when, string name)> _sectionInfo = [];
+        //readonly List<(int tick, string name)> _sectionInfo = [];
 
         /// <summary>Tooltip for mousing.</summary>
         readonly ToolTip _toolTip = new();
@@ -39,7 +40,7 @@ namespace Ephemera.MidiLib
         readonly Pen _penSel = new(Color.Blue, 1);
 
         /// <summary>Total length.</summary>
-        readonly MusicTime _length = new();
+        MusicTime _length = new();
 
         ///// <summary>Start of selected region.</summary>
         readonly MusicTime _selStart = new();
@@ -169,21 +170,36 @@ namespace Ephemera.MidiLib
         /// Client supplies metadata about sections in the time range.
         /// </summary>
         /// <param name="sectInfo"></param>
-        public void InitSectionInfo(Dictionary<int, string> sectInfo)
+        public void InitSectionInfo(Dictionary<MusicTime, string> sectInfo)
         {
             Reset();
 
             if (sectInfo.Any()) // beat
             {
                 var spos = sectInfo.Keys.OrderBy(k => k).ToList();
-                spos.ForEach(sp => _sectionInfo.Add((sp * MusicTime.SubbeatsPerBeat, sectInfo[sp])));
-                _length.Set(_sectionInfo.Last().tick);
+                spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
+                _length = spos.Last();
                 _selEnd.Set(_length);
 
                 ValidateTimes();
                 Invalidate();
             }
         }
+        //public void InitSectionInfo(Dictionary<int, string> sectInfo)
+        //{
+        //    Reset();
+
+        //    if (sectInfo.Any()) // beat
+        //    {
+        //        var spos = sectInfo.Keys.OrderBy(k => k).ToList();
+        //        spos.ForEach(sp => _sectionInfo.Add((sp * MusicTime.SubbeatsPerBeat, sectInfo[sp])));
+        //        _length.Set(_sectionInfo.Last().tick);
+        //        _selEnd.Set(_length);
+
+        //        ValidateTimes();
+        //        Invalidate();
+        //    }
+        //}
 
         /// <summary>
         ///
@@ -283,9 +299,9 @@ namespace Ephemera.MidiLib
 
             ///// Sections.
             var fsize = pe.Graphics.MeasureString("X", FontSmall).Height;
-            foreach (var (tick, name) in _sectionInfo)
+            foreach (var (when, name) in _sectionInfo)
             {
-                int sect = GetClientFromTick(tick);
+                int sect = GetClientFromTick(when.Tick);
                 pe.Graphics.DrawLine(_penMarker, sect, 0, sect, Height);
                 _format.Alignment = StringAlignment.Center;
                 _format.LineAlignment = StringAlignment.Center;
@@ -344,7 +360,7 @@ namespace Ephemera.MidiLib
                 var roundedTick = GetRounded(actualTick);
 
                 string sectionName = "???";
-                _sectionInfo.TakeWhile(si => si.tick <= roundedTick).ForEach(si => sectionName = si.name);
+                _sectionInfo.TakeWhile(si => si.when.Tick <= roundedTick).ForEach(si => sectionName = si.name);
 
                 TEMP.Set(actualTick);
                 _toolTip.SetToolTip(this, $"{TEMP} {sectionName}");

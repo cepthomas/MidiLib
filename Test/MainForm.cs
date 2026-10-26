@@ -156,12 +156,13 @@ namespace Ephemera.MidiLib.Test
         /// <summary>Test time bar.</summary>
         void TestTimeBar()
         {
-            // Sections.
-            Dictionary<int, string> sectInfo = [];
-            sectInfo.Add(0, "sect1");
-            sectInfo.Add(128, "sect2");
-            sectInfo.Add(256, "sect3");
-            sectInfo.Add(384, "END");
+            // Sections. 256 ticks = 32 beats = 8 bars
+            Dictionary<MusicTime, string> sectInfo = [];
+            sectInfo.Add(new(0), "sect1");
+            sectInfo.Add(new(128), "sect2"); // 4.0.0
+            sectInfo.Add(new(256), "sect3"); // 8.0.0
+            //sectInfo.Add(new(384), "END"); // 12.0.0
+            sectInfo.Add(new(14, 2, 1), "END");
 
             timeBar.Snap = SnapType.FourBar;
             timeBar.GridLines = 4 * MusicTime.SubbeatsPerBar;

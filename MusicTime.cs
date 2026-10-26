@@ -4,12 +4,24 @@ using System.Linq;
 using Ephemera.NBagOfTricks;
 
 
+// TODO1 make it work for audio too? Other midi resolutions. Pack subs into tick bits?
+
+
 namespace Ephemera.MidiLib
 {
     /// <summary>Sort of like DateTime but for musical terminology in midi.</summary>
-    public class MusicTime : IEquatable<MusicTime>
+    public class MusicTime : IEquatable<MusicTime>, IComparable<MusicTime>
     {
         #region Fields
+        /// <summary>Only 4/4 time supported currently.</summary>
+        static readonly int _beatsPerBar = 4;
+
+        /// <summary>Tick resolution - 8 gives 32nd note res.</summary>
+        static readonly int _subbeatsPerBeat = 8;
+
+        /// <summary>Convenience.</summary>
+        static readonly int _subbeatsPerBar = _subbeatsPerBeat * _beatsPerBar;
+
         /// <summary>For hashing comparable.</summary>
         readonly int _id;
 
@@ -22,15 +34,15 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <summary>Only 4/4 time supported currently.</summary>
-        public static int BeatsPerBar { get { return 4; } }
+        public static int BeatsPerBar { get { return _beatsPerBar; } }
 
-        /// <summary>Our resolution where 8 => 32nd note.</summary>
-        public static int SubbeatsPerBeat { get { return 8; } }
+        /// <summary>Tick resolution.</summary>
+        public static int SubbeatsPerBeat { get { return _subbeatsPerBeat; } }
 
         /// <summary>Convenience.</summary>
-        public static int SubbeatsPerBar { get { return SubbeatsPerBeat * BeatsPerBar; } }
+        public static int SubbeatsPerBar { get { return _subbeatsPerBar; } }
 
-        /// <summary>Absolute tick => total Subbeats. Zero-based.</summary>
+        /// <summary>Absolute tick = total Subbeats. Zero-based.</summary>
         public int Tick { get; private set; }
 
         /// <summary>Accessor.</summary>
@@ -39,7 +51,7 @@ namespace Ephemera.MidiLib
         /// <summary>The time in music form.</summary>
         public (int bar, int beat, int subbeat) Parts
         {
-            get { return (Tick / SubbeatsPerBar, Tick / SubbeatsPerBeat % BeatsPerBar, Tick % SubbeatsPerBeat); }
+            get { return (Tick / _subbeatsPerBar, Tick / _subbeatsPerBeat % _beatsPerBar, Tick % _subbeatsPerBeat); }
         }
         #endregion
 
@@ -91,7 +103,7 @@ namespace Ephemera.MidiLib
         /// <param name="subbeat"></param>
         public MusicTime(int bar, int beat, int subbeat)
         {
-            Tick = (bar * SubbeatsPerBar) + (beat * SubbeatsPerBeat) + subbeat;
+            Tick = (bar * _subbeatsPerBar) + (beat * _subbeatsPerBeat) + subbeat;
             _id = _nextId++;
         }
 
@@ -114,10 +126,10 @@ namespace Ephemera.MidiLib
 
             if (ok &&
                 bars >= 0 && bars <= 9999 &&
-                beats >= 0 && beats < BeatsPerBar &&
-                subbeats >= 0 && subbeats <= SubbeatsPerBeat)
+                beats >= 0 && beats < _beatsPerBar &&
+                subbeats >= 0 && subbeats <= _subbeatsPerBeat)
             {
-                Tick = bars * SubbeatsPerBar + beats * SubbeatsPerBeat + subbeats;
+                Tick = bars * _subbeatsPerBar + beats * _subbeatsPerBeat + subbeats;
             }
             else
             {
@@ -136,14 +148,14 @@ namespace Ephemera.MidiLib
             var beats = (int)integral;
             var subbeats = (int)Math.Round(fractional * 10.0);
 
-            if (subbeats >= 8)
+            if (subbeats >= _subbeatsPerBeat)
             {
                 throw new ArgumentException($"beat:{beat}");
             }
 
             // Scale to native.
-            subbeats = subbeats * SubbeatsPerBeat / 8;
-            Tick = beats * SubbeatsPerBeat + subbeats;
+            subbeats = subbeats * _subbeatsPerBeat / _subbeatsPerBeat;
+            Tick = beats * _subbeatsPerBeat + subbeats;
         }
         #endregion
 
@@ -198,14 +210,12 @@ namespace Ephemera.MidiLib
         {
             if (tick > 0 && snapType != SnapType.Tick)
             {
-                // res:32 in:27 floor=(in%aim)*aim  ceiling=floor+aim
-
                 int res = snapType switch
                 {
                     SnapType.Tick => 1,
-                    SnapType.Beat => SubbeatsPerBeat,
-                    SnapType.Bar => SubbeatsPerBar,
-                    SnapType.FourBar => 4 * SubbeatsPerBar,
+                    SnapType.Beat => _subbeatsPerBeat,
+                    SnapType.Bar => _subbeatsPerBar,
+                    SnapType.FourBar => _beatsPerBar * _subbeatsPerBar,
                     _ => 1
                 };
 
@@ -235,16 +245,25 @@ namespace Ephemera.MidiLib
         }
         #endregion
 
-        #region Overrides - IEquatable etc
-        // Override GetHashCode() for dictionary lookups.
+        #region IEquatable
+        // Dictionary lookups.
         public override int GetHashCode() { return Tick; }
 
-        // Override Equals() for value equality comparison.
+        // Value equality comparison.
         public override bool Equals(object? obj) => Equals(obj as MusicTime);
         public bool Equals(MusicTime? other) { return other is not null && Tick == other.Tick; }
         #endregion
 
-        #region Operator overloads
+        #region IComparable
+        public int CompareTo(MusicTime? other)
+        {
+            if (other.Tick > Tick) { return -1; }
+            else if (other.Tick < Tick) { return 1; }
+            else { return 0; }
+        }
+        #endregion
+
+        #region Operators
         public static bool operator ==(MusicTime a, MusicTime b) { return a.Tick == b.Tick; }
 
         public static bool operator !=(MusicTime a, MusicTime b) { return !(a == b); }
