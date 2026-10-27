@@ -36,6 +36,19 @@ namespace Ephemera.MidiLib
         /// <summary>Solo/mute.</summary>
         public bool State { get; set; } = false;
     }
+
+    /// <summary>Base class for custom renderers.</summary>
+    public class UserRenderer : UserControl
+    {
+        /// <summary>Parent hooks this.</summary>
+        public event EventHandler<BaseEvent>? SendMidi;
+
+        /// <summary>Derived control helper.</summary>
+        protected void OnSendMidi(BaseEvent e)
+        {
+            SendMidi?.Invoke(this, e);
+        }
+    }
     #endregion
 
     [DesignTimeVisible(true)]
@@ -60,6 +73,7 @@ namespace Ephemera.MidiLib
         // optional:
         readonly Slider sldControllerValue = new();
         readonly Button btnSend = new();
+        readonly Pan panChannel = new();
 
         // backing:
         UserRenderer? _userRenderer = null;
