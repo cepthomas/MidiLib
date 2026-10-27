@@ -275,8 +275,6 @@ namespace Ephemera.MidiLib.Test
                     DrawColor = Color.SpringGreen,
                     SelectedColor = Color.Yellow,
                     Volume = VolumeDefs.DEFAULT_VOLUME,
-                    Controller = 10, // pan
-                    ControllerValue = 82
                 };
                 ctrl.SetRenderer(new CustomRenderer());
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
@@ -300,8 +298,6 @@ namespace Ephemera.MidiLib.Test
             ch_ctrl1.Volume = VolumeDefs.DEFAULT_VOLUME;
             ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
             ch_ctrl1.BoundChannel = chan_out1;
-            ch_ctrl1.ControllerValue = 64; // Sustain
-            ch_ctrl1.ControllerValue = 45;
             ch_ctrl1.SetRenderer(new CustomRenderer());
 
             ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
@@ -310,8 +306,6 @@ namespace Ephemera.MidiLib.Test
             ch_ctrl2.Volume = VolumeDefs.DEFAULT_VOLUME;
             ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
             ch_ctrl2.BoundChannel = chan_out1;
-            ch_ctrl2.ControllerValue = 68; // Legato
-            ch_ctrl2.ControllerValue = 90;
             ch_ctrl2.SetRenderer(new CustomRenderer());
         }
 
