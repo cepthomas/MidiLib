@@ -41,7 +41,7 @@ namespace Ephemera.MidiLib
         static MidiDefs()
         {
             var ir = new IniReader();
-            ir.ParseString(Properties.Resources.gm_defs); // TODO2 hard code these instead of resource?
+            ir.ParseString(Properties.Resources.gm_defs);
 
             // Populate the defs.
             Instruments = ReadDefs(ir, "instruments");

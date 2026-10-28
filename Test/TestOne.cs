@@ -20,7 +20,7 @@ namespace Ephemera.MidiLib.Test
         {
             StopOnFail(true);
 
-            string fnIni = Path.Combine(myPath, "..", "gm_defs.ini");
+            //string fnIni = Path.Combine(myPath, "..", "gm_defs.ini");
 
             var smd = MidiDefs.GenMarkdown();
             var fnOut = Path.Join(myPath, "midi_defs.md");
@@ -31,6 +31,7 @@ namespace Ephemera.MidiLib.Test
             File.WriteAllText(fnOut, string.Join(Environment.NewLine, sld));
 
             var sdi = MidiDefs.GenUserDeviceInfo();
+            Assert(sdi.Count == 0);
         }
     }
 

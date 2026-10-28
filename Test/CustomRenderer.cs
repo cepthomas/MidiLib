@@ -29,7 +29,7 @@ namespace Ephemera.MidiLib.Test
         public CustomRenderer()
         {
             toolTip = new(components);
-            Size = new(231, 174);
+            Size = new(300, 150);
         }
 
         /// <summary> 

@@ -132,6 +132,9 @@
         <member name="M:Ephemera.NBagOfTricks.BiLut.#ctor(System.Boolean)">
             <summary>Both ways luts.</summary>
         </member>
+        <member name="P:Ephemera.NBagOfTricks.BiLut.Count">
+            <summary>How many.</summary>
+        </member>
         <member name="P:Ephemera.NBagOfTricks.BiLut.Contents">
             <summary>Iterate everything.</summary>
         </member>
@@ -143,12 +146,12 @@
         <member name="M:Ephemera.NBagOfTricks.BiLut.GetName(System.Int32)">
             <summary>Get name.</summary>
             <param name="id"></param>
-            <returns>The name if valid else null else throws.</returns>
+            <returns>The name if valid else null or throw.</returns>
         </member>
         <member name="M:Ephemera.NBagOfTricks.BiLut.GetId(System.String)">
             <summary>Get id.</summary>
             <param name="name"></param>
-            <returns>The id if valid else null else throws..</returns>
+            <returns>The id if valid else null or throw.</returns>
         </member>
         <member name="T:Ephemera.NBagOfTricks.TimeIt">
             <summary>Simple profiler.</summary>

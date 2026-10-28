@@ -269,7 +269,6 @@ namespace Ephemera.MidiLib.Test
                 {
                     Name = $"Control for {chan.ChannelName}",
                     BoundChannel = chan,
-                    Options = DisplayOptions.All,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
                     DrawColor = Color.SpringGreen,

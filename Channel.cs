@@ -23,7 +23,7 @@ namespace Ephemera.MidiLib
 
         public static string Format(int handle)
         {
-            return $"{(Output(handle) ? "out" : "in")} {ChannelNumber(handle)}{Environment.NewLine}on D{DeviceId(handle)}";
+            return $"{(Output(handle) ? "out" : "in")} {ChannelNumber(handle)} on D{DeviceId(handle)}";
         }
     }
     #endregion
@@ -126,16 +126,12 @@ namespace Ephemera.MidiLib
         {
             get
             {
-                var pname = _instruments.GetName(Patch);
-                if (pname is null) { throw new ArgumentException($"Invalid patch:{Patch}"); }
-                return pname;
+                return _instruments.GetName(Patch) ?? throw new ArgumentException($"Invalid patch:{Patch}");
             }
             set
             {
-                var id = _instruments.GetId(value);
-                if (id is null) { throw new ArgumentException($"Invalid patch:{value}"); }
-                Patch = (int)id;
-                _device.Send(new Patch(ChannelNumber, Patch));
+                var id = _instruments.GetId(value) ?? throw new ArgumentException($"Invalid patch:{value}");
+                _device.Send(new Patch(ChannelNumber, id));
             }
         }
         #endregion
@@ -196,28 +192,29 @@ namespace Ephemera.MidiLib
                     var ir = new IniReader();
                     ir.ParseFile(aliasFile);
 
-                    // Populate the defs.
-                    Instruments = MidiDefs.ReadDefs(ir, "instruments");
-                    Controllers = MidiDefs.ReadDefs(ir, "controllers");
-                    Drums = MidiDefs.ReadDefs(ir, "drums");
-                    DrumKits = MidiDefs.ReadDefs(ir, "drumkits");
+                    var defs = MidiDefs.ReadDefs(ir, "instruments");
+                    if (defs.Count > 0)
+                    {
+                        _instruments = defs;
+                    }
 
+                    defs = MidiDefs.ReadDefs(ir, "controllers");
+                    if (defs.Count > 0)
+                    {
+                        _controllers = defs;
+                    }
 
+                    defs = MidiDefs.ReadDefs(ir, "drums");
+                    if (defs.Count > 0)
+                    {
+                        _drums = defs;
+                    }
 
-
-
-
-
-
-
-
-
-
-                    _aliases = [];
-                    var ir = new IniReader();
-                    ir.ParseFile(aliasFile);
-                    var defs = MidiDefs.ReadDefs(ir, "instruments"); // Other sections?
-                    Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _aliases.Add(i, defs.GetName(i)));
+                    defs = MidiDefs.ReadDefs(ir, "drumkits");
+                    if (defs.Count > 0)
+                    {
+                        _drumKits = defs;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -227,18 +224,18 @@ namespace Ephemera.MidiLib
             else // internal set
             {
                 var id = MidiDefs.DrumKits.GetId(patchName);
-                if (id >= 0) // GM drum kit
+                if (id is not null) // GM drum kit
                 {
                     IsDrums = true;
-                    Patch = id;
+                    Patch = (int)id;
                 }
                 else
                 {
                     id = MidiDefs.Instruments.GetId(patchName);
-                    if (id >= 0) // plain GM instrument
+                    if (id is not null) // plain GM instrument
                     {
                         IsDrums = false;
-                        Patch = id;
+                        Patch = (int)id;
                     }
                     else // unknown
                     {
@@ -251,6 +248,37 @@ namespace Ephemera.MidiLib
 
             _device.Send(new Patch(ChannelNumber, Patch));
         }
+
+
+        /// <summary>
+        /// Get instrument name from id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>The instrument name or a fabricated one if unknown.</returns>
+        public string GetInstrumentName(int id)
+        {
+            if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Instrument:{id}"); }
+
+            string? name;
+
+            if (IsDrums)
+            {
+                name = _drumKits.GetName(id);
+            }
+            else
+            {
+                name = _instruments.GetName(id);
+            }
+
+            if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }
+
+            return name;
+        }
+
+
+
+
+
 
 
 

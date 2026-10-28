@@ -18,16 +18,6 @@ namespace Ephemera.MidiLib
     /// <summary>Channel playing.</summary>
     public enum ChannelState { Normal, Solo, Mute }
 
-    /// <summary>Some flavors of control may need to be defeatured.</summary>
-    [Flags]
-    public enum DisplayOptions
-    {
-        None = 0x00,        // none
-        SoloMute = 0x01,    // solo and mute buttons
-        Controller = 0x02,  // controller select and send
-        All = 0x0F,         // all of above
-    }
-
     /// <summary>Notify host of UI changes.</summary>
     public class ChannelChangeEventArgs : EventArgs
     {
@@ -56,11 +46,10 @@ namespace Ephemera.MidiLib
     {
         #region Fields
         ChannelState _state = ChannelState.Normal;
-        const int PAD = 4;
-        const int SIZE = 42;
 
         readonly Container components = new();
         protected ToolTip toolTip = new();
+        const int PAD = 4;
 
         // always:
         readonly Label lblInfo = new();
@@ -88,11 +77,6 @@ namespace Ephemera.MidiLib
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public OutputChannel BoundChannel { get; set; }
-
-        /// <summary>Display options.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public DisplayOptions Options { get; set; } = DisplayOptions.All;
 
         /// <summary>Drawing the active elements of a control.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -184,26 +168,13 @@ namespace Ephemera.MidiLib
         protected override void OnLoad(EventArgs e)
         {
             SuspendLayout();
-            
+
             // Create the controls per the config.
-            int xPos = PAD;
-            int xMax = xPos;
-            int yPos = PAD;
-            int yMax = yPos;
+            const int HT1 = 24;
+            const int HT2 = 42;
 
-            // The standard stuff.
-            {
-                lblInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-                lblInfo.BorderStyle = BorderStyle.FixedSingle;
-                lblInfo.Location = new(xPos, yPos);
-                lblInfo.Size = new(55, SIZE);
-                lblInfo.Click += ChannelInfo_Click;
-                Controls.Add(lblInfo);
-
-                xPos = lblInfo.Right + PAD;
-                xMax = xPos;
-                yMax = Math.Max(lblInfo.Bottom, yMax);
-            }
+            //int xPos = PAD;
+            //int yPos = HEIGHT;
 
             {
                 sldVolume.Minimum = 0.0;
@@ -212,78 +183,106 @@ namespace Ephemera.MidiLib
                 sldVolume.Value = 1.0;
                 sldVolume.BorderStyle = BorderStyle.FixedSingle;
                 sldVolume.Orientation = Orientation.Horizontal;
-                sldVolume.Location = new(xPos, yPos);
-                sldVolume.Size = new(80, SIZE);
+                sldVolume.Location = new(PAD, PAD + HT1);
+                sldVolume.Size = new(80, HT2);
                 sldVolume.Label = "volume";
                 sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
                 Controls.Add(sldVolume);
 
-                xPos = sldVolume.Right + PAD;
-                xMax = xPos;
-                yMax = Math.Max(sldVolume.Bottom, yMax);
+                //xPos = sldVolume.Right + PAD;
+                //xMax = xPos;
+                //yMax = Math.Max(sldVolume.Bottom, yMax);
             }
 
-            if (Options.HasFlag(DisplayOptions.SoloMute))
+            //if (Options.HasFlag(DisplayOptions.SoloMute))
             {
-                lblSolo.Location = new(xPos, yPos + 1);
-                lblSolo.Size = new(20, 20);
+                int smSize = 20;
+
+                lblSolo.Location = new(sldVolume.Right + PAD, sldVolume.Top);
+                //lblSolo.Location = new(lblMute.Right + PAD, sldVolume.Height);
+                lblSolo.Size = new(smSize, smSize);
                 lblSolo.Text = "S";
                 lblSolo.Click += SoloMute_Click;
                 Controls.Add(lblSolo);
+                //xPos = lblSolo.Right + PAD;
+                //xMax = xPos;
 
-                lblMute.Location = new(xPos, yPos  + SIZE / 2 + 1);
-                lblMute.Size = new(20, 20);
+                //lblMute.Location = new(sldVolume.Right + PAD, sldVolume.Height);
+                lblMute.Location = new(sldVolume.Right + PAD, sldVolume.Top + smSize + 2);
+                lblMute.Size = new(smSize, smSize);
                 lblMute.Text = "M";
                 lblMute.Click += SoloMute_Click;
                 Controls.Add(lblMute);
+                //xPos = lblMute.Right + PAD;
+                //xMax = xPos;
 
-                xPos = lblSolo.Right + PAD;
-                xMax = xPos;
-                yMax = Math.Max(lblMute.Bottom, yMax);
+                //yMax = Math.Max(lblMute.Bottom, yMax);
             }
 
-            if (Options.HasFlag(DisplayOptions.Controller))
+            //if (Options.HasFlag(DisplayOptions.Controller))
+            //{
+            //    btnSend.FlatStyle = FlatStyle.Flat;
+            //    btnSend.UseVisualStyleBackColor = true;
+            //    btnSend.Location = new(xPos, yPos);
+            //    btnSend.Size = new(SIZE, SIZE);
+            //    btnSend.Text = "!";
+            //    btnSend.Click += Send_Click;
+            //    Controls.Add(btnSend);
+
+            //    xPos = btnSend.Right + PAD;
+            //    yMax = Math.Max(btnSend.Bottom, yMax);
+
+            //    sldControllerValue.Minimum = 0;
+            //    sldControllerValue.Maximum = MidiDefs.MAX_MIDI;
+            //    sldControllerValue.Resolution = 1;
+            //    sldControllerValue.Value = 50;
+            //    sldControllerValue.BorderStyle = BorderStyle.FixedSingle;
+            //    sldControllerValue.Orientation = Orientation.Horizontal;
+            //    sldControllerValue.Location = new(xPos, yPos);
+            //    sldControllerValue.Size = new(80, SIZE);
+            //    sldControllerValue.Label = "value";
+            //    sldControllerValue.ValueChanged += Controller_ValueChanged;
+            //    Controls.Add(sldControllerValue);
+
+            //    xPos = sldControllerValue.Right + PAD;
+            //    xMax = xPos;
+            //    yMax = Math.Max(sldControllerValue.Bottom, yMax);
+            //}
+
             {
-                btnSend.FlatStyle = FlatStyle.Flat;
-                btnSend.UseVisualStyleBackColor = true;
-                btnSend.Location = new(xPos, yPos);
-                btnSend.Size = new(SIZE, SIZE);
-                btnSend.Text = "!";
-                btnSend.Click += Send_Click;
-                Controls.Add(btnSend);
+                lblInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+                lblInfo.BorderStyle = BorderStyle.FixedSingle;
+                lblInfo.Location = new(PAD, PAD);
+                lblInfo.Size = new(lblSolo.Right, HT1 - PAD);
+                lblInfo.Click += ChannelInfo_Click;
+                Controls.Add(lblInfo);
 
-                xPos = btnSend.Right + PAD;
-                yMax = Math.Max(btnSend.Bottom, yMax);
-
-                sldControllerValue.Minimum = 0;
-                sldControllerValue.Maximum = MidiDefs.MAX_MIDI;
-                sldControllerValue.Resolution = 1;
-                sldControllerValue.Value = 50;
-                sldControllerValue.BorderStyle = BorderStyle.FixedSingle;
-                sldControllerValue.Orientation = Orientation.Horizontal;
-                sldControllerValue.Location = new(xPos, yPos);
-                sldControllerValue.Size = new(80, SIZE);
-                sldControllerValue.Label = "value";
-                sldControllerValue.ValueChanged += Controller_ValueChanged;
-                Controls.Add(sldControllerValue);
-
-                xPos = sldControllerValue.Right + PAD;
-                xMax = xPos;
-                yMax = Math.Max(sldControllerValue.Bottom, yMax);
+                //xPos = lblInfo.Right + PAD;
+                //xMax = xPos;
+                //yMax = Math.Max(lblInfo.Bottom, yMax);
             }
 
-            if (_userRenderer is not null)
-            {
-                _userRenderer.Location = new(PAD, yMax + PAD);
-                xMax = Math.Max(_userRenderer.Right, xPos);
-                yMax = Math.Max(_userRenderer.Bottom, yMax);
-                Controls.Add(_userRenderer);
-            }
 
-            // Form itself.
-            Size = new Size(xMax + PAD, yMax + PAD);
+            //if (_userRenderer is not null)
+            //{
+            //    //xPos = PAD;
+            //    //yPos = sldVolume.Bottom + PAD;
+            //    _userRenderer.Location = new(PAD, HT1 + PAD);
+            //    //xMax = Math.Max(_userRenderer.Right, xPos);
+            //    //yMax = Math.Max(_userRenderer.Bottom, yMax);
+            //    Controls.Add(_userRenderer);
+            //}
+
+            //// Control itself.
+            //var xMax = Math.Max(lblInfo.Right, _userRenderer is null ? 0 : _userRenderer.Right);
+            //var yMax = Math.Max(sldVolume.Bottom, _userRenderer is null ? 0: _userRenderer.Bottom);
+
+
+
+            Size = new Size(lblInfo.Right + PAD, sldVolume.Bottom + PAD);
 
             ResumeLayout(false);
+
             PerformLayout();
 
             toolTip = new(components);
@@ -315,18 +314,47 @@ namespace Ephemera.MidiLib
         public void SetRenderer(UserRenderer rend)
         {
             _userRenderer = rend;
+            Controls.Add(_userRenderer);
 
             // Handle custom renderer events. Fix the channel number.
-            rend.SendMidi += (object? sender, BaseEvent e) =>
+            rend.SendMidi += (sender, e) =>
             {
                 e.ChannelNumber = BoundChannel.ChannelNumber;
                 BoundChannel.Send(e);
-             //   SendMidi?.Invoke(this, e);
+                //SendMidi?.Invoke(this, e);
             };
 
-            rend.Location = new(PAD, Height);
-            Height += rend.Height + PAD;
-            Controls.Add(rend);
+            //rend.Location = new(PAD, Height);
+            //Height += rend.Height + PAD;
+            //Controls.Add(rend);
+
+
+            _userRenderer.Location = new(PAD, sldVolume.Bottom + PAD);
+
+
+
+
+
+            //if (_userRenderer is not null)
+            //{
+            //xPos = PAD;
+            //yPos = sldVolume.Bottom + PAD;
+            //_userRenderer.Location = new(PAD, HT1 + PAD);
+                //xMax = Math.Max(_userRenderer.Right, xPos);
+                //yMax = Math.Max(_userRenderer.Bottom, yMax);
+                //Controls.Add(_userRenderer);
+            //}
+
+            //// Control itself.
+            //var xMax = Math.Max(lblInfo.Right, _userRenderer is null ? 0 : _userRenderer.Right);
+            //var yMax = Math.Max(sldVolume.Bottom, _userRenderer is null ? 0 : _userRenderer.Bottom);
+
+            // Resize control.
+            Size = new Size(Math.Max(lblInfo.Width, _userRenderer.Width) + PAD, _userRenderer.Bottom + PAD);
+            lblInfo.Width = Size.Width - PAD - PAD;
+
+            _userRenderer.Invalidate();
+
         }
         #endregion
 
