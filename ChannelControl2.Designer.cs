@@ -1,5 +1,6 @@
 ﻿using System.Windows.Forms;
 
+
 namespace Ephemera.MidiLib
 {
     partial class ChannelControl

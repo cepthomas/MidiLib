@@ -26,7 +26,7 @@ namespace Ephemera.MidiLib
         /// <summary>All the GM instruments.</summary>
         public static BiLut Instruments { get; } = new();
 
-        /// <summary>All the known GM controllers.</summary>
+        /// <summary>All the common/known GM controllers.</summary>
         public static BiLut Controllers { get; } = new();
 
         /// <summary>All the GM drums.</summary>
@@ -41,27 +41,42 @@ namespace Ephemera.MidiLib
         static MidiDefs()
         {
             var ir = new IniReader();
-            ir.ParseString(Properties.Resources.gm_defs);
+            ir.ParseString(Properties.Resources.gm_defs); // TODO2 hard code these instead of resource?
 
             // Populate the defs.
-            DoSection("instruments", Instruments);
-            DoSection("controllers", Controllers);
-            DoSection("drums", Drums);
-            DoSection("drumkits", DrumKits);
-
-            void DoSection(string section, BiLut target)
-            {
-                ir.GetValues(section).ForEach(kv =>
-                {
-                    int index = int.Parse(kv.Key); // can throw
-                    if (index < 0 || index > MAX_MIDI) { throw new InvalidOperationException($"Invalid section {section}"); }
-                    target.Add(index, kv.Value);
-                });
-            }
+            Instruments = ReadDefs(ir, "instruments");
+            Controllers = ReadDefs(ir, "controllers");
+            Drums = ReadDefs(ir, "drums");
+            DrumKits = ReadDefs(ir, "drumkits");
         }
         #endregion
 
         #region Utilities
+        /// <summary>
+        /// Read one section of midi definitions.
+        /// </summary>
+        /// <param name="ir">Ini reader</param>
+        /// <param name="section">Section name</param>
+        /// <returns>The lut or null if invalid section.</returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static BiLut? ReadDefs(IniReader ir, string section)
+        {
+            BiLut? target = null;
+
+            if (ir.GetSectionNames().Contains(section))
+            {
+                target = new();
+                ir.GetValues(section).ForEach(kv =>
+                {
+                    int index = int.Parse(kv.Key); // can throw
+                    if (index < 0 || index > MAX_MIDI) { throw new InvalidOperationException($"Invalid key {kv.Key} in section {section}"); }
+                    target.Add(index, kv.Value);
+                });
+            }
+
+            return target;
+        }
+
         /// <summary>
         /// Make content from the definitions.
         /// </summary>

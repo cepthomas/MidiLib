@@ -81,7 +81,7 @@ namespace Ephemera.MidiLib
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
         /// <param name="patchName"></param>
-        /// <param name="aliasFile"></param>
+        /// <param name="aliasFile">Alternate patch names from an ini file.</param>
         /// <returns></returns>
         public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, string patchName, string? aliasFile = null)
         {

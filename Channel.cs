@@ -74,11 +74,17 @@ namespace Ephemera.MidiLib
         /// <summary>Associated device.</summary>
         readonly IOutputDevice _device;
 
-        /// <summary>Instruments from alias file.</summary>
-        Dictionary<int, string>? _aliases;
+        /// <summary>Channel instruments. May be from alias file.</summary>
+        BiLut _instruments = MidiDefs.Instruments;
 
-        /// <summary>True if the channel doesn't support named instruments/patches.</summary>
-        readonly bool _anonymous = false;
+        /// <summary>Channel controllers.</summary>
+        BiLut _controllers = MidiDefs.Controllers;
+
+        /// <summary>Channel drums.</summary>
+        BiLut _drums = MidiDefs.Drums;
+
+        /// <summary>Channel drum kits.</summary>
+        BiLut _drumKits = MidiDefs.DrumKits;
 
         // Backing fields.
         double _volume = VolumeDefs.DEFAULT_VOLUME;
@@ -118,12 +124,17 @@ namespace Ephemera.MidiLib
         /// <summary>Current instrument/patch name. Set may update internal collection and sends a midi patch message.</summary>
         public string PatchName
         {
-            get { return GetInstrumentName(Patch); }
+            get
+            {
+                var pname = _instruments.GetName(Patch);
+                if (pname is null) { throw new ArgumentException($"Invalid patch:{Patch}"); }
+                return pname;
+            }
             set
             {
-                var id = GetInstrumentId(value);
-                if (id < 0) { throw new ArgumentException($"Invalid patch:{value}"); }
-                Patch = id;
+                var id = _instruments.GetId(value);
+                if (id is null) { throw new ArgumentException($"Invalid patch:{value}"); }
+                Patch = (int)id;
                 _device.Send(new Patch(ChannelNumber, Patch));
             }
         }
@@ -158,79 +169,55 @@ namespace Ephemera.MidiLib
             _device = device;
             ChannelNumber = channelNumber;
             Patch = patch;
-            _anonymous = true;
+            // Anonymous so give it some placeholder patch names.
+            _instruments = new();
+            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _instruments.Add(i, $"INST_{i}"));
+            //_aliases = [];
+            //Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _aliases.Add(i, $"INST_{i}"));
             _volume = VolumeDefs.DEFAULT_VOLUME;
             Handle = HandleOps.Create(device.Id, ChannelNumber, true);
         }
         #endregion
 
         #region Public functions
-        /// <summary>
-        /// Get instrument name from id.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns>The instrument name or a fabricated one if unknown.</returns>
-        public string GetInstrumentName(int id)
-        {
-            if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Instrument:{id}"); }
-
-            string? name;
-
-            if (_anonymous)
-            {
-                name = $"INST_{id}";
-            }
-            else if (_aliases is not null)
-            {
-                _aliases.TryGetValue(id, out name);
-            }
-            else if (IsDrums)
-            {
-                name = MidiDefs.DrumKits.GetName(id);
-            }
-            else
-            {
-                name = MidiDefs.Instruments.GetName(id);
-            }
-
-            if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }
-
-            return name;
-        }
 
         /// <summary>
-        /// Fix up instrument and patch names - depends on flavor is GM/drums/aliased.
+        /// Fix up instrument/patch names - depends on flavor: GM/drums/aliased.
         /// </summary>
         /// <param name="patchName"></param>
-        /// <param name="aliasFile"></param>
+        /// <param name="aliasFile">Custom patch names for this channel</param>
         /// <exception cref="MidiLibException"></exception>
         public void InitInstruments(string patchName, string? aliasFile = null)
         {
-            if (_anonymous) return; // should never happen
-
             if (aliasFile is not null) // explicit defs file
             {
                 try
                 {
                     var ir = new IniReader();
                     ir.ParseFile(aliasFile);
+
+                    // Populate the defs.
+                    Instruments = MidiDefs.ReadDefs(ir, "instruments");
+                    Controllers = MidiDefs.ReadDefs(ir, "controllers");
+                    Drums = MidiDefs.ReadDefs(ir, "drums");
+                    DrumKits = MidiDefs.ReadDefs(ir, "drumkits");
+
+
+
+
+
+
+
+
+
+
+
+
                     _aliases = [];
-
-                    var defs = ir.GetValues("instruments");
-
-                    defs.ForEach(kv =>
-                    {
-                        int id = int.Parse(kv.Key); // can throw
-                        if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Instrument:{id}"); }
-                        if (kv.Value.Length == 0) { throw new ArgumentOutOfRangeException($"{id} has no value"); }
-
-                        _aliases.Add(id, kv.Value);
-
-                        if (kv.Value == patchName)
-                        {
-                            Patch = id;
-                        }
-                    });
+                    var ir = new IniReader();
+                    ir.ParseFile(aliasFile);
+                    var defs = MidiDefs.ReadDefs(ir, "instruments"); // Other sections?
+                    Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _aliases.Add(i, defs.GetName(i)));
                 }
                 catch (Exception ex)
                 {
@@ -265,6 +252,89 @@ namespace Ephemera.MidiLib
             _device.Send(new Patch(ChannelNumber, Patch));
         }
 
+
+
+
+        ///// <summary>
+        ///// Get instrument name from id.
+        ///// </summary>
+        ///// <param name="id"></param>
+        ///// <returns>The instrument name or a fabricated one if unknown.</returns>
+        //public string GetInstrumentName(int id)
+        //{
+        //    if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Instrument:{id}"); }
+
+        //    string? name;
+
+        //    if (_aliases is not null)
+        //    {
+        //        _aliases.TryGetValue(id, out name);
+        //    }
+        //    else if (IsDrums)
+        //    {
+        //        name = MidiDefs.DrumKits.GetName(id);
+        //    }
+        //    else
+        //    {
+        //        name = MidiDefs.Instruments.GetName(id);
+        //    }
+
+        //    if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }
+
+        //    return name;
+        //}
+
+        ///// <summary>
+        ///// Fix up instrument/patch names - depends on flavor: GM/drums/aliased.
+        ///// </summary>
+        ///// <param name="patchName"></param>
+        ///// <param name="aliasFile">Custom patch names for this channel</param>
+        ///// <exception cref="MidiLibException"></exception>
+        //public void InitInstruments(string patchName, string? aliasFile = null)
+        //{
+        //    if (aliasFile is not null) // explicit defs file
+        //    {
+        //        try
+        //        {
+        //            _aliases = [];
+        //            var ir = new IniReader();
+        //            ir.ParseFile(aliasFile);
+        //            var defs = MidiDefs.ReadDefs(ir, "instruments"); // Other sections?
+        //            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _aliases.Add(i, defs.GetName(i)));
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            throw new MidiLibException($"Failed to load alias file {aliasFile}: {ex.Message}");
+        //        }
+        //    }
+        //    else // internal set
+        //    {
+        //        var id = MidiDefs.DrumKits.GetId(patchName);
+        //        if (id >= 0) // GM drum kit
+        //        {
+        //            IsDrums = true;
+        //            Patch = id;
+        //        }
+        //        else
+        //        {
+        //            id = MidiDefs.Instruments.GetId(patchName);
+        //            if (id >= 0) // plain GM instrument
+        //            {
+        //                IsDrums = false;
+        //                Patch = id;
+        //            }
+        //            else // unknown
+        //            {
+        //                throw new ArgumentException($"Invalid instrument:{patchName}");
+        //            }
+        //        }
+        //    }
+
+        //    if (Patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Unresolved patch:{patchName}"); }
+
+        //    _device.Send(new Patch(ChannelNumber, Patch));
+        //}
+
         /// <summary>
         /// Hide direct device access.
         /// </summary>
@@ -275,32 +345,32 @@ namespace Ephemera.MidiLib
         }
         #endregion
 
-        #region Private functions
-        /// <summary>
-        /// Sort out possible sources of id.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        int GetInstrumentId(string name)
-        {
-            int id = -1;
+        //#region Private functions
+        ///// <summary>
+        ///// Sort out possible sources of id.
+        ///// </summary>
+        ///// <param name="name"></param>
+        ///// <returns></returns>
+        //int GetInstrumentId(string name)
+        //{
+        //    int id = -1;
 
-            if (_aliases is not null)
-            {
-                var i = _aliases.Where(v => v.Value == name);
-                id = i.Any() ? i.First().Key : -1;
-            }
-            else if (IsDrums)
-            {
-                id = MidiDefs.Drums.GetId(name);
-            }
-            else
-            {
-                id = MidiDefs.Instruments.GetId(name);
-            }
+        //    if (_aliases is not null)
+        //    {
+        //        var i = _aliases.Where(v => v.Value == name);
+        //        id = i.Any() ? i.First().Key : -1;
+        //    }
+        //    else if (IsDrums)
+        //    {
+        //        id = MidiDefs.Drums.GetId(name);
+        //    }
+        //    else
+        //    {
+        //        id = MidiDefs.Instruments.GetId(name);
+        //    }
 
-            return id;
-        }
-        #endregion
+        //    return id;
+        //}
+        //#endregion
     }
 }
