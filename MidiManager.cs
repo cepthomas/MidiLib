@@ -108,7 +108,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Like full function but opens a channel in anonymous mode.
+        /// Like full function but opens a channel without parch name.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
@@ -233,7 +233,7 @@ namespace Ephemera.MidiLib
                     if (dev is not null)
                     {
                         _outputDevices.Add(dev);
-//                        dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
+                        //dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
                     }
                 }
                 catch (Exception)
@@ -265,7 +265,7 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Helper.
         /// </summary>
-        /// <param name="chnd"></param>
+        /// <param name="chnd">Channel handle</param>
         /// <returns>The channel or null if invalid handle.</returns>
         public OutputChannel? GetOutputChannel(int chnd)
         {
@@ -302,7 +302,7 @@ namespace Ephemera.MidiLib
             }
             else
             {
-                channel.Send(new Controller(channel.ChannelNumber, cc, 0));// TODO1
+                channel.Send(new Controller(channel.ChannelNumber, cc, 0));
             }
         }
         #endregion

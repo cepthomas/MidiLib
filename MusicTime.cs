@@ -4,8 +4,8 @@ using System.Linq;
 using Ephemera.NBagOfTricks;
 
 
-// TODO2 make it work for audio too? see BarOps.cs etc.
-// TODO2 Other midi resolutions. Pack subs into tick bits?
+// TODO1A make it work for audio too? see BarOps.cs etc.
+// TODO Other midi resolutions. Pack subs into tick bits?
 
 
 namespace Ephemera.MidiLib

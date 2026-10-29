@@ -20,6 +20,12 @@ namespace Ephemera.MidiLib.Test
     public partial class MainForm : Form
     {
         #region Fields
+        /// <summary>All the channels.</summary>
+        OutputChannel? chan_out1;
+        OutputChannel? chan_out2;
+        OutputChannel? chan_out3;
+        OutputChannel? chan_out4;
+
         /// <summary>All the channel controls.</summary>
         readonly List<ChannelControl> _channelControls = [];
 
@@ -56,12 +62,7 @@ namespace Ephemera.MidiLib.Test
                 new(WARN, BgColor: Color.Plum),
             ];
 
-            // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-            // TODO1 who handles volume adjust?
-            // ChannelControl knows about solo/mute/volume
-            // Channel or ChCtrl???
-            // MainForm knows master-volume
-
+            // TODO1 not handling channel volume right.
 
             // Master volume. TODO1
             sldMasterVolume.DrawColor = Color.SpringGreen;
@@ -74,7 +75,7 @@ namespace Ephemera.MidiLib.Test
             timeBar.DrawColor = Color.Green;
             timeBar.SelectedColor = Color.LightYellow;
             timeBar.Snap = SnapType.Beat;
-            timeBar.StateChange += (object? sender, TimeBar.StateChangeEventArgs e) => { Tell(INFO, $">>> TimeBar event. {timeBar.Current}"); };
+            timeBar.StateChange += (sender, e) => { Tell(INFO, $">>> TimeBar event. {timeBar.Current}"); };
 
             // Simple UI handlers.
             btnKillMidi.Click += (_, __) => { MidiManager.Instance.Kill(); };
@@ -102,8 +103,8 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Basic channels.
-                var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord");
-                var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin");
+                chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord");
+                chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin");
 
                 // Init controls.
                 ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
@@ -162,22 +163,19 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
-                // App driven by a script - a la Nebulua/Nebulator. Creates channels and controls dynamically.
+                // Create channels and controls dynamically.
 
-                //ch_ctrl1.Hide();
-                //ch_ctrl2.Hide();
-
-                // 1 - create all channels
-                var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "dyn keys", "HonkyTonkPiano");
-                var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 10, "dyn drums", "Electronic");
+                // Create all channels
+                chan_out3 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "dyn keys", "HonkyTonkPiano");
+                chan_out4 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 10, "dyn drums", "Electronic");
                 //var chan_out3 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "dyn bass", "ElectricBassPick");
                 var chan_in1 = MidiManager.Instance.OpenInputChannel(INDEV, 1, "dyn my input");
 
-                // 2 - create a control for each channel and bind object
+                // Ceate a control for each channel and bind object
                 int x = ch_ctrl2.Right + 10;
                 int y = ch_ctrl2.Top;
 
-                List<OutputChannel> channels = [chan_out1, chan_out2];
+                List<OutputChannel> channels = [chan_out3, chan_out4];
                 channels.ForEach(chan =>
                 {
                     var ctrl = new ChannelControl()
@@ -210,13 +208,12 @@ namespace Ephemera.MidiLib.Test
             {
                 // Run timer.
                 timer1.Interval = 500;
-                _count = 3;
+                _count = 15;
                 Random rand = new();
                 void Timer1_Tick(object? sender, EventArgs e)
                 {
                     int noteNum = rand.Next(40, 60);
-                    //chan_out1.Send(new NoteOn()); // TODO1
-                    //ch_ctrl1.BoundChannel.Send(new NoteOn())
+                    SendNote(chan_out1, noteNum, 0.5);
 
                     if (--_count <= 0)
                     {
@@ -226,9 +223,6 @@ namespace Ephemera.MidiLib.Test
                 }
                 timer1.Tick += Timer1_Tick;
                 timer1.Start();
-            }
-            else
-            {
             }
         }
 
@@ -331,20 +325,8 @@ namespace Ephemera.MidiLib.Test
             Tell(INFO, $"Mgr Received [{e}]");
         }
 
-        ///// <summary>
-        ///// Something sent to a midi device.
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //void Mgr_MessageSent(object? sender, BaseEvent e)
-        //{
-        //    Tell(INFO, $"Mgr Sent [{e}]");
-        //}
-
-
-
         ///////////////////////////////////////////////////////////////////////////////////
-        ///////////// TODO2 Stuff host needs to implement /////////////////////////////////
+        ///////////// TODO1 Stuff host needs to implement /////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>User clicked something -> configure channels.</summary>
@@ -379,14 +361,13 @@ namespace Ephemera.MidiLib.Test
 
             if (e.Info)
             {
-                //TODO2 anything?
+                //TODO1 anything?
             }
         }
 
-        void SendNote(int channelNumber, int note, double volume) // , MusicTime? when = null)
+        void SendNote(OutputChannel channel, int note, double volume)
         {
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"Note:{note}"); }
-            var channel = MidiManager.Instance.GetOutputChannel(channelNumber) ?? throw new ArgumentException($"chan_hnd:{channelNumber}");
 
             if (volume == 0.0)
             {
@@ -405,11 +386,10 @@ namespace Ephemera.MidiLib.Test
             //}
         }
 
-        void SendController(int channelNumber, int controller, int value) // , MusicTime? when = null)
+        void SendController(OutputChannel channel, int controller, int value)
         {
             if (controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{controller}"); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{value}"); }
-            var channel = MidiManager.Instance.GetOutputChannel(channelNumber) ?? throw new ArgumentException($"chan_hnd:{channelNumber}");
 
             var se = new Controller(channel.ChannelNumber, controller, value);
             channel.Send(se);

@@ -267,6 +267,7 @@ namespace Ephemera.MidiLib
         /// <param name="evt"></param>
         public void Send(BaseEvent evt)
         {
+            evt.ChannelNumber = ChannelNumber;
             _device.Send(evt);
         }
         #endregion

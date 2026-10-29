@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
-// TODO2 TBD usage. Impl pan, fx. Add meter(s). Slider/meter log/db for volume use.
+// TODO1A TBD usage. Impl pan, fx. Add meter(s). Slider/meter log/db for volume use.
 
 
 namespace Ephemera.MidiLib
