@@ -258,7 +258,8 @@ namespace Ephemera.MidiLib
         #region IComparable
         public int CompareTo(MusicTime? other)
         {
-            if (other.Tick > Tick) { return -1; }
+            if (other is null) { throw new ArgumentException("Other value is null"); }
+            else if (other.Tick > Tick) { return -1; }
             else if (other.Tick < Tick) { return 1; }
             else { return 0; }
         }

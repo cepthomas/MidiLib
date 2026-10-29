@@ -44,10 +44,10 @@ namespace Ephemera.MidiLib
             ir.ParseString(Properties.Resources.gm_defs);
 
             // Populate the defs.
-            Instruments = ReadDefs(ir, "instruments");
-            Controllers = ReadDefs(ir, "controllers");
-            Drums = ReadDefs(ir, "drums");
-            DrumKits = ReadDefs(ir, "drumkits");
+            Instruments = ReadDefs(ir, "instruments") ?? throw new ArgumentException("Missing instruments section");
+            Controllers = ReadDefs(ir, "controllers") ?? throw new ArgumentException("Missing controllers section");
+            Drums = ReadDefs(ir, "drums") ?? throw new ArgumentException("Missing drums section");
+            DrumKits = ReadDefs(ir, "drumkits") ?? throw new ArgumentException("Missing drumkits section");
         }
         #endregion
 

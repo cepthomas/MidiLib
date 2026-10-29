@@ -49,7 +49,7 @@ namespace Ephemera.MidiLib.Test
             var outdev = "nullout:test1";
             var indev = "nullin:test1";
             BaseEvent? sent = null;
-            MidiManager.Instance.MessageSent += (sender, e) => sent = e;
+            //MidiManager.Instance.MessageSent += (sender, e) => sent = e;
             BaseEvent? revt = null;
             MidiManager.Instance.MessageReceived += (sender, e) => revt = e;
 

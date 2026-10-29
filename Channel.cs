@@ -7,7 +7,7 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLib
 {
     #region Types
-    /// <summary>Encode device/channel info for round trip through script.</summary>
+    /// <summary>Channel handle for use in scripts.</summary>
     public static class HandleOps
     {
         const int OUTPUT_FLAG = 0x0800;
@@ -176,7 +176,6 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Public functions
-
         /// <summary>
         /// Fix up instrument/patch names - depends on flavor: GM/drums/aliased.
         /// </summary>
@@ -193,28 +192,16 @@ namespace Ephemera.MidiLib
                     ir.ParseFile(aliasFile);
 
                     var defs = MidiDefs.ReadDefs(ir, "instruments");
-                    if (defs.Count > 0)
-                    {
-                        _instruments = defs;
-                    }
+                    if (defs is not null) { _instruments = defs; }
 
                     defs = MidiDefs.ReadDefs(ir, "controllers");
-                    if (defs.Count > 0)
-                    {
-                        _controllers = defs;
-                    }
+                    if (defs is not null) { _controllers = defs; }
 
                     defs = MidiDefs.ReadDefs(ir, "drums");
-                    if (defs.Count > 0)
-                    {
-                        _drums = defs;
-                    }
+                    if (defs is not null) { _drums = defs; }
 
                     defs = MidiDefs.ReadDefs(ir, "drumkits");
-                    if (defs.Count > 0)
-                    {
-                        _drumKits = defs;
-                    }
+                    if (defs is not null) { _drumKits = defs; }
                 }
                 catch (Exception ex)
                 {
@@ -275,130 +262,14 @@ namespace Ephemera.MidiLib
             return name;
         }
 
-
-
-
-
-
-
-
-
         ///// <summary>
-        ///// Get instrument name from id.
+        ///// Hide direct device access.
         ///// </summary>
-        ///// <param name="id"></param>
-        ///// <returns>The instrument name or a fabricated one if unknown.</returns>
-        //public string GetInstrumentName(int id)
+        ///// <param name="evt"></param>
+        //public void Send(BaseEvent evt) //TODO1
         //{
-        //    if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Instrument:{id}"); }
-
-        //    string? name;
-
-        //    if (_aliases is not null)
-        //    {
-        //        _aliases.TryGetValue(id, out name);
-        //    }
-        //    else if (IsDrums)
-        //    {
-        //        name = MidiDefs.DrumKits.GetName(id);
-        //    }
-        //    else
-        //    {
-        //        name = MidiDefs.Instruments.GetName(id);
-        //    }
-
-        //    if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }
-
-        //    return name;
+        //    _device.Send(evt);
         //}
-
-        ///// <summary>
-        ///// Fix up instrument/patch names - depends on flavor: GM/drums/aliased.
-        ///// </summary>
-        ///// <param name="patchName"></param>
-        ///// <param name="aliasFile">Custom patch names for this channel</param>
-        ///// <exception cref="MidiLibException"></exception>
-        //public void InitInstruments(string patchName, string? aliasFile = null)
-        //{
-        //    if (aliasFile is not null) // explicit defs file
-        //    {
-        //        try
-        //        {
-        //            _aliases = [];
-        //            var ir = new IniReader();
-        //            ir.ParseFile(aliasFile);
-        //            var defs = MidiDefs.ReadDefs(ir, "instruments"); // Other sections?
-        //            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _aliases.Add(i, defs.GetName(i)));
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            throw new MidiLibException($"Failed to load alias file {aliasFile}: {ex.Message}");
-        //        }
-        //    }
-        //    else // internal set
-        //    {
-        //        var id = MidiDefs.DrumKits.GetId(patchName);
-        //        if (id >= 0) // GM drum kit
-        //        {
-        //            IsDrums = true;
-        //            Patch = id;
-        //        }
-        //        else
-        //        {
-        //            id = MidiDefs.Instruments.GetId(patchName);
-        //            if (id >= 0) // plain GM instrument
-        //            {
-        //                IsDrums = false;
-        //                Patch = id;
-        //            }
-        //            else // unknown
-        //            {
-        //                throw new ArgumentException($"Invalid instrument:{patchName}");
-        //            }
-        //        }
-        //    }
-
-        //    if (Patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Unresolved patch:{patchName}"); }
-
-        //    _device.Send(new Patch(ChannelNumber, Patch));
-        //}
-
-        /// <summary>
-        /// Hide direct device access.
-        /// </summary>
-        /// <param name="evt"></param>
-        public void Send(BaseEvent evt)
-        {
-            _device.Send(evt);
-        }
         #endregion
-
-        //#region Private functions
-        ///// <summary>
-        ///// Sort out possible sources of id.
-        ///// </summary>
-        ///// <param name="name"></param>
-        ///// <returns></returns>
-        //int GetInstrumentId(string name)
-        //{
-        //    int id = -1;
-
-        //    if (_aliases is not null)
-        //    {
-        //        var i = _aliases.Where(v => v.Value == name);
-        //        id = i.Any() ? i.First().Key : -1;
-        //    }
-        //    else if (IsDrums)
-        //    {
-        //        id = MidiDefs.Drums.GetId(name);
-        //    }
-        //    else
-        //    {
-        //        id = MidiDefs.Instruments.GetId(name);
-        //    }
-
-        //    return id;
-        //}
-        //#endregion
     }
 }

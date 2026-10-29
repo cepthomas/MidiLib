@@ -54,10 +54,10 @@ namespace Ephemera.MidiLib
         [EditorBrowsable(EditorBrowsableState.Never)]
         public OutputChannel BoundChannel { get; set; }
 
-        /// <summary>Display options.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public DisplayOptions Options { get; set; } = DisplayOptions.All;
+        ///// <summary>Display options.</summary>
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        //[EditorBrowsable(EditorBrowsableState.Never)]
+        //public DisplayOptions Options { get; set; } = DisplayOptions.All;
 
         /// <summary>Drawing the active elements of a control.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

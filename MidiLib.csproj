@@ -32,6 +32,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Remove="Channel-all.cs" />
+      <Compile Remove="ChannelControl-all.cs" />
       <Compile Remove="ChannelControl2.cs" />
       <Compile Remove="ChannelControl2.Designer.cs" />
     </ItemGroup>

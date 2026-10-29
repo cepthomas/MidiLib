@@ -24,13 +24,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="MainForm_X.cs" />
-      <Compile Remove="MainForm_X.Designer.cs" />
-      <Compile Remove="MockNAudio.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Remove="MainForm_X.resx" />
+      <Compile Remove="xxx.cs" />
     </ItemGroup>
 
     <ItemGroup>

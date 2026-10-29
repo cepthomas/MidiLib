@@ -33,15 +33,13 @@ namespace Ephemera.MidiLib.Test
         const string WARN = "WRN";
         const string INFO = "INF";
 
-        const string INDEV = "loopMIDI Port 1";
+        const string INDEV = "NebLoopback1";
         const string OUTDEV1 = "VirtualMIDISynth #1";
         const string OUTDEV2 = "Microsoft GS Wavetable Synth";
         #endregion
 
-        #region Lifecycle
-        /// <summary>
-        /// Constructor.
-        /// </summary>
+
+        //-------------------------------------------------------------------------------//
         public MainForm()
         {
             InitializeComponent();
@@ -58,7 +56,14 @@ namespace Ephemera.MidiLib.Test
                 new(WARN, BgColor: Color.Plum),
             ];
 
-            // Master volume.
+            // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            // TODO1 who handles volume adjust?
+            // ChannelControl knows about solo/mute/volume
+            // Channel or ChCtrl???
+            // MainForm knows master-volume
+
+
+            // Master volume. TODO1
             sldMasterVolume.DrawColor = Color.SpringGreen;
             sldMasterVolume.Minimum = 0.0;
             sldMasterVolume.Maximum = VolumeDefs.MAX_VOLUME;
@@ -69,7 +74,7 @@ namespace Ephemera.MidiLib.Test
             timeBar.DrawColor = Color.Green;
             timeBar.SelectedColor = Color.LightYellow;
             timeBar.Snap = SnapType.Beat;
-            timeBar.StateChange += TimeBar_StateChange;
+            timeBar.StateChange += (object? sender, TimeBar.StateChangeEventArgs e) => { Tell(INFO, $">>> TimeBar event. {timeBar.Current}"); };
 
             // Simple UI handlers.
             btnKillMidi.Click += (_, __) => { MidiManager.Instance.Kill(); };
@@ -78,10 +83,13 @@ namespace Ephemera.MidiLib.Test
 
             btnGo.Click += Go_Click;
             btnTimebar.Click += (_, _) => TestTimeBar();
+            btnProperty.Click += (_, _) => TestPropertyEditor();
+
+            btnSend.Click += BtnSend_Click;
 
             // Report on midi action.
             MidiManager.Instance.MessageReceived += Mgr_MessageReceived;
-            MidiManager.Instance.MessageSent += Mgr_MessageSent;
+            //MidiManager.Instance.MessageSent += Mgr_MessageSent;
         }
 
         /// <summary>
@@ -91,13 +99,26 @@ namespace Ephemera.MidiLib.Test
         protected override void OnLoad(EventArgs e)
         {
             Tell(INFO, $">>> OnLoad start.");
-
             try
             {
-                TestStandardApp();
-                //TestScriptApp();
-                //TestPropertyEditor();
-                //TestTimeBar();
+                // Basic channels.
+                var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord");
+                var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin");
+
+                // Init controls.
+                ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
+                ch_ctrl1.DrawColor = Color.SpringGreen;
+                ch_ctrl1.SelectedColor = Color.Yellow;
+                ch_ctrl1.Volume = VolumeDefs.DEFAULT_VOLUME;
+                ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
+                ch_ctrl1.BoundChannel = chan_out1;
+
+                ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
+                ch_ctrl2.DrawColor = Color.SpringGreen;
+                ch_ctrl2.SelectedColor = Color.Yellow;
+                ch_ctrl2.Volume = VolumeDefs.DEFAULT_VOLUME;
+                ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
+                ch_ctrl2.BoundChannel = chan_out1;
             }
             catch (Exception ex)
             {
@@ -111,13 +132,19 @@ namespace Ephemera.MidiLib.Test
             base.OnLoad(e);
         }
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        //-------------------------------------------------------------------------------//
         protected override void Dispose(bool disposing)
         {
-            DestroyControls();
+            MidiManager.Instance.Kill();
+
+            // Clean out our current elements.
+            _channelControls.ForEach(c =>
+            {
+                Controls.Remove(c);
+                c.Dispose();
+            });
+            _channelControls.Clear();
+
             MidiManager.Instance.DestroyDevices();
 
             if (disposing && (components is not null))
@@ -127,20 +154,46 @@ namespace Ephemera.MidiLib.Test
 
             base.Dispose(disposing);
         }
-        #endregion
 
-        #region Do work
+        //-------------------------------------------------------------------------------//
         void Go_Click(object? sender, EventArgs e)
         {
             Tell(INFO, $">>> Go start.");
 
             try
             {
-                //TestScriptApp();
+                // App driven by a script - a la Nebulua/Nebulator. Creates channels and controls dynamically.
 
-                //TestPropertyEditor();
+                //ch_ctrl1.Hide();
+                //ch_ctrl2.Hide();
 
-                TestTimeBar();
+                // 1 - create all channels
+                var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "dyn keys", "HonkyTonkPiano");
+                var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 10, "dyn drums", "Electronic");
+                //var chan_out3 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "dyn bass", "ElectricBassPick");
+                var chan_in1 = MidiManager.Instance.OpenInputChannel(INDEV, 1, "dyn my input");
+
+                // 2 - create a control for each channel and bind object
+                int x = ch_ctrl2.Right + 10;
+                int y = ch_ctrl2.Top;
+
+                List<OutputChannel> channels = [chan_out1, chan_out2];
+                channels.ForEach(chan =>
+                {
+                    var ctrl = new ChannelControl()
+                    {
+                        Name = $"Control for {chan.ChannelName}",
+                        BoundChannel = chan,
+                        Location = new(x, y),
+                        BorderStyle = BorderStyle.FixedSingle,
+                        DrawColor = Color.SpringGreen,
+                        SelectedColor = Color.Yellow,
+                        Volume = VolumeDefs.DEFAULT_VOLUME,
+                    };
+                    ctrl.ChannelChange += ChannelControl_ChannelChange;
+                    Controls.Add(ctrl);
+                    x += ctrl.Width + 10; // Width is not valid until after previous statement.
+                });
             }
             catch (Exception ex)
             {
@@ -149,11 +202,37 @@ namespace Ephemera.MidiLib.Test
 
             Tell(INFO, $">>> Go done.");
         }
-        #endregion
 
+        //------------------------- Send some stuff ----------------------------------------//
+        void BtnSend_Click(object? sender, EventArgs e)
+        {
+            if (btnSend.Checked)
+            {
+                // Run timer.
+                timer1.Interval = 500;
+                _count = 3;
+                Random rand = new();
+                void Timer1_Tick(object? sender, EventArgs e)
+                {
+                    int noteNum = rand.Next(40, 60);
+                    //chan_out1.Send(new NoteOn()); // TODO1
+                    //ch_ctrl1.BoundChannel.Send(new NoteOn())
 
-        //-------------------------------------------------------------------------------//
-        /// <summary>Test time bar.</summary>
+                    if (--_count <= 0)
+                    {
+                        timer1.Stop();
+                        timer1.Tick -= Timer1_Tick;
+                    }
+                }
+                timer1.Tick += Timer1_Tick;
+                timer1.Start();
+            }
+            else
+            {
+            }
+        }
+
+        //----------------- Test time bar -----------------------------------------------//
         void TestTimeBar()
         {
             // Sections. 256 ticks = 32 beats = 8 bars
@@ -169,53 +248,28 @@ namespace Ephemera.MidiLib.Test
             timeBar.InitSectionInfo(sectInfo);
             timeBar.Invalidate();
 
-            timer1.Tick += Timer1_Tick;
+            // Run timer.
             timer1.Interval = 3;
-
-            _count = 10000; // 350;
-
+            _count = 1000;
+            void Timer1_Tick(object? sender, EventArgs e)
+            {
+                timeBar.Increment();
+                if (--_count <= 0)
+                {
+                    timer1.Stop();
+                    timer1.Tick -= Timer1_Tick;
+                }
+            }
+            timer1.Tick += Timer1_Tick;
             timer1.Start();
         }
 
-        void Timer1_Tick(object? sender, EventArgs e)
-        {
-            timeBar.Increment();
-
-            if (--_count <= 0)
-            {
-                Tell(INFO, $">>> Timer done.");
-                timer1.Stop();
-                timer1.Tick -= Timer1_Tick;
-            }
-        }
-
-        void TimeBar_StateChange(object? sender, TimeBar.StateChangeEventArgs e)
-        {
-            Tell(INFO, $">>> TimeBar event. {timeBar.Current}");
-        }
-
-        //protected override void OnKeyDown(KeyEventArgs e)
-        //{
-        //    if (!timeBar.FreeRunning && e.KeyData == Keys.Escape)
-        //    {
-        //        // Reset.
-        //        timeBar.ResetSelection();
-        //        Invalidate();
-        //    }
-
-        //    base.OnKeyDown(e);
-        //}
-
-        //-------------------------------------------------------------------------------//
-
-
-        //-------------------------------------------------------------------------------//
-        /// <summary>Test property editing using TypeEditors.</summary>
+        //-------------------- Test property editing ------------------------------------//
         void TestPropertyEditor()
         {
             Tell(INFO, $">>> Property editor.");
 
-            TargetClass td = new()
+            SettingsTestClass td = new()
             {
                 Patch = 77,
                 ChannelName = "booga-booga",
@@ -243,102 +297,30 @@ namespace Ephemera.MidiLib.Test
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
 
-
         //-------------------------------------------------------------------------------//
-        /// <summary>App driven by a script - as Nebulua/Nebulator. Creates channels and controls dynamically.</summary>
-        void TestScriptApp()
-        {
-            ///// 0 - pre-steps - only for this demo
-            ch_ctrl1.Hide();
-            ch_ctrl2.Hide();
-
-            ///// 1 - create all channels
-            var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "keys", "HonkyTonkPiano");
-            var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 10, "drums", "Electronic");
-            //var chan_out3 = Manager.Instance.OpenOutputChannel(OUTDEV1, 4, "bass", "ElectricBassPick");
-            var chan_in1 = MidiManager.Instance.OpenInputChannel(INDEV, 1, "my input");
-
-            ///// 2 - create a control for each channel and bind object
-            int x = sldMasterVolume.Left;
-            int y = sldMasterVolume.Bottom + 10;
-
-            List<OutputChannel> channels = [chan_out1, chan_out2];
-            channels.ForEach(chan =>
-            {
-                var ctrl = new ChannelControl()
-                {
-                    Name = $"Control for {chan.ChannelName}",
-                    BoundChannel = chan,
-                    Location = new(x, y),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    DrawColor = Color.SpringGreen,
-                    SelectedColor = Color.Yellow,
-                    Volume = VolumeDefs.DEFAULT_VOLUME,
-                };
-                ctrl.SetRenderer(new CustomRenderer());
-                ctrl.ChannelChange += ChannelControl_ChannelChange;
-                Controls.Add(ctrl);
-                x += ctrl.Width + 4; // Width is not valid until after previous statement.
-            });
-        }
-
-        //-------------------------------------------------------------------------------//
-        /// <summary>A standard app where controls are defined in VS designer.</summary>
-        void TestStandardApp()
-        {
-            // Create channels.
-            var chan_out1 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord");
-            var chan_out2 = MidiManager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin");
-
-            // Init controls.
-            ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
-            ch_ctrl1.DrawColor = Color.SpringGreen;
-            ch_ctrl1.SelectedColor = Color.Yellow;
-            ch_ctrl1.Volume = VolumeDefs.DEFAULT_VOLUME;
-            ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
-            ch_ctrl1.BoundChannel = chan_out1;
-            ch_ctrl1.SetRenderer(new CustomRenderer());
-
-            ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
-            ch_ctrl2.DrawColor = Color.SpringGreen;
-            ch_ctrl2.SelectedColor = Color.Yellow;
-            ch_ctrl2.Volume = VolumeDefs.DEFAULT_VOLUME;
-            ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
-            ch_ctrl2.BoundChannel = chan_out1;
-            ch_ctrl2.SetRenderer(new CustomRenderer());
-        }
-
-        //-------------------------------------------------------------------------------//
-        /// <summary>General purpose test class</summary>
         [Serializable]
-        public class TargetClass
+        public class SettingsTestClass
         {
-            /// <summary>Device name.</summary>
             [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
             public string DeviceName { get; set; } = "";
 
-            /// <summary>Channel name - optional.</summary>
             public string ChannelName { get; set; } = "";
 
-            /// <summary>Actual 1-based midi channel number.</summary>
             [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
             public int ChannelNumber { get; set; } = 1;
 
-            /// <summary>Actual 1-based midi channel number.</summary>
             [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
             public int SomeOtherMidi { get; set; } = 0;
 
-            /// <summary>Override default instrument presets.</summary>
             [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
             public string AliasFile { get; set; } = "";
 
-            /// <summary>Current instrument/patch number.</summary>
             [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
             [TypeConverter(typeof(GenericConverter))]
             public int Patch { get; set; } = 0;
         }
 
-        #region Events
+        //----------------------- Events ------------------------------------------------//
         /// <summary>
         /// Something arrived from a midi device.
         /// </summary>
@@ -346,22 +328,20 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         void Mgr_MessageReceived(object? sender, BaseEvent e)
         {
-            Tell(INFO, $"MM Received [{e}]");
+            Tell(INFO, $"Mgr Received [{e}]");
         }
 
-        /// <summary>
-        /// Something sent to a midi device.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Mgr_MessageSent(object? sender, BaseEvent e)
-        {
-            Tell(INFO, $"MM Sent [{e}]");
-        }
+        ///// <summary>
+        ///// Something sent to a midi device.
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        //void Mgr_MessageSent(object? sender, BaseEvent e)
+        //{
+        //    Tell(INFO, $"Mgr Sent [{e}]");
+        //}
 
-        /// <summary>
-        /// UI clicked something -> configure channel.
-        /// </summary>
+        /// <summary>User clicked something -> configure channel.</summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void ChannelControl_ChannelChange(object? sender, ChannelChangeEventArgs e)
@@ -392,32 +372,11 @@ namespace Ephemera.MidiLib.Test
             }
         }
 
-        #endregion
-
-        #region Misc internals
-        /// <summary>
-        /// Destroy controls.
-        /// </summary>
-        void DestroyControls()
-        {
-            MidiManager.Instance.Kill();
-
-            // Clean out our current elements.
-            _channelControls.ForEach(c =>
-            {
-                Controls.Remove(c);
-                c.Dispose();
-            });
-            _channelControls.Clear();
-        }
-
-        /// <summary>Tell me something good.</summary>
-        /// <param name="s">What</param>
+        //----------------------- Misc --------------------------------------------------//
         void Tell(string cat, string s, [CallerFilePath] string file = "", [CallerLineNumber] int line = -1)
         {
             var fn = Path.GetFileName(file);
             tvInfo.Append($"{cat} {fn}({line}) {s}");
         }
-        #endregion
     }
 }

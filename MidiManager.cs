@@ -42,8 +42,8 @@ namespace Ephemera.MidiLib
         /// <summary>Handler for midi message arrived.</summary>
         public event EventHandler<BaseEvent>? MessageReceived;
 
-        /// <summary>Handler for midi message sent.</summary>
-        public event EventHandler<BaseEvent>? MessageSent;
+        ///// <summary>Handler for midi message sent.</summary>
+        //public event EventHandler<BaseEvent>? MessageSent;
         #endregion
 
         #region Channels
@@ -233,7 +233,7 @@ namespace Ephemera.MidiLib
                     if (dev is not null)
                     {
                         _outputDevices.Add(dev);
-                        dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
+//                        dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
                     }
                 }
                 catch (Exception)
@@ -302,7 +302,7 @@ namespace Ephemera.MidiLib
             }
             else
             {
-                channel.Send(new Controller(channel.ChannelNumber, cc, 0));
+//>>>>>>>TODO1                channel.Send(new Controller(channel.ChannelNumber, cc, 0));
             }
         }
         #endregion

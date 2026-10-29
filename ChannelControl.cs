@@ -26,19 +26,6 @@ namespace Ephemera.MidiLib
         /// <summary>Solo/mute.</summary>
         public bool State { get; set; } = false;
     }
-
-    /// <summary>Base class for custom renderers.</summary>
-    public class UserRenderer : UserControl
-    {
-        /// <summary>Parent hooks this.</summary>
-        public event EventHandler<BaseEvent>? SendMidi;
-
-        /// <summary>Derived control helper.</summary>
-        protected void OnSendMidi(BaseEvent e)
-        {
-            SendMidi?.Invoke(this, e);
-        }
-    }
     #endregion
 
     [DesignTimeVisible(true)]
@@ -65,7 +52,6 @@ namespace Ephemera.MidiLib
         readonly Pan panChannel = new();
 
         // backing:
-        UserRenderer? _userRenderer = null;
         Color _selectedColor = Color.Red;
         int _controller = 0;
         int _controllerValue = 0;
@@ -188,10 +174,6 @@ namespace Ephemera.MidiLib
                 sldVolume.Label = "volume";
                 sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
                 Controls.Add(sldVolume);
-
-                //xPos = sldVolume.Right + PAD;
-                //xMax = xPos;
-                //yMax = Math.Max(sldVolume.Bottom, yMax);
             }
 
             //if (Options.HasFlag(DisplayOptions.SoloMute))
@@ -213,41 +195,7 @@ namespace Ephemera.MidiLib
                 lblMute.Text = "M";
                 lblMute.Click += SoloMute_Click;
                 Controls.Add(lblMute);
-                //xPos = lblMute.Right + PAD;
-                //xMax = xPos;
-
-                //yMax = Math.Max(lblMute.Bottom, yMax);
             }
-
-            //if (Options.HasFlag(DisplayOptions.Controller))
-            //{
-            //    btnSend.FlatStyle = FlatStyle.Flat;
-            //    btnSend.UseVisualStyleBackColor = true;
-            //    btnSend.Location = new(xPos, yPos);
-            //    btnSend.Size = new(SIZE, SIZE);
-            //    btnSend.Text = "!";
-            //    btnSend.Click += Send_Click;
-            //    Controls.Add(btnSend);
-
-            //    xPos = btnSend.Right + PAD;
-            //    yMax = Math.Max(btnSend.Bottom, yMax);
-
-            //    sldControllerValue.Minimum = 0;
-            //    sldControllerValue.Maximum = MidiDefs.MAX_MIDI;
-            //    sldControllerValue.Resolution = 1;
-            //    sldControllerValue.Value = 50;
-            //    sldControllerValue.BorderStyle = BorderStyle.FixedSingle;
-            //    sldControllerValue.Orientation = Orientation.Horizontal;
-            //    sldControllerValue.Location = new(xPos, yPos);
-            //    sldControllerValue.Size = new(80, SIZE);
-            //    sldControllerValue.Label = "value";
-            //    sldControllerValue.ValueChanged += Controller_ValueChanged;
-            //    Controls.Add(sldControllerValue);
-
-            //    xPos = sldControllerValue.Right + PAD;
-            //    xMax = xPos;
-            //    yMax = Math.Max(sldControllerValue.Bottom, yMax);
-            //}
 
             {
                 lblInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
@@ -256,28 +204,7 @@ namespace Ephemera.MidiLib
                 lblInfo.Size = new(lblSolo.Right, HT1 - PAD);
                 lblInfo.Click += ChannelInfo_Click;
                 Controls.Add(lblInfo);
-
-                //xPos = lblInfo.Right + PAD;
-                //xMax = xPos;
-                //yMax = Math.Max(lblInfo.Bottom, yMax);
             }
-
-
-            //if (_userRenderer is not null)
-            //{
-            //    //xPos = PAD;
-            //    //yPos = sldVolume.Bottom + PAD;
-            //    _userRenderer.Location = new(PAD, HT1 + PAD);
-            //    //xMax = Math.Max(_userRenderer.Right, xPos);
-            //    //yMax = Math.Max(_userRenderer.Bottom, yMax);
-            //    Controls.Add(_userRenderer);
-            //}
-
-            //// Control itself.
-            //var xMax = Math.Max(lblInfo.Right, _userRenderer is null ? 0 : _userRenderer.Right);
-            //var yMax = Math.Max(sldVolume.Bottom, _userRenderer is null ? 0: _userRenderer.Bottom);
-
-
 
             Size = new Size(lblInfo.Right + PAD, sldVolume.Bottom + PAD);
 
@@ -306,58 +233,7 @@ namespace Ephemera.MidiLib
             }
             base.Dispose(disposing);
         }
-
-        /// <summary>
-        /// A custom renderer - optional.
-        /// </summary>
-        /// <param name="rend"></param>
-        public void SetRenderer(UserRenderer rend)
-        {
-            _userRenderer = rend;
-            Controls.Add(_userRenderer);
-
-            // Handle custom renderer events. Fix the channel number.
-            rend.SendMidi += (sender, e) =>
-            {
-                e.ChannelNumber = BoundChannel.ChannelNumber;
-                BoundChannel.Send(e);
-                //SendMidi?.Invoke(this, e);
-            };
-
-            //rend.Location = new(PAD, Height);
-            //Height += rend.Height + PAD;
-            //Controls.Add(rend);
-
-
-            _userRenderer.Location = new(PAD, sldVolume.Bottom + PAD);
-
-
-
-
-
-            //if (_userRenderer is not null)
-            //{
-            //xPos = PAD;
-            //yPos = sldVolume.Bottom + PAD;
-            //_userRenderer.Location = new(PAD, HT1 + PAD);
-                //xMax = Math.Max(_userRenderer.Right, xPos);
-                //yMax = Math.Max(_userRenderer.Bottom, yMax);
-                //Controls.Add(_userRenderer);
-            //}
-
-            //// Control itself.
-            //var xMax = Math.Max(lblInfo.Right, _userRenderer is null ? 0 : _userRenderer.Right);
-            //var yMax = Math.Max(sldVolume.Bottom, _userRenderer is null ? 0 : _userRenderer.Bottom);
-
-            // Resize control.
-            Size = new Size(Math.Max(lblInfo.Width, _userRenderer.Width) + PAD, _userRenderer.Bottom + PAD);
-            lblInfo.Width = Size.Width - PAD - PAD;
-
-            _userRenderer.Invalidate();
-
-        }
         #endregion
-
 
         #region Handlers for user selections
         // /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
@@ -386,29 +262,6 @@ namespace Ephemera.MidiLib
 
             // Notify client.
             ChannelChange?.Invoke(this, new() { State = true });
-        }
-
-        /// <summary>
-        /// Notify client.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Controller_ValueChanged(object? sender, EventArgs e)
-        {
-            // No need to check limits.
-            ControllerValue = (int)(sender as Slider)!.Value;
-        }
-
-        /// <summary>
-        /// Notify client.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Send_Click(object? sender, EventArgs e)
-        {
-            // No need to check limits.
-            BoundChannel.Send(new Controller(BoundChannel.ChannelNumber, Controller, ControllerValue));
-   //         SendMidi?.Invoke(this, new Controller(BoundChannel.ChannelNumber, Controller, ControllerValue));
         }
         #endregion
 
