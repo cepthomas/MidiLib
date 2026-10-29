@@ -25,7 +25,7 @@ namespace Ephemera.MidiLib
 
             var isChan = context.PropertyDescriptor.Name == "ChannelNumber";
             int start = isChan ? 1 : 0;
-            int end = isChan ? MidiDefs.NUM_CHANNELS : MidiDefs.MAX_MIDI;
+            int end = isChan ? MidiDefs.MAX_CHANNEL : MidiDefs.MAX_MIDI;
 
             var lb = new ListBox(); // {Width = 50,SelectionMode = SelectionMode.One};
             Enumerable.Range(start, end).ForEach(v => lb.Items.Add(v.ToString()));

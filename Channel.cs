@@ -41,8 +41,8 @@ namespace Ephemera.MidiLib
         /// <summary>Channel name - optional.</summary>
         public string ChannelName { get; set; } = "";
 
-        /// <summary>Actual 1-based midi channel number.</summary>
-        public int ChannelNumber { get; init; } = MidiDefs.TEMP_CHANNEL;
+        /// <summary>Actual 1-based midi channel number. Required.</summary>
+        public int ChannelNumber { get; init; } = 0;// MidiDefs.TEMP_CHANNEL;
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
@@ -58,7 +58,7 @@ namespace Ephemera.MidiLib
         /// <param name="channelNumber"></param>
         public InputChannel(IInputDevice device, int channelNumber)
         {
-            if (channelNumber is <= MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
+            if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
             _device = device;
             ChannelNumber = channelNumber;
@@ -94,8 +94,8 @@ namespace Ephemera.MidiLib
         /// <summary>Channel name - optional.</summary>
         public string ChannelName { get; set; } = "";
 
-        /// <summary>Actual 1-based midi channel number.</summary>
-        public int ChannelNumber { get; init; } = MidiDefs.TEMP_CHANNEL;
+        /// <summary>Actual 1-based midi channel number. Required</summary>
+        public int ChannelNumber { get; init; } = 0; // MidiDefs.TEMP_CHANNEL;
 
         /// <summary>Handle for use by scripts.</summary>
         public int Handle { get; init; }
@@ -144,7 +144,7 @@ namespace Ephemera.MidiLib
         /// <param name="channelNumber"></param>
         public OutputChannel(IOutputDevice device, int channelNumber)
         {
-            if (channelNumber is <= MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
+            if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
             _device = device;
             ChannelNumber = channelNumber;
@@ -160,7 +160,7 @@ namespace Ephemera.MidiLib
         /// <param name="patch"></param>
         public OutputChannel(IOutputDevice device, int channelNumber, int patch)
         {
-            if (channelNumber is <= MidiDefs.TEMP_CHANNEL or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
+            if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
             _device = device;
             ChannelNumber = channelNumber;
@@ -236,7 +236,6 @@ namespace Ephemera.MidiLib
             _device.Send(new Patch(ChannelNumber, Patch));
         }
 
-
         /// <summary>
         /// Get instrument name from id.
         /// </summary>
@@ -262,14 +261,14 @@ namespace Ephemera.MidiLib
             return name;
         }
 
-        ///// <summary>
-        ///// Hide direct device access.
-        ///// </summary>
-        ///// <param name="evt"></param>
-        //public void Send(BaseEvent evt) //TODO1
-        //{
-        //    _device.Send(evt);
-        //}
+        /// <summary>
+        /// Hide direct device access. Assumes client has fixed up volume etc.
+        /// </summary>
+        /// <param name="evt"></param>
+        public void Send(BaseEvent evt)
+        {
+            _device.Send(evt);
+        }
         #endregion
     }
 }

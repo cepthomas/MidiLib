@@ -53,8 +53,6 @@ namespace Ephemera.MidiLib
 
         // backing:
         Color _selectedColor = Color.Red;
-        int _controller = 0;
-        int _controllerValue = 0;
         bool _selected = false;
         #endregion
 
@@ -103,24 +101,6 @@ namespace Ephemera.MidiLib
             set { sldVolume.Value = value; }
         }
 
-        /// <summary>Edit current controller number.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int Controller
-        {
-            get { return _controller; }
-            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"Controller:{value}");
-                  else _controller = value; }
-        }
-
-        /// <summary>Controller payload.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int ControllerValue
-        {
-            get { return _controller; }
-            set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"ControllerValue:{value}");
-                  else _controllerValue = value; }
-        }
-
         /// <summary>User selection.</summary>
         public bool Selected
         {
@@ -156,66 +136,50 @@ namespace Ephemera.MidiLib
             SuspendLayout();
 
             // Create the controls per the config.
-            const int HT1 = 24;
-            const int HT2 = 42;
+            const int HT1 = 24; // first row
+            const int HT2 = 42; // second row
+            const int SM_SZ = 20;
 
-            //int xPos = PAD;
-            //int yPos = HEIGHT;
-
-            {
-                sldVolume.Minimum = 0.0;
-                sldVolume.Maximum = VolumeDefs.MAX_VOLUME;
-                sldVolume.Resolution = 0.05;
-                sldVolume.Value = 1.0;
-                sldVolume.BorderStyle = BorderStyle.FixedSingle;
-                sldVolume.Orientation = Orientation.Horizontal;
-                sldVolume.Location = new(PAD, PAD + HT1);
-                sldVolume.Size = new(80, HT2);
-                sldVolume.Label = "volume";
-                sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
-                Controls.Add(sldVolume);
-            }
-
-            //if (Options.HasFlag(DisplayOptions.SoloMute))
-            {
-                int smSize = 20;
-
-                lblSolo.Location = new(sldVolume.Right + PAD, sldVolume.Top);
-                //lblSolo.Location = new(lblMute.Right + PAD, sldVolume.Height);
-                lblSolo.Size = new(smSize, smSize);
-                lblSolo.Text = "S";
-                lblSolo.Click += SoloMute_Click;
-                Controls.Add(lblSolo);
-                //xPos = lblSolo.Right + PAD;
-                //xMax = xPos;
-
-                //lblMute.Location = new(sldVolume.Right + PAD, sldVolume.Height);
-                lblMute.Location = new(sldVolume.Right + PAD, sldVolume.Top + smSize + 2);
-                lblMute.Size = new(smSize, smSize);
-                lblMute.Text = "M";
-                lblMute.Click += SoloMute_Click;
-                Controls.Add(lblMute);
-            }
-
-            {
-                lblInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-                lblInfo.BorderStyle = BorderStyle.FixedSingle;
-                lblInfo.Location = new(PAD, PAD);
-                lblInfo.Size = new(lblSolo.Right, HT1 - PAD);
-                lblInfo.Click += ChannelInfo_Click;
-                Controls.Add(lblInfo);
-            }
-
-            Size = new Size(lblInfo.Right + PAD, sldVolume.Bottom + PAD);
-
-            ResumeLayout(false);
-
-            PerformLayout();
-
-            toolTip = new(components);
-
-            // Other inits.
+            // Volume slider.
+            sldVolume.Minimum = 0.0;
+            sldVolume.Maximum = VolumeDefs.MAX_VOLUME;
+            sldVolume.Resolution = 0.05;
+            sldVolume.BorderStyle = BorderStyle.FixedSingle;
+            sldVolume.Orientation = Orientation.Horizontal;
+            sldVolume.Location = new(PAD, PAD + HT1);
+            sldVolume.Size = new(80, HT2);
+            sldVolume.Label = "volume";
+            // Bind the channel volume to the slider.
             sldVolume.Value = BoundChannel.Volume;
+            sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
+            Controls.Add(sldVolume);
+
+            // Solo/mute checkboxes.
+            lblSolo.Location = new(sldVolume.Right + PAD, sldVolume.Top);
+            lblSolo.Size = new(SM_SZ, SM_SZ);
+            lblSolo.Text = "S";
+            lblSolo.Click += SoloMute_Click;
+            Controls.Add(lblSolo);
+
+            lblMute.Location = new(sldVolume.Right + PAD, sldVolume.Top + SM_SZ + 2);
+            lblMute.Size = new(SM_SZ, SM_SZ);
+            lblMute.Text = "M";
+            lblMute.Click += SoloMute_Click;
+            Controls.Add(lblMute);
+
+            // Info textbox.
+            lblInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            lblInfo.BorderStyle = BorderStyle.FixedSingle;
+            lblInfo.Location = new(PAD, PAD);
+            lblInfo.Size = new(lblSolo.Right, HT1 - PAD);
+            lblInfo.Click += ChannelInfo_Click;
+            Controls.Add(lblInfo);
+
+            // Finalize the control.
+            Size = new Size(lblInfo.Right + PAD, sldVolume.Bottom + PAD);
+            ResumeLayout(false);
+            PerformLayout();
+            toolTip = new(components);
             UpdateUi();
 
             base.OnLoad(e);

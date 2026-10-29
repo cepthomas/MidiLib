@@ -13,10 +13,10 @@ namespace Ephemera.MidiLib
         public const int MAX_MIDI = 127;
 
         /// <summary>Per device.</summary>
-        public const int NUM_CHANNELS = 16;
+        public const int MAX_CHANNEL = 16;
 
-        /// <summary>Invalid channel number is ok in transition.</summary>
-        public const int TEMP_CHANNEL = 0;
+        /// <summary>Per device.</summary>
+        public const int MIN_CHANNEL = 1;
 
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;

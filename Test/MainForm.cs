@@ -109,7 +109,7 @@ namespace Ephemera.MidiLib.Test
                 ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
                 ch_ctrl1.DrawColor = Color.SpringGreen;
                 ch_ctrl1.SelectedColor = Color.Yellow;
-                ch_ctrl1.Volume = VolumeDefs.DEFAULT_VOLUME;
+                ch_ctrl1.Volume = VolumeDefs.DEFAULT_VOLUME; //TODO1 need to persist this or channel volume
                 ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
                 ch_ctrl1.BoundChannel = chan_out1;
 
@@ -341,7 +341,13 @@ namespace Ephemera.MidiLib.Test
         //    Tell(INFO, $"Mgr Sent [{e}]");
         //}
 
-        /// <summary>User clicked something -> configure channel.</summary>
+
+
+        ///////////////////////////////////////////////////////////////////////////////////
+        ///////////// TODO2 Stuff host needs to implement /////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>User clicked something -> configure channels.</summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void ChannelControl_ChannelChange(object? sender, ChannelChangeEventArgs e)
@@ -370,7 +376,56 @@ namespace Ephemera.MidiLib.Test
                     }
                 }
             }
+
+            if (e.Info)
+            {
+                //TODO2 anything?
+            }
         }
+
+        void SendNote(int channelNumber, int note, double volume) // , MusicTime? when = null)
+        {
+            if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"Note:{note}"); }
+            var channel = MidiManager.Instance.GetOutputChannel(channelNumber) ?? throw new ArgumentException($"chan_hnd:{channelNumber}");
+
+            if (volume == 0.0)
+            {
+                channel.Send(new NoteOff(channel.ChannelNumber, note));
+            }
+            else
+            {
+                var vel = (int)MathUtils.Constrain(volume * sldMasterVolume.Value * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
+                channel.Send(new NoteOn(channel.ChannelNumber, note, vel));
+            }
+
+            //if (_settings.MonitorSend)
+            //{
+            //    // Intended sent.
+            //    _loggerMidi.Trace($">>> {e}");
+            //}
+        }
+
+        void SendController(int channelNumber, int controller, int value) // , MusicTime? when = null)
+        {
+            if (controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{controller}"); }
+            if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{value}"); }
+            var channel = MidiManager.Instance.GetOutputChannel(channelNumber) ?? throw new ArgumentException($"chan_hnd:{channelNumber}");
+
+            var se = new Controller(channel.ChannelNumber, controller, value);
+            channel.Send(se);
+
+            //if (_settings.MonitorSend)
+            //{
+            //    // Intended sent.
+            //    _loggerMidi.Trace($">>> {e}");
+            //}
+        }
+        ///////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////
+
+
+
 
         //----------------------- Misc --------------------------------------------------//
         void Tell(string cat, string s, [CallerFilePath] string file = "", [CallerLineNumber] int line = -1)

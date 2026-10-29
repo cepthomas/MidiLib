@@ -58,7 +58,7 @@ namespace Ephemera.MidiLib
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+            if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
 
             var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
 
@@ -87,7 +87,7 @@ namespace Ephemera.MidiLib
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+            if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
@@ -119,7 +119,7 @@ namespace Ephemera.MidiLib
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+            if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
             if (patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patch:{patch}"); }
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
@@ -294,7 +294,7 @@ namespace Ephemera.MidiLib
             {
                 _outputDevices.ForEach((dev) =>
                 {
-                    for (int i = 1; i <= MidiDefs.NUM_CHANNELS; i++)
+                    for (int i = 1; i <= MidiDefs.MAX_CHANNEL; i++)
                     {
                         dev.Send(new Controller(i, cc, 0));
                     }
@@ -302,7 +302,7 @@ namespace Ephemera.MidiLib
             }
             else
             {
-//>>>>>>>TODO1                channel.Send(new Controller(channel.ChannelNumber, cc, 0));
+                channel.Send(new Controller(channel.ChannelNumber, cc, 0));// TODO1
             }
         }
         #endregion
