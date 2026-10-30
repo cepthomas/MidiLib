@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing.Design;
 using System.Linq;
+using System.Text.Json.Serialization;
+using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfUis;
 
 
 namespace Ephemera.MidiLib
@@ -30,29 +35,24 @@ namespace Ephemera.MidiLib
 
     //----------------------------------------------------------------
     /// <summary>Describes one midi input channel.</summary>
-    [Serializable]
     public class InputChannel
     {
         #region Fields
-        /// <summary>Associated device.</summary>
+        /// <summary>Associated device. Required.</summary>
         readonly IInputDevice _device;
         #endregion
 
         #region Properties
-        /// <summary>Channel name - optional.</summary>
-        public string ChannelName { get; set; } = "";
+        /// <summary>Channel name. Optional.</summary>
+        public string ChannelName { get; set; }
 
         /// <summary>Actual 1-based midi channel number. Required.</summary>
-        public int ChannelNumber { get; init; } = 0;
+        public int ChannelNumber { get; init; }
 
         /// <summary>True if channel is active.</summary>
-        [Browsable(false)]
-        [JsonIgnore]
         public bool Enable { get; set; } = true;
 
         /// <summary>Handle for use by scripts.</summary>
-        [Browsable(false)]
-        [JsonIgnore]
         public int Handle { get; init; }
         #endregion
 
@@ -67,13 +67,13 @@ namespace Ephemera.MidiLib
 
             _device = device;
             ChannelNumber = channelNumber;
+            ChannelName = $"Input {channelNumber}"; // default
             Handle = HandleOps.Create(device.Id, ChannelNumber, false);
         }
     }
 
     //----------------------------------------------------------------
     /// <summary>Describes one midi output channel.</summary>
-    [Serializable]
     public class OutputChannel
     {
         #region Fields
@@ -99,42 +99,27 @@ namespace Ephemera.MidiLib
         public int ChannelNumber { get; init; } = 0;
 
         /// <summary>Instrument names. Optional.</summary>
-        [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
         public string AliasFile { get; set; } = "";
 
         /// <summary>Instrument/patch.</summary>
-        [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-        // [TypeConverter(typeof(GenericConverter))]
         public int Patch { get; set; } = 0;
 
         /// <summary>Handle for use by scripts.</summary>
-        [Browsable(false)]
-        [JsonIgnore]
         public int Handle { get; init; }
 
         /// <summary>True if channel is active.</summary>
-        [Browsable(false)]
-        [JsonIgnore]
         public bool Enable { get; set; } = true;
 
         /// <summary>Patch is a drumkit.</summary>
-        [Browsable(false)]
-        [JsonIgnore]
         public bool IsDrums { get; private set; } = false;
 
         /// <summary>Associated events - optional depending on implementation.</summary>
-        [Browsable(false)]
-        [JsonIgnore]
         public EventCollection Events { get; set; } = new();
 
         /// <summary>Info about the device.</summary>
-        [Browsable(false)]
-        [JsonIgnore]
         public string DeviceInfo { get { return $"Dev {_device.Id} {_device.DeviceName}"; } }
 
         /// <summary>Current instrument/patch name. Set may update internal collection and sends a midi patch message.</summary>
-        [Browsable(false)]
-        [JsonIgnore]
         public string PatchName
         {
             get
@@ -161,6 +146,7 @@ namespace Ephemera.MidiLib
 
             _device = device;
             ChannelNumber = channelNumber;
+            ChannelName = $"Output {channelNumber}"; // default
             Handle = HandleOps.Create(device.Id, ChannelNumber, true);
         }
 

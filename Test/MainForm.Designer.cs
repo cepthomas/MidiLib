@@ -186,7 +186,6 @@ namespace Ephemera.MidiLib.Test
             // 
             // btnSend
             // 
-            btnSend.CheckOnClick = true;
             btnSend.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             btnSend.Image = (System.Drawing.Image)resources.GetObject("btnSend.Image");
             btnSend.ImageTransparentColor = System.Drawing.Color.Magenta;
