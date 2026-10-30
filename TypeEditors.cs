@@ -7,8 +7,6 @@ using System.ComponentModel;
 using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;
 
-// TODO1 rehome??
-
 
 // Shut up warnings in this file. Using manual checking where needed.
 #pragma warning disable CS8602
@@ -17,7 +15,7 @@ namespace Ephemera.MidiLib
 {
     //----------------------------------------------------------------
     /// <summary>Select a midi value from a range. Handles special case of channel number.</summary>
-    public class MidiValueTypeEditor : UITypeEditor
+    public class MidiValueTypeEditor : UITypeEditor // TODO1 rehome??
     {
         public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {

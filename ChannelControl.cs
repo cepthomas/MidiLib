@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Windows.Forms;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
@@ -21,8 +21,12 @@ namespace Ephemera.MidiLib
     /// <summary>Notify host of UI changes.</summary>
     public class ChannelChangeEventArgs : EventArgs
     {
-        /// <summary>User clicked info.</summary>
+        /// <summary>User clicked info box.</summary>
         public bool Info { get; set; } = false;
+
+        /// <summary>User changed volume.</summary>
+        public bool Volume { get; set; } = false;
+
         /// <summary>Solo/mute.</summary>
         public bool State { get; set; } = false;
     }
@@ -33,45 +37,38 @@ namespace Ephemera.MidiLib
     {
         #region Fields
         ChannelState _state = ChannelState.Normal;
-
-        readonly Container components = new();
-        protected ToolTip toolTip = new();
-        const int PAD = 4;
-
-        // always:
-        readonly Label lblInfo = new();
-        readonly Slider sldVolume = new();
-
-        // optional:
-        readonly Label lblSolo = new();
-        readonly Label lblMute = new();
-
-        // optional:
-        readonly Slider sldControllerValue = new();
-        readonly Button btnSend = new();
-        readonly Pan panChannel = new();
-
-        // backing:
         Color _selectedColor = Color.Red;
         bool _selected = false;
+
+        readonly Container components = new();
+        readonly Label lblInfo = new();
+        readonly Slider sldVolume = new();
+        readonly Label lblSolo = new();
+        readonly Label lblMute = new();
+        readonly Pan panChannel = new();
+        ToolTip toolTip = new();
         #endregion
 
         #region Properties
-        /// <summary>My channel.</summary>
+        /// <summary>Tell the user about me. Tuple of (ui, tooltip)</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public OutputChannel BoundChannel { get; set; }
+        public (string ui, string tt) Info
+        {
+            set
+            {
+                lblInfo.Text = value.ui;
+                toolTip.SetToolTip(lblInfo, $"{value.ui}{Environment.NewLine}{value.tt}");
+            }
+        }
+
 
         /// <summary>Drawing the active elements of a control.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Color DrawColor
         {
-            get { return sldVolume.DrawColor; }
-            set { sldVolume.DrawColor = value;
-                  sldControllerValue.DrawColor = value;
-                  btnSend.BackColor = value;
-                }
+            set { sldVolume.DrawColor = value; panChannel.DrawColor = value; }
         }
 
         /// <summary>Drawing the control when selected.</summary>
@@ -79,7 +76,6 @@ namespace Ephemera.MidiLib
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Color SelectedColor
         {
-            get { return _selectedColor; }
             set { _selectedColor = value; }
         }
 
@@ -89,7 +85,6 @@ namespace Ephemera.MidiLib
         public ChannelState State
         {
             get { return _state; }
-            set { _state = value; UpdateUi(); }
         }
 
         /// <summary>Current volume.</summary>
@@ -105,12 +100,11 @@ namespace Ephemera.MidiLib
         public bool Selected
         {
             get { return _selected; }
-            private set { _selected = value; lblInfo.BackColor = _selected ? SelectedColor : BackColor; }
         }
         #endregion
 
         #region Events
-        /// <summary>UI channel config change.</summary>
+        /// <summary>User clicked stuff.</summary>
         public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
         #endregion
 
@@ -121,10 +115,6 @@ namespace Ephemera.MidiLib
         public ChannelControl()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-
-            // Dummy channel to satisfy designer. Will be overwritten by the real one.
-            var dev = new NullOutputDevice("nullout:DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(dev, 9, 0);
         }
 
         /// <summary>
@@ -139,6 +129,7 @@ namespace Ephemera.MidiLib
             const int HT1 = 24; // first row
             const int HT2 = 42; // second row
             const int SM_SZ = 20;
+            const int PAD = 4;
 
             // Volume slider.
             sldVolume.Minimum = 0.0;
@@ -149,9 +140,7 @@ namespace Ephemera.MidiLib
             sldVolume.Location = new(PAD, PAD + HT1);
             sldVolume.Size = new(80, HT2);
             sldVolume.Label = "volume";
-            // Bind the channel volume to the slider.
-            sldVolume.Value = BoundChannel.Volume;
-            sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
+            sldVolume.ValueChanged += SldVolume_ValueChanged;
             Controls.Add(sldVolume);
 
             // Solo/mute checkboxes.
@@ -180,7 +169,6 @@ namespace Ephemera.MidiLib
             ResumeLayout(false);
             PerformLayout();
             toolTip = new(components);
-            UpdateUi();
 
             base.OnLoad(e);
         }
@@ -200,13 +188,18 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Handlers for user selections
-        // /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
+        /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
         void ChannelInfo_Click(object? sender, EventArgs e)
         {
-            Selected = !Selected;
-
-            // Notify client.
+            //Selected = !Selected;
             ChannelChange?.Invoke(this, new() { Info = true });
+        }
+
+        /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
+        void SldVolume_ValueChanged(object? sender, EventArgs e)
+        {
+            //Selected = !Selected;
+            ChannelChange?.Invoke(this, new() { Volume = true });
         }
 
         /// <summary>Handles solo and mute.</summary>
@@ -217,11 +210,11 @@ namespace Ephemera.MidiLib
             // Figure out state.
             if (sender == lblSolo)
             {
-                State = lblSolo.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Solo;
+                _state = lblSolo.BackColor == _selectedColor ? ChannelState.Normal : ChannelState.Solo;
             }
             else if (sender == lblMute)
             {
-                State = lblMute.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Mute;
+                _state = lblMute.BackColor == _selectedColor ? ChannelState.Normal : ChannelState.Mute;
             }
 
             // Notify client.
@@ -230,26 +223,10 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Misc
-        /// <summary>Draw mode checkboxes etc.</summary>
-        void UpdateUi()
-        {
-            StringBuilder sb = new();
-
-            sb.AppendLine($"Channel {BoundChannel.ChannelNumber} {BoundChannel.ChannelName}");
-            sb.AppendLine($"{BoundChannel.PatchName} {BoundChannel.Patch:000}");
-            sb.AppendLine(BoundChannel.DeviceInfo);
-            toolTip.SetToolTip(lblInfo, sb.ToString());
-
-            lblInfo.Text = HandleOps.Format(BoundChannel.Handle);
-
-            lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
-            lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
-        }
-
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-           return $"{HandleOps.Format(BoundChannel.Handle)}";
+          return Info.ui;
         }
         #endregion
     }

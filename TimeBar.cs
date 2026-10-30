@@ -25,7 +25,6 @@ namespace Ephemera.MidiLib
 
         /// <summary>Metadata.</summary>
         readonly List<(MusicTime when, string name)> _sectionInfo = [];
-        //readonly List<(int tick, string name)> _sectionInfo = [];
 
         /// <summary>Tooltip for mousing.</summary>
         readonly ToolTip _toolTip = new();

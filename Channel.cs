@@ -30,6 +30,7 @@ namespace Ephemera.MidiLib
 
     //----------------------------------------------------------------
     /// <summary>Describes one midi input channel.</summary>
+    [Serializable]
     public class InputChannel
     {
         #region Fields
@@ -42,12 +43,16 @@ namespace Ephemera.MidiLib
         public string ChannelName { get; set; } = "";
 
         /// <summary>Actual 1-based midi channel number. Required.</summary>
-        public int ChannelNumber { get; init; } = 0;// MidiDefs.TEMP_CHANNEL;
+        public int ChannelNumber { get; init; } = 0;
 
         /// <summary>True if channel is active.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
         public bool Enable { get; set; } = true;
 
         /// <summary>Handle for use by scripts.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
         public int Handle { get; init; }
         #endregion
 
@@ -68,60 +73,68 @@ namespace Ephemera.MidiLib
 
     //----------------------------------------------------------------
     /// <summary>Describes one midi output channel.</summary>
+    [Serializable]
     public class OutputChannel
     {
         #region Fields
         /// <summary>Associated device.</summary>
         readonly IOutputDevice _device;
 
-        /// <summary>Channel instruments. May be from alias file.</summary>
+        /// <summary>Channel instrument patches. Optionally from alias file.</summary>
         BiLut _instruments = MidiDefs.Instruments;
 
-        /// <summary>Channel controllers.</summary>
-        BiLut _controllers = MidiDefs.Controllers;
-
-        /// <summary>Channel drums.</summary>
-        BiLut _drums = MidiDefs.Drums;
-
-        /// <summary>Channel drum kits.</summary>
-        BiLut _drumKits = MidiDefs.DrumKits;
-
-        // Backing fields.
-        double _volume = VolumeDefs.DEFAULT_VOLUME;
+        ///// <summary>Channel controllers.</summary>
+        //BiLut _controllers = MidiDefs.Controllers;
+        ///// <summary>Channel drums.</summary>
+        //BiLut _drums = MidiDefs.Drums;
+        ///// <summary>Channel drum kits.</summary>
+        //BiLut _drumKits = MidiDefs.DrumKits;
         #endregion
 
         #region Properties
-        /// <summary>Channel name - optional.</summary>
+        /// <summary>Channel name. Optional.</summary>
         public string ChannelName { get; set; } = "";
 
-        /// <summary>Actual 1-based midi channel number. Required</summary>
-        public int ChannelNumber { get; init; } = 0; // MidiDefs.TEMP_CHANNEL;
+        /// <summary>Actual 1-based midi channel number.</summary>
+        public int ChannelNumber { get; init; } = 0;
+
+        /// <summary>Instrument names. Optional.</summary>
+        [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
+        public string AliasFile { get; set; } = "";
+
+        /// <summary>Instrument/patch.</summary>
+        [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+        // [TypeConverter(typeof(GenericConverter))]
+        public int Patch { get; set; } = 0;
 
         /// <summary>Handle for use by scripts.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
         public int Handle { get; init; }
 
         /// <summary>True if channel is active.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
         public bool Enable { get; set; } = true;
 
+        /// <summary>Patch is a drumkit.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
         public bool IsDrums { get; private set; } = false;
 
-        /// <summary>Current volume.</summary>
-        public double Volume
-        {
-            get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, 0, VolumeDefs.MAX_VOLUME); }
-        }
-
         /// <summary>Associated events - optional depending on implementation.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
         public EventCollection Events { get; set; } = new();
 
         /// <summary>Info about the device.</summary>
-        public string DeviceInfo { get { return $"Dev{_device.Id} {_device.DeviceName}"; } }
-
-        /// <summary>Current instrument/patch number.</summary>
-        public int Patch { get; private set; } = -1;
+        [Browsable(false)]
+        [JsonIgnore]
+        public string DeviceInfo { get { return $"Dev {_device.Id} {_device.DeviceName}"; } }
 
         /// <summary>Current instrument/patch name. Set may update internal collection and sends a midi patch message.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
         public string PatchName
         {
             get
@@ -148,7 +161,6 @@ namespace Ephemera.MidiLib
 
             _device = device;
             ChannelNumber = channelNumber;
-            _volume = VolumeDefs.DEFAULT_VOLUME;
             Handle = HandleOps.Create(device.Id, ChannelNumber, true);
         }
 
@@ -168,9 +180,6 @@ namespace Ephemera.MidiLib
             // Anonymous so give it some placeholder patch names.
             _instruments = new();
             Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _instruments.Add(i, $"INST_{i}"));
-            //_aliases = [];
-            //Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _aliases.Add(i, $"INST_{i}"));
-            _volume = VolumeDefs.DEFAULT_VOLUME;
             Handle = HandleOps.Create(device.Id, ChannelNumber, true);
         }
         #endregion
@@ -194,14 +203,12 @@ namespace Ephemera.MidiLib
                     var defs = MidiDefs.ReadDefs(ir, "instruments");
                     if (defs is not null) { _instruments = defs; }
 
-                    defs = MidiDefs.ReadDefs(ir, "controllers");
-                    if (defs is not null) { _controllers = defs; }
-
-                    defs = MidiDefs.ReadDefs(ir, "drums");
-                    if (defs is not null) { _drums = defs; }
-
-                    defs = MidiDefs.ReadDefs(ir, "drumkits");
-                    if (defs is not null) { _drumKits = defs; }
+                    //defs = MidiDefs.ReadDefs(ir, "controllers");
+                    //if (defs is not null) { _controllers = defs; }
+                    //defs = MidiDefs.ReadDefs(ir, "drums");
+                    //if (defs is not null) { _drums = defs; }
+                    //defs = MidiDefs.ReadDefs(ir, "drumkits");
+                    //if (defs is not null) { _drumKits = defs; }
                 }
                 catch (Exception ex)
                 {
@@ -249,7 +256,7 @@ namespace Ephemera.MidiLib
 
             if (IsDrums)
             {
-                name = _drumKits.GetName(id);
+                name = MidiDefs.DrumKits.GetName(id); // _drumKits.GetName(id);
             }
             else
             {
@@ -269,6 +276,15 @@ namespace Ephemera.MidiLib
         {
             evt.ChannelNumber = ChannelNumber;
             _device.Send(evt);
+        }
+
+        /// <summary>
+        /// Hard stop the channel.
+        /// </summary>
+        public void Kill()
+        {
+            int cc = 123; // => AllNotesOff
+            Send(new Controller(ChannelNumber, cc, 0));
         }
         #endregion
     }

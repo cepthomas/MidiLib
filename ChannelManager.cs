@@ -11,12 +11,12 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
-    public class MidiManager
+    public class ChannelManager
     {
         #region Singleton
-        public static MidiManager Instance { get { _instance ??= new MidiManager(); return _instance; } }
-        static MidiManager? _instance;
-        MidiManager() { }
+        public static ChannelManager Instance { get { _instance ??= new ChannelManager(); return _instance; } }
+        static ChannelManager? _instance;
+        ChannelManager() { }
         #endregion
 
         #region Fields
@@ -42,8 +42,8 @@ namespace Ephemera.MidiLib
         /// <summary>Handler for midi message arrived.</summary>
         public event EventHandler<BaseEvent>? MessageReceived;
 
-        ///// <summary>Handler for midi message sent.</summary>
-        //public event EventHandler<BaseEvent>? MessageSent;
+        /// <summary>Handler for midi message sent.</summary>
+        public event EventHandler<BaseEvent>? MessageSent;
         #endregion
 
         #region Channels
@@ -96,7 +96,6 @@ namespace Ephemera.MidiLib
             {
                 ChannelName = channelName,
                 Enable = true,
-                Volume = VolumeDefs.DEFAULT_VOLUME,
             };
 
             // Init instrument name stuff.
@@ -129,7 +128,6 @@ namespace Ephemera.MidiLib
             {
                 ChannelName = channelName,
                 Enable = true,
-                Volume = VolumeDefs.DEFAULT_VOLUME,
             };
 
             outdev.Send(new Patch(channelNumber, patch));
@@ -183,7 +181,7 @@ namespace Ephemera.MidiLib
                     {
                         _inputDevices.Add(dev);
                         dev.CaptureEnable = true;
-                        // Just pass inputs up.
+                        // Just pass inputs up and let client make sense of them.
                         dev.MessageReceived += (sender, e) => MessageReceived?.Invoke((MidiInputDevice)sender!, e);
                     }
                 }
@@ -233,7 +231,7 @@ namespace Ephemera.MidiLib
                     if (dev is not null)
                     {
                         _outputDevices.Add(dev);
-                        //dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
+                        dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
                     }
                 }
                 catch (Exception)
@@ -280,30 +278,6 @@ namespace Ephemera.MidiLib
         public OutputChannel? GetOutputChannel(string chname)
         {
             return _outputChannels.Find(ch => ch.ChannelName == chname);
-        }
-
-        /// <summary>
-        /// Stop all midi. Doesn't throw.
-        /// </summary>
-        /// <param name="channel">Specific channel or all if null.</param>
-        public void Kill(OutputChannel? channel = null)
-        {
-            int cc = 123; // => AllNotesOff
-
-            if (channel is null)
-            {
-                _outputDevices.ForEach((dev) =>
-                {
-                    for (int i = 1; i <= MidiDefs.MAX_CHANNEL; i++)
-                    {
-                        dev.Send(new Controller(i, cc, 0));
-                    }
-                });
-            }
-            else
-            {
-                channel.Send(new Controller(channel.ChannelNumber, cc, 0));
-            }
         }
         #endregion
     }

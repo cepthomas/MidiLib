@@ -11,26 +11,12 @@ using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
-// TODO1A TBD usage. Impl pan, fx. Add meter(s). Slider/meter log/db for volume use.
+// TODO1 Harmonize with simple version.
+// TODO1A TBD usage for audio.. Impl pan, fx. Add meter(s). Slider/meter log/db for volume use.
 
 
 namespace Ephemera.MidiLib
 {
-    //#region Types
-    ///// <summary>Channel playing.</summary>
-    //public enum ChannelState { Normal, Solo, Mute }
-
-    ///// <summary>Some flavors of control may need to be defeatured.</summary>
-    //[Flags]
-    //public enum DisplayOptions
-    //{
-    //    None = 0x00,        // none
-    //    SoloMute = 0x01,    // solo and mute buttons
-    //    Fx = 0x02,          // effects
-    //    All = 0x0F,         // all of above
-    //}
-    //#endregion
-
     [DesignTimeVisible(true)]
     public partial class ChannelControl : UserControl
     {
