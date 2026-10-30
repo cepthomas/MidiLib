@@ -15,7 +15,7 @@ namespace Ephemera.MidiLib
 {
     //----------------------------------------------------------------
     /// <summary>Select a midi value from a range. Handles special case of channel number.</summary>
-    public class MidiValueTypeEditor : UITypeEditor // TODOP rehome??
+    public class MidiValueTypeEditor : UITypeEditor // TODO-P rehome??
     {
         public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {
