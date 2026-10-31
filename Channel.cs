@@ -12,26 +12,38 @@ using Ephemera.NBagOfUis;
 namespace Ephemera.MidiLib
 {
     #region Types
-    /// <summary>Channel handle for use in scripts.</summary>
-    public static class HandleOps
+    /// <summary>Channel handle for use in scripts. TODO use a record?</summary>
+    public class ChannelHandle
     {
-        const int OUTPUT_FLAG = 0x0800;
+        static readonly int OUTPUT_FLAG = 0x0800;
 
-        public static int Create(int deviceId, int channelNumber, bool output)
+        readonly int _raw = 0;
+
+        public ChannelHandle(int deviceId, int channelNumber, bool output)
         {
-            return (deviceId << 4) | channelNumber | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
+            _raw = (deviceId << 4) | channelNumber | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
 
-        public static int DeviceId(int handle) { return (handle >> 4) & 0x0F; }
-        public static int ChannelNumber(int handle) { return handle & 0x0F; }
-        public static bool Output(int handle) { return (handle & OUTPUT_FLAG) > 0; }
-
-        public static string Format(int handle)
+        public ChannelHandle(int handle)
         {
-            return $"{(Output(handle) ? "out" : "in")} {ChannelNumber(handle)} on D{DeviceId(handle)}";
+            _raw = handle;
+        }
+
+        public int Raw { get { return _raw; } }
+
+        public int DeviceId { get { return (_raw >> 4) & 0x0F; } }
+
+        public int ChannelNumber { get { return _raw & 0x0F; } }
+
+        public bool Output { get { return (_raw & OUTPUT_FLAG) > 0; } }
+
+        public new string ToString()
+        {
+            return $"{(Output ? "out" : "in")} {ChannelNumber} on D{DeviceId}";
         }
     }
     #endregion
+
 
     //----------------------------------------------------------------
     /// <summary>Describes one midi input channel.</summary>
@@ -53,7 +65,7 @@ namespace Ephemera.MidiLib
         public bool Enable { get; set; } = true;
 
         /// <summary>Handle for use by scripts.</summary>
-        public int Handle { get; init; }
+        public ChannelHandle Handle { get; init; }
         #endregion
 
         /// <summary>
@@ -68,7 +80,7 @@ namespace Ephemera.MidiLib
             _device = device;
             ChannelNumber = channelNumber;
             ChannelName = $"Input {channelNumber}"; // default
-            Handle = HandleOps.Create(device.Id, ChannelNumber, false);
+            Handle = new(device.Id, ChannelNumber, false);
         }
     }
 
@@ -105,10 +117,10 @@ namespace Ephemera.MidiLib
         public int Patch { get; set; } = 0;
 
         /// <summary>Handle for use by scripts.</summary>
-        public int Handle { get; init; }
+        public ChannelHandle Handle { get; init; }
 
-        /// <summary>True if channel is active.</summary>
-        public bool Enable { get; set; } = true;
+        /// <summary>True if channel is not muted.</summary>
+        public bool EnableSound { get; set; } = true;
 
         /// <summary>Patch is a drumkit.</summary>
         public bool IsDrums { get; private set; } = false;
@@ -147,7 +159,7 @@ namespace Ephemera.MidiLib
             _device = device;
             ChannelNumber = channelNumber;
             ChannelName = $"Output {channelNumber}"; // default
-            Handle = HandleOps.Create(device.Id, ChannelNumber, true);
+            Handle = new(device.Id, ChannelNumber, true);
         }
 
         /// <summary>
@@ -166,7 +178,7 @@ namespace Ephemera.MidiLib
             // Anonymous so give it some placeholder patch names.
             _instruments = new();
             Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _instruments.Add(i, $"INST_{i}"));
-            Handle = HandleOps.Create(device.Id, ChannelNumber, true);
+            Handle = new(device.Id, ChannelNumber, true);
         }
         #endregion
 
@@ -260,8 +272,11 @@ namespace Ephemera.MidiLib
         /// <param name="evt"></param>
         public void Send(BaseEvent evt)
         {
-            evt.ChannelNumber = ChannelNumber;
-            _device.Send(evt);
+            if (EnableSound || evt is not NoteOn)
+            {
+                evt.ChannelNumber = ChannelNumber;
+                _device.Send(evt);
+            }
         }
 
         /// <summary>

@@ -25,9 +25,12 @@ namespace Ephemera.MidiLib.Test
         const string INDEV = "NebLoopback1";
         const string OUTDEV1 = "VirtualMIDISynth #1";
         const string OUTDEV2 = "Microsoft GS Wavetable Synth";
+
+        // Shorthand
+        readonly ChannelManager CM = ChannelManager.Instance;
         #endregion
 
-        //-------------------------------------------------------------------------------//
+        #region Settings
         [Serializable]
         public class TestSettings
         {
@@ -52,7 +55,6 @@ namespace Ephemera.MidiLib.Test
 
             /// <summary>Actual 1-based midi channel number. Required.</summary>
             public int ChannelNumber { get; init; } = 0;
-
         }
 
         [Serializable]
@@ -73,9 +75,12 @@ namespace Ephemera.MidiLib.Test
             // [TypeConverter(typeof(GenericConverter))]
             public int Patch { get; set; } = 0;
         }
+        #endregion
 
-
-        //-------------------------------------------------------------------------------//
+        #region Lifecycle
+        /// <summary>
+        /// Hello.
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
@@ -104,7 +109,7 @@ namespace Ephemera.MidiLib.Test
             timeBar.StateChange += (sender, e) => { Tell(INFO, $">>> TimeBar event. {timeBar.Current}"); };
 
             // Simple UI handlers.
-            btnKillMidi.Click += (_, __) => { _chanBindings.ForEach(ch => ch.Key.Kill()); };
+            btnKillMidi.Click += (_, __) => { CM.KillAll(); };
             chkLoop.CheckedChanged += (_, __) => { timeBar.DoLoop = chkLoop.Checked; };
             btnRewind.Click += (_, __) => { timeBar.Rewind(); };
 
@@ -115,7 +120,7 @@ namespace Ephemera.MidiLib.Test
             btnSend.Click += BtnSend_Click;
 
             // Handle midi io.
-            ChannelManager.Instance.MessageReceived += Mgr_MessageReceived;
+            CM.MessageReceived += Mgr_MessageReceived;
             //MidiManager.Instance.MessageSent += Mgr_MessageSent;
         }
 
@@ -129,24 +134,23 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Basic fixed channels.
-                var chan = ChannelManager.Instance.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord");
-                _chanBindings.Add(chan, ch_ctrl1);
-
-                chan = ChannelManager.Instance.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin");
-                _chanBindings.Add(chan, ch_ctrl2);
-
+                var chan = CM.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord");
                 // Init controls. TODO-P read from persistence.
                 ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
                 ch_ctrl1.DrawColor = Color.SpringGreen;
                 ch_ctrl1.SelectedColor = Color.Yellow;
                 ch_ctrl1.Volume = VolumeDefs.DEFAULT_VOLUME;
                 ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
+                CM.Bind(chan, ch_ctrl1);
 
+                chan = CM.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin");
                 ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
                 ch_ctrl2.DrawColor = Color.SpringGreen;
                 ch_ctrl2.SelectedColor = Color.Yellow;
                 ch_ctrl2.Volume = VolumeDefs.DEFAULT_VOLUME;
                 ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
+                CM.Bind(chan, ch_ctrl2);
+
             }
             catch (Exception ex)
             {
@@ -160,30 +164,28 @@ namespace Ephemera.MidiLib.Test
             base.OnLoad(e);
         }
 
-        //-------------------------------------------------------------------------------//
+        /// <summary>
+        /// Clean up.
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            _chanBindings.ForEach(ch => ch.Key.Kill());
-
-            // Clean out our current elements.
-            _chanBindings.ForEach(c =>
-            {
-                Controls.Remove(c.Value);
-                c.Value.Dispose();
-            });
-            _chanBindings.Clear();
-
-            ChannelManager.Instance.DestroyDevices();
-
             if (disposing && (components is not null))
             {
+                CM.Destroy(Controls);
                 components.Dispose();
             }
 
             base.Dispose(disposing);
         }
+        #endregion
 
-        //-------------------------------------------------------------------------------//
+        #region Test code
+        /// <summary>
+        /// Basic ops.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Go_Click(object? sender, EventArgs e)
         {
             Tell(INFO, $">>> Go start.");
@@ -193,13 +195,14 @@ namespace Ephemera.MidiLib.Test
                 // Create channels and controls dynamically. TODO-P init state/volume/pan from persistence.
                 List<OutputChannel> channels = [];
 
-                var chan = ChannelManager.Instance.OpenOutputChannel(OUTDEV1, 1, "dyn keys", "HonkyTonkPiano");
+                var chan = CM.OpenOutputChannel(OUTDEV1, 1, "dyn keys", "HonkyTonkPiano");
                 channels.Add(chan);
-                chan = ChannelManager.Instance.OpenOutputChannel(OUTDEV1, 10, "dyn drums", "Electronic");
+                chan = CM.OpenOutputChannel(OUTDEV1, 10, "dyn drums", "Electronic");
                 channels.Add(chan);
-                //var chan_out3 = ChannelManager.Instance.OpenOutputChannel(OUTDEV1, 4, "dyn bass", "ElectricBassPick");
+                chan = CM.OpenOutputChannel(OUTDEV1, 4, "dyn bass", "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+                channels.Add(chan);
 
-                var inchan = ChannelManager.Instance.OpenInputChannel(INDEV, 1, "dyn my input");
+                var inchan = CM.OpenInputChannel(INDEV, 1, "dyn my input"); // TODO1 test this
 
                 // Ceate a control for each channel and bind object.
                 int x = ch_ctrl2.Right + 10;
@@ -223,7 +226,7 @@ namespace Ephemera.MidiLib.Test
                     ctrl.ChannelChange += ChannelControl_ChannelChange;
                     Controls.Add(ctrl);
 
-                    _chanBindings.Add(chan, ctrl);
+                    CM.Bind(chan, ctrl);
 
                     x += ctrl.Width + 10; // Width is not valid until after previous statement.
                 });
@@ -236,7 +239,11 @@ namespace Ephemera.MidiLib.Test
             Tell(INFO, $">>> Go done.");
         }
 
-        //------------------------- Send some stuff ----------------------------------------//
+        /// <summary>
+        /// Send some test stuff
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void BtnSend_Click(object? sender, EventArgs e)
         {
             // Run timer.
@@ -246,7 +253,7 @@ namespace Ephemera.MidiLib.Test
             void Timer1_Tick(object? sender, EventArgs e)
             {
                 int noteNum = rand.Next(40, 60);
-                var chan = GetChannel(ch_ctrl1);
+                var chan = CM.GetChannel(ch_ctrl1);
                 SendNote(chan!, noteNum, 0.5);
 
                 if (--count <= 0)
@@ -259,7 +266,9 @@ namespace Ephemera.MidiLib.Test
             timer1.Start();
         }
 
-        //----------------- Test time bar -----------------------------------------------//
+        /// <summary>
+        /// Test time bar
+        /// </summary>
         void TestTimeBar()
         {
             // Sections. 256 ticks = 32 beats = 8 bars
@@ -291,7 +300,9 @@ namespace Ephemera.MidiLib.Test
             timer1.Start();
         }
 
-        //-------------------- Test property editing ------------------------------------//
+        /// <summary>
+        /// Test property editing
+        /// </summary>
         void TestPropertyEditor() // TODO-P
         {
             // Init settings.
@@ -319,75 +330,39 @@ namespace Ephemera.MidiLib.Test
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
 
-        //-------------------------------------------------------------------------------//
+        /// <summary>
+        /// Logging.
+        /// </summary>
+        /// <param name="cat"></param>
+        /// <param name="s"></param>
         void Tell(string cat, string s, [CallerFilePath] string file = "", [CallerLineNumber] int line = -1)
         {
             var fn = Path.GetFileName(file);
             tvInfo.Append($"{cat} {fn}({line}) {s}");
         }
+        #endregion
 
-        ///////////////////////////////////////////////////////////////////////////////////
-        ///////////// Stuff host needs to implement ///////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////////
-
-        /// <summary>All the channels and associated controls.</summary>
-        readonly Dictionary<OutputChannel, ChannelControl> _chanBindings = [];
-
-        //-------------------------------------------------------------------------------//
-        /// <summary>Helper.</summary>
-        OutputChannel? GetChannel(ChannelControl ctrl)
-        {
-            foreach (var binding in _chanBindings) { if (binding.Value == ctrl) return binding.Key; }
-            return null;
-        }
-
-        //-------------------------------------------------------------------------------//
-        /// <summary>Helper.</summary>
-        ChannelControl? GetControl(OutputChannel chan)
-        {
-            foreach (var binding in _chanBindings) { if (binding.Key == chan) return binding.Value; }
-            return null;
-        }
-
-        //-------------------------------------------------------------------------------//
-        /// <summary>User clicked something.</summary>
+        #region Stuff host needs to implement
+        /// <summary>
+        /// User clicked something.
+        /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void ChannelControl_ChannelChange(object? sender, ChannelChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
-            var chan = GetChannel(cc!);
+            var chan = CM.GetChannel(cc!);
             if (chan is null) return; // error?
 
-            if (e.State)
-            {
-                // Update all channels.
-                bool anySolo = _chanBindings.Where(c => c.Value.State == ChannelState.Solo).Any();
+            if (e.State) { CM.UpdateState(); }
 
-                foreach (var b in _chanBindings)
-                {
-                    bool enable = anySolo ?
-                        b.Value.State == ChannelState.Solo :
-                        b.Value.State != ChannelState.Mute;
+            if (e.Info) {  } // TODO do anything?
 
-                    chan.Enable = enable;
-                    if (!enable)
-                    {
-                        // Kill just in case.
-                        chan.Kill();
-                    }
-                }
-            }
-
-            if (e.Info)
-            {
-                // TODO do anything?
-            }
+            if (e.Volume) {  } // TODO do anything?
         }
 
-        //-------------------------------------------------------------------------------//
         /// <summary>
-        /// 
+        /// Send midi note.
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="note"></param>
@@ -401,20 +376,20 @@ namespace Ephemera.MidiLib.Test
             {
                 chan.Send(new NoteOff(chan.ChannelNumber, note));
             }
-            else if (chan.Enable)
+            else
             {
-                var ctrl = GetControl(chan);
+                var ctrl = CM.GetControl(chan);
                 if (ctrl is null) return; // error?
                 var vol = volume * sldMasterVolume.Value * ctrl.Volume;
                 var vel = (int)MathUtils.Constrain(vol * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
-                chan.Send(new NoteOn(chan.ChannelNumber, note, vel));
-                //if (_settings.MonitorSend) { _loggerMidi.Trace($">>> {e}"); }
+                var se = new NoteOn(chan.ChannelNumber, note, vel);
+                chan.Send(se);
+                Tell($">>>", se.ToString());
             }
         }
 
-        //-------------------------------------------------------------------------------//
         /// <summary>
-        /// 
+        /// Send midi controller.
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="controller"></param>
@@ -428,10 +403,9 @@ namespace Ephemera.MidiLib.Test
             // ?? if (channel.Enable)
             var se = new Controller(channel.ChannelNumber, controller, value);
             channel.Send(se);
-            //if (_settings.MonitorSend) { _loggerMidi.Trace($">>> {e}"); }
+            Tell($">>>", se.ToString());
         }
 
-        //-------------------------------------------------------------------------------//
         /// <summary>
         /// Something arrived from a midi device.
         /// </summary>
@@ -440,12 +414,14 @@ namespace Ephemera.MidiLib.Test
         void Mgr_MessageReceived(object? sender, BaseEvent e)
         {
             // Get the channel and pass along msg.
-            var chan = _chanBindings.Where(ch => ch.Key.ChannelNumber == e.ChannelNumber);
+            //var chan = _chanBindings.Where(ch => ch.Key.ChannelNumber == e.ChannelNumber);
+            var chan = CM.GetChannel(e.ChannelNumber);
             if (chan is not null)
             {
                 Tell(INFO, $"Mgr Received [{e}] on [{chan}]");
             }
             // else error?
         }
+        #endregion
     }
 }

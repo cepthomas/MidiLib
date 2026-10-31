@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Security;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
+using static System.Windows.Forms.Control;
 
 
 namespace Ephemera.MidiLib
@@ -26,8 +27,8 @@ namespace Ephemera.MidiLib
         /// <summary>All midi devices to use for receive. Index is the id.</summary>
         readonly List<IInputDevice> _inputDevices = [];
 
-        /// <summary>All the output channels.</summary>
-        readonly List<OutputChannel> _outputChannels = [];
+        /// <summary>All the output channels with associated controls.</summary>
+        List<(OutputChannel chan, ChannelControl? ctrl)> _outputChannels = [];
 
         /// <summary>All the input channels.</summary>
         readonly List<InputChannel> _inputChannels = [];
@@ -35,7 +36,7 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <summary>Readonly collection access.</summary>
-        public IEnumerable<OutputChannel> OutputChannels { get { return _outputChannels.AsEnumerable(); } }
+        public IEnumerable<OutputChannel> OutputChannels { get { return _outputChannels.Select(ch => ch.chan); } }
         #endregion
 
         #region Events
@@ -44,6 +45,9 @@ namespace Ephemera.MidiLib
 
         /// <summary>Handler for midi message sent.</summary>
         public event EventHandler<BaseEvent>? MessageSent;
+        #endregion
+
+        #region Lifecycle
         #endregion
 
         #region Channels
@@ -95,13 +99,12 @@ namespace Ephemera.MidiLib
             OutputChannel ch = new(outdev, channelNumber)
             {
                 ChannelName = channelName,
-                Enable = true,
             };
 
             // Init instrument name stuff.
             ch.InitInstruments(patchName, aliasFile);
 
-            _outputChannels.Add(ch);
+            _outputChannels.Add((ch, null));
 
             return ch;
         }
@@ -127,11 +130,10 @@ namespace Ephemera.MidiLib
             OutputChannel ch = new(outdev, channelNumber, patch)
             {
                 ChannelName = channelName,
-                Enable = true,
             };
 
             outdev.Send(new Patch(channelNumber, patch));
-            _outputChannels.Add(ch);
+            _outputChannels.Add((ch, null));
 
             return ch;
         }
@@ -259,25 +261,149 @@ namespace Ephemera.MidiLib
         }
         #endregion
 
-        #region Misc
+        #region User functions
         /// <summary>
-        /// Helper.
+        /// Bind a control to a channel.
         /// </summary>
-        /// <param name="chnd">Channel handle</param>
-        /// <returns>The channel or null if invalid handle.</returns>
-        public OutputChannel? GetOutputChannel(int chnd)
+        /// <param name="chan"></param>
+        /// <param name="ctrl"></param>
+        public void Bind(OutputChannel chan, ChannelControl ctrl)
         {
-            return _outputChannels.Find(ch => ch.Handle == chnd);
+            for (int i = 0; i < _outputChannels.Count; i++)
+            {
+                if (_outputChannels[i].chan == chan)
+                {
+                    if (_outputChannels[i].ctrl is not null)
+                    {
+                        throw new MidiLibException($"Channel [{chan}] already bound to [{ctrl}]");
+                    }
+                    _outputChannels[i] = (chan, ctrl);
+                    return;
+                }
+                throw new MidiLibException($"Unknown channel [{chan}]");
+            }
         }
 
         /// <summary>
-        /// Helper.
+        /// Clean up everything.
+        /// </summary>
+        /// <param name="controls"></param>
+        public void Destroy(ControlCollection controls)
+        {
+            KillAll();
+
+            // Clean out our current elements.
+            _outputChannels.ForEach(b =>
+            {
+                controls.Remove(b.ctrl);
+                b.ctrl?.Dispose();
+            });
+            _outputChannels.Clear();
+
+            DestroyDevices();
+        }
+
+        /// <summary>
+        /// Handles solo/mute.
+        /// </summary>
+        public void UpdateState()
+        {
+            // Update all channels. TODO1 needs more work!  control.Selected  ...
+            bool anySolo = _outputChannels.Where(c => c.ctrl is not null && c.ctrl.State == ChannelState.Solo).Any();
+
+            foreach (var b in _outputChannels)
+            {
+                if (b.ctrl is null) continue; // never
+
+                switch ((b.ctrl.State, anySolo))
+                {
+                    case (ChannelState.Solo, true):
+                        b.chan.EnableSound = true;
+                        break;
+
+                    case (ChannelState.Mute, true):
+                    case (ChannelState.Normal, true):
+                        b.chan.EnableSound = false;
+                        b.chan.Kill(); // just in case
+                        break;
+
+                    case (ChannelState.Solo, false): // never
+                        b.chan.EnableSound = true;
+                        break;
+
+                    case (ChannelState.Mute, false):
+                        b.chan.EnableSound = false;
+                        b.chan.Kill(); // just in case
+                        break;
+
+                    case (ChannelState.Normal, false):
+                        b.chan.EnableSound = true;
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Die die die.
+        /// </summary>
+        public void KillAll()
+        {
+            _outputChannels.ForEach(b => b.chan.Kill());
+        }
+
+        /// <summary>
+        /// Get channel object from control object.
+        /// </summary>
+        /// <param name="ctrl"></param>
+        /// <returns>The channel or null if invalid control.</returns>
+        public OutputChannel? GetChannel(ChannelControl ctrl)
+        {
+            foreach (var b in _outputChannels) { if (b.ctrl == ctrl) return b.chan; }
+            return null;
+        }
+
+        /// <summary>
+        /// Get channel object from channel number.
+        /// </summary>
+        /// <param name="channelNum"></param>
+        /// <returns>The channel or null if invalid number.</returns>
+        public OutputChannel? GetChannel(int channelNum)
+        {
+            foreach (var b in _outputChannels) { if (b.chan.ChannelNumber == channelNum) return b.chan; }
+            return null;
+        }
+
+        /// <summary>
+        /// Get channel control object from channel object.
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <returns>The channel or null if invalid.</returns>
+        public ChannelControl? GetControl(OutputChannel chan)
+        {
+            foreach (var b in _outputChannels) { if (b.chan == chan) return b.ctrl; }
+            return null;
+        }
+
+        /// <summary>
+        /// Get channel object from channel handle.
+        /// </summary>
+        /// <param name="chnd">Channel handle</param>
+        /// <returns>The channel or null if invalid handle.</returns>
+        public OutputChannel? GetChannel(ChannelHandle chnd)
+        {
+            foreach (var b in _outputChannels) { if (b.chan.Handle == chnd) return b.chan; }
+            return null;
+        }
+
+        /// <summary>
+        /// Get channel object from channel name.
         /// </summary>
         /// <param name="chname"></param>
         /// <returns>The channel or null if invalid handle.</returns>
-        public OutputChannel? GetOutputChannel(string chname)
+        public OutputChannel? GetChannel(string chname)
         {
-            return _outputChannels.Find(ch => ch.ChannelName == chname);
+            foreach (var b in _outputChannels) { if (b.chan.ChannelName == chname) return b.chan; }
+            return null;
         }
         #endregion
     }

@@ -13,7 +13,7 @@ using Ephemera.NBagOfUis;
 
 
 namespace Ephemera.MidiLib
-{
+{   
     #region Types
     /// <summary>Channel playing.</summary>
     public enum ChannelState { Normal, Solo, Mute }
@@ -38,6 +38,8 @@ namespace Ephemera.MidiLib
         #region Fields
         ChannelState _state = ChannelState.Normal;
         Color _selectedColor = Color.Red;
+
+        // TODO1 whole control selected/colored?
         bool _selected = false;
 
         readonly Container components = new();

@@ -11,8 +11,8 @@ using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
-// TODO1 Harmonize with simple version.
-// TODO1A TBD usage for audio.. Impl pan, fx, meter(s). Slider/meter log/db for volume use.
+// TODO-A Harmonize with simple version.
+// TODO-A TBD usage for audio.. Impl pan, fx, meter(s). Slider/meter log/db for volume use.
 
 
 namespace Ephemera.MidiLib
