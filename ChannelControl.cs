@@ -18,6 +18,13 @@ namespace Ephemera.MidiLib
     /// <summary>Channel playing.</summary>
     public enum ChannelState { Normal, Solo, Mute }
 
+    /// <summary>Some flavors of control may need to be defeatured.</summary>
+    [Flags]
+    public enum DisplayOptions { None = 0x00, SoloMute = 0x01, Fx = 0x02, All = 0x0F, }
+
+    /// <summary>Selector operation mode.</summary>
+    public enum SelectMode { Off, Single, Multi, }
+
     /// <summary>Notify host of UI changes.</summary>
     public class ChannelChangeEventArgs : EventArgs
     {
@@ -37,7 +44,10 @@ namespace Ephemera.MidiLib
     {
         #region Fields
         ChannelState _state = ChannelState.Normal;
-        Color _selectedColor = Color.Red;
+        //Color _selectedColor = Color.LightPink;
+
+        Color _smColor = Color.Blue;
+
 
         // TODO1 whole control selected/colored?
         bool _selected = false;
@@ -64,7 +74,6 @@ namespace Ephemera.MidiLib
             }
         }
 
-
         /// <summary>Drawing the active elements of a control.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -76,10 +85,17 @@ namespace Ephemera.MidiLib
         /// <summary>Drawing the control when selected.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Color SelectedColor
-        {
-            set { _selectedColor = value; }
-        }
+        public Color SelectedColor { get; set; } = Color.LightPink;
+
+        /// <summary>Display options.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public DisplayOptions Options { get; set; } = DisplayOptions.All;
+
+        /// <summary>What the mouse click does.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public SelectMode Mode { get; set; } = SelectMode.None;
 
         /// <summary>For muting/soloing.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -87,7 +103,7 @@ namespace Ephemera.MidiLib
         public ChannelState State
         {
             get { return _state; }
-            set { _state = value; } //TODO1 update control
+            set { _state = value; }
         }
 
         /// <summary>Current volume.</summary>
@@ -146,18 +162,21 @@ namespace Ephemera.MidiLib
             sldVolume.ValueChanged += SldVolume_ValueChanged;
             Controls.Add(sldVolume);
 
-            // Solo/mute checkboxes.
-            lblSolo.Location = new(sldVolume.Right + PAD, sldVolume.Top);
-            lblSolo.Size = new(SM_SZ, SM_SZ);
-            lblSolo.Text = "S";
-            lblSolo.Click += SoloMute_Click;
-            Controls.Add(lblSolo);
+            if (Options.HasFlag(DisplayOptions.Fx))
+            {
+                // Solo/mute checkboxes.
+                lblSolo.Location = new(sldVolume.Right + PAD, sldVolume.Top);
+                lblSolo.Size = new(SM_SZ, SM_SZ);
+                lblSolo.Text = "S";
+                lblSolo.Click += SoloMute_Click;
+                Controls.Add(lblSolo);
 
-            lblMute.Location = new(sldVolume.Right + PAD, sldVolume.Top + SM_SZ + 2);
-            lblMute.Size = new(SM_SZ, SM_SZ);
-            lblMute.Text = "M";
-            lblMute.Click += SoloMute_Click;
-            Controls.Add(lblMute);
+                lblMute.Location = new(sldVolume.Right + PAD, sldVolume.Top + SM_SZ + 2);
+                lblMute.Size = new(SM_SZ, SM_SZ);
+                lblMute.Text = "M";
+                lblMute.Click += SoloMute_Click;
+                Controls.Add(lblMute);
+            }
 
             // Info textbox.
             lblInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
@@ -213,16 +232,66 @@ namespace Ephemera.MidiLib
             // Figure out state.
             if (sender == lblSolo)
             {
-                _state = lblSolo.BackColor == _selectedColor ? ChannelState.Normal : ChannelState.Solo;
+                _state = lblSolo.BackColor == _smColor ? ChannelState.Normal : ChannelState.Solo;
             }
             else if (sender == lblMute)
             {
-                _state = lblMute.BackColor == _selectedColor ? ChannelState.Normal : ChannelState.Mute;
+                _state = lblMute.BackColor == _smColor ? ChannelState.Normal : ChannelState.Mute;
             }
 
             // Notify client.
             ChannelChange?.Invoke(this, new() { State = true });
         }
+
+        /// <summary>
+        /// User item selection(s). Could be select or click.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Itemd_DoMouseClick(object? sender, MouseEventArgs e)
+        {
+            ArgumentNullException.ThrowIfNull(sender);
+
+            var itemd = (ItemDisplay)sender;
+
+            switch (e.Button, _config.Mode, itemd.Selected)
+            {
+                case (MouseButtons.Left, SelectMode.Click, _):
+                    ItemClick?.Invoke(this, new(itemd.Item));
+                    break;
+
+                case (MouseButtons.Left, SelectMode.SingleSelect, true):
+                    // Toggle select.
+                    itemd.Selected = false;
+                    ItemSelection?.Invoke(this, new(GetSelectedItems()));
+                    break;
+
+                case (MouseButtons.Left, SelectMode.SingleSelect, false):
+                    // Deselect others first.
+                    _itemds.ForEach(itemd => itemd.Selected = false);
+                    // Select this one.
+                    itemd.Selected = true;
+                    ItemSelection?.Invoke(this, new(GetSelectedItems()));
+                    break;
+
+                case (MouseButtons.Left, SelectMode.MultiSelect, true):
+                    itemd.Selected = false;
+                    ItemSelection?.Invoke(this, new(GetSelectedItems()));
+                    break;
+
+                case (MouseButtons.Left, SelectMode.MultiSelect, false):
+                    itemd.Selected = true;
+                    ItemSelection?.Invoke(this, new(GetSelectedItems()));
+                    break;
+
+                case (_, _, _):
+                    // ignored
+                    break;
+            }
+
+            Invalidate(true); // refresh everything
+        }
+
         #endregion
 
         #region Misc

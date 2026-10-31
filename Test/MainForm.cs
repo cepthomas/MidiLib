@@ -201,6 +201,8 @@ namespace Ephemera.MidiLib.Test
                 Tell(ERROR, ex.Message);
             }
 
+            CM.UpdateState();
+
             Tell(INFO, $">>> OnLoad done.");
 
             Tell(INFO, string.Join(Environment.NewLine, MidiDefs.GenUserDeviceInfo()));
@@ -281,6 +283,8 @@ namespace Ephemera.MidiLib.Test
             {
                 Tell(ERROR, ex.ToString());
             }
+
+            CM.UpdateState();
 
             Tell(INFO, $">>> Go done.");
         }
