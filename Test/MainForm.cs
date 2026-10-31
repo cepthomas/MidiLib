@@ -11,6 +11,7 @@ using System.Drawing.Design;
 using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
+using System.Text.Json.Serialization;
 
 
 namespace Ephemera.MidiLib.Test
@@ -28,6 +29,8 @@ namespace Ephemera.MidiLib.Test
 
         // Shorthand
         readonly ChannelManager CM = ChannelManager.Instance;
+
+        TestSettings _settings;
         #endregion
 
         #region Settings
@@ -35,45 +38,62 @@ namespace Ephemera.MidiLib.Test
         public class TestSettings
         {
             [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            public List<string> Devices { get; set; } = [];
+            public List<string> DeviceNames { get; set; } = [];
 
             [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            public List<InputChannelSpec> InputChannels { get; set; } = [];
+            public List<InputChannelStore> InputChannels { get; set; } = [];
 
             [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            public List<OutputChannelSpec> OutputChannels { get; set; } = [];
+            public List<OutputChannelStore> OutputChannels { get; set; } = [];
 
             [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
             public int SomeOtherMidi { get; set; } = 0;
+
+            // Master volume.
+            public double Volume { get; init; } = 0.5;
+
+            [JsonConverter(typeof(JsonColorConverter))]
+            public Color DrawColor { get; set; } = Color.DodgerBlue;
+
+            [JsonConverter(typeof(JsonColorConverter))]
+            public Color SelectedColor { get; set; } = Color.Moccasin;
+
         }
 
         [Serializable]
-        public class InputChannelSpec
+        public class InputChannelStore
         {
             /// <summary>Channel name. Optional.</summary>
             public string ChannelName { get; set; } = "???";
 
             /// <summary>Actual 1-based midi channel number. Required.</summary>
             public int ChannelNumber { get; init; } = 0;
+
+            /// <summary>True if channel is active.</summary>
+            public bool Enable { get; set; } = true;
         }
 
         [Serializable]
-        public class OutputChannelSpec
+        public class OutputChannelStore
         {
-            /// <summary>Channel name. Optional.</summary>
             public string ChannelName { get; set; } = "???";
 
-            /// <summary>Actual 1-based midi channel number.</summary>
             public int ChannelNumber { get; init; } = 0;
 
-            /// <summary>Instrument names. Optional.</summary>
             [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
             public string AliasFile { get; set; } = "";
 
-            /// <summary>Instrument/patch.</summary>
             [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
             // [TypeConverter(typeof(GenericConverter))]
-            public int Patch { get; set; } = 0;
+            public string DeviceName { get; set; } = "";
+
+            [JsonConverter(typeof(JsonStringEnumConverter))]
+            public ChannelState State { get; set; } = ChannelState.Normal;
+
+            public double Volume { get; init; } = 0.5;
+
+            public double Pan { get; init; } = 0.0;
+
         }
         #endregion
 
@@ -86,6 +106,18 @@ namespace Ephemera.MidiLib.Test
             InitializeComponent();
             Text = "MidiLib Test";
 
+            // Init settings.
+            _settings = new()
+            {
+                DeviceNames = ["NebLoopback1", "VirtualMIDISynth #1", "Microsoft GS Wavetable Synth"],
+                InputChannels = [],
+                OutputChannels = [],
+                SomeOtherMidi = 88,
+                Volume = 0.7,
+                DrawColor = Color.SpringGreen,
+                SelectedColor = Color.Magenta
+            };
+
             // The text output.
             tvInfo.Font = Font;
             tvInfo.WordWrap = true;
@@ -96,15 +128,15 @@ namespace Ephemera.MidiLib.Test
             ];
 
             // Master volume.
-            sldMasterVolume.DrawColor = Color.SpringGreen;
+            sldMasterVolume.DrawColor = _settings.DrawColor;
             sldMasterVolume.Minimum = 0.0;
             sldMasterVolume.Maximum = VolumeDefs.MAX_VOLUME;
             sldMasterVolume.Resolution = VolumeDefs.MAX_VOLUME / 50;
-            sldMasterVolume.Value = VolumeDefs.DEFAULT_VOLUME;
+            sldMasterVolume.Value = _settings.Volume;
             sldMasterVolume.Label = "master volume";
 
-            timeBar.DrawColor = Color.Green;
-            timeBar.SelectedColor = Color.LightYellow;
+            timeBar.DrawColor = _settings.DrawColor;
+            timeBar.SelectedColor = _settings.SelectedColor;
             timeBar.Snap = SnapType.Beat;
             timeBar.StateChange += (sender, e) => { Tell(INFO, $">>> TimeBar event. {timeBar.Current}"); };
 
@@ -135,22 +167,34 @@ namespace Ephemera.MidiLib.Test
             {
                 // Basic fixed channels.
                 var chan = CM.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord");
-                // Init controls. TODO-P read from persistence.
+                // Init controls.
                 ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
-                ch_ctrl1.DrawColor = Color.SpringGreen;
-                ch_ctrl1.SelectedColor = Color.Yellow;
-                ch_ctrl1.Volume = VolumeDefs.DEFAULT_VOLUME;
+                ch_ctrl1.DrawColor = _settings.DrawColor;
+                ch_ctrl1.SelectedColor = _settings.SelectedColor;
+
+                ch_ctrl1.Volume = _settings.OutputChannels[0].Volume;
+                ch_ctrl1.State = _settings.OutputChannels[0].State;
+                // etc like these...
+                //public string ChannelName { get; set; } = "???";
+                //public int ChannelNumber { get; init; } = 0;
+                //public string AliasFile { get; set; } = "";
+                //public string DeviceName { get; set; } = "";
+                //public double Pan { get; init; } = 0.0;
+
                 ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
                 CM.Bind(chan, ch_ctrl1);
 
                 chan = CM.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin");
                 ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
-                ch_ctrl2.DrawColor = Color.SpringGreen;
-                ch_ctrl2.SelectedColor = Color.Yellow;
-                ch_ctrl2.Volume = VolumeDefs.DEFAULT_VOLUME;
+                ch_ctrl2.DrawColor = _settings.DrawColor;
+                ch_ctrl2.SelectedColor = _settings.SelectedColor;
+
+                ch_ctrl2.Volume = _settings.OutputChannels[0].Volume;
+                ch_ctrl2.State = _settings.OutputChannels[0].State;
+                // etc like above...
+
                 ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
                 CM.Bind(chan, ch_ctrl2);
-
             }
             catch (Exception ex)
             {
@@ -170,6 +214,8 @@ namespace Ephemera.MidiLib.Test
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
+            // TODO refresh and save settings.
+
             if (disposing && (components is not null))
             {
                 CM.Destroy(Controls);
@@ -192,7 +238,7 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
-                // Create channels and controls dynamically. TODO-P init state/volume/pan from persistence.
+                // Create channels and controls dynamically.
                 List<OutputChannel> channels = [];
 
                 var chan = CM.OpenOutputChannel(OUTDEV1, 1, "dyn keys", "HonkyTonkPiano");
@@ -219,8 +265,8 @@ namespace Ephemera.MidiLib.Test
                         Info = (sui, stt),
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,
-                        DrawColor = Color.SpringGreen,
-                        SelectedColor = Color.Yellow,
+                        DrawColor = _settings.DrawColor,
+                        SelectedColor = _settings.SelectedColor,
                         Volume = VolumeDefs.DEFAULT_VOLUME,
                     };
                     ctrl.ChannelChange += ChannelControl_ChannelChange;
@@ -303,17 +349,8 @@ namespace Ephemera.MidiLib.Test
         /// <summary>
         /// Test property editing
         /// </summary>
-        void TestPropertyEditor() // TODO-P
+        void TestPropertyEditor() // TODO
         {
-            // Init settings.
-            TestSettings td = new()
-            {
-                Devices = ["NebLoopback1", "VirtualMIDISynth #1", "Microsoft GS Wavetable Synth"],
-                InputChannels = [],
-                OutputChannels = [],
-                SomeOtherMidi = 88
-            };
-
             // Set up options.
             //var insts = MidiDefs.GetDefaultInstrumentDefs();
             //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);

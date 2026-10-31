@@ -11,40 +11,6 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
-    #region Types
-    /// <summary>Channel handle for use in scripts. TODO use a record?</summary>
-    public class ChannelHandle
-    {
-        static readonly int OUTPUT_FLAG = 0x0800;
-
-        readonly int _raw = 0;
-
-        public ChannelHandle(int deviceId, int channelNumber, bool output)
-        {
-            _raw = (deviceId << 4) | channelNumber | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
-        }
-
-        public ChannelHandle(int handle)
-        {
-            _raw = handle;
-        }
-
-        public int Raw { get { return _raw; } }
-
-        public int DeviceId { get { return (_raw >> 4) & 0x0F; } }
-
-        public int ChannelNumber { get { return _raw & 0x0F; } }
-
-        public bool Output { get { return (_raw & OUTPUT_FLAG) > 0; } }
-
-        public new string ToString()
-        {
-            return $"{(Output ? "out" : "in")} {ChannelNumber} on D{DeviceId}";
-        }
-    }
-    #endregion
-
-
     //----------------------------------------------------------------
     /// <summary>Describes one midi input channel.</summary>
     public class InputChannel

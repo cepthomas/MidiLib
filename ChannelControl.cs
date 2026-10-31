@@ -87,6 +87,7 @@ namespace Ephemera.MidiLib
         public ChannelState State
         {
             get { return _state; }
+            set { _state = value; } //TODO1 update control
         }
 
         /// <summary>Current volume.</summary>
