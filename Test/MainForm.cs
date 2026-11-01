@@ -14,6 +14,16 @@ using Ephemera.NBagOfUis;
 using System.Text.Json.Serialization;
 
 
+
+// namespace Ephemera.NBagOfUis
+//     public class Slider : UserControl // TODO1 log/db for volume use.
+//     public class Meter : UserControl
+//         public enum MeterType { Linear, Log, ContinuousLine, ContinuousDots }  // TODO1 Add damped/vu, peak/hold
+
+// >>> C:\Dev\Third\NAudio3\src\NAudio.WinForms\Gui\VolumeMeter.cs
+// >>> C:\Dev\Third\NAudio3\src\NAudio.WinForms\Gui\VolumeSlider.cs
+
+
 namespace Ephemera.MidiLib.Test
 {
     public partial class MainForm : Form
@@ -23,78 +33,14 @@ namespace Ephemera.MidiLib.Test
         const string WARN = "WRN";
         const string INFO = "INF";
 
-        const string INDEV = "NebLoopback1";
-        const string OUTDEV1 = "VirtualMIDISynth #1";
-        const string OUTDEV2 = "Microsoft GS Wavetable Synth";
+        //const string INDEV = "NebLoopback1";
+        //const string OUTDEV1 = "VirtualMIDISynth #1";
+        //const string OUTDEV2 = "Microsoft GS Wavetable Synth";
 
-        // Shorthand
+        // Some shorthand
         readonly ChannelManager CM = ChannelManager.Instance;
 
         TestSettings _settings;
-        #endregion
-
-        #region Settings
-        [Serializable]
-        public class TestSettings
-        {
-            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            public List<string> DeviceNames { get; set; } = [];
-
-            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            public List<InputChannelStore> InputChannels { get; set; } = [];
-
-            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            public List<OutputChannelStore> OutputChannels { get; set; } = [];
-
-            [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-            public int SomeOtherMidi { get; set; } = 0;
-
-            // Master volume.
-            public double Volume { get; init; } = 0.5;
-
-            [JsonConverter(typeof(JsonColorConverter))]
-            public Color DrawColor { get; set; } = Color.DodgerBlue;
-
-            [JsonConverter(typeof(JsonColorConverter))]
-            public Color SelectedColor { get; set; } = Color.Moccasin;
-
-        }
-
-        [Serializable]
-        public class InputChannelStore
-        {
-            /// <summary>Channel name. Optional.</summary>
-            public string ChannelName { get; set; } = "???";
-
-            /// <summary>Actual 1-based midi channel number. Required.</summary>
-            public int ChannelNumber { get; init; } = 0;
-
-            /// <summary>True if channel is active.</summary>
-            public bool Enable { get; set; } = true;
-        }
-
-        [Serializable]
-        public class OutputChannelStore
-        {
-            public string ChannelName { get; set; } = "???";
-
-            public int ChannelNumber { get; init; } = 0;
-
-            [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
-            public string AliasFile { get; set; } = "";
-
-            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            // [TypeConverter(typeof(GenericConverter))]
-            public string DeviceName { get; set; } = "";
-
-            [JsonConverter(typeof(JsonStringEnumConverter))]
-            public ChannelState State { get; set; } = ChannelState.Normal;
-
-            public double Volume { get; init; } = 0.5;
-
-            public double Pan { get; init; } = 0.0;
-
-        }
         #endregion
 
         #region Lifecycle
@@ -104,19 +50,11 @@ namespace Ephemera.MidiLib.Test
         public MainForm()
         {
             InitializeComponent();
-            Text = "MidiLib Test";
 
-            // Init settings.
-            _settings = new()
-            {
-                DeviceNames = ["NebLoopback1", "VirtualMIDISynth #1", "Microsoft GS Wavetable Synth"],
-                InputChannels = [],
-                OutputChannels = [],
-                SomeOtherMidi = 88,
-                Volume = 0.7,
-                DrawColor = Color.SpringGreen,
-                SelectedColor = Color.Magenta
-            };
+            Text = "MidiLib ¯\\_(^^)_/¯";
+
+            // Init fake settings.
+            _settings = TestSettings.GenFake();
 
             // The text output.
             tvInfo.Font = Font;
@@ -132,7 +70,7 @@ namespace Ephemera.MidiLib.Test
             sldMasterVolume.Minimum = 0.0;
             sldMasterVolume.Maximum = VolumeDefs.MAX_VOLUME;
             sldMasterVolume.Resolution = VolumeDefs.MAX_VOLUME / 50;
-            sldMasterVolume.Value = _settings.Volume;
+            sldMasterVolume.Value = _settings.MasterVolume;
             sldMasterVolume.Label = "master volume";
 
             timeBar.DrawColor = _settings.DrawColor;
@@ -165,36 +103,42 @@ namespace Ephemera.MidiLib.Test
             Tell(INFO, $">>> OnLoad start.");
             try
             {
-                // Basic fixed channels.
-                var chan = CM.OpenOutputChannel(OUTDEV1, 1, "channel 1!", "Harpsichord");
-                // Init controls.
-                ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
-                ch_ctrl1.DrawColor = _settings.DrawColor;
-                ch_ctrl1.SelectedColor = _settings.SelectedColor;
+                // Configure channels defined in designer.
+                {
+                    var opts = _settings.OutputChannels[0];
+                    var ctrl = ch_ctrl1;
 
-                ch_ctrl1.Volume = _settings.OutputChannels[0].Volume;
-                ch_ctrl1.State = _settings.OutputChannels[0].State;
-                // etc like these...
-                //public string ChannelName { get; set; } = "???";
-                //public int ChannelNumber { get; init; } = 0;
-                //public string AliasFile { get; set; } = "";
-                //public string DeviceName { get; set; } = "";
-                //public double Pan { get; init; } = 0.0;
+                    var chan = CM.OpenOutputChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
+                    CM.Bind(chan, ctrl);
+                    // Init control.
+                    ctrl.Name = opts.ChannelName;
+                    ctrl.Volume = opts.Volume;
+                    ctrl.State = opts.State;
+                    ctrl.DrawColor = _settings.DrawColor;
+                    ctrl.SelectedColor = _settings.SelectedColor;
+                    //ctrl.Pan = outs.Pan; TODO1
+                    //ctrl.??? = outs.AliasFile; TODO1
+                    //ctrl.Options = _settings.Options;
+                    ctrl.ChannelChange += ChannelControl_ChannelChange;
+                }
 
-                ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
-                CM.Bind(chan, ch_ctrl1);
+                {
+                    var opts = _settings.OutputChannels[1];
+                    var ctrl = ch_ctrl2;
 
-                chan = CM.OpenOutputChannel(OUTDEV1, 2, "channel 2!", "Violin");
-                ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
-                ch_ctrl2.DrawColor = _settings.DrawColor;
-                ch_ctrl2.SelectedColor = _settings.SelectedColor;
-
-                ch_ctrl2.Volume = _settings.OutputChannels[0].Volume;
-                ch_ctrl2.State = _settings.OutputChannels[0].State;
-                // etc like above...
-
-                ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
-                CM.Bind(chan, ch_ctrl2);
+                    var chan = CM.OpenOutputChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
+                    CM.Bind(chan, ctrl);
+                    // Init control.
+                    ctrl.Name = opts.ChannelName;
+                    ctrl.Volume = opts.Volume;
+                    ctrl.State = opts.State;
+                    ctrl.DrawColor = _settings.DrawColor;
+                    ctrl.SelectedColor = _settings.SelectedColor;
+                    //ctrl.Pan = outs.Pan; TODO1
+                    //ctrl.??? = outs.AliasFile; TODO1
+                    //ctrl.Options = _settings.Options;
+                    ctrl.ChannelChange += ChannelControl_ChannelChange;
+                }
             }
             catch (Exception ex)
             {
@@ -241,35 +185,40 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Create channels and controls dynamically.
-                List<OutputChannel> channels = [];
-
-                var chan = CM.OpenOutputChannel(OUTDEV1, 1, "dyn keys", "HonkyTonkPiano");
-                channels.Add(chan);
-                chan = CM.OpenOutputChannel(OUTDEV1, 10, "dyn drums", "Electronic");
-                channels.Add(chan);
-                chan = CM.OpenOutputChannel(OUTDEV1, 4, "dyn bass", "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
-                channels.Add(chan);
-
-                var inchan = CM.OpenInputChannel(INDEV, 1, "dyn my input"); // TODO1 test this
-
-                // Ceate a control for each channel and bind object.
+                //List<OutputChannel> channels = [];
+                Random rand = new();
                 int x = ch_ctrl2.Right + 10;
                 int y = ch_ctrl2.Top;
 
-                channels.ForEach(chan =>
+                var chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 3, "HonkyTonkPiano");
+                //channels.Add(chan);
+                AddControl(chan, "dyn keys");
+
+                chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 4, "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+                //channels.Add(chan);
+                AddControl(chan, "dyn bass");
+
+                chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 10, "Electronic");
+                //channels.Add(chan);
+                AddControl(chan, "dyn drums");
+
+                var inchan = CM.OpenInputChannel(TestSettings.INDEV, 1); // TODO1 test this. name="dyn my input"
+
+                // Ceate a control for each channel and bind object.
+                void AddControl(OutputChannel chan, string channelName)
                 {
-                    var sui = $"Ch: {chan.ChannelNumber} {chan.ChannelName}";
-                    var stt = $"{chan.PatchName} {chan.Patch:000}{Environment.NewLine}{chan.DeviceInfo}";
+                    var sui = $"Ch: {chan.ChannelNumber} {channelName}";
+                    var stt = $"{chan.PatchName} {chan.Patch:000}"; //{Environment.NewLine}"Dev {chan.DeviceInfo}";
 
                     var ctrl = new ChannelControl()
                     {
-                        Name = $"Control for {chan.ChannelName}",
+                        Name = channelName,
                         Info = (sui, stt),
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = _settings.DrawColor,
                         SelectedColor = _settings.SelectedColor,
-                        Volume = VolumeDefs.DEFAULT_VOLUME,
+                        Volume = rand.NextDouble() + 0.5,
                     };
                     ctrl.ChannelChange += ChannelControl_ChannelChange;
                     Controls.Add(ctrl);
@@ -277,7 +226,30 @@ namespace Ephemera.MidiLib.Test
                     CM.Bind(chan, ctrl);
 
                     x += ctrl.Width + 10; // Width is not valid until after previous statement.
-                });
+                }
+
+                //channels.ForEach(chan => AddControl(chan, "????"))
+                //{
+                //    var sui = $"Ch: {chan.ChannelNumber} {chan.ChannelName}";
+                //    var stt = $"{chan.PatchName} {chan.Patch:000}{Environment.NewLine}{chan.DeviceInfo}";
+
+                //    var ctrl = new ChannelControl()
+                //    {
+                //        Name = $"Control for {chan.ChannelName}",
+                //        Info = (sui, stt),
+                //        Location = new(x, y),
+                //        BorderStyle = BorderStyle.FixedSingle,
+                //        DrawColor = _settings.DrawColor,
+                //        SelectedColor = _settings.SelectedColor,
+                //        Volume = rand.NextDouble() + 0.5,
+                //    };
+                //    ctrl.ChannelChange += ChannelControl_ChannelChange;
+                //    Controls.Add(ctrl);
+
+                //    CM.Bind(chan, ctrl);
+
+                //    x += ctrl.Width + 10; // Width is not valid until after previous statement.
+                //});
             }
             catch (Exception ex)
             {
@@ -367,7 +339,7 @@ namespace Ephemera.MidiLib.Test
             //GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
             //GenericListTypeEditor.SetOptions("Patch", instList);
 
-            var changes = SettingsEditor.Edit(td, "TESTOMATIC", 300);
+            var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
 

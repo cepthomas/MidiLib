@@ -21,8 +21,8 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties
-        /// <summary>Channel name. Optional.</summary>
-        public string ChannelName { get; set; }
+        ///// <summary>Channel name. Optional.</summary>
+        //public string ChannelName { get; set; }
 
         /// <summary>Actual 1-based midi channel number. Required.</summary>
         public int ChannelNumber { get; init; }
@@ -45,8 +45,12 @@ namespace Ephemera.MidiLib
 
             _device = device;
             ChannelNumber = channelNumber;
-            ChannelName = $"Input {channelNumber}"; // default
             Handle = new(device.Id, ChannelNumber, false);
+        }
+
+        public override string ToString()
+        {
+            return $"In Ch:{ChannelNumber} Dev:{_device.DeviceName}";
         }
     }
 
@@ -69,9 +73,9 @@ namespace Ephemera.MidiLib
         //BiLut _drumKits = MidiDefs.DrumKits;
         #endregion
 
-        #region Properties
-        /// <summary>Channel name. Optional.</summary>
-        public string ChannelName { get; set; } = "";
+        #region Properties - configuration
+        ///// <summary>Channel name. Optional.</summary>
+        //public string ChannelName { get; set; } = "";
 
         /// <summary>Actual 1-based midi channel number.</summary>
         public int ChannelNumber { get; init; } = 0;
@@ -79,23 +83,19 @@ namespace Ephemera.MidiLib
         /// <summary>Instrument names. Optional.</summary>
         public string AliasFile { get; set; } = "";
 
-        /// <summary>Instrument/patch.</summary>
-        public int Patch { get; set; } = 0;
-
         /// <summary>Handle for use by scripts.</summary>
         public ChannelHandle Handle { get; init; }
+        #endregion
 
+        #region Properties - runtime
         /// <summary>True if channel is not muted.</summary>
         public bool EnableSound { get; set; } = true;
 
+        /// <summary>Instrument/patch.</summary>
+        public int Patch { get; set; } = 0;
+
         /// <summary>Patch is a drumkit.</summary>
         public bool IsDrums { get; private set; } = false;
-
-        /// <summary>Associated events - optional depending on implementation.</summary>
-        public EventCollection Events { get; set; } = new();
-
-        /// <summary>Info about the device.</summary>
-        public string DeviceInfo { get { return $"Dev {_device.Id} {_device.DeviceName}"; } }
 
         /// <summary>Current instrument/patch name. Set may update internal collection and sends a midi patch message.</summary>
         public string PatchName
@@ -110,6 +110,9 @@ namespace Ephemera.MidiLib
                 _device.Send(new Patch(ChannelNumber, id));
             }
         }
+
+        /// <summary>Associated events - optional depending on implementation.</summary>
+        public EventCollection Events { get; set; } = new();
         #endregion
 
         #region Lifecycle
@@ -124,7 +127,6 @@ namespace Ephemera.MidiLib
 
             _device = device;
             ChannelNumber = channelNumber;
-            ChannelName = $"Output {channelNumber}"; // default
             Handle = new(device.Id, ChannelNumber, true);
         }
 
@@ -145,6 +147,11 @@ namespace Ephemera.MidiLib
             _instruments = new();
             Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _instruments.Add(i, $"INST_{i}"));
             Handle = new(device.Id, ChannelNumber, true);
+        }
+
+        public override string ToString()
+        {
+            return $"Out Ch:{ChannelNumber} Dev:{_device.DeviceName}";
         }
         #endregion
 

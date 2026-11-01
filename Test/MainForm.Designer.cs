@@ -30,6 +30,9 @@ namespace Ephemera.MidiLib.Test
             btnTimebar = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             btnProperty = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            btnSend = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             tvInfo = new Ephemera.NBagOfUis.TextViewer();
             sldMasterVolume = new Ephemera.NBagOfUis.Slider();
             ch_ctrl1 = new ChannelControl();
@@ -38,9 +41,6 @@ namespace Ephemera.MidiLib.Test
             timer1 = new System.Windows.Forms.Timer(components);
             chkLoop = new System.Windows.Forms.CheckBox();
             btnRewind = new System.Windows.Forms.Button();
-            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            btnSend = new System.Windows.Forms.ToolStripButton();
-            toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -50,7 +50,7 @@ namespace Ephemera.MidiLib.Test
             toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator1, btnGo, toolStripSeparator4, btnTimebar, toolStripSeparator3, btnProperty, toolStripSeparator5, btnSend, toolStripSeparator6 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new System.Drawing.Size(773, 26);
+            toolStrip1.Size = new System.Drawing.Size(741, 26);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -119,13 +119,33 @@ namespace Ephemera.MidiLib.Test
             btnProperty.Size = new System.Drawing.Size(66, 23);
             btnProperty.Text = "property";
             // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new System.Drawing.Size(6, 26);
+            // 
+            // btnSend
+            // 
+            btnSend.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            btnSend.Image = (System.Drawing.Image)resources.GetObject("btnSend.Image");
+            btnSend.ImageTransparentColor = System.Drawing.Color.Magenta;
+            btnSend.Name = "btnSend";
+            btnSend.Size = new System.Drawing.Size(42, 23);
+            btnSend.Text = "send";
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new System.Drawing.Size(6, 26);
+            // 
             // tvInfo
             // 
+            tvInfo.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             tvInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             tvInfo.Location = new System.Drawing.Point(8, 182);
             tvInfo.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             tvInfo.Name = "tvInfo";
-            tvInfo.Size = new System.Drawing.Size(753, 251);
+            tvInfo.Size = new System.Drawing.Size(721, 403);
             tvInfo.TabIndex = 58;
             // 
             // sldMasterVolume
@@ -138,26 +158,29 @@ namespace Ephemera.MidiLib.Test
             // 
             // ch_ctrl1
             // 
+            ch_ctrl1.BackColor = System.Drawing.Color.Aqua;
             ch_ctrl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             ch_ctrl1.Location = new System.Drawing.Point(6, 101);
             ch_ctrl1.Name = "ch_ctrl1";
-            ch_ctrl1.Size = new System.Drawing.Size(116, 74);
+            ch_ctrl1.Size = new System.Drawing.Size(108, 74);
             ch_ctrl1.TabIndex = 105;
             // 
             // ch_ctrl2
             // 
+            ch_ctrl2.BackColor = System.Drawing.Color.Aqua;
             ch_ctrl2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             ch_ctrl2.Location = new System.Drawing.Point(134, 101);
             ch_ctrl2.Name = "ch_ctrl2";
-            ch_ctrl2.Size = new System.Drawing.Size(116, 74);
+            ch_ctrl2.Size = new System.Drawing.Size(108, 74);
             ch_ctrl2.TabIndex = 106;
             // 
             // timeBar
             // 
+            timeBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             timeBar.Location = new System.Drawing.Point(204, 38);
             timeBar.Name = "timeBar";
-            timeBar.Size = new System.Drawing.Size(557, 45);
+            timeBar.Size = new System.Drawing.Size(526, 45);
             timeBar.TabIndex = 110;
             // 
             // chkLoop
@@ -179,30 +202,11 @@ namespace Ephemera.MidiLib.Test
             btnRewind.Text = "<=";
             btnRewind.UseVisualStyleBackColor = true;
             // 
-            // toolStripSeparator5
-            // 
-            toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new System.Drawing.Size(6, 26);
-            // 
-            // btnSend
-            // 
-            btnSend.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            btnSend.Image = (System.Drawing.Image)resources.GetObject("btnSend.Image");
-            btnSend.ImageTransparentColor = System.Drawing.Color.Magenta;
-            btnSend.Name = "btnSend";
-            btnSend.Size = new System.Drawing.Size(42, 23);
-            btnSend.Text = "send";
-            // 
-            // toolStripSeparator6
-            // 
-            toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new System.Drawing.Size(6, 26);
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(773, 443);
+            ClientSize = new System.Drawing.Size(741, 593);
             Controls.Add(btnRewind);
             Controls.Add(chkLoop);
             Controls.Add(timeBar);

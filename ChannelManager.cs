@@ -8,6 +8,7 @@ using System.Security;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using static System.Windows.Forms.Control;
+using System.Windows.Forms;
 
 
 namespace Ephemera.MidiLib
@@ -35,9 +36,15 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties
-        /// <summary>Readonly collection access.</summary>
-        public IEnumerable<OutputChannel> OutputChannels { get { return _outputChannels.Select(ch => ch.chan); } }
+        ///// <summary>What the mouse click does.</summary>
+        //public SelectionMode Mode { get; set; } = SelectionMode.None;
+
+
         #endregion
+
+
+
+
 
         #region Events
         /// <summary>Handler for midi message arrived.</summary>
@@ -56,9 +63,8 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
         /// <returns></returns>
-        public InputChannel OpenInputChannel(string deviceName, int channelNumber, string channelName)
+        public InputChannel OpenInputChannel(string deviceName, int channelNumber)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -67,12 +73,7 @@ namespace Ephemera.MidiLib
             var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
 
             // Add the channel.
-            InputChannel ch = new(indev, channelNumber)
-            {
-                ChannelName = channelName,
-                Enable = true,
-            };
-
+            InputChannel ch = new(indev, channelNumber);
             _inputChannels.Add(ch);
 
             return ch;
@@ -83,11 +84,10 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
         /// <param name="patchName"></param>
         /// <param name="aliasFile">Alternate patch names from an ini file.</param>
         /// <returns></returns>
-        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, string patchName, string? aliasFile = null)
+        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string patchName, string? aliasFile = null)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -96,14 +96,9 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            OutputChannel ch = new(outdev, channelNumber)
-            {
-                ChannelName = channelName,
-            };
-
+            OutputChannel ch = new(outdev, channelNumber);
             // Init instrument name stuff.
-            ch.InitInstruments(patchName, aliasFile);
-
+            ch.InitInstruments(patchName, aliasFile); // this does the midi send
             _outputChannels.Add((ch, null));
 
             return ch;
@@ -114,10 +109,9 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
         /// <param name="patch"></param>
         /// <returns></returns>
-        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string channelName, int patch)
+        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, int patch)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -127,11 +121,7 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            OutputChannel ch = new(outdev, channelNumber, patch)
-            {
-                ChannelName = channelName,
-            };
-
+            OutputChannel ch = new(outdev, channelNumber, patch);
             outdev.Send(new Patch(channelNumber, patch));
             _outputChannels.Add((ch, null));
 
@@ -280,8 +270,8 @@ namespace Ephemera.MidiLib
                     _outputChannels[i] = (chan, ctrl);
                     return;
                 }
-                throw new MidiLibException($"Unknown channel [{chan}]");
             }
+            throw new MidiLibException($"Unknown channel [{chan}]");
         }
 
         /// <summary>
@@ -351,6 +341,14 @@ namespace Ephemera.MidiLib
             _outputChannels.ForEach(b => b.chan.Kill());
         }
 
+
+        /// <summary>Readonly collection access.</summary>
+        public IEnumerable<OutputChannel> GetOutputChannels(bool selected)
+        {
+            return _outputChannels.Select(ch => ch.chan);
+        }
+
+
         /// <summary>
         /// Get channel object from control object.
         /// </summary>
@@ -395,16 +393,16 @@ namespace Ephemera.MidiLib
             return null;
         }
 
-        /// <summary>
-        /// Get channel object from channel name.
-        /// </summary>
-        /// <param name="chname"></param>
-        /// <returns>The channel or null if invalid handle.</returns>
-        public OutputChannel? GetChannel(string chname)
-        {
-            foreach (var b in _outputChannels) { if (b.chan.ChannelName == chname) return b.chan; }
-            return null;
-        }
+        ///// <summary>
+        ///// Get channel object from channel name.
+        ///// </summary>
+        ///// <param name="chname"></param>
+        ///// <returns>The channel or null if invalid handle.</returns>
+        //public OutputChannel? GetChannel(string chname)
+        //{
+        //    foreach (var b in _outputChannels) { if (b.chan.ChannelName == chname) return b.chan; }
+        //    return null;
+        //}
         #endregion
     }
 }

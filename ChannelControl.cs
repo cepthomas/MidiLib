@@ -10,48 +10,44 @@ using System.Linq;
 using System.Text;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
+using System.Runtime.CompilerServices;
 
 
 namespace Ephemera.MidiLib
 {   
-    #region Types
-    /// <summary>Channel playing.</summary>
-    public enum ChannelState { Normal, Solo, Mute }
-
-    /// <summary>Some flavors of control may need to be defeatured.</summary>
-    [Flags]
-    public enum DisplayOptions { None = 0x00, SoloMute = 0x01, Fx = 0x02, All = 0x0F, }
-
-    /// <summary>Selector operation mode.</summary>
-    public enum SelectMode { Off, Single, Multi, }
-
     /// <summary>Notify host of UI changes.</summary>
     public class ChannelChangeEventArgs : EventArgs
     {
+        /// <summary>Solo/mute.</summary>
+        public bool State { get; set; } = false;
+
+        /// <summary>User clicked control.</summary>
+        public bool Select { get; set; } = false;
+
         /// <summary>User clicked info box.</summary>
         public bool Info { get; set; } = false;
 
         /// <summary>User changed volume.</summary>
         public bool Volume { get; set; } = false;
-
-        /// <summary>Solo/mute.</summary>
-        public bool State { get; set; } = false;
     }
-    #endregion
 
     [DesignTimeVisible(true)]
     public partial class ChannelControl : UserControl
     {
         #region Fields
-        ChannelState _state = ChannelState.Normal;
-        //Color _selectedColor = Color.LightPink;
 
-        Color _smColor = Color.Blue;
 
+        //ChannelState _state = ChannelState.Normal;
+        Color _selectedColor = Color.LightPink;
+        Color _smColor = Color.Blue;//TODO1 ?
+        Color _bgColor;
 
         // TODO1 whole control selected/colored?
         bool _selected = false;
 
+
+
+        // The controls.
         readonly Container components = new();
         readonly Label lblInfo = new();
         readonly Slider sldVolume = new();
@@ -61,10 +57,19 @@ namespace Ephemera.MidiLib
         ToolTip toolTip = new();
         #endregion
 
+        //???? DesignerSerializationVisibility
+        //    /// The code generator will not produce code for the object.//    Hidden,
+        //    /// The code generator will produce code for the object.    //    Visible,
+        //    /// The code generator will produce code for the contents of the object, rather than for the object itself. //    Content
+
+
+
+
         #region Properties
         /// <summary>Tell the user about me. Tuple of (ui, tooltip)</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
+        [Browsable(false)]
         public (string ui, string tt) Info
         {
             set
@@ -85,30 +90,47 @@ namespace Ephemera.MidiLib
         /// <summary>Drawing the control when selected.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Color SelectedColor { get; set; } = Color.LightPink;
+        public Color SelectedColor { set { _selectedColor = value; } }
 
-        /// <summary>Display options.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public DisplayOptions Options { get; set; } = DisplayOptions.All;
+        ///// <summary>Display options.</summary>
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        //[EditorBrowsable(EditorBrowsableState.Never)]
+        //public DisplayOptions Options { get; set; } = DisplayOptions.None;
 
-        /// <summary>What the mouse click does.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public SelectMode Mode { get; set; } = SelectMode.None;
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        //public bool ShowSoloMute { get; set; } = false;
+
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        //public bool ShowPan { get; set; } = false;
+
+
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        //public bool ShowFx { get; set; } = false;
+
+
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        //public bool ShowMeter { get; set; } = false;
+
+
+        ///// <summary>What the mouse click does.</summary>
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        //[EditorBrowsable(EditorBrowsableState.Never)]
+        //public SelectionMode Mode { get; set; } = SelectionMode.None;
 
         /// <summary>For muting/soloing.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public ChannelState State
-        {
-            get { return _state; }
-            set { _state = value; }
-        }
+        //[EditorBrowsable(EditorBrowsableState.Never)]
+        [Browsable(false)]
+        public ChannelState State { get; set; }
+        //{
+        //    get { return _state; }
+        //    set { _state = value; }
+        //}
 
         /// <summary>Current volume.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
+        [Browsable(false)]
         public double Volume
         {
             get { return sldVolume.Value; }
@@ -116,9 +138,12 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>User selection.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Browsable(false)]
         public bool Selected
         {
             get { return _selected; }
+            set { _selected = value; BackColor = _selected ? _selectedColor : _bgColor;  }
         }
         #endregion
 
@@ -137,12 +162,16 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Apply customization from system. Properties should be valid now.
+        /// Layout UI. Properties are valid now.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
             SuspendLayout();
+
+            _bgColor = BackColor;
+
+            BackColor = Color.Aqua;
 
             // Create the controls per the config.
             const int HT1 = 24; // first row
@@ -162,7 +191,7 @@ namespace Ephemera.MidiLib
             sldVolume.ValueChanged += SldVolume_ValueChanged;
             Controls.Add(sldVolume);
 
-            if (Options.HasFlag(DisplayOptions.Fx))
+            //if (Options.HasFlag(DisplayOptions.SoloMute))
             {
                 // Solo/mute checkboxes.
                 lblSolo.Location = new(sldVolume.Right + PAD, sldVolume.Top);
@@ -185,6 +214,13 @@ namespace Ephemera.MidiLib
             lblInfo.Size = new(lblSolo.Right, HT1 - PAD);
             lblInfo.Click += ChannelInfo_Click;
             Controls.Add(lblInfo);
+
+
+            // TODO1 options:
+            // min: volume/level, info
+            // mid: Solo/Mute, Meters
+            // max: Fx, Pan
+
 
             // Finalize the control.
             Size = new Size(lblInfo.Right + PAD, sldVolume.Bottom + PAD);
@@ -232,67 +268,184 @@ namespace Ephemera.MidiLib
             // Figure out state.
             if (sender == lblSolo)
             {
-                _state = lblSolo.BackColor == _smColor ? ChannelState.Normal : ChannelState.Solo;
+                State = lblSolo.BackColor == _smColor ? ChannelState.Normal : ChannelState.Solo;
             }
             else if (sender == lblMute)
             {
-                _state = lblMute.BackColor == _smColor ? ChannelState.Normal : ChannelState.Mute;
+                State = lblMute.BackColor == _smColor ? ChannelState.Normal : ChannelState.Mute;
             }
 
             // Notify client.
             ChannelChange?.Invoke(this, new() { State = true });
         }
 
+        #endregion
+
+
+        /////////////////////////////////// select stuff ////////////////////////////
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnMouseEnter(EventArgs e)
+        {
+            //Debug.WriteLine($"OnMouseEnter {e}");
+
+            //if (MouseButtons == MouseButtons.Left)
+            //{
+            //    PressVKey(CalcVelocity());
+            //}
+
+            base.OnMouseEnter(e);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            //Debug.WriteLine($"OnMouseLeave {e}");
+
+            //if (IsPressed)
+            //{
+            //    ReleaseVKey();
+            //}
+
+            base.OnMouseLeave(e);
+        }
+
+        /// <summary>
+        /// Send info to client.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            Debug.WriteLine($"OnMouseDown {_ctrl}");
+
+
+            //var res = MouseToUser();
+            //if (res is not null)
+            //{
+            //    _lastNote = res.Value.ux;
+            //    SendMidi?.Invoke(this, new NoteOn(MidiDefs.TEMP_CHANNEL, res.Value.ux, res.Value.uy));
+            //}
+
+            base.OnMouseDown(e);
+        }
+
+        /// <summary>
+        /// Send info to client.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            Debug.WriteLine($"OnMouseUp {_ctrl}");
+
+            //if (_lastNote != -1)
+            //{
+            //    SendMidi?.Invoke(this, new NoteOff(MidiDefs.TEMP_CHANNEL, _lastNote));
+            //    _lastNote = -1;
+            //}
+
+            base.OnMouseUp(e);
+        }
+
+
+        bool _ctrl = false;
+
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            _ctrl = e.Control;
+            base.OnKeyDown(e);
+        }
+
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            _ctrl = false;
+            base.OnKeyUp(e);
+        }
+
         /// <summary>
         /// User item selection(s). Could be select or click.
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Itemd_DoMouseClick(object? sender, MouseEventArgs e)
+        protected override void OnMouseClick(MouseEventArgs e)
         {
-            ArgumentNullException.ThrowIfNull(sender);
 
-            var itemd = (ItemDisplay)sender;
+            Debug.WriteLine($"OnMouseClick {_ctrl}");
 
-            switch (e.Button, _config.Mode, itemd.Selected)
-            {
-                case (MouseButtons.Left, SelectMode.Click, _):
-                    ItemClick?.Invoke(this, new(itemd.Item));
-                    break;
+            // ///  Gets which mouse button was pressed.
+            // public MouseButtons Button { get; }
 
-                case (MouseButtons.Left, SelectMode.SingleSelect, true):
-                    // Toggle select.
-                    itemd.Selected = false;
-                    ItemSelection?.Invoke(this, new(GetSelectedItems()));
-                    break;
+            // ///  Gets the number of times the mouse button was pressed and released.
+            // public int Clicks { get; }
 
-                case (MouseButtons.Left, SelectMode.SingleSelect, false):
-                    // Deselect others first.
-                    _itemds.ForEach(itemd => itemd.Selected = false);
-                    // Select this one.
-                    itemd.Selected = true;
-                    ItemSelection?.Invoke(this, new(GetSelectedItems()));
-                    break;
+            // ///  Gets the x-coordinate of a mouse click.
+            // public int X { get; }
 
-                case (MouseButtons.Left, SelectMode.MultiSelect, true):
-                    itemd.Selected = false;
-                    ItemSelection?.Invoke(this, new(GetSelectedItems()));
-                    break;
+            // ///  Gets the y-coordinate of a mouse click.
+            // public int Y { get; }
 
-                case (MouseButtons.Left, SelectMode.MultiSelect, false):
-                    itemd.Selected = true;
-                    ItemSelection?.Invoke(this, new(GetSelectedItems()));
-                    break;
+            // ///  Gets a signed count of the number of detents the mouse wheel has rotated.
+            // public int Delta { get; }
 
-                case (_, _, _):
-                    // ignored
-                    break;
-            }
+            // ///  Gets the location of the mouse during MouseEvent.
+            // public Point Location => new(X, Y);
 
-            Invalidate(true); // refresh everything
+
+
+
+
+
+            //ArgumentNullException.ThrowIfNull(sender);
+
+            //var itemd = (ItemDisplay)sender;
+
+            //switch (e.Button, _config.Mode, itemd.Selected)
+            //{
+            //    case (MouseButtons.Left, SelectMode.Click, _):
+            //        ItemClick?.Invoke(this, new(itemd.Item));
+            //        break;
+
+            //    case (MouseButtons.Left, SelectMode.SingleSelect, true):
+            //        // Toggle select.
+            //        itemd.Selected = false;
+            //        ItemSelection?.Invoke(this, new(GetSelectedItems()));
+            //        break;
+
+            //    case (MouseButtons.Left, SelectMode.SingleSelect, false):
+            //        // Deselect others first.
+            //        _itemds.ForEach(itemd => itemd.Selected = false);
+            //        // Select this one.
+            //        itemd.Selected = true;
+            //        ItemSelection?.Invoke(this, new(GetSelectedItems()));
+            //        break;
+
+            //    case (MouseButtons.Left, SelectMode.MultiSelect, true):
+            //        itemd.Selected = false;
+            //        ItemSelection?.Invoke(this, new(GetSelectedItems()));
+            //        break;
+
+            //    case (MouseButtons.Left, SelectMode.MultiSelect, false):
+            //        itemd.Selected = true;
+            //        ItemSelection?.Invoke(this, new(GetSelectedItems()));
+            //        break;
+
+            //    case (_, _, _):
+            //        // ignored
+            //        break;
+            //}
+
+            //Invalidate(true); // refresh everything
+
+            base.OnMouseClick(e);
+
         }
 
-        #endregion
 
         #region Misc
         /// <summary>Read me.</summary>

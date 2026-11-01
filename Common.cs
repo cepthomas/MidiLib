@@ -13,6 +13,21 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLib
 {
+
+
+    /// <summary>Channel playing.</summary>
+    public enum ChannelState { Normal, Solo, Mute }
+
+    ///// <summary>Some flavors of control may need to be defeatured.</summary>
+    //[Flags]
+    //public enum DisplayOptions { None = 0x00, SoloMute = 0x01, Fx = 0x02, Pan = 0x04, All = 0x0F, }
+
+    ///// <summary>Selector operation mode.</summary>
+    //public enum SelectMode { Off, Single, Multi, }
+
+
+
+
     /// <summary>Library error.</summary>
     public class MidiLibException(string message) : Exception(message) { }
 

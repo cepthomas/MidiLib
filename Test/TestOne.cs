@@ -54,17 +54,16 @@ namespace Ephemera.MidiLib.Test
             ChannelManager.Instance.MessageReceived += (sender, e) => revt = e;
 
             // Input
-            var chan_in1 = ChannelManager.Instance.OpenInputChannel(indev, 1, "my input");
-
+            var chan_in1 = ChannelManager.Instance.OpenInputChannel(indev, 1); // "my input"
 
             ///// Named instrument mode
             // 1 is GM instruments
-            var chan_out1 = ChannelManager.Instance.OpenOutputChannel(outdev, 1, "keys", "HonkyTonkPiano");
+            var chan_out1 = ChannelManager.Instance.OpenOutputChannel(outdev, 1, "HonkyTonkPiano");
             // 2 is GM drums1
-            var chan_out2 = ChannelManager.Instance.OpenOutputChannel(outdev, 10, "drums", "Electronic");
+            var chan_out2 = ChannelManager.Instance.OpenOutputChannel(outdev, 10, "Electronic");
             // 3 is Alt instruments
             var instFn = Path.Join(MiscUtils.GetSourcePath(), "test_defs.ini");
-            var chan_out3 = ChannelManager.Instance.OpenOutputChannel(outdev, 4, "alt", "WaterWhistle1", instFn);
+            var chan_out3 = ChannelManager.Instance.OpenOutputChannel(outdev, 4, "WaterWhistle1", instFn);
 
             Assert(chan_out1.PatchName == "HonkyTonkPiano");
             Assert(chan_out2.PatchName == "Electronic");
@@ -79,7 +78,7 @@ namespace Ephemera.MidiLib.Test
 
             ///// Anonymous mode
             sent = null;
-            var chan_out4 = ChannelManager.Instance.OpenOutputChannel(outdev, 1, "keys", 38);
+            var chan_out4 = ChannelManager.Instance.OpenOutputChannel(outdev, 1, 38);
             Assert(chan_out4.PatchName == "INST_38");
             Assert(sent is Patch);
             pevt = (sent as Patch)!;
