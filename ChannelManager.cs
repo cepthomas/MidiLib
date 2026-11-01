@@ -36,15 +36,10 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties
-        ///// <summary>What the mouse click does.</summary>
-        //public SelectionMode Mode { get; set; } = SelectionMode.None;
-
+        /// <summary>What the mouse click does.</summary>
+        public SelectionMode Mode { get; set; } = SelectionMode.None;
 
         #endregion
-
-
-
-
 
         #region Events
         /// <summary>Handler for midi message arrived.</summary>
@@ -55,6 +50,7 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Lifecycle
+
         #endregion
 
         #region Channels
@@ -341,13 +337,15 @@ namespace Ephemera.MidiLib
             _outputChannels.ForEach(b => b.chan.Kill());
         }
 
-
-        /// <summary>Readonly collection access.</summary>
+        /// <summary>
+        /// Readonly collection access.
+        /// </summary>
+        /// <param name="selected"></param>
         public IEnumerable<OutputChannel> GetOutputChannels(bool selected)
         {
+            //TODO1 selected
             return _outputChannels.Select(ch => ch.chan);
         }
-
 
         /// <summary>
         /// Get channel object from control object.

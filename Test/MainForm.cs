@@ -24,6 +24,19 @@ using System.Text.Json.Serialization;
 // >>> C:\Dev\Third\NAudio3\src\NAudio.WinForms\Gui\VolumeSlider.cs
 
 
+// C:\Dev\Apps\Midifrier\MainForm.cs:
+// C:\Dev\Apps\MidiGenerator\MainForm.Designer.cs:
+// C:\Dev\Apps\Nebulator\App\MainForm.cs:
+// C:\Dev\Apps\Nebulua\MainForm.cs:
+
+
+// TODO1 options:
+// def: volume/level, info, Solo/Mute
+// all: meters, fx, pan
+
+
+
+
 namespace Ephemera.MidiLib.Test
 {
     public partial class MainForm : Form
@@ -367,7 +380,9 @@ namespace Ephemera.MidiLib.Test
             var chan = CM.GetChannel(cc!);
             if (chan is null) return; // error?
 
-            if (e.State) { CM.UpdateState(); }
+            if (e.State) { CM.UpdateState(); } // TODO1 should CM handle these?
+
+            if (e.Select) {  } // TODO1
 
             if (e.Info) {  } // TODO do anything?
 

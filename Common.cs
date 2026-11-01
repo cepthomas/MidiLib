@@ -13,8 +13,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLib
 {
-
-
     /// <summary>Channel playing.</summary>
     public enum ChannelState { Normal, Solo, Mute }
 
@@ -25,14 +23,11 @@ namespace Ephemera.MidiLib
     ///// <summary>Selector operation mode.</summary>
     //public enum SelectMode { Off, Single, Multi, }
 
-
-
+    /// <summary>User selection options.</summary>
+    public enum SnapType { Tick, Beat, Bar, FourBar }
 
     /// <summary>Library error.</summary>
     public class MidiLibException(string message) : Exception(message) { }
-
-    /// <summary>User selection options.</summary>
-    public enum SnapType { Tick, Beat, Bar, FourBar }
 
     /// <summary>Misc definitions.</summary>
     public class VolumeDefs
@@ -64,7 +59,6 @@ namespace Ephemera.MidiLib
         {
             _raw = handle;
         }
-
 
         public new string ToString()
         {
