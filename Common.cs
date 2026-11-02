@@ -13,9 +13,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLib
 {
-    /// <summary>Channel playing.</summary>
-    public enum ChannelState { Normal, Solo, Mute }
-
     ///// <summary>Some flavors of control may need to be defeatured.</summary>
     //[Flags]
     //public enum DisplayOptions { None = 0x00, SoloMute = 0x01, Fx = 0x02, Pan = 0x04, All = 0x0F, }
@@ -63,35 +60,6 @@ namespace Ephemera.MidiLib
         public new string ToString()
         {
             return $"{(Output ? "out" : "in")} {ChannelNumber} on D{DeviceId}";
-        }
-    }
-
-    public class MidiUtils
-    {
-        /// <summary>
-        /// Convert a midi dictionary into ordered list of strings.
-        /// </summary>
-        /// <param name="source">The dictionary to process</param>
-        /// <param name="addKey">Add the index number to the entry</param>
-        /// <param name="fill">Add mising midi values</param>
-        /// <returns></returns>
-        public static List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill)
-        {
-            List<string> res = [];
-
-            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
-            {
-                if (source.ContainsKey(i))
-                {
-                    res.Add(addKey ? $"{i:000} {source[i]}" : $"{source[i]}");
-                }
-                else if (fill)
-                {
-                    res.Add($"{i:000}");
-                }
-            }
-
-            return res;
         }
     }
 

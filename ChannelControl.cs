@@ -10,26 +10,41 @@ using System.Linq;
 using System.Text;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-using System.Runtime.CompilerServices;
+
+
+//using System.Runtime.CompilerServices;
 
 
 namespace Ephemera.MidiLib
-{   
+{
+    #region Types
+    /// <summary>Channel playing.</summary>
+    public enum ChannelState { Normal, Solo, Mute }
+
+    /// <summary>UI change type.</summary>
+    public enum UiChange { None, State, Select, MultiSelect, Info, Volume }
+
     /// <summary>Notify host of UI changes.</summary>
     public class ChannelChangeEventArgs : EventArgs
     {
-        /// <summary>Solo/mute.</summary>
-        public bool State { get; set; } = false;
+        /// <summary>What happened.</summary>
+        public UiChange Change { get; set; } = UiChange.None;
 
-        /// <summary>User clicked control.</summary>
-        public bool Select { get; set; } = false;
+        // /// <summary>Solo/mute.</summary>
+        // public bool State { get; set; } = false;
 
-        /// <summary>User clicked info box.</summary>
-        public bool Info { get; set; } = false;
+        // /// <summary>User clicked control.</summary>
+        // public bool Select { get; set; } = false;
 
-        /// <summary>User changed volume.</summary>
-        public bool Volume { get; set; } = false;
+        // /// <summary>User clicked info box.</summary>
+        // public bool Info { get; set; } = false;
+
+        // /// <summary>User changed volume.</summary>
+        // public bool Volume { get; set; } = false;
     }
+    #endregion
+
+
 
     [DesignTimeVisible(true)]
     public partial class ChannelControl : UserControl
@@ -38,7 +53,7 @@ namespace Ephemera.MidiLib
         /// <summary></summary>
         Color _bgColor;
 
-        /// <summary>Solo/mute sel color TODO1?</summary>
+        /// <summary>Solo/mute sel color TODO1 - use border instead or inverse color?</summary>
         Color _smColor = Color.Blue;
 
         /// <summary></summary>
@@ -119,7 +134,7 @@ namespace Ephemera.MidiLib
         public bool Selected
         {
             get { return _selected; }
-            set { Selected = value; BackColor = _selected ? SelectedColor : _bgColor;  }
+            set { _selected = value; BackColor = _selected ? SelectedColor : _bgColor;  }
         }
         #endregion
 
@@ -200,7 +215,7 @@ namespace Ephemera.MidiLib
             base.OnLoad(e);
         }
 
-        /// <summary> 
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -218,15 +233,13 @@ namespace Ephemera.MidiLib
         /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
         void ChannelInfo_Click(object? sender, EventArgs e)
         {
-            //Selected = !Selected;
-            ChannelChange?.Invoke(this, new() { Info = true });
+            ChannelChange?.Invoke(this, new() { Change = UiChange.Info });
         }
 
         /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
         void SldVolume_ValueChanged(object? sender, EventArgs e)
         {
-            //Selected = !Selected;
-            ChannelChange?.Invoke(this, new() { Volume = true });
+            ChannelChange?.Invoke(this, new() { Change = UiChange.Volume });
         }
 
         /// <summary>Handles solo and mute.</summary>
@@ -245,7 +258,7 @@ namespace Ephemera.MidiLib
             }
 
             // Notify client.
-            ChannelChange?.Invoke(this, new() { State = true });
+            ChannelChange?.Invoke(this, new() { Change = UiChange.State });
         }
 
         /// <summary>
@@ -256,10 +269,21 @@ namespace Ephemera.MidiLib
         {
             // Debug.WriteLine($"OnMouseClick {_ctrl}");
 
-            Selected = !Selected;
+            if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+            {
+                // Multiselect
+
+                Selected = !Selected;
+                ChannelChange?.Invoke(this, new() { Change = UiChange.MultiSelect });
+            }
+            else
+            {
+                // Single select
+                Selected = !Selected;
+                ChannelChange?.Invoke(this, new() { Change = UiChange.Select });
+            }
 
             // Notify client.
-            ChannelChange?.Invoke(this, new() { Select = true });
 
             base.OnMouseClick(e);
         }

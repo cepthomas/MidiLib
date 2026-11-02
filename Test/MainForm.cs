@@ -15,28 +15,6 @@ using System.Text.Json.Serialization;
 
 
 
-// namespace Ephemera.NBagOfUis
-//     public class Slider : UserControl // TODO1 log/db for volume use.
-//     public class Meter : UserControl
-//         public enum MeterType { Linear, Log, ContinuousLine, ContinuousDots }  // TODO1 Add damped/vu, peak/hold
-
-// >>> C:\Dev\Third\NAudio3\src\NAudio.WinForms\Gui\VolumeMeter.cs
-// >>> C:\Dev\Third\NAudio3\src\NAudio.WinForms\Gui\VolumeSlider.cs
-
-
-// C:\Dev\Apps\Midifrier\MainForm.cs:
-// C:\Dev\Apps\MidiGenerator\MainForm.Designer.cs:
-// C:\Dev\Apps\Nebulator\App\MainForm.cs:
-// C:\Dev\Apps\Nebulua\MainForm.cs:
-
-
-// TODO1 options:
-// def: volume/level, info, Solo/Mute
-// all: meters, fx, pan
-
-
-
-
 namespace Ephemera.MidiLib.Test
 {
     public partial class MainForm : Form
@@ -117,10 +95,11 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Configure channels defined in designer.
-                {
-                    var opts = _settings.OutputChannels[0];
-                    var ctrl = ch_ctrl1;
+                InitOneChannel(_settings.OutputChannels[0], ch_ctrl1);
+                InitOneChannel(_settings.OutputChannels[1], ch_ctrl2);
 
+                void InitOneChannel(OutputChannelStore opts, ChannelControl ctrl)
+                {
                     var chan = CM.OpenOutputChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
                     CM.Bind(chan, ctrl);
                     // Init control.
@@ -129,29 +108,48 @@ namespace Ephemera.MidiLib.Test
                     ctrl.State = opts.State;
                     ctrl.DrawColor = _settings.DrawColor;
                     ctrl.SelectedColor = _settings.SelectedColor;
-                    //ctrl.Pan = outs.Pan; TODO1
-                    //ctrl.??? = outs.AliasFile; TODO1
+                    ctrl.Pan = outs.Pan;
+                    ctrl.??? = outs.AliasFile;
                     //ctrl.Options = _settings.Options;
-                    ctrl.ChannelChange += ChannelControl_ChannelChange;
+//                    ctrl.ChannelChange += ChannelControl_ChannelChange;
                 }
 
-                {
-                    var opts = _settings.OutputChannels[1];
-                    var ctrl = ch_ctrl2;
 
-                    var chan = CM.OpenOutputChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
-                    CM.Bind(chan, ctrl);
-                    // Init control.
-                    ctrl.Name = opts.ChannelName;
-                    ctrl.Volume = opts.Volume;
-                    ctrl.State = opts.State;
-                    ctrl.DrawColor = _settings.DrawColor;
-                    ctrl.SelectedColor = _settings.SelectedColor;
-                    //ctrl.Pan = outs.Pan; TODO1
-                    //ctrl.??? = outs.AliasFile; TODO1
-                    //ctrl.Options = _settings.Options;
-                    ctrl.ChannelChange += ChannelControl_ChannelChange;
-                }
+                // {
+                //     var opts = _settings.OutputChannels[0];
+                //     var ctrl = ch_ctrl1;
+                //
+                //     var chan = CM.OpenOutputChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
+                //     CM.Bind(chan, ctrl);
+                //     // Init control.
+                //     ctrl.Name = opts.ChannelName;
+                //     ctrl.Volume = opts.Volume;
+                //     ctrl.State = opts.State;
+                //     ctrl.DrawColor = _settings.DrawColor;
+                //     ctrl.SelectedColor = _settings.SelectedColor;
+                //     //ctrl.Pan = outs.Pan;
+                //     //ctrl.??? = outs.AliasFile;
+                //     //ctrl.Options = _settings.Options;
+                //     ctrl.ChannelChange += ChannelControl_ChannelChange;
+                // }
+
+                // {
+                //     var opts = _settings.OutputChannels[1];
+                //     var ctrl = ch_ctrl2;
+                //
+                //     var chan = CM.OpenOutputChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
+                //     CM.Bind(chan, ctrl);
+                //     // Init control.
+                //     ctrl.Name = opts.ChannelName;
+                //     ctrl.Volume = opts.Volume;
+                //     ctrl.State = opts.State;
+                //     ctrl.DrawColor = _settings.DrawColor;
+                //     ctrl.SelectedColor = _settings.SelectedColor;
+                //     //ctrl.Pan = outs.Pan; 
+                //     //ctrl.??? = outs.AliasFile; 
+                //     //ctrl.Options = _settings.Options;
+                //     ctrl.ChannelChange += ChannelControl_ChannelChange;
+                // }
             }
             catch (Exception ex)
             {
@@ -173,7 +171,7 @@ namespace Ephemera.MidiLib.Test
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            // TODO refresh and save settings.
+            // TODO-U refresh and save settings.
 
             if (disposing && (components is not null))
             {
@@ -215,7 +213,7 @@ namespace Ephemera.MidiLib.Test
                 //channels.Add(chan);
                 AddControl(chan, "dyn drums");
 
-                var inchan = CM.OpenInputChannel(TestSettings.INDEV, 1); // TODO1 test this. name="dyn my input"
+                var inchan = CM.OpenInputChannel(TestSettings.INDEV, 1); // TODO2 test this. name="dyn my input"
 
                 // Ceate a control for each channel and bind object.
                 void AddControl(OutputChannel chan, string channelName)
@@ -234,7 +232,7 @@ namespace Ephemera.MidiLib.Test
                         Volume = rand.NextDouble() + 0.5,
                     };
                     ctrl.ChannelChange += ChannelControl_ChannelChange;
-                    Controls.Add(ctrl);
+//                    Controls.Add(ctrl);
 
                     CM.Bind(chan, ctrl);
 
@@ -256,7 +254,7 @@ namespace Ephemera.MidiLib.Test
                 //        SelectedColor = _settings.SelectedColor,
                 //        Volume = rand.NextDouble() + 0.5,
                 //    };
-                //    ctrl.ChannelChange += ChannelControl_ChannelChange;
+                //    //ctrl.ChannelChange += ChannelControl_ChannelChange;
                 //    Controls.Add(ctrl);
 
                 //    CM.Bind(chan, ctrl);
@@ -338,7 +336,7 @@ namespace Ephemera.MidiLib.Test
         /// <summary>
         /// Test property editing
         /// </summary>
-        void TestPropertyEditor() // TODO
+        void TestPropertyEditor() // TODO2
         {
             // Set up options.
             //var insts = MidiDefs.GetDefaultInstrumentDefs();
@@ -369,26 +367,6 @@ namespace Ephemera.MidiLib.Test
         #endregion
 
         #region Stuff host needs to implement
-        /// <summary>
-        /// User clicked something.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ChannelControl_ChannelChange(object? sender, ChannelChangeEventArgs e)
-        {
-            var cc = sender as ChannelControl;
-            var chan = CM.GetChannel(cc!);
-            if (chan is null) return; // error?
-
-            if (e.State) { CM.UpdateState(); } // TODO1 should CM handle these?
-
-            if (e.Select) {  } // TODO1
-
-            if (e.Info) {  } // TODO do anything?
-
-            if (e.Volume) {  } // TODO do anything?
-        }
-
         /// <summary>
         /// Send midi note.
         /// </summary>

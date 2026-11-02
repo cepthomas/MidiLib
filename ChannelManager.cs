@@ -53,6 +53,52 @@ namespace Ephemera.MidiLib
 
         #endregion
 
+
+
+
+
+        /// <summary>
+        /// User clicked something.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ChannelControl_ChannelChange(object? sender, ChannelChangeEventArgs e)
+        {
+            var cc = sender as ChannelControl;
+            var chan = CM.GetChannel(cc!);
+            if (chan is null) return; // error?
+
+            // if (e.State) { UpdateState(); }
+            // if (e.Select) {  } // TODO1 manage sels?
+            // if (e.Info) {  } // TODO1 do anything? pass to host?
+            // if (e.Volume) {  } // TODO do anything?
+
+            switch (e.Change)
+            {
+                case ChannelChange.State:
+                    break;
+
+
+                case ChannelChange.Select:
+                    break;
+
+
+                case ChannelChange.MultiSelect:
+                    break;
+
+
+                case ChannelChange.Info:
+                    break;
+
+
+                case ChannelChange.Volume:
+                    break;
+
+                case ChannelChange.None:
+                    break;
+            }
+        }
+
         #region Channels
         /// <summary>
         /// Open an input channel. Lazy inits the device. Throws if anything is invalid.
@@ -259,10 +305,9 @@ namespace Ephemera.MidiLib
             {
                 if (_outputChannels[i].chan == chan)
                 {
-                    if (_outputChannels[i].ctrl is not null)
-                    {
-                        throw new MidiLibException($"Channel [{chan}] already bound to [{ctrl}]");
-                    }
+                    if (_outputChannels[i].ctrl is not null) { throw new MidiLibException($"Channel [{chan}] already bound to [{ctrl}]"); }
+
+                    ctrl.ChannelChange += ChannelControl_ChannelChange;
                     _outputChannels[i] = (chan, ctrl);
                     return;
                 }

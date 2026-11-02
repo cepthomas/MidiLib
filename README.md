@@ -1,4 +1,4 @@
-# MidiLib  TODO1 update
+# MidiLib  TODO1 update doc
 
 This library contains a bunch of midi components and controls accumulated over the years.
 
