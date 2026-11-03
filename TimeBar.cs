@@ -273,7 +273,7 @@ namespace Ephemera.MidiLib
             }
 
             _penMarker.Color = DrawColor;
-            _penSel.Color = SelectedColor;
+            _penSel.Color = BackColor; // SelectedColor;
 
             ///// Loop area.
             int lstart = GetClientFromTick(_selStart.Tick);

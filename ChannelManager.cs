@@ -1,4 +1,5 @@
 using System;
+using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -7,8 +8,6 @@ using System.Diagnostics;
 using System.Security;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-using static System.Windows.Forms.Control;
-using System.Windows.Forms;
 
 
 namespace Ephemera.MidiLib
@@ -29,7 +28,7 @@ namespace Ephemera.MidiLib
         readonly List<IInputDevice> _inputDevices = [];
 
         /// <summary>All the output channels with associated controls.</summary>
-        List<(OutputChannel chan, ChannelControl? ctrl)> _outputChannels = [];
+        readonly List<(OutputChannel chan, ChannelControl? ctrl)> _outputChannels = [];
 
         /// <summary>All the input channels.</summary>
         readonly List<InputChannel> _inputChannels = [];
@@ -53,51 +52,35 @@ namespace Ephemera.MidiLib
 
         #endregion
 
+        #region UI event handlers
+        /// <summary>
+        /// User clicked something.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ChannelControl_StateChange(object? sender, ChannelControl.StateChangeEventArgs e)
+        {
+            var cc = sender as ChannelControl;
+            var chan = GetChannel(cc!);
+            if (chan is null) return; // error?
 
-
-
+            // TODO1
+        }
 
         /// <summary>
         /// User clicked something.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControl_ChannelChange(object? sender, ChannelChangeEventArgs e)
+        void ChannelControl_SelectionChange(object? sender, ChannelControl.SelectionChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
-            var chan = CM.GetChannel(cc!);
+            var chan = GetChannel(cc!);
             if (chan is null) return; // error?
 
-            // if (e.State) { UpdateState(); }
-            // if (e.Select) {  } // TODO1 manage sels?
-            // if (e.Info) {  } // TODO1 do anything? pass to host?
-            // if (e.Volume) {  } // TODO do anything?
-
-            switch (e.Change)
-            {
-                case ChannelChange.State:
-                    break;
-
-
-                case ChannelChange.Select:
-                    break;
-
-
-                case ChannelChange.MultiSelect:
-                    break;
-
-
-                case ChannelChange.Info:
-                    break;
-
-
-                case ChannelChange.Volume:
-                    break;
-
-                case ChannelChange.None:
-                    break;
-            }
+            // TODO1
         }
+        #endregion
 
         #region Channels
         /// <summary>
@@ -307,7 +290,8 @@ namespace Ephemera.MidiLib
                 {
                     if (_outputChannels[i].ctrl is not null) { throw new MidiLibException($"Channel [{chan}] already bound to [{ctrl}]"); }
 
-                    ctrl.ChannelChange += ChannelControl_ChannelChange;
+                    ctrl.StateChange += ChannelControl_StateChange;
+                    ctrl.SelectionChange += ChannelControl_SelectionChange;
                     _outputChannels[i] = (chan, ctrl);
                     return;
                 }
@@ -319,7 +303,7 @@ namespace Ephemera.MidiLib
         /// Clean up everything.
         /// </summary>
         /// <param name="controls"></param>
-        public void Destroy(ControlCollection controls)
+        public void Destroy(Control.ControlCollection controls)
         {
             KillAll();
 
@@ -339,36 +323,36 @@ namespace Ephemera.MidiLib
         /// </summary>
         public void UpdateState()
         {
-            // Update all channels. TODO1 needs more work!  control.Selected  ...
+            // Update all channels. TODO1 needs more work!
             bool anySolo = _outputChannels.Where(c => c.ctrl is not null && c.ctrl.State == ChannelState.Solo).Any();
 
-            foreach (var b in _outputChannels)
+            foreach (var (chan, ctrl) in _outputChannels)
             {
-                if (b.ctrl is null) continue; // never
+                if (ctrl is null) continue; // never
 
-                switch ((b.ctrl.State, anySolo))
+                switch ((ctrl.State, anySolo))
                 {
                     case (ChannelState.Solo, true):
-                        b.chan.EnableSound = true;
+                        chan.EnableSound = true;
                         break;
 
                     case (ChannelState.Mute, true):
                     case (ChannelState.Normal, true):
-                        b.chan.EnableSound = false;
-                        b.chan.Kill(); // just in case
+                        chan.EnableSound = false;
+                        chan.Kill(); // just in case
                         break;
 
                     case (ChannelState.Solo, false): // never
-                        b.chan.EnableSound = true;
+                        chan.EnableSound = true;
                         break;
 
                     case (ChannelState.Mute, false):
-                        b.chan.EnableSound = false;
-                        b.chan.Kill(); // just in case
+                        chan.EnableSound = false;
+                        chan.Kill(); // just in case
                         break;
 
                     case (ChannelState.Normal, false):
-                        b.chan.EnableSound = true;
+                        chan.EnableSound = true;
                         break;
                 }
             }
@@ -385,11 +369,21 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Readonly collection access.
         /// </summary>
-        /// <param name="selected"></param>
-        public IEnumerable<OutputChannel> GetOutputChannels(bool selected)
+        /// <param name="selected">Only selected items</param>
+        public IEnumerable<ChannelControl?> GetChannelControls(bool selected = false)
         {
-            //TODO1 selected
-            return _outputChannels.Select(ch => ch.chan);
+            var ctrls = _outputChannels.Where(ch => ch.ctrl is not null && (selected || ch.ctrl.Selected)).Select(ch => ch.ctrl);
+            return ctrls;
+        }
+
+        /// <summary>
+        /// Readonly collection access.
+        /// </summary>
+        /// <param name="selected">Only selected items</param>
+        public IEnumerable<OutputChannel> GetOutputChannels(bool selected = false)
+        {
+            var chans = _outputChannels.Where(ch => ch.ctrl is not null && (selected || ch.ctrl.Selected)).Select(ch => ch.chan);
+            return chans;
         }
 
         /// <summary>
@@ -410,7 +404,7 @@ namespace Ephemera.MidiLib
         /// <returns>The channel or null if invalid number.</returns>
         public OutputChannel? GetChannel(int channelNum)
         {
-            foreach (var b in _outputChannels) { if (b.chan.ChannelNumber == channelNum) return b.chan; }
+            foreach (var (chan, _) in _outputChannels) { if (chan.ChannelNumber == channelNum) return chan; }
             return null;
         }
 
@@ -432,7 +426,7 @@ namespace Ephemera.MidiLib
         /// <returns>The channel or null if invalid handle.</returns>
         public OutputChannel? GetChannel(ChannelHandle chnd)
         {
-            foreach (var b in _outputChannels) { if (b.chan.Handle == chnd) return b.chan; }
+            foreach (var (chan, _) in _outputChannels) { if (chan.Handle == chnd) return chan; }
             return null;
         }
 

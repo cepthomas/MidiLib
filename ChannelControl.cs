@@ -12,51 +12,24 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-//using System.Runtime.CompilerServices;
-
-
 namespace Ephemera.MidiLib
 {
     #region Types
     /// <summary>Channel playing.</summary>
     public enum ChannelState { Normal, Solo, Mute }
-
-    /// <summary>UI change type.</summary>
-    public enum UiChange { None, State, Select, MultiSelect, Info, Volume }
-
-    /// <summary>Notify host of UI changes.</summary>
-    public class ChannelChangeEventArgs : EventArgs
-    {
-        /// <summary>What happened.</summary>
-        public UiChange Change { get; set; } = UiChange.None;
-
-        // /// <summary>Solo/mute.</summary>
-        // public bool State { get; set; } = false;
-
-        // /// <summary>User clicked control.</summary>
-        // public bool Select { get; set; } = false;
-
-        // /// <summary>User clicked info box.</summary>
-        // public bool Info { get; set; } = false;
-
-        // /// <summary>User changed volume.</summary>
-        // public bool Volume { get; set; } = false;
-    }
     #endregion
-
-
 
     [DesignTimeVisible(true)]
     public partial class ChannelControl : UserControl
     {
         #region Fields
-        /// <summary></summary>
+        /// <summary>Initial bg color.</summary>
         Color _bgColor;
 
-        /// <summary>Solo/mute sel color TODO1 - use border instead or inverse color?</summary>
-        Color _smColor = Color.Blue;
+        ///// <summary>Solo/mute label color.</summary>
+        //readonly Color _smColor = Color.LightBlue;
 
-        /// <summary></summary>
+        /// <summary>Control is selected</summary>
         bool _selected = false;
 
         // The UI controls.
@@ -69,12 +42,21 @@ namespace Ephemera.MidiLib
         ToolTip toolTip = new();
         #endregion
 
-        #region Properties
-        //???? DesignerSerializationVisibility
-        //    /// The code generator will not produce code for the object.//    Hidden,
-        //    /// The code generator will produce code for the object.    //    Visible,
-        //    /// The code generator will produce code for the contents of the object, rather than for the object itself. //    Content
+        #region Events
+        /// <summary>Notify host of UI changes.</summary>
+        public class StateChangeEventArgs : EventArgs { }
+        public event EventHandler<StateChangeEventArgs>? StateChange;
 
+        /// <summary>Notify host of UI changes.</summary>
+        public class SelectionChangeEventArgs : EventArgs { public bool MultiSelect { get; set; } = false; }
+        public event EventHandler<SelectionChangeEventArgs>? SelectionChange;
+
+        /// <summary>Notify host of UI changes.</summary>
+        public class InfoClickEventArgs : EventArgs { }
+        public event EventHandler<InfoClickEventArgs>? InfoClick;
+        #endregion
+
+        #region Properties
         /// <summary>Tell the user about me. Tuple of (ui, tooltip)</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -93,24 +75,21 @@ namespace Ephemera.MidiLib
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Color DrawColor
         {
-            set { sldVolume.DrawColor = value; panChannel.DrawColor = value; }
+            set
+            {
+                sldVolume.DrawColor = value;
+                panChannel.DrawColor = value;
+            }
+            get
+            {
+                return sldVolume.DrawColor;
+            }
         }
 
         /// <summary>Drawing the control when selected.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Color SelectedColor { get; set; } = Color.LightPink;
-
-
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        //public bool ShowSoloMute { get; set; } = false;
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        //public bool ShowPan { get; set; } = false;
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        //public bool ShowFx { get; set; } = false;
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        //public bool ShowMeter { get; set; } = false;
-
 
         /// <summary>For muting/soloing.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -138,11 +117,6 @@ namespace Ephemera.MidiLib
         }
         #endregion
 
-        #region Events
-        /// <summary>User clicked stuff.</summary>
-        public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
-        #endregion
-
         #region Lifecycle
         /// <summary>
         /// Normal constructor.
@@ -161,8 +135,6 @@ namespace Ephemera.MidiLib
             SuspendLayout();
 
             _bgColor = BackColor;
-
-            BackColor = Color.Aqua;
 
             // Create the controls per the config.
             const int HT1 = 24; // first row
@@ -233,13 +205,12 @@ namespace Ephemera.MidiLib
         /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
         void ChannelInfo_Click(object? sender, EventArgs e)
         {
-            ChannelChange?.Invoke(this, new() { Change = UiChange.Info });
+            InfoClick?.Invoke(this, new());
         }
 
         /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
         void SldVolume_ValueChanged(object? sender, EventArgs e)
         {
-            ChannelChange?.Invoke(this, new() { Change = UiChange.Volume });
         }
 
         /// <summary>Handles solo and mute.</summary>
@@ -248,17 +219,41 @@ namespace Ephemera.MidiLib
             var lbl = sender as Label;
 
             // Figure out state.
-            if (sender == lblSolo)
+            if (lbl == lblSolo)
             {
-                State = lblSolo.BackColor == _smColor ? ChannelState.Normal : ChannelState.Solo;
+                if (lblSolo.BackColor == DrawColor) // on
+                {
+                    State = ChannelState.Normal;
+                    lblSolo.BackColor = _bgColor;
+                }
+                else // off
+                {
+                    State = ChannelState.Solo;
+                    lblSolo.BackColor = DrawColor;
+                    lblMute.BackColor = _bgColor;
+                }
             }
-            else if (sender == lblMute)
+            else if (lbl == lblMute)
             {
-                State = lblMute.BackColor == _smColor ? ChannelState.Normal : ChannelState.Mute;
+                if (lblMute.BackColor == DrawColor) // on
+                {
+                    State = ChannelState.Normal;
+                    lblMute.BackColor = _bgColor;
+                }
+                else // off
+                {
+                    State = ChannelState.Solo;
+                    lblMute.BackColor = DrawColor;
+                    lblSolo.BackColor = _bgColor;
+                }
+            }
+            else
+            {
+                throw new MidiLibException($"Unknown label {lbl}");
             }
 
             // Notify client.
-            ChannelChange?.Invoke(this, new() { Change = UiChange.State });
+            StateChange?.Invoke(this, new());
         }
 
         /// <summary>
@@ -274,20 +269,17 @@ namespace Ephemera.MidiLib
                 // Multiselect
 
                 Selected = !Selected;
-                ChannelChange?.Invoke(this, new() { Change = UiChange.MultiSelect });
+                SelectionChange?.Invoke(this, new() { MultiSelect = true });
             }
             else
             {
                 // Single select
                 Selected = !Selected;
-                ChannelChange?.Invoke(this, new() { Change = UiChange.Select });
+                SelectionChange?.Invoke(this, new() { MultiSelect = false });
             }
-
-            // Notify client.
 
             base.OnMouseClick(e);
         }
-
         // protected override void OnMouseEnter(EventArgs e)
         // protected override void OnMouseLeave(EventArgs e)
         // protected override void OnMouseDown(MouseEventArgs e)

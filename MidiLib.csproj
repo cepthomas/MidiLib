@@ -39,6 +39,7 @@
       <Compile Remove="ChannelControl-all.cs" />
       <Compile Remove="ChannelControl2.cs" />
       <Compile Remove="ChannelControl2.Designer.cs" />
+      <Compile Remove="_proto.cs" />
     </ItemGroup>
 
     <ItemGroup>

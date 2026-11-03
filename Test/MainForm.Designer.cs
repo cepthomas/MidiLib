@@ -35,8 +35,8 @@ namespace Ephemera.MidiLib.Test
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             tvInfo = new Ephemera.NBagOfUis.TextViewer();
             sldMasterVolume = new Ephemera.NBagOfUis.Slider();
-            ch_ctrl1 = new ChannelControl();
-            ch_ctrl2 = new ChannelControl();
+            cc1 = new ChannelControl();
+            cc2 = new ChannelControl();
             timeBar = new TimeBar();
             timer1 = new System.Windows.Forms.Timer(components);
             chkLoop = new System.Windows.Forms.CheckBox();
@@ -156,23 +156,21 @@ namespace Ephemera.MidiLib.Test
             sldMasterVolume.Size = new System.Drawing.Size(138, 48);
             sldMasterVolume.TabIndex = 99;
             // 
-            // ch_ctrl1
+            // cc1
             // 
-            ch_ctrl1.BackColor = System.Drawing.Color.Aqua;
-            ch_ctrl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            ch_ctrl1.Location = new System.Drawing.Point(6, 101);
-            ch_ctrl1.Name = "ch_ctrl1";
-            ch_ctrl1.Size = new System.Drawing.Size(108, 74);
-            ch_ctrl1.TabIndex = 105;
+            cc1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            cc1.Location = new System.Drawing.Point(6, 101);
+            cc1.Name = "cc1";
+            cc1.Size = new System.Drawing.Size(116, 74);
+            cc1.TabIndex = 105;
             // 
-            // ch_ctrl2
+            // cc2
             // 
-            ch_ctrl2.BackColor = System.Drawing.Color.Aqua;
-            ch_ctrl2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            ch_ctrl2.Location = new System.Drawing.Point(134, 101);
-            ch_ctrl2.Name = "ch_ctrl2";
-            ch_ctrl2.Size = new System.Drawing.Size(108, 74);
-            ch_ctrl2.TabIndex = 106;
+            cc2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            cc2.Location = new System.Drawing.Point(134, 101);
+            cc2.Name = "cc2";
+            cc2.Size = new System.Drawing.Size(116, 74);
+            cc2.TabIndex = 106;
             // 
             // timeBar
             // 
@@ -210,8 +208,8 @@ namespace Ephemera.MidiLib.Test
             Controls.Add(btnRewind);
             Controls.Add(chkLoop);
             Controls.Add(timeBar);
-            Controls.Add(ch_ctrl1);
-            Controls.Add(ch_ctrl2);
+            Controls.Add(cc1);
+            Controls.Add(cc2);
             Controls.Add(sldMasterVolume);
             Controls.Add(tvInfo);
             Controls.Add(toolStrip1);
@@ -233,8 +231,8 @@ namespace Ephemera.MidiLib.Test
         private NBagOfUis.TextViewer tvInfo;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;
-        private ChannelControl ch_ctrl1;
-        private ChannelControl ch_ctrl2;
+        private ChannelControl cc1;
+        private ChannelControl cc2;
         private TimeBar timeBar;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.CheckBox chkLoop;

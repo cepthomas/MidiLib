@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Ephemera.NBagOfTricks;
 
 
@@ -134,7 +135,7 @@ namespace Ephemera.MidiLib
         NebOsc.Output? _oscOutput;
 
         /// <summary>Access synchronizer.</summary>
-        readonly object _lock = new();
+        readonly Lock _lock = new();
         #endregion
 
         /// <inheritdoc />

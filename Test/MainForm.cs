@@ -9,10 +9,9 @@ using System.Runtime.CompilerServices;
 using System.IO;
 using System.Drawing.Design;
 using System.Windows.Forms.Design;
+using System.Text.Json.Serialization;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-using System.Text.Json.Serialization;
-
 
 
 namespace Ephemera.MidiLib.Test
@@ -24,14 +23,10 @@ namespace Ephemera.MidiLib.Test
         const string WARN = "WRN";
         const string INFO = "INF";
 
-        //const string INDEV = "NebLoopback1";
-        //const string OUTDEV1 = "VirtualMIDISynth #1";
-        //const string OUTDEV2 = "Microsoft GS Wavetable Synth";
-
-        // Some shorthand
+        // Shorthand
         readonly ChannelManager CM = ChannelManager.Instance;
 
-        TestSettings _settings;
+        readonly TestSettings _settings;
         #endregion
 
         #region Lifecycle
@@ -95,8 +90,8 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Configure channels defined in designer.
-                InitOneChannel(_settings.OutputChannels[0], ch_ctrl1);
-                InitOneChannel(_settings.OutputChannels[1], ch_ctrl2);
+                InitOneChannel(_settings.OutputChannels[0], cc1);
+                InitOneChannel(_settings.OutputChannels[1], cc2);
 
                 void InitOneChannel(OutputChannelStore opts, ChannelControl ctrl)
                 {
@@ -108,48 +103,12 @@ namespace Ephemera.MidiLib.Test
                     ctrl.State = opts.State;
                     ctrl.DrawColor = _settings.DrawColor;
                     ctrl.SelectedColor = _settings.SelectedColor;
-                    ctrl.Pan = outs.Pan;
-                    ctrl.??? = outs.AliasFile;
+                    //ctrl.Pan = outs.Pan;
+                    //ctrl.??? = outs.AliasFile;
                     //ctrl.Options = _settings.Options;
-//                    ctrl.ChannelChange += ChannelControl_ChannelChange;
+                    ctrl.Info = ($"Ch {opts.ChannelNumber} {opts.ChannelName}", $"{chan}");
+                    ctrl.InfoClick += ChannelControl_InfoClick;
                 }
-
-
-                // {
-                //     var opts = _settings.OutputChannels[0];
-                //     var ctrl = ch_ctrl1;
-                //
-                //     var chan = CM.OpenOutputChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
-                //     CM.Bind(chan, ctrl);
-                //     // Init control.
-                //     ctrl.Name = opts.ChannelName;
-                //     ctrl.Volume = opts.Volume;
-                //     ctrl.State = opts.State;
-                //     ctrl.DrawColor = _settings.DrawColor;
-                //     ctrl.SelectedColor = _settings.SelectedColor;
-                //     //ctrl.Pan = outs.Pan;
-                //     //ctrl.??? = outs.AliasFile;
-                //     //ctrl.Options = _settings.Options;
-                //     ctrl.ChannelChange += ChannelControl_ChannelChange;
-                // }
-
-                // {
-                //     var opts = _settings.OutputChannels[1];
-                //     var ctrl = ch_ctrl2;
-                //
-                //     var chan = CM.OpenOutputChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
-                //     CM.Bind(chan, ctrl);
-                //     // Init control.
-                //     ctrl.Name = opts.ChannelName;
-                //     ctrl.Volume = opts.Volume;
-                //     ctrl.State = opts.State;
-                //     ctrl.DrawColor = _settings.DrawColor;
-                //     ctrl.SelectedColor = _settings.SelectedColor;
-                //     //ctrl.Pan = outs.Pan; 
-                //     //ctrl.??? = outs.AliasFile; 
-                //     //ctrl.Options = _settings.Options;
-                //     ctrl.ChannelChange += ChannelControl_ChannelChange;
-                // }
             }
             catch (Exception ex)
             {
@@ -159,7 +118,6 @@ namespace Ephemera.MidiLib.Test
             CM.UpdateState();
 
             Tell(INFO, $">>> OnLoad done.");
-
             Tell(INFO, string.Join(Environment.NewLine, MidiDefs.GenUserDeviceInfo()));
 
             base.OnLoad(e);
@@ -198,8 +156,8 @@ namespace Ephemera.MidiLib.Test
                 // Create channels and controls dynamically.
                 //List<OutputChannel> channels = [];
                 Random rand = new();
-                int x = ch_ctrl2.Right + 10;
-                int y = ch_ctrl2.Top;
+                int x = cc2.Right + 10;
+                int y = cc2.Top;
 
                 var chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 3, "HonkyTonkPiano");
                 //channels.Add(chan);
@@ -231,36 +189,13 @@ namespace Ephemera.MidiLib.Test
                         SelectedColor = _settings.SelectedColor,
                         Volume = rand.NextDouble() + 0.5,
                     };
-                    ctrl.ChannelChange += ChannelControl_ChannelChange;
-//                    Controls.Add(ctrl);
+                    ctrl.InfoClick += ChannelControl_InfoClick;
+                    Controls.Add(ctrl);
 
                     CM.Bind(chan, ctrl);
 
                     x += ctrl.Width + 10; // Width is not valid until after previous statement.
                 }
-
-                //channels.ForEach(chan => AddControl(chan, "????"))
-                //{
-                //    var sui = $"Ch: {chan.ChannelNumber} {chan.ChannelName}";
-                //    var stt = $"{chan.PatchName} {chan.Patch:000}{Environment.NewLine}{chan.DeviceInfo}";
-
-                //    var ctrl = new ChannelControl()
-                //    {
-                //        Name = $"Control for {chan.ChannelName}",
-                //        Info = (sui, stt),
-                //        Location = new(x, y),
-                //        BorderStyle = BorderStyle.FixedSingle,
-                //        DrawColor = _settings.DrawColor,
-                //        SelectedColor = _settings.SelectedColor,
-                //        Volume = rand.NextDouble() + 0.5,
-                //    };
-                //    //ctrl.ChannelChange += ChannelControl_ChannelChange;
-                //    Controls.Add(ctrl);
-
-                //    CM.Bind(chan, ctrl);
-
-                //    x += ctrl.Width + 10; // Width is not valid until after previous statement.
-                //});
             }
             catch (Exception ex)
             {
@@ -286,7 +221,7 @@ namespace Ephemera.MidiLib.Test
             void Timer1_Tick(object? sender, EventArgs e)
             {
                 int noteNum = rand.Next(40, 60);
-                var chan = CM.GetChannel(ch_ctrl1);
+                var chan = CM.GetChannel(cc1);
                 SendNote(chan!, noteNum, 0.5);
 
                 if (--count <= 0)
@@ -384,8 +319,7 @@ namespace Ephemera.MidiLib.Test
             }
             else
             {
-                var ctrl = CM.GetControl(chan);
-                if (ctrl is null) return; // error?
+                var ctrl = CM.GetControl(chan) ?? throw new MidiLibException("Invalid/null control");
                 var vol = volume * sldMasterVolume.Value * ctrl.Volume;
                 var vel = (int)MathUtils.Constrain(vol * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
                 var se = new NoteOn(chan.ChannelNumber, note, vel);
@@ -419,14 +353,25 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         void Mgr_MessageReceived(object? sender, BaseEvent e)
         {
-            // Get the channel and pass along msg.
-            //var chan = _chanBindings.Where(ch => ch.Key.ChannelNumber == e.ChannelNumber);
             var chan = CM.GetChannel(e.ChannelNumber);
             if (chan is not null)
             {
                 Tell(INFO, $"Mgr Received [{e}] on [{chan}]");
             }
-            // else error?
+            else
+            {
+                throw new MidiLibException("Unknown/null channel");
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ChannelControl_InfoClick(object? sender, ChannelControl.InfoClickEventArgs e)
+        {
+            throw new NotImplementedException();
         }
         #endregion
     }

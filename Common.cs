@@ -70,7 +70,7 @@ namespace Ephemera.MidiLib
         {
             if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
-            var isChan = context.PropertyDescriptor.Name == "ChannelNumber";
+            var isChan = context!.PropertyDescriptor!.Name == "ChannelNumber";
             int start = isChan ? 1 : 0;
             int end = isChan ? MidiDefs.MAX_CHANNEL : MidiDefs.MAX_MIDI;
 
