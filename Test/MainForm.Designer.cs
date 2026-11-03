@@ -47,7 +47,7 @@ namespace Ephemera.MidiLib.Test
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator1, btnGo, toolStripSeparator4, btnTimebar, toolStripSeparator3, btnProperty, toolStripSeparator5, btnSend, toolStripSeparator6 });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator4, btnTimebar, toolStripSeparator3, btnProperty, toolStripSeparator5, btnSend, toolStripSeparator6, btnGo, toolStripSeparator1 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(741, 26);

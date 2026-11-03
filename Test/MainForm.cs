@@ -154,21 +154,17 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Create channels and controls dynamically.
-                //List<OutputChannel> channels = [];
                 Random rand = new();
                 int x = cc2.Right + 10;
                 int y = cc2.Top;
 
                 var chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 3, "HonkyTonkPiano");
-                //channels.Add(chan);
                 AddControl(chan, "dyn keys");
 
                 chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 4, "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
-                //channels.Add(chan);
                 AddControl(chan, "dyn bass");
 
                 chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 10, "Electronic");
-                //channels.Add(chan);
                 AddControl(chan, "dyn drums");
 
                 var inchan = CM.OpenInputChannel(TestSettings.INDEV, 1); // TODO2 test this. name="dyn my input"
@@ -203,6 +199,8 @@ namespace Ephemera.MidiLib.Test
             }
 
             CM.UpdateState();
+
+            var chs = CM.GetChannels();
 
             Tell(INFO, $">>> Go done.");
         }

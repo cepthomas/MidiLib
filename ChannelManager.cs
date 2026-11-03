@@ -372,7 +372,7 @@ namespace Ephemera.MidiLib
         /// <param name="selected">Only selected items</param>
         public IEnumerable<ChannelControl?> GetChannelControls(bool selected = false)
         {
-            var ctrls = _outputChannels.Where(ch => ch.ctrl is not null && (selected || ch.ctrl.Selected)).Select(ch => ch.ctrl);
+            var ctrls = _outputChannels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.ctrl);
             return ctrls;
         }
 
@@ -380,9 +380,9 @@ namespace Ephemera.MidiLib
         /// Readonly collection access.
         /// </summary>
         /// <param name="selected">Only selected items</param>
-        public IEnumerable<OutputChannel> GetOutputChannels(bool selected = false)
+        public IEnumerable<OutputChannel> GetChannels(bool selected = false)
         {
-            var chans = _outputChannels.Where(ch => ch.ctrl is not null && (selected || ch.ctrl.Selected)).Select(ch => ch.chan);
+            var chans = _outputChannels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.chan);
             return chans;
         }
 
