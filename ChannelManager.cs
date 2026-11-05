@@ -115,8 +115,9 @@ namespace Ephemera.MidiLib
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
         /// <param name="patch"></param>
+        /// <param name="aliasFile">Alternate patch names from an ini file.</param>
         /// <returns></returns>
-        public Channel OpenChannel(string deviceName, int channelNumber, int patch)
+        public Channel OpenChannel(string deviceName, int channelNumber, int patch, string? aliasFile = null)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -126,9 +127,13 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            Channel ch = new(outdev, channelNumber, patch);
 
-            outdev.Send(new Patch(channelNumber, patch));
+            //Channel ch = new(outdev, channelNumber, patch);
+            //outdev.Send(new Patch(channelNumber, patch));
+
+            Channel ch = new(outdev, channelNumber);
+            // Init instrument name stuff.
+            ch.InitInstruments(patch, aliasFile); // this does the midi patch send
 
             _channels.Add((ch, null));
             return ch;

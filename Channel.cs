@@ -22,18 +22,15 @@ namespace Ephemera.MidiLib
         /// <summary>Channel instrument patches. Optionally from alias file.</summary>
         BiLut _instruments = MidiDefs.Instruments;
 
-///// <summary>Channel controllers.</summary>
-//BiLut _controllers = MidiDefs.Controllers;
-///// <summary>Channel drums.</summary>
-//BiLut _drums = MidiDefs.Drums;
-///// <summary>Channel drum kits.</summary>
-//BiLut _drumKits = MidiDefs.DrumKits;
+        ///// <summary>Channel controllers.</summary>
+        //BiLut _controllers = MidiDefs.Controllers;
+        ///// <summary>Channel drums.</summary>
+        //BiLut _drums = MidiDefs.Drums;
+        ///// <summary>Channel drum kits.</summary>
+        //BiLut _drumKits = MidiDefs.DrumKits;
         #endregion
 
         #region Properties - configuration
-///// <summary>Channel name. Optional.</summary>
-//public string ChannelName { get; set; } = "";
-
         /// <summary>Actual 1-based midi channel number. Default is invalid or unknown.</summary>
         public int ChannelNumber { get; init; } = 0;
 
@@ -87,24 +84,24 @@ namespace Ephemera.MidiLib
             Handle = new(device.Id, ChannelNumber, true);
         }
 
-        /// <summary>
-        /// Constructor for anonymous patch version.
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="channelNumber"></param>
-        /// <param name="patch"></param>
-        public Channel(IOutputDevice device, int channelNumber, int patch)
-        {
-            if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
-
-            _device = device;
-            ChannelNumber = channelNumber;
-            Patch = patch;
-            // Anonymous so give it some placeholder patch names.
-            _instruments = new();
-            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _instruments.Add(i, $"Patch{i}"));
-            Handle = new(device.Id, ChannelNumber, true);
-        }
+        ///// <summary>
+        ///// Constructor for anonymous patch version.
+        ///// </summary>
+        ///// <param name="device"></param>
+        ///// <param name="channelNumber"></param>
+        ///// <param name="patch"></param>
+        //public Channel(IOutputDevice device, int channelNumber, int patch)
+        //{
+        //    if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
+        //
+        //    _device = device;
+        //    ChannelNumber = channelNumber;
+        //    Patch = patch;
+        //    // Anonymous so give it some placeholder patch names.
+        //    _instruments = new();
+        //    Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _instruments.Add(i, $"Patch{i}"));
+        //    Handle = new(device.Id, ChannelNumber, true);
+        //}
 
         /// <summary>
         /// For humans.
@@ -123,7 +120,7 @@ namespace Ephemera.MidiLib
         /// <param name="patchName"></param>
         /// <param name="aliasFile">Custom patch names for this channel</param>
         /// <exception cref="MidiLibException"></exception>
-        public void InitInstruments(string patchName, string? aliasFile = null)
+        public void InitInstruments(string patchName, string? aliasFile = null) xxx need int version
         {
             if (aliasFile is not null) // explicit defs file
             {
