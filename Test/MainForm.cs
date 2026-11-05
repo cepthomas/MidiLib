@@ -23,8 +23,10 @@ namespace Ephemera.MidiLib.Test
         const string WARN = "WRN";
         const string INFO = "INF";
 
-        readonly ChannelManager CM;
         readonly TestSettings _settings;
+
+        readonly ChannelManager CM;
+        readonly InputManager IM;
         #endregion
 
         #region Lifecycle
@@ -35,6 +37,7 @@ namespace Ephemera.MidiLib.Test
         {
             InitializeComponent();
             CM = new ChannelManager(Controls);
+            IM = new InputManager();
 
             Text = "MidiLib ¯\\_(^^)_/¯";
 
@@ -42,7 +45,7 @@ namespace Ephemera.MidiLib.Test
             _settings = TestSettings.GenFake();
 
             // The text output.
-            tvInfo.Font = new("Cascadia Mono", 10);
+            tvInfo.Font = new("Cascadia Mono", 9);
             tvInfo.WordWrap = true;
             tvInfo.Matchers =
             [
@@ -76,7 +79,7 @@ namespace Ephemera.MidiLib.Test
             btnDyn.Click += (_, _) => DoDyn();
 
             // Hook up manager notifications.
-            CM.MessageReceived += Mgr_MessageReceived;
+            IM.MessageReceived += Mgr_MessageReceived;
             //CM.MessageSent += Mgr_MessageSent;
         }
 
@@ -106,7 +109,7 @@ namespace Ephemera.MidiLib.Test
 
                 void InitOneChannel(OutputChannelStore opts, ChannelControl ctrl)
                 {
-                    var chan = CM.OpenOutputChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
+                    var chan = CM.OpenChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
                     CM.Bind(chan, ctrl);
                     // Init control.
                     ctrl.Name = opts.ChannelName;
@@ -169,19 +172,19 @@ namespace Ephemera.MidiLib.Test
                 int x = cc2.Right + 10;
                 int y = cc2.Top;
 
-                var chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 3, "HonkyTonkPiano");
+                var chan = CM.OpenChannel(TestSettings.OUTDEV1, 3, "HonkyTonkPiano");
                 CreateControl(chan, "dyn keys");
 
-                chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 4, "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+                chan = CM.OpenChannel(TestSettings.OUTDEV1, 4, "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
                 CreateControl(chan, "dyn bass");
 
-                chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 10, "Electronic");
+                chan = CM.OpenChannel(TestSettings.OUTDEV1, 10, "Electronic");
                 CreateControl(chan, "dyn drums");
 
-                var inchan = CM.OpenInputChannel(TestSettings.INDEV, 1); // TODO-M test this. name="dyn my input"
+                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1); // TODO-M test this. name="dyn my input"
 
                 // Ceate a control for each channel and bind object.
-                void CreateControl(OutputChannel chan, string channelName)
+                void CreateControl(Channel chan, string channelName)
                 {
                     var sui = $"Ch: {chan.ChannelNumber} {channelName}";
                     var stt = $"{chan.PatchName} {chan.Patch:000}"; //{Environment.NewLine}"Dev {chan.DeviceInfo}";
@@ -317,7 +320,7 @@ namespace Ephemera.MidiLib.Test
         /// <param name="note"></param>
         /// <param name="volume"></param>
         /// <exception cref="ArgumentException"></exception>
-        void SendNote(OutputChannel chan, int note, double volume)
+        void SendNote(Channel chan, int note, double volume)
         {
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"Note:{note}"); }
 
@@ -343,7 +346,7 @@ namespace Ephemera.MidiLib.Test
         /// <param name="controller"></param>
         /// <param name="value"></param>
         /// <exception cref="ArgumentException"></exception>
-        void SendController(OutputChannel channel, int controller, int value)
+        void SendController(Channel channel, int controller, int value)
         {
             if (controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{controller}"); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{value}"); }

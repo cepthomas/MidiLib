@@ -18,16 +18,10 @@ namespace Ephemera.MidiLib
         /// <summary>All midi devices to use for send. Index is the id.</summary>
         readonly List<IOutputDevice> _outputDevices = [];
 
-        /// <summary>All midi devices to use for receive. Index is the id.</summary>
-        readonly List<IInputDevice> _inputDevices = [];
-
         /// <summary>All the output channels with associated controls.</summary>
-        readonly List<(OutputChannel chan, ChannelControl? ctrl)> _outputChannels = [];
+        readonly List<(Channel chan, ChannelControl? ctrl)> _channels = [];
 
-        /// <summary>All the input channels.</summary>
-        readonly List<InputChannel> _inputChannels = [];
-
-        /// <summary>I own everything.</summary>
+        /// <summary>Need to add/remove dynamically generated controls.</summary>
         readonly Control.ControlCollection _controls;
         #endregion
 
@@ -36,11 +30,7 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Events
-        /// <summary>Handler for midi message arrived.</summary>
-        public event EventHandler<BaseEvent>? MessageReceived;
 
-        /// <summary>Handler for midi message sent.</summary>
-        public event EventHandler<BaseEvent>? MessageSent;
         #endregion
 
         #region Lifecycle
@@ -83,27 +73,6 @@ namespace Ephemera.MidiLib
 
         #region Channels
         /// <summary>
-        /// Open an input channel. Lazy inits the device. Throws if anything is invalid.
-        /// </summary>
-        /// <param name="deviceName"></param>
-        /// <param name="channelNumber"></param>
-        /// <returns></returns>
-        public InputChannel OpenInputChannel(string deviceName, int channelNumber)
-        {
-            // Check args.
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
-
-            var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
-
-            // Add the channel.
-            InputChannel ch = new(indev, channelNumber);
-            _inputChannels.Add(ch);
-
-            return ch;
-        }
-
-        /// <summary>
         /// Open a normal output channel with known patch name. Lazy inits the device. Throws if anything is invalid.
         /// </summary>
         /// <param name="deviceName"></param>
@@ -111,7 +80,7 @@ namespace Ephemera.MidiLib
         /// <param name="patchName"></param>
         /// <param name="aliasFile">Alternate patch names from an ini file.</param>
         /// <returns></returns>
-        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, string patchName, string? aliasFile = null)
+        public Channel OpenChannel(string deviceName, int channelNumber, string patchName, string? aliasFile = null)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -120,22 +89,22 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            OutputChannel ch = new(outdev, channelNumber);
+            Channel ch = new(outdev, channelNumber);
             // Init instrument name stuff.
             ch.InitInstruments(patchName, aliasFile); // this does the midi patch send
-            _outputChannels.Add((ch, null));
+            _channels.Add((ch, null));
 
             return ch;
         }
 
         /// <summary>
-        /// Like full function but opens a channel without known patch names.
+        /// Like full function but opens a channel without known patch names. TODO1 harmonize
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
         /// <param name="patch"></param>
         /// <returns></returns>
-        public OutputChannel OpenOutputChannel(string deviceName, int channelNumber, int patch)
+        public Channel OpenChannel(string deviceName, int channelNumber, int patch)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -145,9 +114,9 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            OutputChannel ch = new(outdev, channelNumber, patch);
+            Channel ch = new(outdev, channelNumber, patch);
             outdev.Send(new Patch(channelNumber, patch));
-            _outputChannels.Add((ch, null));
+            _channels.Add((ch, null));
 
             return ch;
         }
@@ -157,63 +126,11 @@ namespace Ephemera.MidiLib
         /// </summary>
         void DestroyChannels()
         {
-            _inputChannels.Clear();
-            _outputChannels.Clear();
+            _channels.Clear();
         }
         #endregion
 
         #region Devices
-        /// <summary>
-        /// Get I/O device. Lazy creation.
-        /// </summary>
-        /// <param name="deviceName"></param>
-        /// <returns>The device or null if invalid.</returns>
-        public IInputDevice? GetInputDevice(string deviceName)
-        {
-            IInputDevice? dev = null;
-
-            // Check for known.
-            var indevs = _inputDevices.Where(o => o.DeviceName == deviceName);
-
-            if (!indevs.Any())
-            {
-                // Is it a new device? Try to create specific flavor based on name.
-                try
-                {
-                    if (MidiInputDevice.GetAvailableDevices().Contains(deviceName))
-                    {
-                        dev = new MidiInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
-                    }
-                    else if (deviceName.Contains("oscin"))
-                    {
-                        dev = new OscInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
-                    }
-                    else if (deviceName.Contains("nullin"))
-                    {
-                        dev = new NullInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
-                    }
-
-                    if (dev is not null)
-                    {
-                        _inputDevices.Add(dev);
-                        dev.CaptureEnable = true;
-                        // Just pass inputs up and let client make sense of them.
-                        dev.MessageReceived += (sender, e) => MessageReceived?.Invoke((MidiInputDevice)sender!, e);
-                    }
-                }
-                catch (Exception)
-                {
-                    dev = null;
-                }
-            }
-            else
-            {
-                dev = indevs.ElementAt(0);
-            }
-
-            return dev;
-        }
-
         /// <summary>
         /// Get I/O device. Lazy creation.
         /// </summary>
@@ -247,7 +164,7 @@ namespace Ephemera.MidiLib
                     if (dev is not null)
                     {
                         _outputDevices.Add(dev);
-                        dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
+                        //dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
                     }
                 }
                 catch (Exception)
@@ -268,8 +185,6 @@ namespace Ephemera.MidiLib
         /// </summary>
         void DestroyDevices()
         {
-            _inputDevices.ForEach(d => d.Dispose());
-            _inputDevices.Clear();
             _outputDevices.ForEach(d => d.Dispose());
             _outputDevices.Clear();
         }
@@ -281,13 +196,13 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="chan"></param>
         /// <param name="ctrl"></param>
-        public void Bind(OutputChannel chan, ChannelControl ctrl)
+        public void Bind(Channel chan, ChannelControl ctrl) //TODO1 channel member of control?
         {
-            for (int i = 0; i < _outputChannels.Count; i++)
+            for (int i = 0; i < _channels.Count; i++)
             {
-                if (_outputChannels[i].chan == chan)
+                if (_channels[i].chan == chan)
                 {
-                    if (_outputChannels[i].ctrl is not null) { throw new MidiLibException($"Channel [{chan}] already bound to [{ctrl}]"); }
+                    if (_channels[i].ctrl is not null) { throw new MidiLibException($"Channel [{chan}] already bound to [{ctrl}]"); }
 
                     if (!_controls.Contains(ctrl))
                     {
@@ -296,7 +211,7 @@ namespace Ephemera.MidiLib
 
                     ctrl.StateChange += ChannelControl_StateChange;
                     ctrl.SelectionChange += ChannelControl_SelectionChange;
-                    _outputChannels[i] = (chan, ctrl);
+                    _channels[i] = (chan, ctrl);
                     return;
                 }
             }
@@ -311,12 +226,12 @@ namespace Ephemera.MidiLib
             KillAll();
 
             // Clean out our current elements.
-            _outputChannels.ForEach(b =>
+            _channels.ForEach(b =>
             {
                 _controls.Remove(b.ctrl);
                 b.ctrl?.Dispose();
             });
-            _outputChannels.Clear();
+            _channels.Clear();
 
             DestroyDevices();
         }
@@ -327,9 +242,9 @@ namespace Ephemera.MidiLib
         public void UpdateState()
         {
             // Update all channels.
-            bool anySolo = _outputChannels.Where(c => c.ctrl is not null && c.ctrl.State == ChannelState.Solo).Any();
+            bool anySolo = _channels.Where(c => c.ctrl is not null && c.ctrl.State == ChannelState.Solo).Any();
 
-            foreach (var (chan, ctrl) in _outputChannels)
+            foreach (var (chan, ctrl) in _channels)
             {
                 if (ctrl is null) continue; // never
 
@@ -366,26 +281,37 @@ namespace Ephemera.MidiLib
         /// </summary>
         public void KillAll()
         {
-            _outputChannels.ForEach(b => b.chan.Kill());
+            _channels.ForEach(b => b.chan.Kill());
+        }
+
+        // /// <summary>
+        // /// Readonly collection access.
+        // /// </summary>
+        // /// <param name="selected">Only selected items</param>
+        // public IEnumerable<ChannelControl?> GetChannelControls(bool selected = false) // not used???
+        // {
+        //     var ctrls = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.ctrl);
+        //     return ctrls;
+        // }
+
+        /// <summary>
+        /// Get channel control object from channel object.
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <returns>The channel or null if invalid.</returns>
+        public ChannelControl? GetControl(Channel chan) // TODO1 Midifrier.DoNextStep()
+        {
+            foreach (var b in _channels) { if (b.chan == chan) return b.ctrl; }
+            return null;
         }
 
         /// <summary>
         /// Readonly collection access.
         /// </summary>
         /// <param name="selected">Only selected items</param>
-        public IEnumerable<ChannelControl?> GetChannelControls(bool selected = false)
+        public IEnumerable<Channel> GetChannels(bool selected = false) // TODO1 Midifrier.DoNextStep()
         {
-            var ctrls = _outputChannels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.ctrl);
-            return ctrls;
-        }
-
-        /// <summary>
-        /// Readonly collection access.
-        /// </summary>
-        /// <param name="selected">Only selected items</param>
-        public IEnumerable<OutputChannel> GetChannels(bool selected = false)
-        {
-            var chans = _outputChannels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.chan);
+            var chans = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.chan);
             return chans;
         }
 
@@ -394,9 +320,9 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="ctrl"></param>
         /// <returns>The channel or null if invalid control.</returns>
-        public OutputChannel? GetChannel(ChannelControl ctrl)
+        public Channel? GetChannel(ChannelControl ctrl)
         {
-            foreach (var b in _outputChannels) { if (b.ctrl == ctrl) return b.chan; }
+            foreach (var b in _channels) { if (b.ctrl == ctrl) return b.chan; }
             return null;
         }
 
@@ -405,20 +331,9 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="channelNum"></param>
         /// <returns>The channel or null if invalid number.</returns>
-        public OutputChannel? GetChannel(int channelNum)
+        public Channel? GetChannel(int channelNum)
         {
-            foreach (var (chan, _) in _outputChannels) { if (chan.ChannelNumber == channelNum) return chan; }
-            return null;
-        }
-
-        /// <summary>
-        /// Get channel control object from channel object.
-        /// </summary>
-        /// <param name="chan"></param>
-        /// <returns>The channel or null if invalid.</returns>
-        public ChannelControl? GetControl(OutputChannel chan)
-        {
-            foreach (var b in _outputChannels) { if (b.chan == chan) return b.ctrl; }
+            foreach (var (chan, _) in _channels) { if (chan.ChannelNumber == channelNum) return chan; }
             return null;
         }
 
@@ -427,9 +342,9 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="chnd">Channel handle</param>
         /// <returns>The channel or null if invalid handle.</returns>
-        public OutputChannel? GetChannel(ChannelHandle chnd)
+        public Channel? GetChannel(ChannelHandle chnd)
         {
-            foreach (var (chan, _) in _outputChannels) { if (chan.Handle == chnd) return chan; }
+            foreach (var (chan, _) in _channels) { if (chan.Handle == chnd) return chan; }
             return null;
         }
         #endregion
@@ -444,7 +359,7 @@ namespace Ephemera.MidiLib
             List<string> res = [];
             res.Add("Output Channels");
 
-            foreach (var (chan, ctrl) in _outputChannels)
+            foreach (var (chan, ctrl) in _channels)
             {
                 try
                 {

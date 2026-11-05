@@ -12,51 +12,8 @@ using Ephemera.NBagOfUis;
 namespace Ephemera.MidiLib
 {
     //----------------------------------------------------------------
-    /// <summary>Describes one midi input channel.</summary>
-    public class InputChannel
-    {
-        #region Fields
-        /// <summary>Associated device. Required.</summary>
-        readonly IInputDevice _device;
-        #endregion
-
-        #region Properties
-///// <summary>Channel name. Optional.</summary>
-//public string ChannelName { get; set; }
-
-        /// <summary>Actual 1-based midi channel number. Required.</summary>
-        public int ChannelNumber { get; init; }
-
-        /// <summary>True if channel is active.</summary>
-        public bool Enable { get; set; } = true;
-
-        /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
-        #endregion
-
-        /// <summary>
-        /// Constructor with required args.
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="channelNumber"></param>
-        public InputChannel(IInputDevice device, int channelNumber)
-        {
-            if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
-
-            _device = device;
-            ChannelNumber = channelNumber;
-            Handle = new(device.Id, ChannelNumber, false);
-        }
-
-        public override string ToString()
-        {
-            return $"In Ch:{ChannelNumber} Dev:{_device.DeviceName}";
-        }
-    }
-
-    //----------------------------------------------------------------
-    /// <summary>Describes one midi output channel.</summary>
-    public class OutputChannel
+    /// <summary>Describes one output channel.</summary>
+    public class Channel
     {
         #region Fields
         /// <summary>Associated device.</summary>
@@ -121,7 +78,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="device"></param>
         /// <param name="channelNumber"></param>
-        public OutputChannel(IOutputDevice device, int channelNumber)
+        public Channel(IOutputDevice device, int channelNumber)
         {
             if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
@@ -136,7 +93,7 @@ namespace Ephemera.MidiLib
         /// <param name="device"></param>
         /// <param name="channelNumber"></param>
         /// <param name="patch"></param>
-        public OutputChannel(IOutputDevice device, int channelNumber, int patch)
+        public Channel(IOutputDevice device, int channelNumber, int patch)
         {
             if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
