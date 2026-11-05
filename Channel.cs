@@ -45,7 +45,7 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties - runtime
-        /// <summary>True if channel is not muted.
+        /// <summary>True if channel is not muted.</summary>
         public bool EnableSound { get; set; } = true;
 
         /// <summary>Instrument/patch.</summary>

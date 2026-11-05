@@ -26,9 +26,6 @@ namespace Ephemera.MidiLib
         /// <summary>Initial bg color.</summary>
         Color _bgColor;
 
-        ///// <summary>Solo/mute label color.</summary>
-        //readonly Color _smColor = Color.LightBlue;
-
         /// <summary>Control is selected</summary>
         bool _selected = false;
 
@@ -242,7 +239,7 @@ namespace Ephemera.MidiLib
                 }
                 else // off
                 {
-                    State = ChannelState.Solo;
+                    State = ChannelState.Mute;
                     lblMute.BackColor = DrawColor;
                     lblSolo.BackColor = _bgColor;
                 }

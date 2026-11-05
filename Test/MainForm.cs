@@ -36,8 +36,8 @@ namespace Ephemera.MidiLib.Test
         public MainForm()
         {
             InitializeComponent();
-            CM = new ChannelManager(Controls);
-            IM = new InputManager();
+            CM = new(Controls);
+            IM = new();
 
             Text = "MidiLib ¯\\_(^^)_/¯";
 
@@ -90,6 +90,8 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         void Go_Click(object? sender, EventArgs e)
         {
+            CM.UpdateState();
+
             var ls = CM.DumpState();
             ls.ForEach(l => Tell(INFO, l));
         }
@@ -104,23 +106,23 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Configure channels defined in designer.
-                InitOneChannel(_settings.OutputChannels[0], cc1);
-                InitOneChannel(_settings.OutputChannels[1], cc2);
+                InitOneChannel(_settings.ChannelSpecs[0], cc1);
+                InitOneChannel(_settings.ChannelSpecs[1], cc2);
 
-                void InitOneChannel(OutputChannelStore opts, ChannelControl ctrl)
+                void InitOneChannel(ChannelSpec spec, ChannelControl ctrl)
                 {
-                    var chan = CM.OpenChannel(opts.DeviceName, opts.ChannelNumber, opts.PatchName);
+                    var chan = CM.OpenChannel(spec.DeviceName, spec.ChannelNumber, spec.PatchName);
                     CM.Bind(chan, ctrl);
                     // Init control.
-                    ctrl.Name = opts.ChannelName;
-                    ctrl.Volume = opts.Volume;
-                    ctrl.State = opts.State;
+                    ctrl.Name = spec.ChannelName;
+                    ctrl.Volume = spec.Volume;
+                    ctrl.State = spec.State;
                     ctrl.DrawColor = _settings.DrawColor;
                     ctrl.SelectedColor = _settings.SelectedColor;
                     //ctrl.Pan = outs.Pan;
                     //ctrl.??? = outs.AliasFile;
                     //ctrl.Options = _settings.Options;
-                    ctrl.Info = ($"Ch {opts.ChannelNumber} {opts.ChannelName}", $"{chan}");
+                    ctrl.Info = ($"Ch {spec.ChannelNumber} {spec.ChannelName}", $"{chan}");
                     ctrl.InfoClick += ChannelControl_InfoClick;
                 }
             }
@@ -147,7 +149,8 @@ namespace Ephemera.MidiLib.Test
 
             if (disposing && (components is not null))
             {
-                CM.Destroy();
+                CM.Dispose();
+                IM.Dispose();
                 components.Dispose();
             }
 
@@ -213,7 +216,7 @@ namespace Ephemera.MidiLib.Test
 
             CM.UpdateState();
 
-            var chs = CM.GetChannels();
+            //var chs = CM.GetChannels();
 
             Tell(INFO, $">>> Go done.");
         }
@@ -330,12 +333,13 @@ namespace Ephemera.MidiLib.Test
             }
             else
             {
-                var ctrl = CM.GetControl(chan) ?? throw new MidiLibException("Invalid/null control");
-                var vol = volume * sldMasterVolume.Value * ctrl.Volume;
-                var vel = (int)MathUtils.Constrain(vol * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
-                var se = new NoteOn(chan.ChannelNumber, note, vel);
-                chan.Send(se);
-                Tell($">>>", se.ToString());
+                //TODO1:
+                //var ctrl = CM.GetControl(chan) ?? throw new MidiLibException("Invalid/null control");
+                //var vol = volume * sldMasterVolume.Value * ctrl.Volume;
+                //var vel = (int)MathUtils.Constrain(vol * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
+                //var se = new NoteOn(chan.ChannelNumber, note, vel);
+                //chan.Send(se);
+                //Tell($">>>", se.ToString());
             }
         }
 

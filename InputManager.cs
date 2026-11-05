@@ -13,7 +13,7 @@ using Ephemera.NBagOfUis;
 namespace Ephemera.MidiLib
 {
     /// <summary>In charge of all midi inputs.</summary>
-    public class InputManager
+    public class InputManager : IDisposable
     {
         #region Fields
         /// <summary>All midi devices to use for receive. Index is the id.</summary>
@@ -24,7 +24,6 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties
-
         #endregion
 
         #region Events
@@ -38,6 +37,16 @@ namespace Ephemera.MidiLib
         /// </summary>
         public InputManager()
         {
+        }
+
+        /// <summary>
+        /// Clean up.
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        public void Dispose()
+        {
+            _inputDevices.ForEach(d => d.Dispose());
+            _inputDevices.Clear();
         }
         #endregion
 
@@ -61,22 +70,6 @@ namespace Ephemera.MidiLib
             _midiInputs.Add(mi);
 
             return mi;
-        }
-
-        /// <summary>
-        /// Clean up.
-        /// </summary>
-        void DestroyChannelsXX()
-        {
-            _midiInputs.Clear();
-        }
-        /// <summary>
-        /// Clean up everything.
-        /// </summary>
-        public void DestroyXX()
-        {
-            _inputDevices.ForEach(d => d.Dispose());
-            _inputDevices.Clear();
         }
 
         /// <summary>

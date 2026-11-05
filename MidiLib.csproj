@@ -14,7 +14,7 @@
         <Copyright>MIT License</Copyright>
         <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
         <WarningLevel>4</WarningLevel>
-        <NoWarn>CS1591;CA1822;CA1816;CA1860</NoWarn>
+        <NoWarn>CS1591;CA1822;CA1816;IDE0290</NoWarn>
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
@@ -35,11 +35,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="Channel-all.cs" />
-      <Compile Remove="ChannelControl-all.cs" />
       <Compile Remove="ChannelControl2.cs" />
       <Compile Remove="ChannelControl2.Designer.cs" />
-      <Compile Remove="_proto.cs" />
     </ItemGroup>
 
     <ItemGroup>

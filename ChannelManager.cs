@@ -12,7 +12,7 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
-    public class ChannelManager
+    public class ChannelManager : IDisposable
     {
         #region Fields
         /// <summary>All midi devices to use for send. Index is the id.</summary>
@@ -42,6 +42,17 @@ namespace Ephemera.MidiLib
         {
             _controls = controls;
         }
+
+        /// <summary>
+        /// Clean up.
+        /// </summary>
+        public void Dispose()
+        {
+            Reset();
+
+            _outputDevices.ForEach(d => d.Dispose());
+            _outputDevices.Clear();
+        }
         #endregion
 
         #region UI event handlers
@@ -53,7 +64,7 @@ namespace Ephemera.MidiLib
         void ChannelControl_StateChange(object? sender, ChannelControl.StateChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
-            var chan = GetChannel(cc!) ?? throw new MidiLibException($"Invalid channel");
+            var _ = GetChannel(cc!) ?? throw new MidiLibException($"Invalid channel");
             UpdateState();
         }
 
@@ -65,7 +76,7 @@ namespace Ephemera.MidiLib
         void ChannelControl_SelectionChange(object? sender, ChannelControl.SelectionChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
-            var chan = GetChannel(cc!) ?? throw new MidiLibException($"Invalid channel");
+            var _ = GetChannel(cc!) ?? throw new MidiLibException($"Invalid channel");
 
             // Nothing to do?
         }
@@ -90,10 +101,11 @@ namespace Ephemera.MidiLib
 
             // Add the channel.
             Channel ch = new(outdev, channelNumber);
+
             // Init instrument name stuff.
             ch.InitInstruments(patchName, aliasFile); // this does the midi patch send
-            _channels.Add((ch, null));
 
+            _channels.Add((ch, null));
             return ch;
         }
 
@@ -115,18 +127,11 @@ namespace Ephemera.MidiLib
 
             // Add the channel.
             Channel ch = new(outdev, channelNumber, patch);
+
             outdev.Send(new Patch(channelNumber, patch));
+
             _channels.Add((ch, null));
-
             return ch;
-        }
-
-        /// <summary>
-        /// Clean up.
-        /// </summary>
-        void DestroyChannelsXX()
-        {
-            _channels.Clear();
         }
         #endregion
 
@@ -179,15 +184,6 @@ namespace Ephemera.MidiLib
 
             return dev;
         }
-
-        /// <summary>
-        /// Clean up.
-        /// </summary>
-        void DestroyDevicesXX()
-        {
-            _outputDevices.ForEach(d => d.Dispose());
-            _outputDevices.Clear();
-        }
         #endregion
 
         #region User functions
@@ -219,24 +215,6 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Clean up everything.
-        /// </summary>
-        public void DestroyXX()
-        {
-            KillAll();
-
-            // Clean out our current elements.
-            _channels.ForEach(b =>
-            {
-                _controls.Remove(b.ctrl);
-                b.ctrl?.Dispose();
-            });
-            _channels.Clear();
-
-            DestroyDevices();
-        }
-
-        /// <summary>
         /// Handles solo/mute.
         /// </summary>
         public void UpdateState()
@@ -251,7 +229,7 @@ namespace Ephemera.MidiLib
                 switch ((ctrl.State, anySolo))
                 {
                     case (ChannelState.Solo, true):
-                        chan.Enable = true;
+                        chan.EnableSound = true;
                         break;
 
                     case (ChannelState.Mute, true):
@@ -284,45 +262,44 @@ namespace Ephemera.MidiLib
             _channels.ForEach(b => b.chan.Kill());
         }
 
-        // /// <summary>
-        // /// Readonly collection access.
-        // /// </summary>
-        // /// <param name="selected">True = only selected items</param>
-        // public IEnumerable<ChannelControl?> GetChannelControls(bool selected = false) // not used???
-        // {
-        //     var ctrls = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.ctrl);
-        //     return ctrls;
-        // }
-
         /// <summary>
-        /// Get channel control object from channel object.
+        /// Remove current channels and controls.
         /// </summary>
-        /// <param name="chan"></param>
-        /// <returns>The channel or null if invalid.</returns>
-        public ChannelControl? GetControl(Channel chan) // TODO1 Midifrier.DoNextStep()
+        public void Reset()
         {
-            foreach (var b in _channels) { if (b.chan == chan) return b.ctrl; }
-            return null;
+            KillAll();
+
+            // Clean out our current elements.
+            _channels.ForEach(b =>
+            {
+                _controls.Remove(b.ctrl);
+                b.ctrl?.Dispose();
+            });
+            _channels.Clear();
         }
+        #endregion
 
+        #region Collection accessors
         /// <summary>
-        /// Readonly collection access.
+        /// Iterate through the contents.
         /// </summary>
-        /// <param name="selected">True = only selected items</param>
-        public IEnumerable<Channel> GetChannels(bool selected = false) // TODO1 Midifrier.DoNextStep()
+        /// <returns></returns>
+        public IEnumerable<(Channel chan, ChannelControl? ctrl)> GetChannels()
         {
-            var chans = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.chan);
-            return chans;
+            foreach (var ch in _channels)
+            {
+                yield return ch;
+            }
         }
 
         /// <summary>
         /// Get channel object from control object.
         /// </summary>
-        /// <param name="ctrl"></param>
+        /// <param name="chCtrl"></param>
         /// <returns>The channel or null if invalid control.</returns>
-        public Channel? GetChannel(ChannelControl ctrl)
+        public Channel? GetChannel(ChannelControl chCtrl)
         {
-            foreach (var b in _channels) { if (b.ctrl == ctrl) return b.chan; }
+            foreach (var (chan, ctrl) in _channels) { if (ctrl == chCtrl) return chan; }
             return null;
         }
 
@@ -347,6 +324,37 @@ namespace Ephemera.MidiLib
             foreach (var (chan, _) in _channels) { if (chan.Handle == chnd) return chan; }
             return null;
         }
+
+        // /// <summary>
+        // /// Readonly collection access.
+        // /// </summary>
+        // /// <param name="selected">True = only selected items</param>
+        // public IEnumerable<ChannelControl?> GetChannelControls(bool selected = false) // not used???
+        // {
+        //     var ctrls = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.ctrl);
+        //     return ctrls;
+        // }
+
+        // /// <summary>
+        // /// Get channel control object from channel object.
+        // /// </summary>
+        // /// <param name="chan"></param>
+        // /// <returns>The channel or null if invalid.</returns>
+        // public ChannelControl? GetControl(Channel chan) // TODO1 Midifrier.DoNextStep()
+        // {
+        //     foreach (var b in _channels) { if (b.chan == chan) return b.ctrl; }
+        //     return null;
+        // }
+
+        // /// <summary>
+        // /// Readonly collection access.
+        // /// </summary>
+        // /// <param name="selected">True = only selected items</param>
+        // public IEnumerable<Channel> GetChannels(bool selected = false) // TODO1 Midifrier.DoNextStep()
+        // {
+        //     var chans = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.chan);
+        //     return chans;
+        // }
         #endregion
 
         #region Dev stuff
@@ -361,13 +369,13 @@ namespace Ephemera.MidiLib
 
             foreach (var (chan, ctrl) in _channels)
             {
-                try
+                if (ctrl is not null)
                 {
-                    res.Add($"    Ch:{chan.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{chan.Enable} Pt:{chan.Patch}/{chan.PatchName}");
+                    res.Add($"    Ch:{chan.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{chan.EnableSound} Pt:{chan.Patch}/{chan.PatchName}");
                 }
-                catch
+                else
                 {
-                    res.Add($"    Ch:{chan.ChannelNumber} has a null ctrl");
+                    res.Add($"    Ch:{chan.ChannelNumber} ctrl:null Enb:{chan.EnableSound} Pt:{chan.Patch}/{chan.PatchName}");
                 }
             }
             return res;

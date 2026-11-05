@@ -23,10 +23,10 @@ namespace Ephemera.MidiLib.Test
         public List<string> DeviceNames { get; set; } = [];
 
         [TypeConverter(typeof(ExpandableObjectConverter))]
-        public List<InputChannelStore> InputChannels { get; set; } = [];
+        public List<InputSpec> InputSpecs { get; set; } = [];
 
         [TypeConverter(typeof(ExpandableObjectConverter))]
-        public List<OutputChannelStore> OutputChannels { get; set; } = [];
+        public List<ChannelSpec> ChannelSpecs { get; set; } = [];
 
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         public int SomeOtherMidi { get; set; } = 0;
@@ -56,8 +56,8 @@ namespace Ephemera.MidiLib.Test
             TestSettings settings = new()
             {
                 DeviceNames = [INDEV, OUTDEV1, OUTDEV2],
-                InputChannels = [],
-                OutputChannels = [],
+                InputSpecs = [],
+                ChannelSpecs = [],
                 SomeOtherMidi = 88,
                 MasterVolume = 0.77,
                 DrawColor = Color.SpringGreen,
@@ -65,14 +65,14 @@ namespace Ephemera.MidiLib.Test
                 //Options = DisplayOptions.None
             };
 
-            settings.InputChannels.Add(new()
+            settings.InputSpecs.Add(new()
             {
                 ChannelNumber = 8,
                 ChannelName = "Some input",
                 DeviceName = INDEV
             });
 
-            settings.OutputChannels.Add(new()
+            settings.ChannelSpecs.Add(new()
             {
                 ChannelNumber = 1,
                 ChannelName = "Output 1!",
@@ -82,7 +82,7 @@ namespace Ephemera.MidiLib.Test
                 State = ChannelState.Normal
             });
 
-            settings.OutputChannels.Add(new()
+            settings.ChannelSpecs.Add(new()
             {
                 ChannelNumber = 2,
                 ChannelName = "Output 2!",
@@ -97,7 +97,7 @@ namespace Ephemera.MidiLib.Test
     }
 
     [Serializable]
-    public class InputChannelStore
+    public class InputSpec
     {
         /// <summary>Channel name. Optional.</summary>
         public string ChannelName { get; set; } = "???";
@@ -114,7 +114,7 @@ namespace Ephemera.MidiLib.Test
     }
 
     [Serializable]
-    public class OutputChannelStore
+    public class ChannelSpec
     {
         public string ChannelName { get; set; } = "???";
 
