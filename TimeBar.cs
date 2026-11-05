@@ -80,9 +80,9 @@ namespace Ephemera.MidiLib
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SnapType Snap { get; set; } = SnapType.Beat;
 
-        /// <summary>Vertical line spacing for visual interest. 0 means none.</summary>
+        /// <summary>Vertical line spacing for visual interest. 0 means none. Default should work for most situations.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int GridLines { get; set; } = 0;
+        public int GridLines { get; set; } = 4 * MusicTime.SubbeatsPerBar;
 
         /// <summary>Keep going at end.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -295,10 +295,9 @@ namespace Ephemera.MidiLib
             ///// Some vertical lines.
             if (GridLines > 0)
             {
-                var incr = 4 * MusicTime.SubbeatsPerBar; // TODO1 or bar if dense.
                 _penMarker.DashStyle = DashStyle.Custom;
                 _penMarker.DashPattern = [5, 2];
-                for (int i = 0; i < _length.Tick; i += incr)
+                for (int i = 0; i < _length.Tick; i += GridLines)
                 {
                     int x = GetClientFromTick(i);
                     pe.Graphics.DrawLine(_penMarker, x, 0, x, Height);

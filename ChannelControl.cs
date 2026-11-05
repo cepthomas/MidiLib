@@ -202,13 +202,13 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Handlers for user selections
-        /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
+        /// <summary>User clicked info box. Maybe the host would like to do something.</summary>
         void ChannelInfo_Click(object? sender, EventArgs e)
         {
             InfoClick?.Invoke(this, new());
         }
 
-        /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
+        /// <summary>User changed volume. Usually not needed by host.</summary>
         void SldVolume_ValueChanged(object? sender, EventArgs e)
         {
         }
@@ -252,7 +252,7 @@ namespace Ephemera.MidiLib
                 throw new MidiLibException($"Unknown label {lbl}");
             }
 
-            // Notify client.
+            // Notify host.
             StateChange?.Invoke(this, new());
         }
 
@@ -267,7 +267,6 @@ namespace Ephemera.MidiLib
             if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
             {
                 // Multiselect
-
                 Selected = !Selected;
                 SelectionChange?.Invoke(this, new() { MultiSelect = true });
             }

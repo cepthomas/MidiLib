@@ -21,8 +21,8 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties
-        ///// <summary>Channel name. Optional.</summary>
-        //public string ChannelName { get; set; }
+///// <summary>Channel name. Optional.</summary>
+//public string ChannelName { get; set; }
 
         /// <summary>Actual 1-based midi channel number. Required.</summary>
         public int ChannelNumber { get; init; }
@@ -65,19 +65,19 @@ namespace Ephemera.MidiLib
         /// <summary>Channel instrument patches. Optionally from alias file.</summary>
         BiLut _instruments = MidiDefs.Instruments;
 
-        ///// <summary>Channel controllers.</summary>
-        //BiLut _controllers = MidiDefs.Controllers;
-        ///// <summary>Channel drums.</summary>
-        //BiLut _drums = MidiDefs.Drums;
-        ///// <summary>Channel drum kits.</summary>
-        //BiLut _drumKits = MidiDefs.DrumKits;
+///// <summary>Channel controllers.</summary>
+//BiLut _controllers = MidiDefs.Controllers;
+///// <summary>Channel drums.</summary>
+//BiLut _drums = MidiDefs.Drums;
+///// <summary>Channel drum kits.</summary>
+//BiLut _drumKits = MidiDefs.DrumKits;
         #endregion
 
         #region Properties - configuration
-        ///// <summary>Channel name. Optional.</summary>
-        //public string ChannelName { get; set; } = "";
+///// <summary>Channel name. Optional.</summary>
+//public string ChannelName { get; set; } = "";
 
-        /// <summary>Actual 1-based midi channel number.</summary>
+        /// <summary>Actual 1-based midi channel number. Default is invalid or unknown.</summary>
         public int ChannelNumber { get; init; } = 0;
 
         /// <summary>Instrument names. Optional.</summary>
@@ -88,8 +88,8 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties - runtime
-        /// <summary>True if channel is not muted.</summary>
-        public bool EnableSound { get; set; } = true;
+        /// <summary>True if channel is not muted. TODO-M stop all midi out or just NoteOn?</summary>
+        public bool Enable { get; set; } = true;
 
         /// <summary>Instrument/patch.</summary>
         public int Patch { get; set; } = 0;
@@ -145,10 +145,14 @@ namespace Ephemera.MidiLib
             Patch = patch;
             // Anonymous so give it some placeholder patch names.
             _instruments = new();
-            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _instruments.Add(i, $"INST_{i}"));
+            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _instruments.Add(i, $"Patch{i}"));
             Handle = new(device.Id, ChannelNumber, true);
         }
 
+        /// <summary>
+        /// For humans.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"Out Ch:{ChannelNumber} Dev:{_device.DeviceName}";
@@ -245,7 +249,7 @@ namespace Ephemera.MidiLib
         /// <param name="evt"></param>
         public void Send(BaseEvent evt)
         {
-            if (EnableSound || evt is not NoteOn)
+            if (Enable || evt is not NoteOn)
             {
                 evt.ChannelNumber = ChannelNumber;
                 _device.Send(evt);

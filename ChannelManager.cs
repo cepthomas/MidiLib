@@ -14,12 +14,6 @@ namespace Ephemera.MidiLib
 {
     public class ChannelManager
     {
-        #region Singleton
-        public static ChannelManager Instance { get { _instance ??= new ChannelManager(); return _instance; } }
-        static ChannelManager? _instance;
-        ChannelManager() { }
-        #endregion
-
         #region Fields
         /// <summary>All midi devices to use for send. Index is the id.</summary>
         readonly List<IOutputDevice> _outputDevices = [];
@@ -32,11 +26,12 @@ namespace Ephemera.MidiLib
 
         /// <summary>All the input channels.</summary>
         readonly List<InputChannel> _inputChannels = [];
+
+        /// <summary>I own everything.</summary>
+        readonly Control.ControlCollection _controls;
         #endregion
 
         #region Properties
-        /// <summary>What the mouse click does.</summary>
-        public SelectionMode Mode { get; set; } = SelectionMode.None;
 
         #endregion
 
@@ -49,22 +44,27 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Lifecycle
-
+        /// <summary>
+        /// Normal constructor.
+        /// </summary>
+        /// <param name="controls"></param>
+        public ChannelManager(Control.ControlCollection controls)
+        {
+            _controls = controls;
+        }
         #endregion
 
         #region UI event handlers
         /// <summary>
-        /// User clicked something.
+        /// User clicked solo/mute.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void ChannelControl_StateChange(object? sender, ChannelControl.StateChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
-            var chan = GetChannel(cc!);
-            if (chan is null) return; // error?
-
-            // TODO1
+            var chan = GetChannel(cc!) ?? throw new MidiLibException($"Invalid channel");
+            UpdateState();
         }
 
         /// <summary>
@@ -75,10 +75,9 @@ namespace Ephemera.MidiLib
         void ChannelControl_SelectionChange(object? sender, ChannelControl.SelectionChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
-            var chan = GetChannel(cc!);
-            if (chan is null) return; // error?
+            var chan = GetChannel(cc!) ?? throw new MidiLibException($"Invalid channel");
 
-            // TODO1
+            // Nothing to do?
         }
         #endregion
 
@@ -105,7 +104,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Open a normal output channel. Lazy inits the device. Throws if anything is invalid.
+        /// Open a normal output channel with known patch name. Lazy inits the device. Throws if anything is invalid.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
@@ -123,14 +122,14 @@ namespace Ephemera.MidiLib
             // Add the channel.
             OutputChannel ch = new(outdev, channelNumber);
             // Init instrument name stuff.
-            ch.InitInstruments(patchName, aliasFile); // this does the midi send
+            ch.InitInstruments(patchName, aliasFile); // this does the midi patch send
             _outputChannels.Add((ch, null));
 
             return ch;
         }
 
         /// <summary>
-        /// Like full function but opens a channel without parch name.
+        /// Like full function but opens a channel without known patch names.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
@@ -156,7 +155,7 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Clean up.
         /// </summary>
-        public void DestroyChannels()
+        void DestroyChannels()
         {
             _inputChannels.Clear();
             _outputChannels.Clear();
@@ -267,7 +266,7 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Clean up.
         /// </summary>
-        public void DestroyDevices()
+        void DestroyDevices()
         {
             _inputDevices.ForEach(d => d.Dispose());
             _inputDevices.Clear();
@@ -290,6 +289,11 @@ namespace Ephemera.MidiLib
                 {
                     if (_outputChannels[i].ctrl is not null) { throw new MidiLibException($"Channel [{chan}] already bound to [{ctrl}]"); }
 
+                    if (!_controls.Contains(ctrl))
+                    {
+                        _controls.Add(ctrl);
+                    }
+
                     ctrl.StateChange += ChannelControl_StateChange;
                     ctrl.SelectionChange += ChannelControl_SelectionChange;
                     _outputChannels[i] = (chan, ctrl);
@@ -302,15 +306,14 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Clean up everything.
         /// </summary>
-        /// <param name="controls"></param>
-        public void Destroy(Control.ControlCollection controls)
+        public void Destroy()
         {
             KillAll();
 
             // Clean out our current elements.
             _outputChannels.ForEach(b =>
             {
-                controls.Remove(b.ctrl);
+                _controls.Remove(b.ctrl);
                 b.ctrl?.Dispose();
             });
             _outputChannels.Clear();
@@ -323,7 +326,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         public void UpdateState()
         {
-            // Update all channels. TODO1 needs more work!
+            // Update all channels.
             bool anySolo = _outputChannels.Where(c => c.ctrl is not null && c.ctrl.State == ChannelState.Solo).Any();
 
             foreach (var (chan, ctrl) in _outputChannels)
@@ -333,26 +336,26 @@ namespace Ephemera.MidiLib
                 switch ((ctrl.State, anySolo))
                 {
                     case (ChannelState.Solo, true):
-                        chan.EnableSound = true;
+                        chan.Enable = true;
                         break;
 
                     case (ChannelState.Mute, true):
                     case (ChannelState.Normal, true):
-                        chan.EnableSound = false;
+                        chan.Enable = false;
                         chan.Kill(); // just in case
                         break;
 
                     case (ChannelState.Solo, false): // never
-                        chan.EnableSound = true;
+                        chan.Enable = true;
                         break;
 
                     case (ChannelState.Mute, false):
-                        chan.EnableSound = false;
+                        chan.Enable = false;
                         chan.Kill(); // just in case
                         break;
 
                     case (ChannelState.Normal, false):
-                        chan.EnableSound = true;
+                        chan.Enable = true;
                         break;
                 }
             }
@@ -429,17 +432,43 @@ namespace Ephemera.MidiLib
             foreach (var (chan, _) in _outputChannels) { if (chan.Handle == chnd) return chan; }
             return null;
         }
+        #endregion
 
-        ///// <summary>
-        ///// Get channel object from channel name.
-        ///// </summary>
-        ///// <param name="chname"></param>
-        ///// <returns>The channel or null if invalid handle.</returns>
-        //public OutputChannel? GetChannel(string chname)
-        //{
-        //    foreach (var b in _outputChannels) { if (b.chan.ChannelName == chname) return b.chan; }
-        //    return null;
-        //}
+        #region Dev stuff
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public List<string> DumpState()
+        {
+            List<string> res = [];
+            res.Add("Output Channels");
+
+            foreach (var (chan, ctrl) in _outputChannels)
+            {
+                try
+                {
+                    res.Add($"    Ch:{chan.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{chan.Enable} Pt:{chan.Patch}/{chan.PatchName}");
+                }
+                catch
+                {
+                    res.Add($"    Ch:{chan.ChannelNumber} has a null ctrl");
+                }
+            }
+            return res;
+
+            // Channel:
+            // bool IsDrums { get; private set; } = false;
+            // string AliasFile { get; set; } = "";
+            // ChannelHandle Handle { get; init; }
+            // EventCollection Events { get; set; } = new();
+            //
+            // ChannelControl
+            // (string ui, string tt) Info  set only
+            // Color DrawColor
+            // Color SelectedColor { get; set; } = Color.LightPink;
+            // double Volume
+        }
         #endregion
     }
 }

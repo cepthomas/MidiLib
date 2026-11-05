@@ -23,9 +23,7 @@ namespace Ephemera.MidiLib.Test
         const string WARN = "WRN";
         const string INFO = "INF";
 
-        // Shorthand
-        readonly ChannelManager CM = ChannelManager.Instance;
-
+        readonly ChannelManager CM;
         readonly TestSettings _settings;
         #endregion
 
@@ -36,6 +34,7 @@ namespace Ephemera.MidiLib.Test
         public MainForm()
         {
             InitializeComponent();
+            CM = new ChannelManager(Controls);
 
             Text = "MidiLib ¯\\_(^^)_/¯";
 
@@ -43,7 +42,7 @@ namespace Ephemera.MidiLib.Test
             _settings = TestSettings.GenFake();
 
             // The text output.
-            tvInfo.Font = Font;
+            tvInfo.Font = new("Cascadia Mono", 10);
             tvInfo.WordWrap = true;
             tvInfo.Matchers =
             [
@@ -64,20 +63,32 @@ namespace Ephemera.MidiLib.Test
             timeBar.Snap = SnapType.Beat;
             timeBar.StateChange += (sender, e) => { Tell(INFO, $">>> TimeBar event. {timeBar.Current}"); };
 
-            // Simple UI handlers.
+            // UI handlers.
             btnKillMidi.Click += (_, __) => { CM.KillAll(); };
             chkLoop.CheckedChanged += (_, __) => { timeBar.DoLoop = chkLoop.Checked; };
             btnRewind.Click += (_, __) => { timeBar.Rewind(); };
 
-            btnGo.Click += Go_Click;
+            btnGo.Click += Go_Click; ;
             btnTimebar.Click += (_, _) => TestTimeBar();
             btnProperty.Click += (_, _) => TestPropertyEditor();
 
             btnSend.Click += BtnSend_Click;
+            btnDyn.Click += (_, _) => DoDyn();
 
-            // Handle midi io.
+            // Hook up manager notifications.
             CM.MessageReceived += Mgr_MessageReceived;
-            //MidiManager.Instance.MessageSent += Mgr_MessageSent;
+            //CM.MessageSent += Mgr_MessageSent;
+        }
+
+        /// <summary>
+        /// Do stuff.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Go_Click(object? sender, EventArgs e)
+        {
+            var ls = CM.DumpState();
+            ls.ForEach(l => Tell(INFO, l));
         }
 
         /// <summary>
@@ -133,7 +144,7 @@ namespace Ephemera.MidiLib.Test
 
             if (disposing && (components is not null))
             {
-                CM.Destroy(Controls);
+                CM.Destroy();
                 components.Dispose();
             }
 
@@ -147,7 +158,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Go_Click(object? sender, EventArgs e)
+        void DoDyn()
         {
             Tell(INFO, $">>> Go start.");
 
@@ -159,18 +170,18 @@ namespace Ephemera.MidiLib.Test
                 int y = cc2.Top;
 
                 var chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 3, "HonkyTonkPiano");
-                AddControl(chan, "dyn keys");
+                CreateControl(chan, "dyn keys");
 
                 chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 4, "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
-                AddControl(chan, "dyn bass");
+                CreateControl(chan, "dyn bass");
 
                 chan = CM.OpenOutputChannel(TestSettings.OUTDEV1, 10, "Electronic");
-                AddControl(chan, "dyn drums");
+                CreateControl(chan, "dyn drums");
 
-                var inchan = CM.OpenInputChannel(TestSettings.INDEV, 1); // TODO2 test this. name="dyn my input"
+                var inchan = CM.OpenInputChannel(TestSettings.INDEV, 1); // TODO-M test this. name="dyn my input"
 
                 // Ceate a control for each channel and bind object.
-                void AddControl(OutputChannel chan, string channelName)
+                void CreateControl(OutputChannel chan, string channelName)
                 {
                     var sui = $"Ch: {chan.ChannelNumber} {channelName}";
                     var stt = $"{chan.PatchName} {chan.Patch:000}"; //{Environment.NewLine}"Dev {chan.DeviceInfo}";
@@ -186,7 +197,6 @@ namespace Ephemera.MidiLib.Test
                         Volume = rand.NextDouble() + 0.5,
                     };
                     ctrl.InfoClick += ChannelControl_InfoClick;
-                    Controls.Add(ctrl);
 
                     CM.Bind(chan, ctrl);
 
@@ -269,7 +279,7 @@ namespace Ephemera.MidiLib.Test
         /// <summary>
         /// Test property editing
         /// </summary>
-        void TestPropertyEditor() // TODO2
+        void TestPropertyEditor() // TODO-M
         {
             // Set up options.
             //var insts = MidiDefs.GetDefaultInstrumentDefs();
