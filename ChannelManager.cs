@@ -124,7 +124,7 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Clean up.
         /// </summary>
-        void DestroyChannels()
+        void DestroyChannelsXX()
         {
             _channels.Clear();
         }
@@ -183,7 +183,7 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Clean up.
         /// </summary>
-        void DestroyDevices()
+        void DestroyDevicesXX()
         {
             _outputDevices.ForEach(d => d.Dispose());
             _outputDevices.Clear();
@@ -221,7 +221,7 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Clean up everything.
         /// </summary>
-        public void Destroy()
+        public void DestroyXX()
         {
             KillAll();
 
@@ -256,21 +256,21 @@ namespace Ephemera.MidiLib
 
                     case (ChannelState.Mute, true):
                     case (ChannelState.Normal, true):
-                        chan.Enable = false;
+                        chan.EnableSound = false;
                         chan.Kill(); // just in case
                         break;
 
                     case (ChannelState.Solo, false): // never
-                        chan.Enable = true;
+                        chan.EnableSound = true;
                         break;
 
                     case (ChannelState.Mute, false):
-                        chan.Enable = false;
+                        chan.EnableSound = false;
                         chan.Kill(); // just in case
                         break;
 
                     case (ChannelState.Normal, false):
-                        chan.Enable = true;
+                        chan.EnableSound = true;
                         break;
                 }
             }
@@ -287,7 +287,7 @@ namespace Ephemera.MidiLib
         // /// <summary>
         // /// Readonly collection access.
         // /// </summary>
-        // /// <param name="selected">Only selected items</param>
+        // /// <param name="selected">True = only selected items</param>
         // public IEnumerable<ChannelControl?> GetChannelControls(bool selected = false) // not used???
         // {
         //     var ctrls = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.ctrl);
@@ -308,7 +308,7 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Readonly collection access.
         /// </summary>
-        /// <param name="selected">Only selected items</param>
+        /// <param name="selected">True = only selected items</param>
         public IEnumerable<Channel> GetChannels(bool selected = false) // TODO1 Midifrier.DoNextStep()
         {
             var chans = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.chan);

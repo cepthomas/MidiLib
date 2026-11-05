@@ -45,8 +45,8 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties - runtime
-        /// <summary>True if channel is not muted. TODO-M stop all midi out or just NoteOn?</summary>
-        public bool Enable { get; set; } = true;
+        /// <summary>True if channel is not muted.
+        public bool EnableSound { get; set; } = true;
 
         /// <summary>Instrument/patch.</summary>
         public int Patch { get; set; } = 0;
@@ -201,12 +201,12 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Hide direct device access. Assumes client has fixed up volume etc.
+        /// Send a midi message. Honors muting. Assumes host has fixed up volume etc.
         /// </summary>
         /// <param name="evt"></param>
         public void Send(BaseEvent evt)
         {
-            if (Enable || evt is not NoteOn)
+            if (EnableSound || evt is not NoteOn || evt is not NoteOff)
             {
                 evt.ChannelNumber = ChannelNumber;
                 _device.Send(evt);

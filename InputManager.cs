@@ -57,18 +57,26 @@ namespace Ephemera.MidiLib
             var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
 
             // Add the channel.
-            MidiInput ch = new(indev, channelNumber);
-            _midiInputs.Add(ch);
+            MidiInput mi = new(indev, channelNumber);
+            _midiInputs.Add(mi);
 
-            return ch;
+            return mi;
         }
 
         /// <summary>
         /// Clean up.
         /// </summary>
-        void DestroyChannels()
+        void DestroyChannelsXX()
         {
             _midiInputs.Clear();
+        }
+        /// <summary>
+        /// Clean up everything.
+        /// </summary>
+        public void DestroyXX()
+        {
+            _inputDevices.ForEach(d => d.Dispose());
+            _inputDevices.Clear();
         }
 
         /// <summary>
@@ -120,26 +128,6 @@ namespace Ephemera.MidiLib
             }
 
             return dev;
-        }
-
-        /// <summary>
-        /// Clean up.
-        /// </summary>
-        void DestroyDevices()
-        {
-            _inputDevices.ForEach(d => d.Dispose());
-            _inputDevices.Clear();
-        }
-        #endregion
-
-        #region User functions
-
-        /// <summary>
-        /// Clean up everything.
-        /// </summary>
-        public void Destroy()
-        {
-            DestroyDevices();
         }
         #endregion
     }
