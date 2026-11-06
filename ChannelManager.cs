@@ -190,7 +190,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="chan"></param>
         /// <param name="ctrl"></param>
-        public void Bind(Channel chan, ChannelControl ctrl) //TODO1 channel member of control?
+        public void Bind(Channel chan, ChannelControl ctrl)
         {
             for (int i = 0; i < _channels.Count; i++)
             {
@@ -322,37 +322,6 @@ namespace Ephemera.MidiLib
             foreach (var (chan, _) in _channels) { if (chan.Handle == chnd) return chan; }
             return null;
         }
-
-        // /// <summary>
-        // /// Readonly collection access.
-        // /// </summary>
-        // /// <param name="selected">True = only selected items</param>
-        // public IEnumerable<ChannelControl?> GetChannelControls(bool selected = false) // not used???
-        // {
-        //     var ctrls = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.ctrl);
-        //     return ctrls;
-        // }
-
-        // /// <summary>
-        // /// Get channel control object from channel object.
-        // /// </summary>
-        // /// <param name="chan"></param>
-        // /// <returns>The channel or null if invalid.</returns>
-        // public ChannelControl? GetControl(Channel chan) // TODO1 Midifrier.DoNextStep()
-        // {
-        //     foreach (var b in _channels) { if (b.chan == chan) return b.ctrl; }
-        //     return null;
-        // }
-
-        // /// <summary>
-        // /// Readonly collection access.
-        // /// </summary>
-        // /// <param name="selected">True = only selected items</param>
-        // public IEnumerable<Channel> GetChannels(bool selected = false) // TODO1 Midifrier.DoNextStep()
-        // {
-        //     var chans = _channels.Where(ch => ch.ctrl is not null && (!selected || ch.ctrl.Selected)).Select(ch => ch.chan);
-        //     return chans;
-        // }
         #endregion
 
         #region Dev stuff

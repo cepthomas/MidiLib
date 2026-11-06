@@ -81,7 +81,7 @@ namespace Ephemera.MidiLib.Test
 
             ///// Anonymous mode
             sent = null;
-            var chan_out4 = CM.OpenChannel(outdev, 1, 38);
+            var chan_out4 = CM.OpenChannel(outdev, 1, 38, false);
             Assert(chan_out4.PatchName == "INST_38");
             Assert(sent is Patch);
             pevt = (sent as Patch)!;

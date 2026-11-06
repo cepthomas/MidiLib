@@ -114,7 +114,7 @@ namespace Ephemera.MidiLib.Test
                     var chan = CM.OpenChannel(spec.DeviceName, spec.ChannelNumber, spec.PatchName);
                     CM.Bind(chan, ctrl);
                     // Init control.
-                    ctrl.Name = spec.ChannelName;
+                    //ctrl.Name = spec.ChannelName;
                     ctrl.Volume = spec.Volume;
                     ctrl.State = spec.State;
                     ctrl.DrawColor = _settings.DrawColor;
@@ -122,7 +122,8 @@ namespace Ephemera.MidiLib.Test
                     //ctrl.Pan = outs.Pan;
                     //ctrl.??? = outs.AliasFile;
                     //ctrl.Options = _settings.Options;
-                    ctrl.Info = ($"Ch {spec.ChannelNumber} {spec.ChannelName}", $"{chan}");
+                    //ctrl.Info = ($"Ch {spec.ChannelNumber} {spec.ChannelName}", $"{chan}");
+                    ctrl.Info = ($"Ch {spec.ChannelNumber}", $"{chan}");
                     ctrl.InfoClick += ChannelControl_InfoClick;
                 }
             }
@@ -178,7 +179,7 @@ namespace Ephemera.MidiLib.Test
                 var chan = CM.OpenChannel(TestSettings.OUTDEV1, 3, "HonkyTonkPiano");
                 CreateControl(chan, "dyn keys");
 
-                chan = CM.OpenChannel(TestSettings.OUTDEV1, 4, "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+                chan = CM.OpenChannel(TestSettings.OUTDEV1, 4, "GlurbleVox", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
                 CreateControl(chan, "dyn bass");
 
                 chan = CM.OpenChannel(TestSettings.OUTDEV1, 10, "Electronic");
@@ -236,7 +237,7 @@ namespace Ephemera.MidiLib.Test
             {
                 int noteNum = rand.Next(40, 60);
                 var chan = CM.GetChannel(cc1);
-                SendNote(chan!, noteNum, 0.5);
+                SendNote(chan!, cc1, noteNum, 0.5);
 
                 if (--count <= 0)
                 {
@@ -323,7 +324,7 @@ namespace Ephemera.MidiLib.Test
         /// <param name="note"></param>
         /// <param name="volume"></param>
         /// <exception cref="ArgumentException"></exception>
-        void SendNote(Channel chan, int note, double volume)
+        void SendNote(Channel chan, ChannelControl ctrl, int note, double volume)
         {
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"Note:{note}"); }
 
@@ -333,12 +334,10 @@ namespace Ephemera.MidiLib.Test
             }
             else
             {
-                //TODO1:
-                //var ctrl = CM.GetControl(chan) ?? throw new MidiLibException("Invalid/null control");
-                //var vol = volume * sldMasterVolume.Value * ctrl.Volume;
-                //var vel = (int)MathUtils.Constrain(vol * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
-                //var se = new NoteOn(chan.ChannelNumber, note, vel);
-                //chan.Send(se);
+                var vol = volume * sldMasterVolume.Value * ctrl.Volume;
+                var vel = (int)MathUtils.Constrain(vol * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
+                var se = new NoteOn(chan.ChannelNumber, note, vel);
+                chan.Send(se);
                 //Tell($">>>", se.ToString());
             }
         }

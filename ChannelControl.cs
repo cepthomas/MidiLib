@@ -286,7 +286,7 @@ namespace Ephemera.MidiLib
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-          return lblInfo.Text;
+            return lblInfo.Text;
         }
         #endregion
     }

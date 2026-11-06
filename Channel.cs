@@ -11,7 +11,6 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
-    //----------------------------------------------------------------
     /// <summary>Describes one output channel.</summary>
     public class Channel
     {
@@ -89,6 +88,10 @@ namespace Ephemera.MidiLib
             Handle = new(device.Id, ChannelNumber, true);
         }
 
+        /// <summary>
+        /// Human readable.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"Ch {ChannelNumber} on {_device.DeviceName}";
@@ -109,7 +112,7 @@ namespace Ephemera.MidiLib
 
             // Is it drums?
             IsDrums = false;
-            var id = MidiDefs.DrumKits.GetId(patchName);
+            var id = _drumKits.GetId(patchName);
             if (id is not null) // GM drum kit
             {
                 IsDrums = true;
@@ -117,7 +120,7 @@ namespace Ephemera.MidiLib
             }
             else // assume normal instroument
             {
-                id = MidiDefs.Instruments.GetId(patchName);
+                id = _instruments.GetId(patchName);
                 if (id is not null) // plain GM instrument
                 {
                     IsDrums = false;
