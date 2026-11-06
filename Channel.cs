@@ -22,12 +22,14 @@ namespace Ephemera.MidiLib
         /// <summary>Channel instrument patches. Optionally from alias file.</summary>
         BiLut _instruments = MidiDefs.Instruments;
 
-        ///// <summary>Channel controllers.</summary>
-        //BiLut _controllers = MidiDefs.Controllers;
-        ///// <summary>Channel drums.</summary>
-        //BiLut _drums = MidiDefs.Drums;
-        ///// <summary>Channel drum kits.</summary>
-        //BiLut _drumKits = MidiDefs.DrumKits;
+        /// <summary>Channel controllers.</summary>
+        BiLut _controllers = MidiDefs.Controllers;
+
+        /// <summary>Channel drums.</summary>
+        BiLut _drums = MidiDefs.Drums;
+
+        /// <summary>Channel drum kits.</summary>
+        BiLut _drumKits = MidiDefs.DrumKits;
         #endregion
 
         #region Properties - configuration
@@ -52,16 +54,19 @@ namespace Ephemera.MidiLib
         public bool IsDrums { get; private set; } = false;
 
         /// <summary>Current instrument/patch name. Set may update internal collection and sends a midi patch message.</summary>
-        public string PatchName
+        public string? PatchName
         {
             get
             {
-                return _instruments.GetName(Patch) ?? throw new ArgumentException($"Invalid patch:{Patch}");
+                return _instruments.GetName(Patch); // ?? throw new ArgumentException($"Invalid patch:{Patch}");
             }
             set
             {
-                var id = _instruments.GetId(value) ?? throw new ArgumentException($"Invalid patch:{value}");
-                _device.Send(new Patch(ChannelNumber, id));
+                if (value is null) { throw new ArgumentException($"Invalid patch:null"); }
+                var id = _instruments.GetId(value);
+                if (id is null) { throw new ArgumentException($"Invalid patch:{value}"); }
+                Patch = (int)id;
+                _device.Send(new Patch(ChannelNumber, Patch));
             }
         }
 
@@ -71,7 +76,7 @@ namespace Ephemera.MidiLib
 
         #region Lifecycle
         /// <summary>
-        /// Constructor for patch name aware version.
+        /// Constructor for channel.
         /// </summary>
         /// <param name="device"></param>
         /// <param name="channelNumber"></param>
@@ -84,90 +89,65 @@ namespace Ephemera.MidiLib
             Handle = new(device.Id, ChannelNumber, true);
         }
 
-        ///// <summary>
-        ///// Constructor for anonymous patch version.
-        ///// </summary>
-        ///// <param name="device"></param>
-        ///// <param name="channelNumber"></param>
-        ///// <param name="patch"></param>
-        //public Channel(IOutputDevice device, int channelNumber, int patch)
-        //{
-        //    if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
-        //
-        //    _device = device;
-        //    ChannelNumber = channelNumber;
-        //    Patch = patch;
-        //    // Anonymous so give it some placeholder patch names.
-        //    _instruments = new();
-        //    Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => _instruments.Add(i, $"Patch{i}"));
-        //    Handle = new(device.Id, ChannelNumber, true);
-        //}
-
-        /// <summary>
-        /// For humans.
-        /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
-            return $"Out Ch:{ChannelNumber} Dev:{_device.DeviceName}";
+            return $"Ch {ChannelNumber} on {_device.DeviceName}";
         }
         #endregion
 
         #region Public functions
         /// <summary>
-        /// Fix up instrument/patch names - depends on flavor: GM/drums/aliased.
+        /// Init instrument/patches from patch name.
         /// </summary>
         /// <param name="patchName"></param>
         /// <param name="aliasFile">Custom patch names for this channel</param>
-        /// <exception cref="MidiLibException"></exception>
-        public void InitInstruments(string patchName, string? aliasFile = null) xxx need int version
+        public void InitInstruments(string patchName, string? aliasFile = null)
         {
-            if (aliasFile is not null) // explicit defs file
+            InitDefs(aliasFile);
+
+            Patch = -1;
+
+            // Is it drums?
+            IsDrums = false;
+            var id = MidiDefs.DrumKits.GetId(patchName);
+            if (id is not null) // GM drum kit
             {
-                try
-                {
-                    var ir = new IniReader();
-                    ir.ParseFile(aliasFile);
-
-                    var defs = MidiDefs.ReadDefs(ir, "instruments");
-                    if (defs is not null) { _instruments = defs; }
-
-                    //defs = MidiDefs.ReadDefs(ir, "controllers");
-                    //if (defs is not null) { _controllers = defs; }
-                    //defs = MidiDefs.ReadDefs(ir, "drums");
-                    //if (defs is not null) { _drums = defs; }
-                    //defs = MidiDefs.ReadDefs(ir, "drumkits");
-                    //if (defs is not null) { _drumKits = defs; }
-                }
-                catch (Exception ex)
-                {
-                    throw new MidiLibException($"Failed to load alias file {aliasFile}: {ex.Message}");
-                }
+                IsDrums = true;
+                Patch = (int)id;
             }
-            else // internal set
+            else // assume normal instroument
             {
-                var id = MidiDefs.DrumKits.GetId(patchName);
-                if (id is not null) // GM drum kit
+                id = MidiDefs.Instruments.GetId(patchName);
+                if (id is not null) // plain GM instrument
                 {
-                    IsDrums = true;
+                    IsDrums = false;
                     Patch = (int)id;
                 }
-                else
+                else // unknown
                 {
-                    id = MidiDefs.Instruments.GetId(patchName);
-                    if (id is not null) // plain GM instrument
-                    {
-                        IsDrums = false;
-                        Patch = (int)id;
-                    }
-                    else // unknown
-                    {
-                        throw new ArgumentException($"Invalid instrument:{patchName}");
-                    }
+                    throw new ArgumentException($"Invalid instrument:{patchName}");
                 }
             }
 
             if (Patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Unresolved patch:{patchName}"); }
+
+            _device.Send(new Patch(ChannelNumber, Patch));
+        }
+
+        /// <summary>
+        /// Init instrument/patches from patch number.
+        /// </summary>
+        /// <param name="patchNum"></param>
+        /// <param name="isDrums">Client has to specify this</param>
+        /// <param name="aliasFile">Optional custom patch names for this channel</param>
+        public void InitInstruments(int patchNum, bool isDrums, string? aliasFile = null)
+        {
+            InitDefs(aliasFile);
+
+            Patch = patchNum;
+            IsDrums = isDrums;
+
+            if (Patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Unresolved patch:{Patch}"); }
 
             _device.Send(new Patch(ChannelNumber, Patch));
         }
@@ -185,14 +165,15 @@ namespace Ephemera.MidiLib
 
             if (IsDrums)
             {
-                name = MidiDefs.DrumKits.GetName(id); // _drumKits.GetName(id);
+                name = MidiDefs.DrumKits.GetName(id);
             }
             else
             {
                 name = _instruments.GetName(id);
             }
 
-            if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }
+            //if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }
+            if (name is null) { name = $"Patch_{id}"; }
 
             return name;
         }
@@ -219,5 +200,38 @@ namespace Ephemera.MidiLib
             Send(new Controller(ChannelNumber, cc, 0));
         }
         #endregion
+
+        /// <summary>
+        /// Client may specify custom patch names. Otherwise use GM defaults.
+        /// </summary>
+        /// <param name="aliasFile"></param>
+        /// <exception cref="MidiLibException"></exception>
+        void InitDefs(string? aliasFile = null)
+        {
+            if (aliasFile is not null) // explicit defs file otherwise use defaults
+            {
+                try
+                {
+                    var ir = new IniReader();
+                    ir.ParseFile(aliasFile);
+
+                    var defs = MidiDefs.ReadDefs(ir, "instruments");
+                    if (defs is not null) { _instruments = defs; }
+
+                    defs = MidiDefs.ReadDefs(ir, "controllers");
+                    if (defs is not null) { _controllers = defs; }
+
+                    defs = MidiDefs.ReadDefs(ir, "drums");
+                    if (defs is not null) { _drums = defs; }
+
+                    defs = MidiDefs.ReadDefs(ir, "drumkits");
+                    if (defs is not null) { _drumKits = defs; }
+                }
+                catch (Exception ex)
+                {
+                    throw new MidiLibException($"Failed to load alias file {aliasFile}: {ex.Message}");
+                }
+            }
+        }
     }
 }

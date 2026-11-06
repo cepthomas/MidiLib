@@ -84,7 +84,7 @@ namespace Ephemera.MidiLib
 
         #region Channels
         /// <summary>
-        /// Open a normal output channel with known patch name. Lazy inits the device. Throws if anything is invalid.
+        /// Open a normal output channel with known patch name. Lazy inits the device. Sends initial patch message. Throws if anything is invalid.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
@@ -99,42 +99,35 @@ namespace Ephemera.MidiLib
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
+
             // Add the channel.
             Channel ch = new(outdev, channelNumber);
-
-            // Init instrument name stuff.
-            ch.InitInstruments(patchName, aliasFile); // this does the midi patch send
-
+            ch.InitInstruments(patchName, aliasFile);
             _channels.Add((ch, null));
             return ch;
         }
 
         /// <summary>
-        /// Like full function but opens a channel without known patch names. TODO1 harmonize
+        /// Like above but opens a channel without known patch name.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
-        /// <param name="patch"></param>
+        /// <param name="patchNum">Explicit</param>
+        /// <param name="isDrums">Because I can't determine this myself</param>
         /// <param name="aliasFile">Alternate patch names from an ini file.</param>
         /// <returns></returns>
-        public Channel OpenChannel(string deviceName, int channelNumber, int patch, string? aliasFile = null)
+        public Channel OpenChannel(string deviceName, int channelNumber, int patchNum, bool isDrums, string? aliasFile = null)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
-            if (patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patch:{patch}"); }
+            if (patchNum is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patchNum:{patchNum}"); }
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-
-            //Channel ch = new(outdev, channelNumber, patch);
-            //outdev.Send(new Patch(channelNumber, patch));
-
             Channel ch = new(outdev, channelNumber);
-            // Init instrument name stuff.
-            ch.InitInstruments(patch, aliasFile); // this does the midi patch send
-
+            ch.InitInstruments(patchNum, isDrums, aliasFile);
             _channels.Add((ch, null));
             return ch;
         }
