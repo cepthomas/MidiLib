@@ -31,6 +31,8 @@ namespace Ephemera.MidiLib.Test
             toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             btnSend = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            btnDyn = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             btnGo = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             tvInfo = new Ephemera.NBagOfUis.TextViewer();
@@ -41,8 +43,6 @@ namespace Ephemera.MidiLib.Test
             timer1 = new System.Windows.Forms.Timer(components);
             chkLoop = new System.Windows.Forms.CheckBox();
             btnRewind = new System.Windows.Forms.Button();
-            btnDyn = new System.Windows.Forms.ToolStripButton();
-            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -127,6 +127,20 @@ namespace Ephemera.MidiLib.Test
             toolStripSeparator6.Name = "toolStripSeparator6";
             toolStripSeparator6.Size = new System.Drawing.Size(6, 26);
             // 
+            // btnDyn
+            // 
+            btnDyn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            btnDyn.Image = (System.Drawing.Image)resources.GetObject("btnDyn.Image");
+            btnDyn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            btnDyn.Name = "btnDyn";
+            btnDyn.Size = new System.Drawing.Size(36, 23);
+            btnDyn.Text = "dyn";
+            // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new System.Drawing.Size(6, 26);
+            // 
             // btnGo
             // 
             btnGo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -201,20 +215,6 @@ namespace Ephemera.MidiLib.Test
             btnRewind.TabIndex = 112;
             btnRewind.Text = "<=";
             btnRewind.UseVisualStyleBackColor = true;
-            // 
-            // btnDyn
-            // 
-            btnDyn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            btnDyn.Image = (System.Drawing.Image)resources.GetObject("btnDyn.Image");
-            btnDyn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            btnDyn.Name = "btnDyn";
-            btnDyn.Size = new System.Drawing.Size(36, 23);
-            btnDyn.Text = "dyn";
-            // 
-            // toolStripSeparator7
-            // 
-            toolStripSeparator7.Name = "toolStripSeparator7";
-            toolStripSeparator7.Size = new System.Drawing.Size(6, 26);
             // 
             // MainForm
             // 

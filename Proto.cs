@@ -81,13 +81,13 @@ namespace Ephemera.MidiLib
                 int x = 10;
                 int y = 10;
 
-                var chan = CM.OpenChannel("My midi output 1", 3, "HonkyTonkPiano");
+                var chan = CM.OpenChannel("My midi device 1", 3, "HonkyTonkPiano");
                 AddNewControl(chan, "dyn keys");
 
-                chan = CM.OpenChannel("My midi output 1", 4, "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+                chan = CM.OpenChannel("My midi device 1", 4, "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
                 AddNewControl(chan, "dyn bass");
 
-                chan = CM.OpenChannel("My midi output 2", 10, "Electronic");
+                chan = CM.OpenChannel("My midi device 2", 10, "Electronic");
                 AddNewControl(chan, "dyn drums");
 
                 var in1 = IM.OpenMidiInput("My midi input", 1);
@@ -95,13 +95,11 @@ namespace Ephemera.MidiLib
                 // Ceate a control for each channel and bind object.
                 void AddNewControl(Channel chan, string channelName)
                 {
-                    var sui = $"Ch: {chan.ChannelNumber} {channelName}";
-                    var stt = $"{chan.PatchName} {chan.Patch:000}"; //{Environment.NewLine}"Dev {chan.DeviceInfo}";
-
                     var ctrl = new ChannelControl()
                     {
                         Name = channelName,
-                        Info = (sui, stt),
+                        Info1 = $"M{chan.ChannelNumber} {channelName}",
+                        Info2 = $"{chan.PatchName} ({chan.Patch}){Environment.NewLine}{chan}",
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = Color.Blue,

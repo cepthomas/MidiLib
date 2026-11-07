@@ -99,7 +99,6 @@ namespace Ephemera.MidiLib
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
-
             // Add the channel.
             Channel ch = new(outdev, channelNumber);
             ch.InitInstruments(patchName, aliasFile);

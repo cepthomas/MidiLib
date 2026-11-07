@@ -54,17 +54,23 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Properties
-        /// <summary>Tell the user about me. Tuple of (ui, tooltip)</summary>
+        /// <summary>Main info for user.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Browsable(false)]
-        public (string ui, string tt) Info
+        public string Info1
         {
-            set
-            {
-                lblInfo.Text = value.ui;
-                toolTip.SetToolTip(lblInfo, $"{value.ui}{Environment.NewLine}{value.tt}");
-            }
+            get { return lblInfo.Text; }
+            set { lblInfo.Text = value; }
+        }
+
+        /// <summary>Extra text for tooltip.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Browsable(false)]
+        public string Info2
+        {
+            set { toolTip.SetToolTip(lblInfo, value); }
         }
 
         /// <summary>Drawing the active elements of a control.</summary>
@@ -170,6 +176,7 @@ namespace Ephemera.MidiLib
             // Info textbox.
             lblInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             lblInfo.BorderStyle = BorderStyle.FixedSingle;
+            lblInfo.AutoEllipsis = true;
             lblInfo.Location = new(PAD, PAD);
             lblInfo.Size = new(lblSolo.Right, HT1 - PAD);
             lblInfo.Click += ChannelInfo_Click;
@@ -179,6 +186,7 @@ namespace Ephemera.MidiLib
             Size = new Size(lblInfo.Right + PAD, sldVolume.Bottom + PAD);
             ResumeLayout(false);
             PerformLayout();
+            toolTip.InitialDelay = 100;
             toolTip = new(components);
 
             base.OnLoad(e);

@@ -122,8 +122,9 @@ namespace Ephemera.MidiLib.Test
                     //ctrl.Pan = outs.Pan;
                     //ctrl.??? = outs.AliasFile;
                     //ctrl.Options = _settings.Options;
-                    //ctrl.Info = ($"Ch {spec.ChannelNumber} {spec.ChannelName}", $"{chan}");
-                    ctrl.Info = ($"Ch {spec.ChannelNumber}", $"{chan}");
+                    ctrl.Info1 = $"M{spec.ChannelNumber} {spec.ChannelName}";
+                    ctrl.Info2 = $"{chan}";
+                    //ctrl.Info = ($"Ch {spec.ChannelNumber}", $"{chan}");
                     ctrl.InfoClick += ChannelControl_InfoClick;
                 }
             }
@@ -190,13 +191,11 @@ namespace Ephemera.MidiLib.Test
                 // Ceate a control for each channel and bind object.
                 void CreateControl(Channel chan, string channelName)
                 {
-                    var sui = $"Ch: {chan.ChannelNumber} {channelName}";
-                    var stt = $"{chan.PatchName} {chan.Patch:000}"; //{Environment.NewLine}"Dev {chan.DeviceInfo}";
-
                     var ctrl = new ChannelControl()
                     {
                         Name = channelName,
-                        Info = (sui, stt),
+                        Info1 = $"M{chan.ChannelNumber} {channelName}",
+                        Info2 = $"{chan.PatchName} ({chan.Patch}){Environment.NewLine}{chan}",
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = _settings.DrawColor,

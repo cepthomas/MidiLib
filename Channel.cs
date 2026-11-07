@@ -57,7 +57,8 @@ namespace Ephemera.MidiLib
         {
             get
             {
-                return _instruments.GetName(Patch); // ?? throw new ArgumentException($"Invalid patch:{Patch}");
+                if (IsDrums) { return _drumKits.GetName(Patch) ?? $"Kit {Patch}"; }
+                else { return _instruments.GetName(Patch) ?? $"Inst {Patch}"; }
             }
             set
             {
@@ -187,7 +188,7 @@ namespace Ephemera.MidiLib
         /// <param name="evt"></param>
         public void Send(BaseEvent evt)
         {
-            if (EnableSound || evt is not NoteOn || evt is not NoteOff)
+            if (EnableSound || evt is Controller || evt is Patch || evt is Other)
             {
                 evt.ChannelNumber = ChannelNumber;
                 _device.Send(evt);
