@@ -45,7 +45,7 @@ namespace Ephemera.MidiLib.Test
         {
             StopOnFail(true);
 
-            ChannelManager CM = new(null);
+            ChannelManager CM = new();
             InputManager IM = new();
 
             // Dummy device.
@@ -57,16 +57,16 @@ namespace Ephemera.MidiLib.Test
             IM.MessageReceived += (sender, e) => revt = e;
 
             // Input
-            var chan_in1 = IM.OpenMidiInput(indev, 1); // "my input"
+            var chan_in1 = IM.OpenMidiInput(indev, 1, "my input");
 
             ///// Named instrument mode
             // 1 is GM instruments
-            var chan_out1 = CM.OpenChannel(outdev, 1, "HonkyTonkPiano");
+            var chan_out1 = CM.OpenChannel(outdev, 1, "keys", "HonkyTonkPiano");
             // 2 is GM drums1
-            var chan_out2 = CM.OpenChannel(outdev, 10, "Electronic");
+            var chan_out2 = CM.OpenChannel(outdev, 10, "syndrums", "Electronic");
             // 3 is Alt instruments
             var instFn = Path.Join(MiscUtils.GetSourcePath(), "test_defs.ini");
-            var chan_out3 = CM.OpenChannel(outdev, 4, "WaterWhistle1", instFn);
+            var chan_out3 = CM.OpenChannel(outdev, 4, "woofer", "WaterWhistle1", instFn);
 
             Assert(chan_out1.PatchName == "HonkyTonkPiano");
             Assert(chan_out2.PatchName == "Electronic");
@@ -81,7 +81,7 @@ namespace Ephemera.MidiLib.Test
 
             ///// Anonymous mode
             sent = null;
-            var chan_out4 = CM.OpenChannel(outdev, 1, 38, false);
+            var chan_out4 = CM.OpenChannel(outdev, 1, "pickle", 38, false);
             Assert(chan_out4.PatchName == "INST_38");
             Assert(sent is Patch);
             pevt = (sent as Patch)!;

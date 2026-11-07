@@ -56,8 +56,9 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
+        /// <param name="channelName"></param>
         /// <returns></returns>
-        public MidiInput OpenMidiInput(string deviceName, int channelNumber)
+        public MidiInput OpenMidiInput(string deviceName, int channelNumber, string channelName)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -66,7 +67,7 @@ namespace Ephemera.MidiLib
             var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
 
             // Add the channel.
-            MidiInput mi = new(indev, channelNumber);
+            MidiInput mi = new(indev, channelNumber, channelName);
             _midiInputs.Add(mi);
 
             return mi;
@@ -137,6 +138,9 @@ namespace Ephemera.MidiLib
         /// <summary>Actual 1-based midi channel number. Required.</summary>
         public int ChannelNumber { get; init; }
 
+        /// <summary>Actual 1-based midi channel number. Required.</summary>
+        public string ChannelName { get; init; }
+
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 
@@ -149,12 +153,14 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="device"></param>
         /// <param name="channelNumber"></param>
-        public MidiInput(IInputDevice device, int channelNumber)
+        /// <param name="channelName"></param>
+        public MidiInput(IInputDevice device, int channelNumber, string channelName)
         {
             if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
             _device = device;
             ChannelNumber = channelNumber;
+            ChannelName = channelName;
             Handle = new(device.Id, ChannelNumber, false);
         }
 

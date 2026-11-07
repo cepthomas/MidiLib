@@ -111,7 +111,7 @@ namespace Ephemera.MidiLib.Test
 
                 void InitOneChannel(ChannelSpec spec, ChannelControl ctrl)
                 {
-                    var chan = CM.OpenChannel(spec.DeviceName, spec.ChannelNumber, spec.PatchName);
+                    var chan = CM.OpenChannel(spec.DeviceName, spec.ChannelNumber, spec.ChannelName, spec.PatchName);
                     CM.Bind(chan, ctrl);
                     // Init control.
                     //ctrl.Name = spec.ChannelName;
@@ -177,24 +177,24 @@ namespace Ephemera.MidiLib.Test
                 int x = cc2.Right + 10;
                 int y = cc2.Top;
 
-                var chan = CM.OpenChannel(TestSettings.OUTDEV1, 3, "HonkyTonkPiano");
-                CreateControl(chan, "dyn keys");
+                var chan = CM.OpenChannel(TestSettings.OUTDEV1, 3, "dyn keys", "HonkyTonkPiano");
+                CreateControl(chan);
 
-                chan = CM.OpenChannel(TestSettings.OUTDEV1, 4, "GlurbleVox", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
-                CreateControl(chan, "dyn bass");
+                chan = CM.OpenChannel(TestSettings.OUTDEV1, 4, "dyn bass", "GlurbleVox", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+                CreateControl(chan);
 
-                chan = CM.OpenChannel(TestSettings.OUTDEV1, 10, "Electronic");
-                CreateControl(chan, "dyn drums");
+                chan = CM.OpenChannel(TestSettings.OUTDEV1, 10, "dyn drums", "Electronic");
+                CreateControl(chan);
 
-                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1); // TODO-M test this. name="dyn my input"
+                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1, "dyn my input"); // TODO-M test this.
 
                 // Ceate a control for each channel and bind object.
-                void CreateControl(Channel chan, string channelName)
+                void CreateControl(Channel chan)
                 {
                     var ctrl = new ChannelControl()
                     {
-                        Name = channelName,
-                        Info1 = $"M{chan.ChannelNumber} {channelName}",
+                        Name = chan.ChannelName,
+                        Info1 = $"M{chan.ChannelNumber} {chan.ChannelName}",
                         Info2 = $"{chan.PatchName} ({chan.Patch}){Environment.NewLine}{chan}",
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,

@@ -35,6 +35,9 @@ namespace Ephemera.MidiLib
         /// <summary>Actual 1-based midi channel number. Default is invalid or unknown.</summary>
         public int ChannelNumber { get; init; } = 0;
 
+        /// <summary>Actual 1-based midi channel number. Required.</summary>
+        public string ChannelName { get; init; }
+
         /// <summary>Instrument names. Optional.</summary>
         public string AliasFile { get; set; } = "";
 
@@ -80,12 +83,14 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="device"></param>
         /// <param name="channelNumber"></param>
-        public Channel(IOutputDevice device, int channelNumber)
+        /// <param name="channelName"></param>
+        public Channel(IOutputDevice device, int channelNumber, string channelName)
         {
             if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
             _device = device;
             ChannelNumber = channelNumber;
+            ChannelName = channelName;
             Handle = new(device.Id, ChannelNumber, true);
         }
 

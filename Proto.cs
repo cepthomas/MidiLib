@@ -81,16 +81,16 @@ namespace Ephemera.MidiLib
                 int x = 10;
                 int y = 10;
 
-                var chan = CM.OpenChannel("My midi device 1", 3, "HonkyTonkPiano");
+                var chan = CM.OpenChannel("My midi device 1", 3, "kbd 1",  "HonkyTonkPiano");
                 AddNewControl(chan, "dyn keys");
 
-                chan = CM.OpenChannel("My midi device 1", 4, "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+                chan = CM.OpenChannel("My midi device 1", 4, "special", "KUSTOM", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
                 AddNewControl(chan, "dyn bass");
 
-                chan = CM.OpenChannel("My midi device 2", 10, "Electronic");
+                chan = CM.OpenChannel("My midi device 2", 10, "perc", "Electronic");
                 AddNewControl(chan, "dyn drums");
 
-                var in1 = IM.OpenMidiInput("My midi input", 1);
+                var in1 = IM.OpenMidiInput("My midi device 2", 1, "some input");
 
                 // Ceate a control for each channel and bind object.
                 void AddNewControl(Channel chan, string channelName)
