@@ -8,7 +8,6 @@ using Ephemera.NBagOfTricks;
 
 // TODO Other midi resolutions. Pack subs into tick bits?
 
-
 namespace Ephemera.MidiLib
 {
     /// <summary>Sort of like DateTime but for musical terminology in midi.</summary>
@@ -18,7 +17,10 @@ namespace Ephemera.MidiLib
         /// <summary>Only 4/4 time supported currently.</summary>
         static readonly int _beatsPerBar = 4;
 
-        /// <summary>Tick resolution - 8 gives 32nd note res.</summary>
+        /// <summary>Tick resolution.
+        /// A quarter note gets one beat in standard time signatures like 4/4 or 3/4.
+        /// This internal resolution (8) gives 32nd note resolution (per subbbeat).
+        /// </summary>
         static readonly int _subbeatsPerBeat = 8;
 
         /// <summary>Convenience.</summary>

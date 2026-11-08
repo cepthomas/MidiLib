@@ -123,6 +123,14 @@ namespace Ephemera.MidiLib
 
             return dev;
         }
+
+        /// <summary>
+        /// Remove current channels. Not devices
+        /// </summary>
+        public void Reset()
+        {
+            _midiInputs.Clear();
+        }
         #endregion
     }
 

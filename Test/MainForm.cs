@@ -193,7 +193,7 @@ namespace Ephemera.MidiLib.Test
                 {
                     var ctrl = new ChannelControl()
                     {
-                        Name = chan.ChannelName,
+                        // Name = chan.ChannelName,
                         Info1 = $"M{chan.ChannelNumber} {chan.ChannelName}",
                         Info2 = $"{chan.PatchName} ({chan.Patch}){Environment.NewLine}{chan}",
                         Location = new(x, y),

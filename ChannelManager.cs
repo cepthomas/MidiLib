@@ -268,7 +268,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Remove current channels and controls.
+        /// Remove current channels and controls. Not devices
         /// </summary>
         public void Reset()
         {
