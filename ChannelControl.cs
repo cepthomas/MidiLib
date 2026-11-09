@@ -147,8 +147,8 @@ namespace Ephemera.MidiLib
 
             // Volume slider.
             sldVolume.Minimum = 0.0;
-            sldVolume.Maximum = VolumeDefs.MAX_VOLUME;
-            sldVolume.Resolution = 0.05;
+            sldVolume.Maximum = MidiLibDefs.MAX_VOLUME;
+            sldVolume.Resolution = MidiLibDefs.RES_VOLUME;
             sldVolume.BorderStyle = BorderStyle.FixedSingle;
             sldVolume.Orientation = Orientation.Horizontal;
             sldVolume.Location = new(PAD, PAD + HT1);

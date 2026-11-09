@@ -13,13 +13,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLib
 {
-    ///// <summary>Some flavors of control may need to be defeatured.</summary>
-    //[Flags]
-    //public enum DisplayOptions { None = 0x00, SoloMute = 0x01, Fx = 0x02, Pan = 0x04, All = 0x0F, }
-
-    ///// <summary>Selector operation mode.</summary>
-    //public enum SelectMode { Off, Single, Multi, }
-
     /// <summary>User selection options.</summary>
     public enum SnapType { Tick, Beat, Bar, FourBar }
 
@@ -27,37 +20,51 @@ namespace Ephemera.MidiLib
     public class MidiLibException(string message) : Exception(message) { }
 
     /// <summary>Misc definitions.</summary>
-    public class VolumeDefs
+    public class MidiLibDefs
     {
         /// <summary>Default value.</summary>
         public const double DEFAULT_VOLUME = 0.8;
 
         /// <summary>Allow UI controls some more headroom.</summary>
         public const double MAX_VOLUME = 2.0;
+
+        /// <summary>Resolution of UI.</summary>
+        public const double RES_VOLUME = MAX_VOLUME / 50;
     }
 
-    /// <summary>Channel handle for use in scripts.</summary>
+    /// <summary>Channel handle class for interacting with scripts.</summary>
     public class ChannelHandle
     {
+        /// <summary>Differentiate inputs and outputs.</summary>
         static readonly int OUTPUT_FLAG = 0x0800;
+
+        /// <summary>Script-side handle.</summary>
+        public int Raw { get { return _raw; } }
         readonly int _raw = 0;
 
-        public int Raw { get { return _raw; } }
+        /// <summary>App-side id.</summary>
         public int DeviceId { get { return (_raw >> 4) & 0x0F; } }
+
+        /// <summary>App-side value.</summary>
         public int ChannelNumber { get { return _raw & 0x0F; } }
+
+        /// <summary>App-side value.</summary>
         public bool Output { get { return (_raw & OUTPUT_FLAG) > 0; } }
 
+        /// <summary>App-side constructor.</summary>
         public ChannelHandle(int deviceId, int channelNumber, bool output)
         {
             _raw = (deviceId << 4) | channelNumber | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
 
+        /// <summary>Script-side constructor.</summary>
         public ChannelHandle(int handle)
         {
             _raw = handle;
         }
 
-        public new string ToString()
+        /// <summary>Human readable.</summary>
+        public override string ToString()
         {
             return $"{(Output ? "out" : "in")} {ChannelNumber} on D{DeviceId}";
         }

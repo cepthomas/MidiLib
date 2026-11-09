@@ -10,7 +10,7 @@ using Ephemera.NBagOfTricks;
 using System.Windows.Forms.VisualStyles;
 
 
-// TODO zoom, drag, shift
+// TODO-M2 zoom, drag, shift
 
 namespace Ephemera.MidiLib
 {

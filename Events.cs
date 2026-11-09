@@ -260,5 +260,12 @@ namespace Ephemera.MidiLib
             _allEvents.ForEach(e => total += e.Value.Count);
             return total;
         }
+
+        public List<string> Dump()
+        {
+            List<string> res = [];
+            _allEvents.ForEach(e => res.Add(e.ToString()));
+            return res;
+        }
     }
 }

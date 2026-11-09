@@ -193,7 +193,13 @@ namespace Ephemera.MidiLib
         /// <param name="evt"></param>
         public void Send(BaseEvent evt)
         {
-            if (EnableSound || evt is Controller || evt is Patch || evt is Other)
+            if ((evt is NoteOn && !EnableSound) ||
+                (evt is NoteOff && !EnableSound) ||
+                 evt is Function)
+            {
+                // ignore
+            }
+            else
             {
                 evt.ChannelNumber = ChannelNumber;
                 _device.Send(evt);

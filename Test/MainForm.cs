@@ -25,6 +25,7 @@ namespace Ephemera.MidiLib.Test
 
         readonly TestSettings _settings;
 
+        ///// Services. /////
         readonly ChannelManager CM;
         readonly InputManager IM;
         #endregion
@@ -56,8 +57,8 @@ namespace Ephemera.MidiLib.Test
             // Master volume.
             sldMasterVolume.DrawColor = _settings.DrawColor;
             sldMasterVolume.Minimum = 0.0;
-            sldMasterVolume.Maximum = VolumeDefs.MAX_VOLUME;
-            sldMasterVolume.Resolution = VolumeDefs.MAX_VOLUME / 50;
+            sldMasterVolume.Maximum = MidiLibDefs.MAX_VOLUME;
+            sldMasterVolume.Resolution = MidiLibDefs.RES_VOLUME;
             sldMasterVolume.Value = _settings.MasterVolume;
             sldMasterVolume.Label = "master volume";
 
@@ -114,17 +115,12 @@ namespace Ephemera.MidiLib.Test
                     var chan = CM.OpenChannel(spec.DeviceName, spec.ChannelNumber, spec.ChannelName, spec.PatchName);
                     CM.Bind(chan, ctrl);
                     // Init control.
-                    //ctrl.Name = spec.ChannelName;
                     ctrl.Volume = spec.Volume;
                     ctrl.State = spec.State;
                     ctrl.DrawColor = _settings.DrawColor;
                     ctrl.SelectedColor = _settings.SelectedColor;
-                    //ctrl.Pan = outs.Pan;
-                    //ctrl.??? = outs.AliasFile;
-                    //ctrl.Options = _settings.Options;
                     ctrl.Info1 = $"M{spec.ChannelNumber} {spec.ChannelName}";
                     ctrl.Info2 = $"{chan}";
-                    //ctrl.Info = ($"Ch {spec.ChannelNumber}", $"{chan}");
                     ctrl.InfoClick += ChannelControl_InfoClick;
                 }
             }
@@ -147,8 +143,6 @@ namespace Ephemera.MidiLib.Test
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            // TODO-U refresh and save settings.
-
             if (disposing && (components is not null))
             {
                 CM.Dispose();
@@ -162,7 +156,7 @@ namespace Ephemera.MidiLib.Test
 
         #region Test code
         /// <summary>
-        /// Basic ops.
+        /// Create channels and controls dynamically.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -172,7 +166,6 @@ namespace Ephemera.MidiLib.Test
 
             try
             {
-                // Create channels and controls dynamically.
                 Random rand = new();
                 int x = cc2.Right + 10;
                 int y = cc2.Top;
@@ -186,7 +179,7 @@ namespace Ephemera.MidiLib.Test
                 chan = CM.OpenChannel(TestSettings.OUTDEV1, 10, "dyn drums", "Electronic");
                 CreateControl(chan);
 
-                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1, "dyn my input"); // TODO-M test this.
+                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1, "dyn my input"); // TODO-M test midi input
 
                 // Ceate a control for each channel and bind object.
                 void CreateControl(Channel chan)
@@ -285,21 +278,22 @@ namespace Ephemera.MidiLib.Test
         /// <summary>
         /// Test property editing
         /// </summary>
-        void TestPropertyEditor() // TODO-M
+        void TestPropertyEditor()
         {
             // Set up options.
-            //var insts = MidiDefs.GetDefaultInstrumentDefs();
-            //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
-            //var instsList = orderedValues.ToList();
-
+            var insts = MidiDefs.Instruments;//.GetDefaultInstrumentDefs();
+            IEnumerable<string> orderedValues = insts.Contents.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
+            var instList = orderedValues.ToList();
             //Dictionary<int, string> vals = [];
             //Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, chan.GetInstrumentName(i)));
             //var instList = MidiUtils.CreateOrderedMidiList(vals, true, true);
 
-            //GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
-            //GenericListTypeEditor.SetOptions("Patch", instList);
+            var odevs = MidiOutputDevice.GetAvailableDevices();
+            GenericListTypeEditor.SetOptions("DeviceName", odevs);
+            GenericListTypeEditor.SetOptions("PatchName", instList);
 
             var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
+
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
 

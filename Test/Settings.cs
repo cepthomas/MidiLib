@@ -9,9 +9,12 @@ using System.Runtime.CompilerServices;
 using System.IO;
 using System.Drawing.Design;
 using System.Windows.Forms.Design;
+using System.Text.Json.Serialization;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-using System.Text.Json.Serialization;
+
+
+// A typical way to handle settings for MidiLib configuration. Very application-specific.
 
 
 namespace Ephemera.MidiLib.Test
@@ -19,17 +22,9 @@ namespace Ephemera.MidiLib.Test
     [Serializable]
     public class TestSettings
     {
-        [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-        public List<string> DeviceNames { get; set; } = [];
-
-        [TypeConverter(typeof(ExpandableObjectConverter))]
         public List<InputSpec> InputSpecs { get; set; } = [];
 
-        [TypeConverter(typeof(ExpandableObjectConverter))]
         public List<ChannelSpec> ChannelSpecs { get; set; } = [];
-
-        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        public int SomeOtherMidi { get; set; } = 0;
 
         public double MasterVolume { get; init; } = 0.5;
 
@@ -39,14 +34,10 @@ namespace Ephemera.MidiLib.Test
         [JsonConverter(typeof(JsonColorConverter))]
         public Color SelectedColor { get; set; } = Color.Moccasin;
 
-        //[JsonConverter(typeof(JsonStringEnumConverter))]
-        //public DisplayOptions Options { get; set; } = DisplayOptions.All;
 
-        #region Fields
+        #region Device names - YMMV
         public const string INDEV = "NebLoopback1";
-
         public const string OUTDEV1 = "VirtualMIDISynth #1";
-
         public const string OUTDEV2 = "Microsoft GS Wavetable Synth";
         #endregion
 
@@ -55,14 +46,11 @@ namespace Ephemera.MidiLib.Test
             // Init fake settings.
             TestSettings settings = new()
             {
-                DeviceNames = [INDEV, OUTDEV1, OUTDEV2],
                 InputSpecs = [],
                 ChannelSpecs = [],
-                SomeOtherMidi = 88,
                 MasterVolume = 0.77,
                 DrawColor = Color.SpringGreen,
                 SelectedColor = Color.Magenta,
-                //Options = DisplayOptions.None
             };
 
             settings.InputSpecs.Add(new()
@@ -99,14 +87,12 @@ namespace Ephemera.MidiLib.Test
     [Serializable]
     public class InputSpec
     {
-        /// <summary>Channel name. Optional.</summary>
         public string ChannelName { get; set; } = "???";
 
-        /// <summary>Actual 1-based midi channel number. Required.</summary>
+        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         public int ChannelNumber { get; init; } = 0;
 
         [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-        // [TypeConverter(typeof(GenericConverter))]
         public string DeviceName { get; set; } = "";
 
         /// <summary>True if channel is active.</summary>
@@ -118,15 +104,16 @@ namespace Ephemera.MidiLib.Test
     {
         public string ChannelName { get; set; } = "???";
 
+        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         public int ChannelNumber { get; init; } = 0;
 
+        [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
         public string PatchName { get; set; } = "???";
 
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
         public string AliasFile { get; set; } = "";
 
         [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-        // [TypeConverter(typeof(GenericConverter))]
         public string DeviceName { get; set; } = "";
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
