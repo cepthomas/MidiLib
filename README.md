@@ -55,13 +55,12 @@ Requires VS2026 and .NET10.
     - Bound to an `OutputChannel` object.
     - Provides volume, mute, solo.
 
-- UserRenderer
-    - Used to add UI or graphics to a customized `ChannelControl`.
-
 - TimeBar
     - Shows progress in `MusicTime`.
     - User can select time ranges and looping.
 
+- UiEditors
+    - Various stuff to make UI life better.
 
 # External Components
 

@@ -11,8 +11,10 @@ using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
-// TODO2 Harmonize with simple version? Usage for audio. Impl pan, fx, meter(s). Slider/meter log/db for volume use.
+// TODO1 Harmonize with simple version? Usage for audio. Impl pan, fx, meter(s). Slider/meter log/db for volume use.
 
+// - UserRenderer
+//     - Used to add UI or graphics to a customized `ChannelControl`.
 
 namespace Ephemera.MidiLib
 {

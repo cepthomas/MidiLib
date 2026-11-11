@@ -89,7 +89,7 @@ namespace Ephemera.MidiLib.Test
     {
         public string ChannelName { get; set; } = "???";
 
-        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
         public int ChannelNumber { get; init; } = 0;
 
         [Editor(typeof(MidiInputDeviceTypeEditor), typeof(UITypeEditor))]
@@ -104,7 +104,7 @@ namespace Ephemera.MidiLib.Test
     {
         public string ChannelName { get; set; } = "???";
 
-        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
         public int ChannelNumber { get; init; } = 0;
 
         [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]

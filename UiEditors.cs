@@ -11,18 +11,14 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLib
 {
     /// <summary>Select a midi value from a range. Handles special case of channel number.</summary>
-    public class MidiValueTypeEditor : UITypeEditor
+    public class ChannelNumberTypeEditor : UITypeEditor
     {
         public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {
             if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
-            var isChan = context!.PropertyDescriptor!.Name == "ChannelNumber"; //TODO1 this?
-            int start = isChan ? 1 : 0;
-            int end = isChan ? MidiDefs.MAX_CHANNEL : MidiDefs.MAX_MIDI;
-
             var lb = new ListBox(); // {Width = 50,SelectionMode = SelectionMode.One};
-            Enumerable.Range(start, end).ForEach(v => lb.Items.Add(v.ToString()));
+            Enumerable.Range(1, MidiDefs.MAX_CHANNEL).ForEach(v => lb.Items.Add(v.ToString()));
             lb.Click += (_, __) => _service.CloseDropDown();
             _service.DropDownControl(lb);
 
@@ -79,11 +75,8 @@ namespace Ephemera.MidiLib
             if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
             // TODO1 impl - not this, needs channel-specific!
-            List<string> instList = [];
-            Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => instList.Add(MidiDefs.Instruments.GetName(i) ?? $"{i:000}"));
-
-            var lb = new ListBox(); // {Width = 50,SelectionMode = SelectionMode.One};
-            MidiInputDevice.GetAvailableDevices().ForEach(v => lb.Items.Add(v));
+            var lb = new ListBox() { Width = 50, Height = 250, SelectionMode = SelectionMode.One};
+            for (int i = 0; i <= MidiDefs.MAX_MIDI; i++) lb.Items.Add(MidiDefs.Instruments.GetName(i) ?? $"{i:000}");
             lb.Click += (_, __) => _service.CloseDropDown();
             _service.DropDownControl(lb);
 
