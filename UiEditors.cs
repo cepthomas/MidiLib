@@ -74,7 +74,7 @@ namespace Ephemera.MidiLib
         {
             if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
-            // TODO1 impl - not this, needs channel-specific!
+            // TODO2 impl - not this, needs channel-specific!
             var lb = new ListBox() { Width = 50, Height = 250, SelectionMode = SelectionMode.One};
             for (int i = 0; i <= MidiDefs.MAX_MIDI; i++) lb.Items.Add(MidiDefs.Instruments.GetName(i) ?? $"{i:000}");
             lb.Click += (_, __) => _service.CloseDropDown();

@@ -8,9 +8,6 @@ using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;
 
 
-// Shut up warnings in this file. Using manual checking where needed.
-// #pragma warning disable CS8602
-
 namespace Ephemera.MidiLib
 {
     /// <summary>User selection options.</summary>
