@@ -92,7 +92,7 @@ namespace Ephemera.MidiLib.Test
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         public int ChannelNumber { get; init; } = 0;
 
-        [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+        [Editor(typeof(MidiInputDeviceTypeEditor), typeof(UITypeEditor))]
         public string DeviceName { get; set; } = "";
 
         /// <summary>True if channel is active.</summary>
@@ -107,13 +107,13 @@ namespace Ephemera.MidiLib.Test
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         public int ChannelNumber { get; init; } = 0;
 
-        [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+        [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
         public string PatchName { get; set; } = "???";
 
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
         public string AliasFile { get; set; } = "";
 
-        [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+        [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
         public string DeviceName { get; set; } = "";
 
         [JsonConverter(typeof(JsonStringEnumConverter))]

@@ -179,7 +179,7 @@ namespace Ephemera.MidiLib.Test
                 chan = CM.OpenChannel(TestSettings.OUTDEV1, 10, "dyn drums", "Electronic");
                 CreateControl(chan);
 
-                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1, "dyn my input"); // TODO-M test midi input
+                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1, "dyn my input"); // TODO2 test midi input
 
                 // Ceate a control for each channel and bind object.
                 void CreateControl(Channel chan)
@@ -287,10 +287,6 @@ namespace Ephemera.MidiLib.Test
             //Dictionary<int, string> vals = [];
             //Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, chan.GetInstrumentName(i)));
             //var instList = MidiUtils.CreateOrderedMidiList(vals, true, true);
-
-            var odevs = MidiOutputDevice.GetAvailableDevices();
-            GenericListTypeEditor.SetOptions("DeviceName", odevs);
-            GenericListTypeEditor.SetOptions("PatchName", instList);
 
             var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
 
