@@ -107,19 +107,19 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Configure channels defined in designer.
-                InitOneChannel(_settings.ChannelSpecs[0], cc1);
-                InitOneChannel(_settings.ChannelSpecs[1], cc2);
+                InitOneChannel(_settings.ChannelConfigs[0], cc1);
+                InitOneChannel(_settings.ChannelConfigs[1], cc2);
 
-                void InitOneChannel(ChannelSpec spec, ChannelControl ctrl)
+                void InitOneChannel(ChannelConfig config, ChannelControl ctrl)
                 {
-                    var chan = CM.OpenChannel(spec.DeviceName, spec.ChannelNumber, spec.ChannelName, spec.PatchName);
+                    var chan = CM.OpenChannel(config.DeviceName, config.ChannelNumber, config.ChannelName, config.PatchName);
                     CM.Bind(chan, ctrl);
                     // Init control.
-                    ctrl.Volume = spec.Volume;
-                    ctrl.State = spec.State;
+                    ctrl.Volume = config.Volume;
+//???                    ctrl.State = config.State;
                     ctrl.DrawColor = _settings.DrawColor;
                     ctrl.SelectedColor = _settings.SelectedColor;
-                    ctrl.Info1 = $"M{spec.ChannelNumber} {spec.ChannelName}";
+                    ctrl.Info1 = $"M{config.ChannelNumber} {config.ChannelName}";
                     ctrl.Info2 = $"{chan}";
                     ctrl.InfoClick += ChannelControl_InfoClick;
                 }

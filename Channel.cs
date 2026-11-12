@@ -11,12 +11,39 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
+
+    [Serializable]
+    public class ChannelConfig //-- persisted stuff
+    {
+        public string ChannelName { get; set; } = "???";
+
+        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
+        public int ChannelNumber { get; init; } = 0;
+
+        [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
+        public string PatchName { get; set; } = "???";
+
+        [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
+        public string? AliasFile { get; set; } = null;
+
+        [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
+        public string DeviceName { get; set; } = "";
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public ChannelState State { get; set; } = ChannelState.Normal;
+
+        public double Volume { get; init; } = 0.5;
+
+        public double Pan { get; init; } = 0.0;
+    }
+
     /// <summary>Describes one output channel.</summary>
     public class Channel
     {
-        #region Fields
+        #region Fields -- runtime
         /// <summary>Associated device.</summary>
         readonly IOutputDevice _device;
+
 
         /// <summary>Channel instrument patches. Optionally from alias file.</summary>
         BiLut _instruments = MidiDefs.Instruments;
@@ -29,23 +56,32 @@ namespace Ephemera.MidiLib
 
         /// <summary>Channel drum kits.</summary>
         BiLut _drumKits = MidiDefs.DrumKits;
+
         #endregion
 
-        #region Properties - configuration
-        /// <summary>Actual 1-based midi channel number. Default is invalid or unknown.</summary>
-        public int ChannelNumber { get; init; } = 0;
 
-        /// <summary>Actual 1-based midi channel number. Required.</summary>
-        public string ChannelName { get; init; }
+        // Binding
+        //public ChannelConfig Config { get; init; }
+        ChannelConfig _config;
 
-        /// <summary>Instrument names. Optional.</summary>
-        public string AliasFile { get; set; } = "";
+        // #region Properties - configuration
+        // /// <summary>Actual 1-based midi channel number. Default is invalid or unknown.</summary>
+        // public int ChannelNumber { get; init; } = 0;
+        public int ChannelNumber { get { return _config.ChannelNumber; } }
 
-        /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
-        #endregion
+        public string ChannelName { get { return _config.ChannelName; } }
 
-        #region Properties - runtime
+        // /// <summary>Actual 1-based midi channel number. Required.</summary>
+        // public string ChannelName { get; init; }
+
+        // /// <summary>Instrument names. Optional.</summary>
+        // public string AliasFile { get; set; } = "";
+
+        // /// <summary>Handle for use by scripts.</summary>
+        // public ChannelHandle Handle { get; init; }
+        // #endregion
+
+        #region Properties -- runtime
         /// <summary>True if channel is not muted.</summary>
         public bool EnableSound { get; set; } = true;
 
@@ -69,9 +105,12 @@ namespace Ephemera.MidiLib
                 var id = _instruments.GetId(value);
                 if (id is null) { throw new ArgumentException($"Invalid patch:{value}"); }
                 Patch = (int)id;
-                _device.Send(new Patch(ChannelNumber, Patch));
+                _device.Send(new Patch(_config.ChannelNumber, Patch));
             }
         }
+
+        /// <summary>Handle for use by scripts.</summary>
+        public ChannelHandle Handle { get; init; }
 
         /// <summary>Associated events - optional depending on implementation.</summary>
         public EventCollection Events { get; set; } = new();
@@ -84,14 +123,15 @@ namespace Ephemera.MidiLib
         /// <param name="device"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-        public Channel(IOutputDevice device, int channelNumber, string channelName)
+        public Channel(IOutputDevice device, ChannelConfig config)// int channelNumber, string channelName)
         {
-            if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
+            if (config.ChannelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(config.ChannelNumber)}"); }
 
             _device = device;
-            ChannelNumber = channelNumber;
-            ChannelName = channelName;
-            Handle = new(device.Id, ChannelNumber, true);
+            _config = config;
+            //ChannelNumber = channelNumber;
+            //ChannelName = channelName;
+            Handle = new(device.Id, config.ChannelNumber, true);
         }
 
         /// <summary>
@@ -100,7 +140,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            return $"Ch {ChannelNumber} on {_device.DeviceName}";
+            return $"Ch {_config.ChannelNumber} on {_device.DeviceName}";
         }
         #endregion
 
@@ -140,7 +180,7 @@ namespace Ephemera.MidiLib
 
             if (Patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Unresolved patch:{patchName}"); }
 
-            _device.Send(new Patch(ChannelNumber, Patch));
+            _device.Send(new Patch(_config.ChannelNumber, Patch));
         }
 
         /// <summary>
@@ -158,7 +198,7 @@ namespace Ephemera.MidiLib
 
             if (Patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Unresolved patch:{Patch}"); }
 
-            _device.Send(new Patch(ChannelNumber, Patch));
+            _device.Send(new Patch(_config.ChannelNumber, Patch));
         }
 
         /// <summary>
@@ -201,7 +241,7 @@ namespace Ephemera.MidiLib
             }
             else
             {
-                evt.ChannelNumber = ChannelNumber;
+                evt.ChannelNumber = _config.ChannelNumber;
                 _device.Send(evt);
             }
         }
@@ -212,7 +252,7 @@ namespace Ephemera.MidiLib
         public void Kill()
         {
             int cc = 123; // => AllNotesOff
-            Send(new Controller(ChannelNumber, cc, 0));
+            Send(new Controller(_config.ChannelNumber, cc, 0));
         }
         #endregion
 

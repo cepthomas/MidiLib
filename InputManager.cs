@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Security;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
+using System.ComponentModel;
+using System.Drawing.Design;
 
 
 namespace Ephemera.MidiLib
@@ -58,16 +60,16 @@ namespace Ephemera.MidiLib
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
         /// <returns></returns>
-        public MidiInput OpenMidiInput(string deviceName, int channelNumber, string channelName)
+        public MidiInput OpenMidiInput(InputConfig config) // string deviceName, int channelNumber, string channelName)
         {
             // Check args.
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+            if (string.IsNullOrEmpty(config.DeviceName)) { throw new ArgumentException("Invalid deviceName"); }
+            if (config.ChannelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{config.ChannelNumber}"); }
 
-            var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
+            var indev = GetInputDevice(config.DeviceName) ?? throw new MidiLibException($"Invalid input device [{config.DeviceName}]");
 
             // Add the channel.
-            MidiInput mi = new(indev, channelNumber, channelName);
+            MidiInput mi = new(indev, config);// channelNumber, channelName);
             _midiInputs.Add(mi);
 
             return mi;
@@ -132,49 +134,5 @@ namespace Ephemera.MidiLib
             _midiInputs.Clear();
         }
         #endregion
-    }
-
-    /// <summary>Describes one midi input.</summary>
-    public class MidiInput
-    {
-        #region Fields
-        /// <summary>Associated device. Required.</summary>
-        readonly IInputDevice _device;
-        #endregion
-
-        #region Properties
-        /// <summary>Actual 1-based midi channel number. Required.</summary>
-        public int ChannelNumber { get; init; }
-
-        /// <summary>Actual 1-based midi channel number. Required.</summary>
-        public string ChannelName { get; init; }
-
-        /// <summary>True if channel is active.</summary>
-        public bool Enable { get; set; } = true;
-
-        /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
-        #endregion
-
-        /// <summary>
-        /// Constructor with required args.
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
-        public MidiInput(IInputDevice device, int channelNumber, string channelName)
-        {
-            if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
-
-            _device = device;
-            ChannelNumber = channelNumber;
-            ChannelName = channelName;
-            Handle = new(device.Id, ChannelNumber, false);
-        }
-
-        public override string ToString()
-        {
-            return $"In Ch:{ChannelNumber} Dev:{_device.DeviceName}";
-        }
     }
 }

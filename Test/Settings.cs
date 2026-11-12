@@ -19,15 +19,15 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib.Test
 {
-    [Serializable]
+//????    [Serializable]
     public class TestSettings
     {
-        [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
-        public string PatchName { get; set; } = "???";
+        // [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
+        // public string PatchName { get; set; } = "???";
 
-        public List<InputSpec> InputSpecs { get; set; } = [];
+        public List<InputConfig> InputConfigs { get; set; } = [];
 
-        public List<ChannelSpec> ChannelSpecs { get; set; } = [];
+        public List<ChannelConfig> ChannelConfigs { get; set; } = [];
 
         public double MasterVolume { get; init; } = 0.5;
 
@@ -48,81 +48,41 @@ namespace Ephemera.MidiLib.Test
             // Init fake settings.
             TestSettings settings = new()
             {
-                InputSpecs = [],
-                ChannelSpecs = [],
+                InputConfigs = [],
+                ChannelConfigs = [],
                 MasterVolume = 0.77,
                 DrawColor = Color.SpringGreen,
                 SelectedColor = Color.Magenta,
             };
 
-            settings.InputSpecs.Add(new()
+            settings.InputConfigs.Add(new()
             {
                 ChannelNumber = 8,
                 ChannelName = "Some input",
                 DeviceName = INDEV
             });
 
-            settings.ChannelSpecs.Add(new()
+            settings.ChannelConfigs.Add(new()
             {
                 ChannelNumber = 1,
                 ChannelName = "Output 1!",
                 DeviceName = OUTDEV1,
                 PatchName = "Harpsichord",
                 Volume = 0.67,
-                State = ChannelState.Normal
+//???                State = ChannelState.Normal
             });
 
-            settings.ChannelSpecs.Add(new()
+            settings.ChannelConfigs.Add(new()
             {
                 ChannelNumber = 2,
                 ChannelName = "Output 2!",
                 DeviceName = OUTDEV2,
                 PatchName = "Violin",
                 Volume = 1.19,
-                State = ChannelState.Mute
+                //???                State = ChannelState.Mute
             });
 
             return settings;
         }
-    }
-
-    [Serializable]
-    public class InputSpec
-    {
-        public string ChannelName { get; set; } = "???";
-
-        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
-        public int ChannelNumber { get; init; } = 0;
-
-        [Editor(typeof(MidiInputDeviceTypeEditor), typeof(UITypeEditor))]
-        public string DeviceName { get; set; } = "";
-
-        /// <summary>True if channel is active.</summary>
-        public bool Enable { get; set; } = true;
-    }
-
-    [Serializable]
-    public class ChannelSpec
-    {
-        public string ChannelName { get; set; } = "???";
-
-        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
-        public int ChannelNumber { get; init; } = 0;
-
-        [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
-        public string PatchName { get; set; } = "???";
-
-        [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
-        public string AliasFile { get; set; } = "";
-
-        [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
-        public string DeviceName { get; set; } = "";
-
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public ChannelState State { get; set; } = ChannelState.Normal;
-
-        public double Volume { get; init; } = 0.5;
-
-        public double Pan { get; init; } = 0.0;
     }
 }

@@ -101,7 +101,18 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            Channel ch = new(outdev, channelNumber, channelName);
+            ChannelConfig config = new()
+            {
+                ChannelNumber = channelNumber,
+                ChannelName = channelName,
+                PatchName = patchName,
+                AliasFile = aliasFile,
+                DeviceName = deviceName,
+                Volume = MidiLibDefs.DEFAULT_VOLUME,
+                Pan = 0.0
+            };
+
+            Channel ch = new(outdev, config);// channelNumber, channelName);
             ch.InitInstruments(patchName, aliasFile);
             _channels.Add((ch, null));
             return ch;
@@ -127,7 +138,18 @@ namespace Ephemera.MidiLib
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
-            Channel ch = new(outdev, channelNumber, channelName);
+            ChannelConfig config = new()
+            {
+                ChannelNumber = channelNumber,
+                ChannelName = channelName,
+//???                PatchName = patchName,
+                AliasFile = aliasFile,
+                DeviceName = deviceName,
+                Volume = MidiLibDefs.DEFAULT_VOLUME,
+                Pan = 0.0
+            };
+
+            Channel ch = new(outdev, config);// channelNumber, channelName);
             ch.InitInstruments(patchNum, isDrums, aliasFile);
             _channels.Add((ch, null));
             return ch;

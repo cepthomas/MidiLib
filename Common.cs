@@ -29,6 +29,7 @@ namespace Ephemera.MidiLib
         public const double RES_VOLUME = MAX_VOLUME / 50;
     }
 
+///////// TODO1 find better home for these. /////////////////////////////////
     /// <summary>Channel handle class for interacting with scripts.</summary>
     public class ChannelHandle
     {
@@ -66,4 +67,6 @@ namespace Ephemera.MidiLib
             return $"{(Output ? "out" : "in")} {ChannelNumber} on D{DeviceId}";
         }
     }
+
+
 }
