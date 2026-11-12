@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-
         <OutputType>Library</OutputType>
         <RootNamespace>Ephemera.MidiLib</RootNamespace>
         <AssemblyName>Ephemera.MidiLib</AssemblyName>
@@ -19,28 +18,15 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
         <!-- en none -->
-      
     </PropertyGroup>
 
     <ItemGroup>
         <Compile Remove="lib\**" />
         <Compile Remove="Test\**" />
-        <Compile Remove="_stuff\**" />
         <EmbeddedResource Remove="lib\**" />
         <EmbeddedResource Remove="Test\**" />
-        <EmbeddedResource Remove="_stuff\**" />
         <None Remove="lib\**" />
         <None Remove="Test\**" />
-        <None Remove="_stuff\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="ChannelControl2.cs" />
-      <Compile Remove="ChannelControl2.Designer.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Remove="ChannelControl2.resx" />
     </ItemGroup>
 
     <ItemGroup>

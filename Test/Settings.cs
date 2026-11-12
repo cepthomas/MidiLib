@@ -22,6 +22,9 @@ namespace Ephemera.MidiLib.Test
     [Serializable]
     public class TestSettings
     {
+        [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
+        public string PatchName { get; set; } = "???";
+
         public List<InputSpec> InputSpecs { get; set; } = [];
 
         public List<ChannelSpec> ChannelSpecs { get; set; } = [];
@@ -33,7 +36,6 @@ namespace Ephemera.MidiLib.Test
 
         [JsonConverter(typeof(JsonColorConverter))]
         public Color SelectedColor { get; set; } = Color.Moccasin;
-
 
         #region Device names - YMMV
         public const string INDEV = "NebLoopback1";

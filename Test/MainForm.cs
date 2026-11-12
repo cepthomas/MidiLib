@@ -179,7 +179,7 @@ namespace Ephemera.MidiLib.Test
                 chan = CM.OpenChannel(TestSettings.OUTDEV1, 10, "dyn drums", "Electronic");
                 CreateControl(chan);
 
-                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1, "dyn my input"); // TODO2 test midi input
+                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1, "dyn my input"); // TODO1 test midi input
 
                 // Ceate a control for each channel and bind object.
                 void CreateControl(Channel chan)
