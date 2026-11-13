@@ -180,14 +180,17 @@ namespace Ephemera.MidiLib.Test
                 var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", id);
                 CreateControl(mout);
 
+                // Aliases.
                 id = insts!.GetId("GlurbleVox") ?? -1;
                 mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", id, false, aliasFile);
                 CreateControl(mout);
 
+                // Drum kit.
                 id = MidiDefs.DrumKits.GetId("Electronic") ?? -1;
                 mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", id, true);
                 CreateControl(mout);
 
+                // Input.
                 var inchan = CM.OpenMidiInput(INDEV, 1, "dyn my input"); // TODO1 test midi input
 
                 // Ceate a control for each channel and bind object.
@@ -294,12 +297,19 @@ namespace Ephemera.MidiLib.Test
                 inames.Add(mout!.GetInstrumentName(i) ?? $"inst{i}");
             }
 
-// TODO1 fee names to editor??
+            // TODO1 feed names to editor??
+    //        PatchTypeEditor.PatchNamesRequest += PatchTypeEditor_PatchNamesRequest;
+
 
             var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
 
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
+
+        //private void PatchTypeEditor_PatchNamesRequest(object? sender, PatchTypeEditor.PatchNamesEventArgs e)
+        //{
+        //    throw new NotImplementedException();
+        //}
         #endregion
 
         #region Stuff the real host needs to implement
@@ -456,6 +466,5 @@ namespace Ephemera.MidiLib.Test
             tvInfo.Append($"{cat} {fn}({line}) {s}");
         }
         #endregion
-
     }
 }

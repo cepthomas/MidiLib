@@ -44,8 +44,8 @@ namespace Ephemera.MidiLib.Test
         public int ChannelNumber { get; init; } = 0;
 
         [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
+
         public int Patch { get; set; } = 0;
-        //public string PatchName { get; set; } = "???";
 
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
         public string? AliasFile { get; set; } = null;
@@ -60,8 +60,6 @@ namespace Ephemera.MidiLib.Test
         public double Volume { get; init; } = 0.5;
 
         // public double Pan { get; init; } = 0.0;
-
-        // public List<string> PatchNames { get { return new List<string>(); } }
         #endregion
     }
 
