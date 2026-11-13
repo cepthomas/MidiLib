@@ -101,7 +101,7 @@ namespace Ephemera.MidiLib.Test
 
                 void InitOneChannel(OutputConfig config, ChannelControl ctrl)
                 {
-                    var chan = CM.OpenMidiOutput(config.DeviceName, config.ChannelNumber, config.ChannelName, config.PatchName);
+                    var chan = CM.OpenMidiOutput(config.DeviceName, config.ChannelNumber, config.ChannelName, config.Patch);
                     CM.Bind(chan, ctrl);
 
                     // Init control.
@@ -166,19 +166,26 @@ namespace Ephemera.MidiLib.Test
         {
             Tell(INFO, $">>> Go start.");
 
+            // Play with aliases.
+            string aliasFile = @"C:\Dev\Libs\MidiLib\Test\test_defs.ini";
+            var (insts, ctrls, drums, kits) = LoadAliases(aliasFile);
+
             try
             {
                 Random rand = new();
                 int x = cc2.Right + 10;
                 int y = cc2.Top;
 
-                var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", "HonkyTonkPiano");
+                var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
+                var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", id);
                 CreateControl(mout);
 
-                mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", "GlurbleVox", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+                id = insts!.GetId("GlurbleVox") ?? -1;
+                mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", id, false, aliasFile);
                 CreateControl(mout);
 
-                mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", "Electronic");
+                id = MidiDefs.DrumKits.GetId("Electronic") ?? -1;
+                mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", id, true);
                 CreateControl(mout);
 
                 var inchan = CM.OpenMidiInput(INDEV, 1, "dyn my input"); // TODO1 test midi input
@@ -279,14 +286,15 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         void TestPropertyEditor()
         {
-            // TODO1 This doesn't handle selecting from aliases. Is that a host problem??
             // Set up options.
-            var insts = MidiDefs.Instruments;//.GetDefaultInstrumentDefs();
-            IEnumerable<string> orderedValues = insts.Contents.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
-            var instList = orderedValues.ToList();
-            //Dictionary<int, string> vals = [];
-            //Enumerable.Range(0, MidiDefs.MAX_MIDI + 1).ForEach(i => vals.Add(i, chan.GetInstrumentName(i)));
-            //var instList = MidiUtils.CreateOrderedMidiList(vals, true, true);
+            List<string> inames = [];
+            var mout = CM.GetMidiOutput(1);
+            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
+            {
+                inames.Add(mout!.GetInstrumentName(i) ?? $"inst{i}");
+            }
+
+// TODO1 fee names to editor??
 
             var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
 
@@ -322,7 +330,8 @@ namespace Ephemera.MidiLib.Test
                 ChannelNumber = 1,
                 ChannelName = "Output 1!",
                 DeviceName = OUTDEV1,
-                PatchName = "Harpsichord",
+                Patch = 6,
+                //PatchName = "Harpsichord",
                 Volume = 0.67,
                 State = ChannelState.Normal
             });
@@ -332,7 +341,8 @@ namespace Ephemera.MidiLib.Test
                 ChannelNumber = 2,
                 ChannelName = "Output 2!",
                 DeviceName = OUTDEV2,
-                PatchName = "Violin",
+                Patch = 40,
+                //PatchName = "Violin",
                 Volume = 1.19,
                 State = ChannelState.Mute
             });
@@ -411,6 +421,30 @@ namespace Ephemera.MidiLib.Test
         #endregion
 
         #region Infrastrucutre
+        /// <summary>
+        /// Load up stuff.
+        /// </summary>
+        /// <param name="aliasFile"></param>
+        (BiLut? insts, BiLut? ctrls, BiLut? drums, BiLut? kits) LoadAliases(string aliasFile)
+        {
+            var ir = new IniReader();
+            ir.ParseFile(aliasFile);
+
+            var defs = MidiDefs.ReadDefs(ir, "instruments");
+            var _instruments = defs;
+
+            defs = MidiDefs.ReadDefs(ir, "controllers");
+            var _controllers = defs;
+
+            defs = MidiDefs.ReadDefs(ir, "drums");
+            var _drums = defs;
+
+            defs = MidiDefs.ReadDefs(ir, "drumkits");
+            var _drumKits = defs;
+
+            return (_instruments, _controllers, _drums, _drumKits);
+        }
+
         /// <summary>
         /// Logging.
         /// </summary>

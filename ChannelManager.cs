@@ -93,31 +93,32 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Outputs
+        ///// <summary>
+        ///// Open a normal output channel with known patch name. Lazy inits the device. Sends initial patch message. Throws if anything is invalid.
+        ///// </summary>
+        ///// <param name="deviceName"></param>
+        ///// <param name="channelNumber"></param>
+        ///// <param name="channelName"></param>
+        ///// <param name="patchName"></param>
+        ///// <param name="aliasFile">Alternate patch names from an ini file.</param>
+        ///// <returns></returns>
+        //public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, string patchName, string? aliasFile = null)
+        //{
+        //    // Check args.
+        //    if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
+        //    if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+
+        //    var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
+
+        //    MidiOutput mout = new(outdev, channelNumber, channelName);
+        //    mout.InitInstruments(patchName, aliasFile);
+        //    _midiOutputs.Add((mout, null));
+        //    outdev.Send(new Patch(channelNumber, patchNum));
+        //    return mout;
+        //}
+
         /// <summary>
-        /// Open a normal output channel with known patch name. Lazy inits the device. Sends initial patch message. Throws if anything is invalid.
-        /// </summary>
-        /// <param name="deviceName"></param>
-        /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
-        /// <param name="patchName"></param>
-        /// <param name="aliasFile">Alternate patch names from an ini file.</param>
-        /// <returns></returns>
-        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, string patchName, string? aliasFile = null)
-        {
-            // Check args.
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
-
-            var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
-
-            MidiOutput mout = new(outdev, channelNumber, channelName);
-            mout.InitInstruments(patchName, aliasFile);
-            _midiOutputs.Add((mout, null));
-            return mout;
-        }
-
-        /// <summary>
-        /// Like above but opens a channel without known patch name.
+        /// Open a normal output channel. Lazy inits the device. Sends initial patch message. Throws if anything is invalid.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
@@ -126,7 +127,7 @@ namespace Ephemera.MidiLib
         /// <param name="isDrums">Because I can't determine this myself</param>
         /// <param name="aliasFile">Alternate patch names from an ini file.</param>
         /// <returns></returns>
-        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patchNum, bool isDrums, string? aliasFile = null)
+        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patchNum, bool isDrums = false, string? aliasFile = null)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -138,6 +139,7 @@ namespace Ephemera.MidiLib
             MidiOutput mout = new(outdev, channelNumber, channelName);
             mout.InitInstruments(patchNum, isDrums, aliasFile);
             _midiOutputs.Add((mout, null));
+            outdev.Send(new Patch(channelNumber, patchNum));
             return mout;
         }
         #endregion

@@ -14,7 +14,7 @@ namespace Ephemera.MidiLib
     /// <summary>Describes one output runtime.</summary>
     public class MidiOutput
     {
-        #region Fields
+        #region Fields  
         /// <summary>Associated device.</summary>
         readonly IOutputDevice _device;
 
@@ -55,14 +55,14 @@ namespace Ephemera.MidiLib
                 if (IsDrums) { return _drumKits.GetName(Patch) ?? $"Kit {Patch}"; }
                 else { return _instruments.GetName(Patch) ?? $"Inst {Patch}"; }
             }
-            set
-            {
-                if (value is null) { throw new ArgumentException($"Invalid patch:null"); }
-                var id = _instruments.GetId(value);
-                if (id is null) { throw new ArgumentException($"Invalid patch:{value}"); }
-                Patch = (int)id;
-                _device.Send(new Patch(ChannelNumber, Patch));
-            }
+            //set
+            //{
+            //    if (value is null) { throw new ArgumentException($"Invalid patch:null"); }
+            //    var id = _instruments.GetId(value);
+            //    if (id is null) { throw new ArgumentException($"Invalid patch:{value}"); }
+            //    Patch = (int)id;
+            //    _device.Send(new Patch(ChannelNumber, Patch));
+            //}
         }
 
         /// <summary>Handle for use by scripts.</summary>
@@ -152,8 +152,6 @@ namespace Ephemera.MidiLib
             IsDrums = isDrums;
 
             if (Patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"Unresolved patch:{Patch}"); }
-
-            _device.Send(new Patch(ChannelNumber, Patch));
         }
 
         /// <summary>
@@ -177,7 +175,7 @@ namespace Ephemera.MidiLib
             }
 
             //if (name is null) { throw new ArgumentException($"Invalid instrument id:{id}"); }
-            if (name is null) { name = $"Patch_{id}"; }
+            name ??= $"Patch_{id}";
 
             return name;
         }

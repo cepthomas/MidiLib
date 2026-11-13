@@ -179,11 +179,11 @@ namespace Ephemera.MidiLib
             ls.Add($"# Your Midi Devices");
 
             ls.Add($"## Inputs");
-            if (!ins.Any()) { ls.Add($"None"); }
+            if (ins.Count == 0) { ls.Add($"None"); }
             else { ins.ForEach(d => ls.Add($"[{d}]")); }
 
             ls.Add($"## Outputs");
-            if (!outs.Any()) { ls.Add($"None"); }
+            if (outs.Count == 0) { ls.Add($"None"); }
             else { outs.ForEach(d => ls.Add($"[{d}]")); }
 
             return ls;
