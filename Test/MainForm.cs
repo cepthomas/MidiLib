@@ -19,15 +19,18 @@ namespace Ephemera.MidiLib.Test
     public partial class MainForm : Form
     {
         #region Fields
+        TestSettings _settings = new();
+
+        readonly ChannelManager CM;
+
         const string ERROR = "ERR";
         const string WARN = "WRN";
         const string INFO = "INF";
 
-        readonly TestSettings _settings;
-
-        ///// Services. /////
-        readonly ChannelManager CM;
-        readonly InputManager IM;
+        ///// Device names - YMMV /////
+        public const string INDEV = "NebLoopback1";
+        public const string OUTDEV1 = "VirtualMIDISynth #1";
+        public const string OUTDEV2 = "Microsoft GS Wavetable Synth";
         #endregion
 
         #region Lifecycle
@@ -38,12 +41,11 @@ namespace Ephemera.MidiLib.Test
         {
             InitializeComponent();
             CM = new(Controls);
-            IM = new();
 
             Text = "MidiLib ¯\\_(^^)_/¯";
 
             // Init fake settings.
-            _settings = TestSettings.GenFake();
+            DoPersistence();
 
             // The text output.
             tvInfo.Font = new("Cascadia Mono", 9);
@@ -76,25 +78,12 @@ namespace Ephemera.MidiLib.Test
             btnTimebar.Click += (_, _) => TestTimeBar();
             btnProperty.Click += (_, _) => TestPropertyEditor();
 
-            btnSend.Click += BtnSend_Click;
-            btnDyn.Click += (_, _) => DoDyn();
+            btnSend.Click += (_, _) => TestSend();
+            btnDyn.Click += (_, _) => TestDynamic();
 
             // Hook up manager notifications.
-            IM.MessageReceived += Mgr_MessageReceived;
+            CM.MessageReceived += Mgr_MessageReceived;
             //CM.MessageSent += Mgr_MessageSent;
-        }
-
-        /// <summary>
-        /// Do stuff.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Go_Click(object? sender, EventArgs e)
-        {
-            CM.UpdateState();
-
-            var ls = CM.DumpState();
-            ls.ForEach(l => Tell(INFO, l));
         }
 
         /// <summary>
@@ -107,16 +96,17 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Configure channels defined in designer.
-                InitOneChannel(_settings.ChannelConfigs[0], cc1);
-                InitOneChannel(_settings.ChannelConfigs[1], cc2);
+                InitOneChannel(_settings.OutputConfigs[0], cc1);
+                InitOneChannel(_settings.OutputConfigs[1], cc2);
 
-                void InitOneChannel(ChannelConfig config, ChannelControl ctrl)
+                void InitOneChannel(OutputConfig config, ChannelControl ctrl)
                 {
-                    var chan = CM.OpenChannel(config.DeviceName, config.ChannelNumber, config.ChannelName, config.PatchName);
+                    var chan = CM.OpenMidiOutput(config.DeviceName, config.ChannelNumber, config.ChannelName, config.PatchName);
                     CM.Bind(chan, ctrl);
+
                     // Init control.
                     ctrl.Volume = config.Volume;
-//???                    ctrl.State = config.State;
+                    ctrl.State = config.State;
                     ctrl.DrawColor = _settings.DrawColor;
                     ctrl.SelectedColor = _settings.SelectedColor;
                     ctrl.Info1 = $"M{config.ChannelNumber} {config.ChannelName}";
@@ -146,7 +136,6 @@ namespace Ephemera.MidiLib.Test
             if (disposing && (components is not null))
             {
                 CM.Dispose();
-                IM.Dispose();
                 components.Dispose();
             }
 
@@ -154,13 +143,26 @@ namespace Ephemera.MidiLib.Test
         }
         #endregion
 
+        /// <summary>
+        /// Debug stuff.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Go_Click(object? sender, EventArgs e)
+        {
+            CM.UpdateState();
+
+            var ls = CM.DumpState();
+            ls.ForEach(l => Tell(INFO, l));
+        }
+
         #region Test code
         /// <summary>
         /// Create channels and controls dynamically.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void DoDyn()
+        void TestDynamic()
         {
             Tell(INFO, $">>> Go start.");
 
@@ -170,34 +172,35 @@ namespace Ephemera.MidiLib.Test
                 int x = cc2.Right + 10;
                 int y = cc2.Top;
 
-                var chan = CM.OpenChannel(TestSettings.OUTDEV1, 3, "dyn keys", "HonkyTonkPiano");
-                CreateControl(chan);
+                var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", "HonkyTonkPiano");
+                CreateControl(mout);
 
-                chan = CM.OpenChannel(TestSettings.OUTDEV1, 4, "dyn bass", "GlurbleVox", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
-                CreateControl(chan);
+                mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", "GlurbleVox", @"C:\Dev\Libs\MidiLib\Test\test_defs.ini");
+                CreateControl(mout);
 
-                chan = CM.OpenChannel(TestSettings.OUTDEV1, 10, "dyn drums", "Electronic");
-                CreateControl(chan);
+                mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", "Electronic");
+                CreateControl(mout);
 
-                var inchan = IM.OpenMidiInput(TestSettings.INDEV, 1, "dyn my input"); // TODO1 test midi input
+                var inchan = CM.OpenMidiInput(INDEV, 1, "dyn my input"); // TODO1 test midi input
 
                 // Ceate a control for each channel and bind object.
-                void CreateControl(Channel chan)
+                void CreateControl(MidiOutput mout)
                 {
                     var ctrl = new ChannelControl()
                     {
                         // Name = chan.ChannelName,
-                        Info1 = $"M{chan.ChannelNumber} {chan.ChannelName}",
-                        Info2 = $"{chan.PatchName} ({chan.Patch}){Environment.NewLine}{chan}",
+                        Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}",
+                        Info2 = $"{mout.PatchName} ({mout.Patch}){Environment.NewLine}{mout}",
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = _settings.DrawColor,
                         SelectedColor = _settings.SelectedColor,
                         Volume = rand.NextDouble() + 0.5,
+                        State = ChannelState.Normal
                     };
                     ctrl.InfoClick += ChannelControl_InfoClick;
 
-                    CM.Bind(chan, ctrl);
+                    CM.Bind(mout, ctrl);
 
                     x += ctrl.Width + 10; // Width is not valid until after previous statement.
                 }
@@ -209,17 +212,13 @@ namespace Ephemera.MidiLib.Test
 
             CM.UpdateState();
 
-            //var chs = CM.GetChannels();
-
             Tell(INFO, $">>> Go done.");
         }
 
         /// <summary>
         /// Send some test stuff
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void BtnSend_Click(object? sender, EventArgs e)
+        void TestSend()
         {
             // Run timer.
             timer1.Interval = 500;
@@ -228,8 +227,8 @@ namespace Ephemera.MidiLib.Test
             void Timer1_Tick(object? sender, EventArgs e)
             {
                 int noteNum = rand.Next(40, 60);
-                var chan = CM.GetChannel(cc1);
-                SendNote(chan!, cc1, noteNum, 0.5);
+                var mout = CM.GetMidiOutput(cc1);
+                SendNote(mout!, cc1, noteNum, 0.5);
 
                 if (--count <= 0)
                 {
@@ -280,6 +279,7 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         void TestPropertyEditor()
         {
+            // TODO1 This doesn't handle selecting from aliases. Is that a host problem??
             // Set up options.
             var insts = MidiDefs.Instruments;//.GetDefaultInstrumentDefs();
             IEnumerable<string> orderedValues = insts.Contents.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
@@ -292,41 +292,73 @@ namespace Ephemera.MidiLib.Test
 
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
-
-        /// <summary>
-        /// Logging.
-        /// </summary>
-        /// <param name="cat"></param>
-        /// <param name="s"></param>
-        void Tell(string cat, string s, [CallerFilePath] string file = "", [CallerLineNumber] int line = -1)
-        {
-            var fn = Path.GetFileName(file);
-            tvInfo.Append($"{cat} {fn}({line}) {s}");
-        }
         #endregion
 
-        #region Stuff host needs to implement
+        #region Stuff the real host needs to implement
+        /// <summary>
+        /// A typical application config and persistance model.
+        /// </summary>
+        public void DoPersistence()
+        {
+            // Init fake settings.
+            _settings = new()
+            {
+                InputConfigs = [],
+                OutputConfigs = [],
+                MasterVolume = 0.77,
+                DrawColor = Color.SpringGreen,
+                SelectedColor = Color.Magenta,
+            };
+
+            _settings.InputConfigs.Add(new()
+            {
+                ChannelNumber = 8,
+                ChannelName = "Some input",
+                DeviceName = INDEV
+            });
+
+            _settings.OutputConfigs.Add(new()
+            {
+                ChannelNumber = 1,
+                ChannelName = "Output 1!",
+                DeviceName = OUTDEV1,
+                PatchName = "Harpsichord",
+                Volume = 0.67,
+                State = ChannelState.Normal
+            });
+
+            _settings.OutputConfigs.Add(new()
+            {
+                ChannelNumber = 2,
+                ChannelName = "Output 2!",
+                DeviceName = OUTDEV2,
+                PatchName = "Violin",
+                Volume = 1.19,
+                State = ChannelState.Mute
+            });
+        }
+
         /// <summary>
         /// Send midi note.
         /// </summary>
-        /// <param name="channel"></param>
+        /// <param name="mout"></param>
         /// <param name="note"></param>
         /// <param name="volume"></param>
         /// <exception cref="ArgumentException"></exception>
-        void SendNote(Channel chan, ChannelControl ctrl, int note, double volume)
+        void SendNote(MidiOutput mout, ChannelControl ctrl, int note, double volume)
         {
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"Note:{note}"); }
 
             if (volume == 0.0)
             {
-                chan.Send(new NoteOff(chan.ChannelNumber, note));
+                mout.Send(new NoteOff(mout.ChannelNumber, note));
             }
             else
             {
                 var vol = volume * sldMasterVolume.Value * ctrl.Volume;
                 var vel = (int)MathUtils.Constrain(vol * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
-                var se = new NoteOn(chan.ChannelNumber, note, vel);
-                chan.Send(se);
+                var se = new NoteOn(mout.ChannelNumber, note, vel);
+                mout.Send(se);
                 //Tell($">>>", se.ToString());
             }
         }
@@ -334,18 +366,18 @@ namespace Ephemera.MidiLib.Test
         /// <summary>
         /// Send midi controller.
         /// </summary>
-        /// <param name="channel"></param>
+        /// <param name="mout"></param>
         /// <param name="controller"></param>
         /// <param name="value"></param>
         /// <exception cref="ArgumentException"></exception>
-        void SendController(Channel channel, int controller, int value)
+        void SendController(MidiOutput mout, int controller, int value)
         {
             if (controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{controller}"); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{value}"); }
 
             // ?? if (channel.Enable)
-            var se = new Controller(channel.ChannelNumber, controller, value);
-            channel.Send(se);
+            var se = new Controller(mout.ChannelNumber, controller, value);
+            mout.Send(se);
             Tell($">>>", se.ToString());
         }
 
@@ -356,10 +388,10 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         void Mgr_MessageReceived(object? sender, BaseEvent e)
         {
-            var chan = CM.GetChannel(e.ChannelNumber);
-            if (chan is not null)
+            var mout = CM.GetMidiOutput(e.ChannelNumber);
+            if (mout is not null)
             {
-                Tell(INFO, $"Mgr Received [{e}] on [{chan}]");
+                Tell(INFO, $"Mgr Received [{e}] on [{mout}]");
             }
             else
             {
@@ -377,5 +409,19 @@ namespace Ephemera.MidiLib.Test
             throw new NotImplementedException();
         }
         #endregion
+
+        #region Infrastrucutre
+        /// <summary>
+        /// Logging.
+        /// </summary>
+        /// <param name="cat"></param>
+        /// <param name="s"></param>
+        void Tell(string cat, string s, [CallerFilePath] string file = "", [CallerLineNumber] int line = -1)
+        {
+            var fn = Path.GetFileName(file);
+            tvInfo.Append($"{cat} {fn}({line}) {s}");
+        }
+        #endregion
+
     }
 }

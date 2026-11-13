@@ -14,20 +14,17 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-// A typical way to handle settings for MidiLib configuration. Very application-specific.
+// A typical way to handle settings and persistence for MidiLib configuration. Very application-specific.
 
 
 namespace Ephemera.MidiLib.Test
 {
-//????    [Serializable]
+    [Serializable]
     public class TestSettings
     {
-        // [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
-        // public string PatchName { get; set; } = "???";
-
         public List<InputConfig> InputConfigs { get; set; } = [];
 
-        public List<ChannelConfig> ChannelConfigs { get; set; } = [];
+        public List<OutputConfig> OutputConfigs { get; set; } = [];
 
         public double MasterVolume { get; init; } = 0.5;
 
@@ -36,53 +33,44 @@ namespace Ephemera.MidiLib.Test
 
         [JsonConverter(typeof(JsonColorConverter))]
         public Color SelectedColor { get; set; } = Color.Moccasin;
+    }
 
-        #region Device names - YMMV
-        public const string INDEV = "NebLoopback1";
-        public const string OUTDEV1 = "VirtualMIDISynth #1";
-        public const string OUTDEV2 = "Microsoft GS Wavetable Synth";
+    [Serializable]
+    public class OutputConfig
+    {
+        public string ChannelName { get; set; } = "???";
+
+        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
+        public int ChannelNumber { get; init; } = 0;
+
+        [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
+        public string PatchName { get; set; } = "???";
+
+        [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
+        public string? AliasFile { get; set; } = null;
+
+        [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
+        public string DeviceName { get; set; } = "";
+
+        #region These would actually be persisted separately
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public ChannelState State { get; set; } = ChannelState.Normal;
+
+        public double Volume { get; init; } = 0.5;
+
+        // public double Pan { get; init; } = 0.0;
         #endregion
+    }
 
-        public static TestSettings GenFake()
-        {
-            // Init fake settings.
-            TestSettings settings = new()
-            {
-                InputConfigs = [],
-                ChannelConfigs = [],
-                MasterVolume = 0.77,
-                DrawColor = Color.SpringGreen,
-                SelectedColor = Color.Magenta,
-            };
+    [Serializable]
+    public class InputConfig
+    {
+        public string ChannelName { get; set; } = "???";
 
-            settings.InputConfigs.Add(new()
-            {
-                ChannelNumber = 8,
-                ChannelName = "Some input",
-                DeviceName = INDEV
-            });
+        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
+        public int ChannelNumber { get; init; } = 0;
 
-            settings.ChannelConfigs.Add(new()
-            {
-                ChannelNumber = 1,
-                ChannelName = "Output 1!",
-                DeviceName = OUTDEV1,
-                PatchName = "Harpsichord",
-                Volume = 0.67,
-//???                State = ChannelState.Normal
-            });
-
-            settings.ChannelConfigs.Add(new()
-            {
-                ChannelNumber = 2,
-                ChannelName = "Output 2!",
-                DeviceName = OUTDEV2,
-                PatchName = "Violin",
-                Volume = 1.19,
-                //???                State = ChannelState.Mute
-            });
-
-            return settings;
-        }
+        [Editor(typeof(MidiInputDeviceTypeEditor), typeof(UITypeEditor))]
+        public string DeviceName { get; set; } = "";
     }
 }
