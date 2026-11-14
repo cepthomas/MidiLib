@@ -15,7 +15,7 @@ namespace Ephemera.MidiLib
     public class ChannelManager : IDisposable
     {
         #region Fields
-        /// <summary>All midi devices to use for send. Index is the id.</summary>
+        /// <summary>All midi devices to use for send. Index is the IOutputDevice.Id.</summary>
         readonly List<IOutputDevice> _outputDevices = [];
 
         /// <summary>All the outputs with associated controls.</summary>

@@ -37,6 +37,8 @@ namespace Ephemera.MidiLib
         #endregion
 
 
+public enum InstE { AcousticGrandPiano, BrightAcousticPiano, ElectricGrandPiano, HonkyTonkPiano, ElectricPiano1 }
+public enum KitsE { Standard = 0, Room = 8, Power = 16, Electronic = 24, TR808 = 25, Jazz = 32, Brush = 40, Orchestra = 48, SFX = 56 }
 
 
         #region =====================================================================
@@ -93,29 +95,32 @@ namespace Ephemera.MidiLib
             { 121, "ResetAllControllers" }, { 122, "LocalKeyboard" }, { 123, "AllNotesOff" }
         };
 
-        /// <summary>Reverse lookup.</summary>
-        Dictionary<string, int> _instrumentNumbers = new();
-        //static readonly Dictionary<string, int> _instrumentNumbers = new();
 
-        /// <summary>Reverse lookup.</summary>
-        Dictionary<string, int> _drumKitNumbers = new();
-        //static readonly Dictionary<string, int> _drumKitNumbers = new();
 
-        /// <summary>Reverse lookup.</summary>
-        Dictionary<string, int> _drumNumbers = new();
-        //static readonly Dictionary<string, int> _drumNumbers = new();
 
-        /// <summary>Reverse lookup.</summary>
-        Dictionary<string, int> _controllerNumbers = new();
-        //static readonly Dictionary<string, int> _controllerNumbers = new();
+        // /// <summary>Reverse lookup.</summary>
+        // Dictionary<string, int> _instrumentNumbers = new();
+        // //static readonly Dictionary<string, int> _instrumentNumbers = new();
 
-        void LoadThem()
-        {
-            _instrumentNumbers = _instruments.ToDictionary(x => x, x => _instruments.IndexOf(x));
-            _drumKitNumbers = _drumKits.ToDictionary(x => x.Value, x => x.Key);
-            _drumNumbers = _drums.ToDictionary(x => x.Value, x => x.Key);
-            _controllerNumbers = _controllers.ToDictionary(x => x.Value, x => x.Key);
-        }
+        // /// <summary>Reverse lookup.</summary>
+        // Dictionary<string, int> _drumKitNumbers = new();
+        // //static readonly Dictionary<string, int> _drumKitNumbers = new();
+
+        // /// <summary>Reverse lookup.</summary>
+        // Dictionary<string, int> _drumNumbers = new();
+        // //static readonly Dictionary<string, int> _drumNumbers = new();
+
+        // /// <summary>Reverse lookup.</summary>
+        // Dictionary<string, int> _controllerNumbers = new();
+        // //static readonly Dictionary<string, int> _controllerNumbers = new();
+
+        // void LoadThem()
+        // {
+        //     _instrumentNumbers = _instruments.ToDictionary(x => x, x => _instruments.IndexOf(x));
+        //     _drumKitNumbers = _drumKits.ToDictionary(x => x.Value, x => x.Key);
+        //     _drumNumbers = _drums.ToDictionary(x => x.Value, x => x.Key);
+        //     _controllerNumbers = _controllers.ToDictionary(x => x.Value, x => x.Key);
+        // }
         #endregion
 
 

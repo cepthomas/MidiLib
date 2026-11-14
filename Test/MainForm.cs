@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
+using static Ephemera.MidiLib.MidiDefs;
 
 namespace Ephemera.MidiLib.Test
 {
@@ -150,11 +151,53 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         void Go_Click(object? sender, EventArgs e)
         {
-            CM.UpdateState();
+            // CM.UpdateState();
+            // var ls = CM.DumpState();
+            // ls.ForEach(l => Tell(INFO, l));
 
-            var ls = CM.DumpState();
-            ls.ForEach(l => Tell(INFO, l));
+
+            // Nebulator like:
+            // OpenMidiOutput(midi_device_out, 1, "keys", "AcousticGrandPiano");
+            // OpenMidiOutput(midi_device_out, 10, "drums", "Jazz");
+            // OpenMidiOutput(midi_device_out, 2, "keys", "KUSTOM");
+
+            // wants like =>
+            // OpenMidiOutput(midi_device_out, 1, "keys", insts.AcousticGrandPiano);
+            // OpenMidiOutput(midi_device_out, 10, "drums", kits.Jazz);
+            // OpenMidiOutput(midi_device_out, 2, "keys", test_defs.KUSTOM);
+
+            // my current:
+            // var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
+            // var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", id);
+            // id = insts!.GetId("GlurbleVox") ?? -1; // Aliases.
+            // mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", id, false, aliasFile);
+            // id = MidiDefs.DrumKits.GetId("Electronic") ?? -1; // Drum kit.
+            // mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", id, true);
+
+
+
+
+            //CM.OpenMidiOutput(OUTDEV1, 1, "keys",  InstE.AcousticGrandPiano);
+            //CM.OpenMidiOutput(OUTDEV1, 10, "drums", KitsE.Jazz);
+            //CM.OpenMidiOutput(OUTDEV1, 2, "keys", KustomE.WaterWhistle1);
+
+            OpenMidiOutput2(OUTDEV1, 1, "keys", InstE.AcousticGrandPiano);
+            OpenMidiOutput2(OUTDEV1, 10, "drums", KitsE.Jazz);
+            OpenMidiOutput2(OUTDEV1, 2, "keys", KustomE.WaterWhistle1);
+
+
         }
+        public enum KustomE { AmbientWind = 0, AmbientWind2 = 1, WaterWhistle1 = 18, OctaveStringPad = 27 }
+
+        public void OpenMidiOutput2(string deviceName, int channelNumber, string channelName, Enum patch, bool isDrums = false, string? aliasFile = null)
+        {
+
+            Tell(INFO, $"--- {Convert.ToInt32(patch)} {patch}");
+        }
+
+
+
+
 
         #region Test code
         /// <summary>
