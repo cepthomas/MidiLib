@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
-using static Ephemera.MidiLib.MidiDefs;
+//using static Ephemera.MidiLib.MidiDefs;
 
 namespace Ephemera.MidiLib.Test
 {
@@ -181,8 +181,8 @@ namespace Ephemera.MidiLib.Test
             //CM.OpenMidiOutput(OUTDEV1, 10, "drums", KitsE.Jazz);
             //CM.OpenMidiOutput(OUTDEV1, 2, "keys", KustomE.WaterWhistle1);
 
-            OpenMidiOutput2(OUTDEV1, 1, "keys", InstE.AcousticGrandPiano);
-            OpenMidiOutput2(OUTDEV1, 10, "drums", KitsE.Jazz);
+            OpenMidiOutput2(OUTDEV1, 1, "keys", MidiDefs.Instrument.AcousticGrandPiano);
+            OpenMidiOutput2(OUTDEV1, 10, "drums", MidiDefs.DrumKit.Jazz);
             OpenMidiOutput2(OUTDEV1, 2, "keys", KustomE.WaterWhistle1);
 
 
@@ -191,7 +191,6 @@ namespace Ephemera.MidiLib.Test
 
         public void OpenMidiOutput2(string deviceName, int channelNumber, string channelName, Enum patch, bool isDrums = false, string? aliasFile = null)
         {
-
             Tell(INFO, $"--- {Convert.ToInt32(patch)} {patch}");
         }
 
@@ -219,8 +218,8 @@ namespace Ephemera.MidiLib.Test
                 int x = cc2.Right + 10;
                 int y = cc2.Top;
 
-                var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
-                var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", id);
+                //var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
+                var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", MidiDefs.Instrument.HonkyTonkPiano);
                 CreateControl(mout);
 
                 // Aliases.
