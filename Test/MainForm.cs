@@ -97,23 +97,50 @@ namespace Ephemera.MidiLib.Test
             try
             {
                 // Configure channels defined in designer.
-                InitOneChannel(_settings.OutputConfigs[0], cc1);
-                InitOneChannel(_settings.OutputConfigs[1], cc2);
+                // Keys
+                var chan = CM.OpenMidiOutput(_settings.KeysDeviceName, _settings.KeysChannelNumber, _settings.KeysChannelName, _settings.KeysPatch);
+                CM.Bind(chan, cc1);
 
-                void InitOneChannel(OutputConfig config, ChannelControl ctrl)
-                {
-                    var chan = CM.OpenMidiOutput(config.DeviceName, config.ChannelNumber, config.ChannelName, config.Patch);
-                    CM.Bind(chan, ctrl);
+                // Init controls.
+                cc1.Volume = 0.8; // should be from persistence
+                cc1.State = ChannelState.Normal; // should be from persistence
+                cc1.DrawColor = _settings.DrawColor;
+                cc1.SelectedColor = _settings.SelectedColor;
+                cc1.Info1 = $"M{chan.ChannelNumber} {chan.ChannelName}";
+                cc1.Info2 = $"{chan}";
+                cc1.InfoClick += ChannelControl_InfoClick;
 
-                    // Init control.
-                    ctrl.Volume = config.Volume;
-                    ctrl.State = config.State;
-                    ctrl.DrawColor = _settings.DrawColor;
-                    ctrl.SelectedColor = _settings.SelectedColor;
-                    ctrl.Info1 = $"M{config.ChannelNumber} {config.ChannelName}";
-                    ctrl.Info2 = $"{chan}";
-                    ctrl.InfoClick += ChannelControl_InfoClick;
-                }
+                // Drums
+                chan = CM.OpenMidiOutput(_settings.DrumDeviceName, _settings.DrumChannelNumber, _settings.DrumChannelName, _settings.DrumPatch);
+                CM.Bind(chan, cc2);
+
+                // Init controls.
+                cc2.Volume = 0.72; // should be from persistence
+                cc2.State = ChannelState.Solo; // should be from persistence
+                cc2.DrawColor = _settings.DrawColor;
+                cc2.SelectedColor = _settings.SelectedColor;
+                cc2.Info1 = $"M{chan.ChannelNumber} {chan.ChannelName}";
+                cc2.Info2 = $"{chan}";
+                cc2.InfoClick += ChannelControl_InfoClick;
+
+
+                //InitOneChannel(_settings.OutputConfigs[0], cc1);
+                //InitOneChannel(_settings.OutputConfigs[1], cc2);
+
+                //void InitOneChannel(OutputConfig config, ChannelControl ctrl)
+                //{
+                //    var chan = CM.OpenMidiOutput(config.DeviceName, config.ChannelNumber, config.ChannelName, config.Patch);
+                //    CM.Bind(chan, ctrl);
+
+                //    // Init control.
+                //    ctrl.Volume = config.Volume;
+                //    ctrl.State = config.State;
+                //    ctrl.DrawColor = _settings.DrawColor;
+                //    ctrl.SelectedColor = _settings.SelectedColor;
+                //    ctrl.Info1 = $"M{config.ChannelNumber} {config.ChannelName}";
+                //    ctrl.Info2 = $"{chan}";
+                //    ctrl.InfoClick += ChannelControl_InfoClick;
+                //}
             }
             catch (Exception ex)
             {
@@ -183,16 +210,19 @@ namespace Ephemera.MidiLib.Test
 
             OpenMidiOutput2(OUTDEV1, 1, "keys", MidiDefs.Instrument.AcousticGrandPiano);
             OpenMidiOutput2(OUTDEV1, 10, "drums", MidiDefs.DrumKit.Jazz);
-            OpenMidiOutput2(OUTDEV1, 2, "keys", KustomE.WaterWhistle1);
+            OpenMidiOutput2(OUTDEV1, 2, "keys", KustomInstrument.WaterWhistle1);
 
+            void OpenMidiOutput2(string deviceName, int channelNumber, string channelName, Enum patch, bool isDrums = false, string? aliasFile = null)
+            {
+                Tell(INFO, $"--- {Convert.ToInt32(patch)} {patch}");
+            }
 
         }
-        public enum KustomE { AmbientWind = 0, AmbientWind2 = 1, WaterWhistle1 = 18, OctaveStringPad = 27 }
 
-        public void OpenMidiOutput2(string deviceName, int channelNumber, string channelName, Enum patch, bool isDrums = false, string? aliasFile = null)
-        {
-            Tell(INFO, $"--- {Convert.ToInt32(patch)} {patch}");
-        }
+
+
+        public enum KustomInstrument { AmbientWind = 0, AmbientWind2 = 1, WaterWhistle1 = 18, OctaveStringPad = 27 }
+
 
 
 
@@ -208,9 +238,9 @@ namespace Ephemera.MidiLib.Test
         {
             Tell(INFO, $">>> Go start.");
 
-            // Play with aliases.
-            string aliasFile = @"C:\Dev\Libs\MidiLib\Test\test_defs.ini";
-            var (insts, ctrls, drums, kits) = LoadAliases(aliasFile);
+            //// Play with aliases.
+            //string aliasFile = @"C:\Dev\Libs\MidiLib\Test\test_defs.ini";
+            //var (insts, ctrls, drums, kits) = LoadAliases(aliasFile);
 
             try
             {
@@ -222,14 +252,14 @@ namespace Ephemera.MidiLib.Test
                 var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", MidiDefs.Instrument.HonkyTonkPiano);
                 CreateControl(mout);
 
-                // Aliases.
-                id = insts!.GetId("GlurbleVox") ?? -1;
-                mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", id, false, aliasFile);
+                // Custom.
+                //id = insts!.GetId("GlurbleVox") ?? -1;
+                mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", KustomInstrument.OctaveStringPad);// false, aliasFile);
                 CreateControl(mout);
 
                 // Drum kit.
-                id = MidiDefs.DrumKits.GetId("Electronic") ?? -1;
-                mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", id, true);
+                //id = MidiDefs.~DrumKits.GetId("Electronic") ?? -1;
+                mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", MidiDefs.DrumKit.Orchestra);// id, true);
                 CreateControl(mout);
 
                 // Input.
@@ -242,7 +272,7 @@ namespace Ephemera.MidiLib.Test
                     {
                         // Name = chan.ChannelName,
                         Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}",
-                        Info2 = $"{mout.PatchName} ({mout.Patch}){Environment.NewLine}{mout}",
+                        Info2 = $"{mout.Patch} ({Convert.ToInt32(mout.Patch)}){Environment.NewLine}{mout}",
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = _settings.DrawColor,
@@ -331,16 +361,16 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         void TestPropertyEditor()
         {
-            // Set up options.
-            List<string> inames = [];
-            var mout = CM.GetMidiOutput(1);
-            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
-            {
-                inames.Add(mout!.GetInstrumentName(i) ?? $"inst{i}");
-            }
+            //// Set up options.
+            //List<string> inames = [];
+            //var mout = CM.GetMidiOutput(1);
+            //for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
+            //{
+            //    inames.Add(mout!.GetInstrumentName(i) ?? $"inst{i}");
+            //}
 
-            // TODO1 feed names to editor??
-    //        PatchTypeEditor.PatchNamesRequest += PatchTypeEditor_PatchNamesRequest;
+            //// TODO1 feed names to editor??
+            ////PatchTypeEditor.PatchNamesRequest += PatchTypeEditor_PatchNamesRequest;
 
 
             var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
@@ -363,41 +393,57 @@ namespace Ephemera.MidiLib.Test
             // Init fake settings.
             _settings = new()
             {
-                InputConfigs = [],
-                OutputConfigs = [],
+                //InputConfigs = [],
+                //OutputConfigs = [],
                 MasterVolume = 0.77,
                 DrawColor = Color.SpringGreen,
                 SelectedColor = Color.Magenta,
+
+                InputChannelName = "Some input",
+                InputChannelNumber = 1,
+                InputDeviceName = INDEV,
+
+                KeysChannelName = "keys",
+                KeysChannelNumber = 2,
+                KeysPatch = MidiDefs.Instrument.Harpsichord,
+                KeysDeviceName = OUTDEV1,
+
+                DrumChannelName = "drums",
+                DrumChannelNumber = 10,
+                DrumPatch = MidiDefs.DrumKit.Orchestra,
+                DrumDeviceName = OUTDEV1,
             };
 
-            _settings.InputConfigs.Add(new()
-            {
-                ChannelNumber = 8,
-                ChannelName = "Some input",
-                DeviceName = INDEV
-            });
+            //_settings.InputConfigs.Add(new()
+            //{
+            //    ChannelNumber = 8,
+            //    ChannelName = "Some input",
+            //    DeviceName = INDEV
+            //});
 
-            _settings.OutputConfigs.Add(new()
-            {
-                ChannelNumber = 1,
-                ChannelName = "Output 1!",
-                DeviceName = OUTDEV1,
-                Patch = 6,
-                //PatchName = "Harpsichord",
-                Volume = 0.67,
-                State = ChannelState.Normal
-            });
+            //_settings.OutputConfigs.Add(new()
+            //{
+            //    ChannelNumber = 1,
+            //    ChannelName = "Output 1!",
+            //    DeviceName = OUTDEV1,
+            //    Patch = (int)MidiDefs.Instrument.Harpsichord,
+            //    PatchOptions = typeof(MidiDefs.Instrument),
+            //    //PatchName = "Harpsichord",
+            //    Volume = 0.67,
+            //    State = ChannelState.Normal
+            //});
 
-            _settings.OutputConfigs.Add(new()
-            {
-                ChannelNumber = 2,
-                ChannelName = "Output 2!",
-                DeviceName = OUTDEV2,
-                Patch = 40,
-                //PatchName = "Violin",
-                Volume = 1.19,
-                State = ChannelState.Mute
-            });
+            //_settings.OutputConfigs.Add(new()
+            //{
+            //    ChannelNumber = 2,
+            //    ChannelName = "Output 2!",
+            //    DeviceName = OUTDEV2,
+            //    Patch = (int)MidiDefs.Instrument.Violin,
+            //    PatchOptions = typeof(MidiDefs.Instrument),
+            //    //PatchName = "Violin",
+            //    Volume = 1.19,
+            //    State = ChannelState.Mute
+            //});
         }
 
         /// <summary>
@@ -473,29 +519,29 @@ namespace Ephemera.MidiLib.Test
         #endregion
 
         #region Infrastrucutre
-        /// <summary>
-        /// Load up stuff.
-        /// </summary>
-        /// <param name="aliasFile"></param>
-        (BiLut? insts, BiLut? ctrls, BiLut? drums, BiLut? kits) LoadAliases(string aliasFile)
-        {
-            var ir = new IniReader();
-            ir.ParseFile(aliasFile);
+        ///// <summary>
+        ///// Load up stuff.
+        ///// </summary>
+        ///// <param name="aliasFile"></param>
+        //(BiLut? insts, BiLut? ctrls, BiLut? drums, BiLut? kits) LoadAliases(string aliasFile)
+        //{
+        //    var ir = new IniReader();
+        //    ir.ParseFile(aliasFile);
 
-            var defs = MidiDefs.ReadDefs(ir, "instruments");
-            var _instruments = defs;
+        //    var defs = MidiDefs.ReadDefs(ir, "instruments");
+        //    var _instruments = defs;
 
-            defs = MidiDefs.ReadDefs(ir, "controllers");
-            var _controllers = defs;
+        //    defs = MidiDefs.ReadDefs(ir, "controllers");
+        //    var _controllers = defs;
 
-            defs = MidiDefs.ReadDefs(ir, "drums");
-            var _drums = defs;
+        //    defs = MidiDefs.ReadDefs(ir, "drums");
+        //    var _drums = defs;
 
-            defs = MidiDefs.ReadDefs(ir, "drumkits");
-            var _drumKits = defs;
+        //    defs = MidiDefs.ReadDefs(ir, "drumkits");
+        //    var _drumKits = defs;
 
-            return (_instruments, _controllers, _drums, _drumKits);
-        }
+        //    return (_instruments, _controllers, _drums, _drumKits);
+        //}
 
         /// <summary>
         /// Logging.

@@ -101,7 +101,7 @@ namespace Ephemera.MidiLib
         /// <param name="channelName"></param>
         /// <param name="patch">Explicit</param>
         /// <returns></returns>
-        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, Enum patch)// bool isDrums = false, string? aliasFile = null)
+        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patch)// Enum patch)// bool isDrums = false, string? aliasFile = null)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -110,7 +110,7 @@ namespace Ephemera.MidiLib
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
-            MidiOutput mout = new(outdev, channelNumber, channelName, Convert.ToInt32(patch));
+            MidiOutput mout = new(outdev, channelNumber, channelName, patch); // Convert.ToInt32(patch));
             //mout.InitInstruments(patchNum, isDrums, aliasFile);
             _midiOutputs.Add((mout, null));
             outdev.Send(new Patch(channelNumber, mout.Patch));

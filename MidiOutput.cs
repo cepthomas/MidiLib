@@ -44,6 +44,7 @@ namespace Ephemera.MidiLib
         /// <summary>Instrument/patch.</summary>
         public int Patch { get; set; } = 0;
 
+
         ///// <summary>Patch is a drumkit.</summary>
         //public bool IsDrums { get; private set; } = false;
 

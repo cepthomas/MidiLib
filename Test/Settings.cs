@@ -22,9 +22,9 @@ namespace Ephemera.MidiLib.Test
     [Serializable]
     public class TestSettings
     {
-        public List<InputConfig> InputConfigs { get; set; } = [];
+        //public List<InputConfig> InputConfigs { get; set; } = [];
 
-        public List<OutputConfig> OutputConfigs { get; set; } = [];
+        //public List<OutputConfig> OutputConfigs { get; set; } = [];
 
         public double MasterVolume { get; init; } = 0.5;
 
@@ -33,22 +33,56 @@ namespace Ephemera.MidiLib.Test
 
         [JsonConverter(typeof(JsonColorConverter))]
         public Color SelectedColor { get; set; } = Color.Moccasin;
+
+        //////////////// Inputs defined in designer //////////////////
+        public string InputChannelName { get; set; } = "???";
+
+        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
+        public int InputChannelNumber { get; init; } = 0;
+
+        [Editor(typeof(MidiInputDeviceTypeEditor), typeof(UITypeEditor))]
+        public string InputDeviceName { get; set; } = "";
+
+
+        //////////////// Outputs defined in designer //////////////////
+        public string KeysChannelName { get; set; } = "???";
+
+        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
+        public int KeysChannelNumber { get; init; } = 0;
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public MidiDefs.Instrument KeysPatch { get; set; }
+
+        [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
+        public string KeysDeviceName { get; set; } = "";
+
+
+        public string DrumChannelName { get; set; } = "???";
+
+        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
+        public int DrumChannelNumber { get; init; } = 0;
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public MidiDefs.DrumKit DrumPatch { get; set; }
+
+        [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
+        public string DrumDeviceName { get; set; } = "";
     }
 
     [Serializable]
-    public class OutputConfig
+    public class OutputConfig_not
     {
         public string ChannelName { get; set; } = "???";
 
         [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
         public int ChannelNumber { get; init; } = 0;
 
-        [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
+        //[Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public MidiDefs.Instrument Patch { get; set; }
 
-        public int Patch { get; set; } = 0;
-
-        [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
-        public string? AliasFile { get; set; } = null;
+        //[Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
+        //public string? AliasFile { get; set; } = null;
 
         [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
         public string DeviceName { get; set; } = "";
@@ -64,7 +98,7 @@ namespace Ephemera.MidiLib.Test
     }
 
     [Serializable]
-    public class InputConfig
+    public class InputConfig_not
     {
         public string ChannelName { get; set; } = "???";
 
