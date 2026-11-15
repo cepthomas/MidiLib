@@ -13,7 +13,6 @@ using System.Text.Json.Serialization;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
-//using static Ephemera.MidiLib.MidiDefs;
 
 namespace Ephemera.MidiLib.Test
 {
@@ -30,7 +29,7 @@ namespace Ephemera.MidiLib.Test
 
         readonly ChannelManager CM;
 
-        List<MidiOutput> _outputs = [];
+        readonly List<MidiOutput> _outputs = [];
 
         const string ERROR = "ERR";
         const string WARN = "WRN";
@@ -188,7 +187,7 @@ namespace Ephemera.MidiLib.Test
 
             // Init controls.
             cc2.Volume = 0.72;
-            cc2.State = ChannelState.Solo;
+            cc2.State = ChannelState.Normal; // ChannelState.Solo;
             cc2.DrawColor = _settings.DrawColor;
             cc2.SelectedColor = _settings.SelectedColor;
             cc2.InfoClick += ChannelControl_InfoClick;
@@ -247,36 +246,34 @@ namespace Ephemera.MidiLib.Test
         /// <summary>
         /// Send some test stuff.
         /// </summary>
-        void TestSend()  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        void TestSend()
         {
             // Run timer.
             timer1.Interval = 50;
-            int count = 100;
+            int tickCount = 100;
             Random rand = new();
 
             void Timer1_Tick(object? sender, EventArgs e)
             {
+                int pace = rand.Next(0, 5);
 
-                _outputs.ForEach(op =>
+                if (pace == 0)
                 {
-                    int pace = rand.Next(0, 10);
+                    int devind = rand.Next(0, _outputs.Count);
+                    int noteNum = rand.Next(40, 70);
+                    var dev = _outputs[devind];
+                    SendNote(dev, cc1, noteNum, 0.5);
+                }
 
-                    if (pace == 0)
-                    {
-                        int noteNum = rand.Next(40, 70);
-                        SendNote(op, cc1, noteNum, 0.5);
-
-
-                    }
-
-                    if (--count <= 0)
-                    {
-                        timer1.Stop();
-                        timer1.Tick -= Timer1_Tick;
-                    }
-                });
+                if (--tickCount <= 0)
+                {
+                    timer1.Stop();
+                    timer1.Tick -= Timer1_Tick;
+                    Tell(INFO, "TestSend() done");
+                }
             }
             timer1.Tick += Timer1_Tick;
+            Tell(INFO, "TestSend() start");
             timer1.Start();
         }
 
@@ -348,6 +345,7 @@ namespace Ephemera.MidiLib.Test
         /// Send midi note.
         /// </summary>
         /// <param name="mout"></param>
+        /// <param name="ctrl">Only needed for channel volume.</param>
         /// <param name="note"></param>
         /// <param name="volume"></param>
         /// <exception cref="ArgumentException"></exception>
@@ -378,13 +376,12 @@ namespace Ephemera.MidiLib.Test
         /// <exception cref="ArgumentException"></exception>
         void SendController(MidiOutput mout, MidiDefs.ControllerId controller, int value)
         {
-            //if (controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{controller}"); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{value}"); }
 
             // ?? if (channel.Enable)
             var se = new Controller(mout.ChannelNumber, controller, value);
             mout.Send(se);
-            Tell($">>>", se.ToString());
+            //Tell($">>>", se.ToString());
         }
 
         /// <summary>
@@ -411,8 +408,6 @@ namespace Ephemera.MidiLib.Test
         void ChangePatch()
         {
             var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
-
-            //changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
 
             changes.ForEach(ch =>
             {

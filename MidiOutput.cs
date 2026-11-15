@@ -65,19 +65,6 @@ namespace Ephemera.MidiLib
 
         #region Public functions
         /// <summary>
-        /// Sends patch message. Throws if anything is invalid.
-        /// </summary>
-        /// <param name="patch">Explicit</param>
-        /// <returns></returns>
-        public void SetPatch(int patch)
-        {
-            // Check args.
-            if (patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patch:{patch}"); }
-
-//            _device.Send(new Patch(ChannelNumber, patch));
-        }
-
-        /// <summary>
         /// Send a midi message. Honors muting. Assumes host has fixed up volume etc.
         /// </summary>
         /// <param name="evt"></param>

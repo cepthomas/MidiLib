@@ -21,8 +21,6 @@ namespace Ephemera.MidiLib
         /// <summary>All the outputs with associated controls.</summary>
         readonly List<(MidiOutput mout, ChannelControl? ctrl)> _midiOutputs = [];
 
-
-
         /// <summary>Need to add/remove dynamically generated controls.</summary>
         readonly Control.ControlCollection? _controls;
 
@@ -95,14 +93,13 @@ namespace Ephemera.MidiLib
 
         #region Outputs
         /// <summary>
-        /// Open a normal output channel. Lazy inits the device. Sends initial patch message. Throws if anything is invalid.
+        /// Open a normal output channel. Lazy inits the device. Throws if anything is invalid.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-        /// <param name="patch"></param>
         /// <returns></returns>
-        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName)//, Enum patch)
+        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
@@ -112,7 +109,6 @@ namespace Ephemera.MidiLib
 
             MidiOutput mout = new(outdev, channelNumber, channelName);
             _midiOutputs.Add((mout, null));
-//            mout.SetPatch(Convert.ToInt32(patch));
             return mout;
         }
         #endregion
@@ -253,9 +249,10 @@ namespace Ephemera.MidiLib
         public void SetPatch(MidiOutput mout, Enum patch)
         {
             // Check args.
-            if (mout is null) { throw new ArgumentNullException($"???"); }
-            //if (patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patch:{patch}"); }
-            mout.SetPatch(Convert.ToInt32(patch));
+            ArgumentNullException.ThrowIfNull(mout);
+
+            var pe = new Patch(mout.ChannelNumber, patch);
+            mout.Send(pe);
         }
 
         /// <summary>
@@ -362,18 +359,6 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Collection accessors
-        ///// <summary>
-        ///// Iterate through the contents.
-        ///// </summary>
-        ///// <returns></returns>
-        //public IEnumerable<(MidiOutput chan, ChannelControl? ctrl)> GetChannels()
-        //{
-        //   foreach (var op in _midiOutputs)
-        //   {
-        //       yield return op;
-        //   }
-        //}
-
         /// <summary>
         /// Get channel object from control object.
         /// </summary>
@@ -395,6 +380,18 @@ namespace Ephemera.MidiLib
             foreach (var (mout, _) in _midiOutputs) { if (mout.ChannelNumber == channelNum) return mout; }
             return null;
         }
+
+        ///// <summary>
+        ///// Iterate through the contents.
+        ///// </summary>
+        ///// <returns></returns>
+        //public IEnumerable<(MidiOutput chan, ChannelControl? ctrl)> GetChannels()
+        //{
+        //   foreach (var op in _midiOutputs)
+        //   {
+        //       yield return op;
+        //   }
+        //}
 
         ///// <summary>
         ///// Get channel object from channel number.
@@ -433,7 +430,7 @@ namespace Ephemera.MidiLib
             {
                 if (ctrl is not null)
                 {
-                    //res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{mout.Patch}");
+                    //res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{ctrl.Patch}");
                     res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound}");
                 }
                 else
