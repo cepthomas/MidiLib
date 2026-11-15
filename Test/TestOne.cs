@@ -58,37 +58,36 @@ namespace Ephemera.MidiLib.Test
             // Input
             var chan_in1 = CM.OpenMidiInput(indev, 1, "my input");
 
-            // TOTO1 update:
-            /////// Named instrument mode
-            //// 1 is GM instruments
-            //var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
-            //var mout1 = CM.OpenMidiOutput(outdev, 1, "keys", id);
-            //// 2 is GM drums1
-            //id = MidiDefs.DrumKits.GetId("Electronic") ?? -1;
-            //var mout2 = CM.OpenMidiOutput(outdev, 10, "syndrums", id, true);
-            //// 3 is Alt instruments
-            //var instFn = Path.Join(MiscUtils.GetSourcePath(), "test_defs.ini");
-            //var mout3 = CM.OpenMidiOutput(outdev, 4, "woofer", 18, false, instFn);
+            ///// Named instrument mode
+            // 1 is GM instruments
+            var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
+            var mout1 = CM.OpenMidiOutput(outdev, 1, "keys", id);
+            // 2 is GM drums1
+            id = MidiDefs.DrumKits.GetId("Electronic") ?? -1;
+            var mout2 = CM.OpenMidiOutput(outdev, 10, "syndrums", id, true);
+            // 3 is Alt instruments
+            var instFn = Path.Join(MiscUtils.GetSourcePath(), "test_defs.ini");
+            var mout3 = CM.OpenMidiOutput(outdev, 4, "woofer", 18, false, instFn);
 
-            //Assert(mout1.PatchName == "HonkyTonkPiano");
-            //Assert(mout2.PatchName == "Electronic");
-            //Assert(mout3.PatchName == "WaterWhistle1");
+            Assert(mout1.PatchName == "HonkyTonkPiano");
+            Assert(mout2.PatchName == "Electronic");
+            Assert(mout3.PatchName == "WaterWhistle1");
 
-            //// Should send midi patch.
-            ////mout1.PatchName = "Trumpet";
-            ////Assert(sent is Patch);
-            //Patch pevt = (sent as Patch)!;
-            //Assert(pevt.ChannelNumber == mout1.ChannelNumber);
-            //Assert(pevt.Value == 56);
-
-            /////// Anonymous mode
-            //sent = null;
-            //var mout4 = CM.OpenMidiOutput(outdev, 1, "pickle", 38, false);
-            //Assert(mout4.PatchName == "INST_38");
+            // Should send midi patch.
+            //mout1.PatchName = "Trumpet";
             //Assert(sent is Patch);
-            //pevt = (sent as Patch)!;
-            //Assert(pevt.ChannelNumber == mout4.ChannelNumber);
-            //Assert(pevt.Value == 38);
+            Patch pevt = (sent as Patch)!;
+            Assert(pevt.ChannelNumber == mout1.ChannelNumber);
+            Assert(pevt.Value == 56);
+
+            ///// Anonymous mode
+            sent = null;
+            var mout4 = CM.OpenMidiOutput(outdev, 1, "pickle", 38, false);
+            Assert(mout4.PatchName == "INST_38");
+            Assert(sent is Patch);
+            pevt = (sent as Patch)!;
+            Assert(pevt.ChannelNumber == mout4.ChannelNumber);
+            Assert(pevt.Value == 38);
         }
     }
 

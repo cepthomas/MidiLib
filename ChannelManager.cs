@@ -146,7 +146,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="deviceName"></param>
         /// <returns>The device or null if invalid.</returns>
-        public IOutputDevice? GetOutputDevice(string deviceName)
+        IOutputDevice? GetOutputDevice(string deviceName)
         {
             IOutputDevice? dev = null;
 
@@ -195,7 +195,7 @@ namespace Ephemera.MidiLib
         /// </summary>
         /// <param name="deviceName"></param>
         /// <returns>The device or null if invalid.</returns>
-        public IInputDevice? GetInputDevice(string deviceName)
+        IInputDevice? GetInputDevice(string deviceName)
         {
             IInputDevice? dev = null;
 
