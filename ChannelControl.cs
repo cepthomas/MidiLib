@@ -60,7 +60,6 @@ namespace Ephemera.MidiLib
         [Browsable(false)]
         public string Info1
         {
-            get { return lblInfo.Text; }
             set { lblInfo.Text = value; }
         }
 

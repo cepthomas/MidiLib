@@ -28,10 +28,15 @@ namespace Ephemera.MidiLib.Test
         const string WARN = "WRN";
         const string INFO = "INF";
 
-        ///// Device names - YMMV /////
+        // Device names - to taste
         public const string INDEV = "NebLoopback1";
         public const string OUTDEV1 = "VirtualMIDISynth #1";
         public const string OUTDEV2 = "Microsoft GS Wavetable Synth";
+        #endregion
+
+        #region Types
+        // Aliased instrument names.
+        public enum KustomInstrumentId { AmbientWind = 0, AmbientWind2 = 1, WaterWhistle1 = 18, OctaveStringPad = 27 }
         #endregion
 
         #region Lifecycle
@@ -46,7 +51,7 @@ namespace Ephemera.MidiLib.Test
             Text = "MidiLib ¯\\_(^^)_/¯";
 
             // Init fake settings.
-            DoPersistence();
+            MakeSomeSettings();
 
             // The text output.
             tvInfo.Font = new("Cascadia Mono", 9);
@@ -80,11 +85,9 @@ namespace Ephemera.MidiLib.Test
             btnProperty.Click += (_, _) => TestPropertyEditor();
 
             btnSend.Click += (_, _) => TestSend();
-            btnDyn.Click += (_, _) => TestDynamic();
 
             // Hook up manager notifications.
             CM.MessageReceived += Mgr_MessageReceived;
-            //CM.MessageSent += Mgr_MessageSent;
         }
 
         /// <summary>
@@ -96,51 +99,9 @@ namespace Ephemera.MidiLib.Test
             Tell(INFO, $">>> OnLoad start.");
             try
             {
-                // Configure channels defined in designer.
-                // Keys
-                var chan = CM.OpenMidiOutput(_settings.KeysDeviceName, _settings.KeysChannelNumber, _settings.KeysChannelName, _settings.KeysPatch);
-                CM.Bind(chan, cc1);
+                BuildStatic();
 
-                // Init controls.
-                cc1.Volume = 0.8; // should be from persistence
-                cc1.State = ChannelState.Normal; // should be from persistence
-                cc1.DrawColor = _settings.DrawColor;
-                cc1.SelectedColor = _settings.SelectedColor;
-                cc1.Info1 = $"M{chan.ChannelNumber} {chan.ChannelName}";
-                cc1.Info2 = $"{chan}";
-                cc1.InfoClick += ChannelControl_InfoClick;
-
-                // Drums
-                chan = CM.OpenMidiOutput(_settings.DrumDeviceName, _settings.DrumChannelNumber, _settings.DrumChannelName, _settings.DrumPatch);
-                CM.Bind(chan, cc2);
-
-                // Init controls.
-                cc2.Volume = 0.72; // should be from persistence
-                cc2.State = ChannelState.Solo; // should be from persistence
-                cc2.DrawColor = _settings.DrawColor;
-                cc2.SelectedColor = _settings.SelectedColor;
-                cc2.Info1 = $"M{chan.ChannelNumber} {chan.ChannelName}";
-                cc2.Info2 = $"{chan}";
-                cc2.InfoClick += ChannelControl_InfoClick;
-
-
-                //InitOneChannel(_settings.OutputConfigs[0], cc1);
-                //InitOneChannel(_settings.OutputConfigs[1], cc2);
-
-                //void InitOneChannel(OutputConfig config, ChannelControl ctrl)
-                //{
-                //    var chan = CM.OpenMidiOutput(config.DeviceName, config.ChannelNumber, config.ChannelName, config.Patch);
-                //    CM.Bind(chan, ctrl);
-
-                //    // Init control.
-                //    ctrl.Volume = config.Volume;
-                //    ctrl.State = config.State;
-                //    ctrl.DrawColor = _settings.DrawColor;
-                //    ctrl.SelectedColor = _settings.SelectedColor;
-                //    ctrl.Info1 = $"M{config.ChannelNumber} {config.ChannelName}";
-                //    ctrl.Info2 = $"{chan}";
-                //    ctrl.InfoClick += ChannelControl_InfoClick;
-                //}
+                BuildDynamic();
             }
             catch (Exception ex)
             {
@@ -182,125 +143,98 @@ namespace Ephemera.MidiLib.Test
             // var ls = CM.DumpState();
             // ls.ForEach(l => Tell(INFO, l));
 
-
-            // Nebulator like:
-            // OpenMidiOutput(midi_device_out, 1, "keys", "AcousticGrandPiano");
-            // OpenMidiOutput(midi_device_out, 10, "drums", "Jazz");
-            // OpenMidiOutput(midi_device_out, 2, "keys", "KUSTOM");
-
-            // wants like =>
-            // OpenMidiOutput(midi_device_out, 1, "keys", insts.AcousticGrandPiano);
-            // OpenMidiOutput(midi_device_out, 10, "drums", kits.Jazz);
-            // OpenMidiOutput(midi_device_out, 2, "keys", test_defs.KUSTOM);
-
-            // my current:
-            // var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
-            // var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", id);
-            // id = insts!.GetId("GlurbleVox") ?? -1; // Aliases.
-            // mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", id, false, aliasFile);
-            // id = MidiDefs.DrumKits.GetId("Electronic") ?? -1; // Drum kit.
-            // mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", id, true);
-
-
-
-
-            //CM.OpenMidiOutput(OUTDEV1, 1, "keys",  InstE.AcousticGrandPiano);
-            //CM.OpenMidiOutput(OUTDEV1, 10, "drums", KitsE.Jazz);
-            //CM.OpenMidiOutput(OUTDEV1, 2, "keys", KustomE.WaterWhistle1);
-
-            OpenMidiOutput2(OUTDEV1, 1, "keys", MidiDefs.Instrument.AcousticGrandPiano);
-            OpenMidiOutput2(OUTDEV1, 10, "drums", MidiDefs.DrumKit.Jazz);
-            OpenMidiOutput2(OUTDEV1, 2, "keys", KustomInstrument.WaterWhistle1);
-
-            void OpenMidiOutput2(string deviceName, int channelNumber, string channelName, Enum patch, bool isDrums = false, string? aliasFile = null)
-            {
-                Tell(INFO, $"--- {Convert.ToInt32(patch)} {patch}");
-            }
+            //TODO1 change patch:
+            //            CM.SetPatch(mout, XXXPatch);
 
         }
 
+        /// <summary>
+        /// Configure channels defined in designer.
+        /// </summary>
+        void BuildStatic()
+        {
+            // Keys
+            var mout = CM.OpenMidiOutput(_settings.KeysDeviceName, _settings.KeysChannelNumber, _settings.KeysChannelName, _settings.KeysPatch);
+            CM.Bind(mout, cc1);
 
+            // Init controls. Typically voloume and state would be persisted per output.
+            cc1.Volume = 0.8;
+            cc1.State = ChannelState.Normal;
+            cc1.DrawColor = _settings.DrawColor;
+            cc1.SelectedColor = _settings.SelectedColor;
+            cc1.Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}";
+            cc1.Info2 = $"{mout}";
+            cc1.InfoClick += ChannelControl_InfoClick;
 
-        public enum KustomInstrument { AmbientWind = 0, AmbientWind2 = 1, WaterWhistle1 = 18, OctaveStringPad = 27 }
+            // Drums
+            mout = CM.OpenMidiOutput(_settings.DrumDeviceName, _settings.DrumChannelNumber, _settings.DrumChannelName, _settings.DrumPatch);
+            CM.Bind(mout, cc2);
 
+            // Init controls.
+            cc2.Volume = 0.72;
+            cc2.State = ChannelState.Solo;
+            cc2.DrawColor = _settings.DrawColor;
+            cc2.SelectedColor = _settings.SelectedColor;
+            cc2.Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}";
+            cc2.Info2 = $"{mout}";
+            cc2.InfoClick += ChannelControl_InfoClick;
+        }
 
-
-
-
-
-        #region Test code
         /// <summary>
         /// Create channels and controls dynamically.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void TestDynamic()
+        void BuildDynamic()
         {
-            Tell(INFO, $">>> Go start.");
+            Random rand = new();
+            int x = cc2.Right + 10;
+            int y = cc2.Top;
 
-            //// Play with aliases.
-            //string aliasFile = @"C:\Dev\Libs\MidiLib\Test\test_defs.ini";
-            //var (insts, ctrls, drums, kits) = LoadAliases(aliasFile);
+            //var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
+            var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", MidiDefs.InstrumentId.HonkyTonkPiano);
+            CreateControl(mout);
 
-            try
+            // Custom.
+            //id = insts!.GetId("GlurbleVox") ?? -1;
+            mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", KustomInstrumentId.OctaveStringPad);
+            CreateControl(mout);
+
+            // Drum kit.
+            //id = MidiDefs.~DrumKits.GetId("Electronic") ?? -1;
+            mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", MidiDefs.DrumKitId.Orchestra);
+            CreateControl(mout);
+
+            // Input.
+            var inchan = CM.OpenMidiInput(INDEV, 1, "dyn input"); // TODO1 test midi input
+
+            // Ceate a control for each channel and bind object.
+            void CreateControl(MidiOutput mout)
             {
-                Random rand = new();
-                int x = cc2.Right + 10;
-                int y = cc2.Top;
-
-                //var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
-                var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", MidiDefs.Instrument.HonkyTonkPiano);
-                CreateControl(mout);
-
-                // Custom.
-                //id = insts!.GetId("GlurbleVox") ?? -1;
-                mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", KustomInstrument.OctaveStringPad);// false, aliasFile);
-                CreateControl(mout);
-
-                // Drum kit.
-                //id = MidiDefs.~DrumKits.GetId("Electronic") ?? -1;
-                mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", MidiDefs.DrumKit.Orchestra);// id, true);
-                CreateControl(mout);
-
-                // Input.
-                var inchan = CM.OpenMidiInput(INDEV, 1, "dyn my input"); // TODO1 test midi input
-
-                // Ceate a control for each channel and bind object.
-                void CreateControl(MidiOutput mout)
+                var ctrl = new ChannelControl()
                 {
-                    var ctrl = new ChannelControl()
-                    {
-                        // Name = chan.ChannelName,
-                        Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}",
-                        Info2 = $"{mout.Patch} ({Convert.ToInt32(mout.Patch)}){Environment.NewLine}{mout}",
-                        Location = new(x, y),
-                        BorderStyle = BorderStyle.FixedSingle,
-                        DrawColor = _settings.DrawColor,
-                        SelectedColor = _settings.SelectedColor,
-                        Volume = rand.NextDouble() + 0.5,
-                        State = ChannelState.Normal
-                    };
-                    ctrl.InfoClick += ChannelControl_InfoClick;
+                    // Name = chan.ChannelName,
+                    Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}",
+                    Info2 = $"Patch?? TODO1{Environment.NewLine}{mout}",
+//Info2 = $"{mout.Patch} ({Convert.ToInt32(mout.Patch)}){Environment.NewLine}{mout}",
+                    Location = new(x, y),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    DrawColor = _settings.DrawColor,
+                    SelectedColor = _settings.SelectedColor,
+                    Volume = rand.NextDouble() + 0.5,
+                    State = ChannelState.Normal
+                };
+                ctrl.InfoClick += ChannelControl_InfoClick;
 
-                    CM.Bind(mout, ctrl);
+                CM.Bind(mout, ctrl);
 
-                    x += ctrl.Width + 10; // Width is not valid until after previous statement.
-                }
+                x += ctrl.Width + 10; // Width is not valid until after previous statement.
             }
-            catch (Exception ex)
-            {
-                Tell(ERROR, ex.ToString());
-            }
-
-            CM.UpdateState();
-
-            Tell(INFO, $">>> Go done.");
         }
 
+        #region Test code
         /// <summary>
-        /// Send some test stuff
+        /// Send some test stuff.
         /// </summary>
-        void TestSend()
+        void TestSend()  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         {
             // Run timer.
             timer1.Interval = 500;
@@ -361,89 +295,39 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         void TestPropertyEditor()
         {
-            //// Set up options.
-            //List<string> inames = [];
-            //var mout = CM.GetMidiOutput(1);
-            //for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
-            //{
-            //    inames.Add(mout!.GetInstrumentName(i) ?? $"inst{i}");
-            //}
-
-            //// TODO1 feed names to editor??
-            ////PatchTypeEditor.PatchNamesRequest += PatchTypeEditor_PatchNamesRequest;
-
-
             var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
 
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
-
-        //private void PatchTypeEditor_PatchNamesRequest(object? sender, PatchTypeEditor.PatchNamesEventArgs e)
-        //{
-        //    throw new NotImplementedException();
-        //}
         #endregion
 
         #region Stuff the real host needs to implement
         /// <summary>
-        /// A typical application config and persistance model.
+        /// A typical application config.
         /// </summary>
-        public void DoPersistence()
+        public void MakeSomeSettings()
         {
             // Init fake settings.
             _settings = new()
             {
-                //InputConfigs = [],
-                //OutputConfigs = [],
                 MasterVolume = 0.77,
                 DrawColor = Color.SpringGreen,
                 SelectedColor = Color.Magenta,
 
-                InputChannelName = "Some input",
+                InputChannelName = "stat input",
                 InputChannelNumber = 1,
                 InputDeviceName = INDEV,
 
-                KeysChannelName = "keys",
+                KeysChannelName = "stat keys",
                 KeysChannelNumber = 2,
-                KeysPatch = MidiDefs.Instrument.Harpsichord,
+                KeysPatch = MidiDefs.InstrumentId.Harpsichord,
                 KeysDeviceName = OUTDEV1,
 
-                DrumChannelName = "drums",
+                DrumChannelName = "stat drums",
                 DrumChannelNumber = 10,
-                DrumPatch = MidiDefs.DrumKit.Orchestra,
+                DrumPatch = MidiDefs.DrumKitId.Orchestra,
                 DrumDeviceName = OUTDEV1,
             };
-
-            //_settings.InputConfigs.Add(new()
-            //{
-            //    ChannelNumber = 8,
-            //    ChannelName = "Some input",
-            //    DeviceName = INDEV
-            //});
-
-            //_settings.OutputConfigs.Add(new()
-            //{
-            //    ChannelNumber = 1,
-            //    ChannelName = "Output 1!",
-            //    DeviceName = OUTDEV1,
-            //    Patch = (int)MidiDefs.Instrument.Harpsichord,
-            //    PatchOptions = typeof(MidiDefs.Instrument),
-            //    //PatchName = "Harpsichord",
-            //    Volume = 0.67,
-            //    State = ChannelState.Normal
-            //});
-
-            //_settings.OutputConfigs.Add(new()
-            //{
-            //    ChannelNumber = 2,
-            //    ChannelName = "Output 2!",
-            //    DeviceName = OUTDEV2,
-            //    Patch = (int)MidiDefs.Instrument.Violin,
-            //    PatchOptions = typeof(MidiDefs.Instrument),
-            //    //PatchName = "Violin",
-            //    Volume = 1.19,
-            //    State = ChannelState.Mute
-            //});
         }
 
         /// <summary>
@@ -478,9 +362,9 @@ namespace Ephemera.MidiLib.Test
         /// <param name="controller"></param>
         /// <param name="value"></param>
         /// <exception cref="ArgumentException"></exception>
-        void SendController(MidiOutput mout, int controller, int value)
+        void SendController(MidiOutput mout, MidiDefs.ControllerId controller, int value)
         {
-            if (controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{controller}"); }
+            //if (controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{controller}"); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{value}"); }
 
             // ?? if (channel.Enable)
@@ -519,30 +403,6 @@ namespace Ephemera.MidiLib.Test
         #endregion
 
         #region Infrastrucutre
-        ///// <summary>
-        ///// Load up stuff.
-        ///// </summary>
-        ///// <param name="aliasFile"></param>
-        //(BiLut? insts, BiLut? ctrls, BiLut? drums, BiLut? kits) LoadAliases(string aliasFile)
-        //{
-        //    var ir = new IniReader();
-        //    ir.ParseFile(aliasFile);
-
-        //    var defs = MidiDefs.ReadDefs(ir, "instruments");
-        //    var _instruments = defs;
-
-        //    defs = MidiDefs.ReadDefs(ir, "controllers");
-        //    var _controllers = defs;
-
-        //    defs = MidiDefs.ReadDefs(ir, "drums");
-        //    var _drums = defs;
-
-        //    defs = MidiDefs.ReadDefs(ir, "drumkits");
-        //    var _drumKits = defs;
-
-        //    return (_instruments, _controllers, _drums, _drumKits);
-        //}
-
         /// <summary>
         /// Logging.
         /// </summary>

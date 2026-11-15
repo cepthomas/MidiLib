@@ -99,73 +99,21 @@ namespace Ephemera.MidiLib
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-        /// <param name="patch">Explicit</param>
+        /// <param name="patch"></param>
         /// <returns></returns>
-        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patch)// Enum patch)// bool isDrums = false, string? aliasFile = null)
+        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, Enum patch)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
-            //if (patchNum is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patchNum:{patchNum}"); }
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
-            MidiOutput mout = new(outdev, channelNumber, channelName, patch); // Convert.ToInt32(patch));
-            //mout.InitInstruments(patchNum, isDrums, aliasFile);
+            MidiOutput mout = new(outdev, channelNumber, channelName);
             _midiOutputs.Add((mout, null));
-            outdev.Send(new Patch(channelNumber, mout.Patch));
+            mout.SetPatch(Convert.ToInt32(patch));
             return mout;
         }
-
-        ///// <summary>
-        ///// Open a normal output channel with known patch name. Lazy inits the device. Sends initial patch message. Throws if anything is invalid.
-        ///// </summary>
-        ///// <param name="deviceName"></param>
-        ///// <param name="channelNumber"></param>
-        ///// <param name="channelName"></param>
-        ///// <param name="patchName"></param>
-        ///// <param name="aliasFile">Alternate patch names from an ini file.</param>
-        ///// <returns></returns>
-        //public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, string patchName, string? aliasFile = null)
-        //{
-        //    // Check args.
-        //    if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-        //    if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
-
-        //    var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
-
-        //    MidiOutput mout = new(outdev, channelNumber, channelName);
-        //    mout.InitInstruments(patchName, aliasFile);
-        //    _midiOutputs.Add((mout, null));
-        //    outdev.Send(new Patch(channelNumber, patchNum));
-        //    return mout;
-        //}
-
-        ///// <summary>
-        ///// Open a normal output channel. Lazy inits the device. Sends initial patch message. Throws if anything is invalid.
-        ///// </summary>
-        ///// <param name="deviceName"></param>
-        ///// <param name="channelNumber"></param>
-        ///// <param name="channelName"></param>
-        ///// <param name="patchNum">Explicit</param>
-        ///// <param name="isDrums">Because I can't determine this myself</param>
-        ///// <param name="aliasFile">Alternate patch names from an ini file.</param>
-        ///// <returns></returns>
-        //public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patchNum, bool isDrums = false, string? aliasFile = null)
-        //{
-        //    // Check args.
-        //    if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-        //    if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
-        //    if (patchNum is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patchNum:{patchNum}"); }
-
-        //    var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
-
-        //    MidiOutput mout = new(outdev, channelNumber, channelName);
-        //    mout.InitInstruments(patchNum, isDrums, aliasFile);
-        //    _midiOutputs.Add((mout, null));
-        //    outdev.Send(new Patch(channelNumber, patchNum));
-        //    return mout;
-        //}
         #endregion
 
         #region Inputs
@@ -295,6 +243,21 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region User functions
+        /// <summary>
+        /// Sends patch message. Throws if anything is invalid.
+        /// </summary>
+        /// <param name="mout"></param>
+        /// <param name="patch">Explicit</param>
+        /// <returns></returns>
+        public void SetPatch(MidiOutput mout, Enum patch)
+        {
+            // Check args.
+            if (mout is null) { throw new ArgumentNullException($"???"); }
+            //if (patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patch:{patch}"); }
+            mout.SetPatch(Convert.ToInt32(patch));
+            //TODO1 also update ChannelControl.Info1/2
+        }
+
         /// <summary>
         /// Bind a control to a midi output.
         /// </summary>
@@ -470,11 +433,13 @@ namespace Ephemera.MidiLib
             {
                 if (ctrl is not null)
                 {
-                    res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{mout.Patch}");
+                    //res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{mout.Patch}");
+                    res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound}");
                 }
                 else
                 {
-                    res.Add($"    Ch:{mout.ChannelNumber} ctrl:null Enb:{mout.EnableSound} Pt:{mout.Patch}");
+                    //res.Add($"    Ch:{mout.ChannelNumber} ctrl:null Enb:{mout.EnableSound} Pt:{mout.Patch}");
+                    res.Add($"    Ch:{mout.ChannelNumber} ctrl:null Enb:{mout.EnableSound}");
                 }
             }
             return res;

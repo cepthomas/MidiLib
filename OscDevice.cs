@@ -110,18 +110,26 @@ namespace Ephemera.MidiLib
             // /noteoff/ channel notenum
             // /controller/ channel ctlnum val
 
-            e.Messages.ForEach(m =>
+            try
             {
-                BaseEvent evt = (m.Address, m.Data.Count) switch
+                e.Messages.ForEach(m =>
                 {
-                    ("/noteon/", 3) => new NoteOn((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
-                    ("/noteoff/", 2) => new NoteOff((int)m.Data[0], (int)m.Data[1]),
-                    ("/controller/", 3) => new Controller((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
-                    _ => new BaseEvent() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
-                };
+                    BaseEvent evt = (m.Address, m.Data.Count) switch
+                    {
+                        ("/noteon/", 3) => new NoteOn((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
+                        ("/noteoff/", 2) => new NoteOff((int)m.Data[0], (int)m.Data[1]),
+                        ("/controller/", 3) => new Controller((int)m.Data[0], (MidiDefs.ControllerId)m.Data[1], (int)m.Data[2]),
+                        _ => throw new InvalidOperationException($"Invalid message: {m}")
+                    };
 
-                MessageReceived?.Invoke(this, evt);
-             });
+                    MessageReceived?.Invoke(this, evt);
+                });
+            }
+            catch
+            {
+                // TODO Something wrong with this message...
+                //throw;
+            }
         }
         #endregion
     }

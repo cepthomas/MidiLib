@@ -29,7 +29,6 @@ namespace Ephemera.MidiLib
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
     }
 
-
     /// <summary>Select one from available devices.</summary>
     public class MidiOutputDeviceTypeEditor : UITypeEditor
     {
@@ -68,59 +67,4 @@ namespace Ephemera.MidiLib
 
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
     }
-
-
-    ///// <summary>Select one from available patch names.</summary>
-    //public class PatchTypeEditor : UITypeEditor
-    //{
-    //    public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
-    //    {
-    //        if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service ||
-    //            context is null || context.Instance is null) { return null; }
-    //        // context is {System.Windows.Forms.PropertyGridInternal.PropertyDescriptorGridEntry PatchName}
-    //        // context.Instance is { Ephemera.MidiLib.Test.OutputConfig}
-    //        // _service is {System.Windows.Forms.PropertyGridInternal.PropertyGridView}
-
-    //        // var config = context.Instance as Ephemera.MidiLib.Test.OutputConfig
-
-    //        var opts = new List<string>();
-    //        //if (PatchNamesRequest is not null)
-    //        //{
-    //        //    var args = new PatchNamesEventArgs();
-    //        //    PatchNamesRequest.Invoke(this, args);
-    //        //    opts = args.Names;
-    //        //}
-    //        //else
-    //        //{
-    //        //    for (int i = 0; i <= MidiDefs.MAX_MIDI; i++)
-    //        //    {
-    //        //        opts.Add(MidiDefs.Instruments.GetName(i) ?? $"{i:000}");
-    //        //    }
-    //        //}
-
-                
-    //        Dictionary<int, int> map = [];
-    //        var lb = new ListBox() { Width = 50, Height = 250, SelectionMode = SelectionMode.One };
-
-    //        Enum.GetValues<MidiDefs.Instrument>().ForEach(v =>
-    //        {
-    //            var ind = lb.Items.Add(v.ToString());
-    //            var v1 = (int)v;
-    //            var v2 = Convert.ToInt32(v);
-
-
-    //            //map.Add(ind, (int)v);  // Convert.ToInt32(patch)
-    //            map.Add(ind, Convert.ToInt32(v));  // Convert.ToInt32(patch)
-    //        });
-
-    //        //for (int i = 0; i <= MidiDefs.MAX_MIDI; i++) lb.Items.Add(opts[i]);
-    //        lb.Click += (_, __) => _service.CloseDropDown();
-    //        _service.DropDownControl(lb);
-
-    //        //return lb.SelectedItem is null ? value : lb.SelectedItem;
-    //        return value;
-    //    }
-
-    //    public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
-    //}
 }

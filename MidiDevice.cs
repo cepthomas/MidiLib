@@ -88,7 +88,7 @@ namespace Ephemera.MidiLib
                 NoteEvent offevt => offevt.Velocity == 0 ?
                     new NoteOff(chnum, offevt.NoteNumber) :
                     new NoteOn(chnum, offevt.NoteNumber, offevt.Velocity),
-                ControlChangeEvent ctlevt => new Controller(chnum, (int)ctlevt.Controller, ctlevt.ControllerValue),
+                ControlChangeEvent ctlevt => new Controller(chnum, ctlevt.Controller, ctlevt.ControllerValue),
                 _ => new Other(chnum, e.RawMessage)
             };
 
@@ -187,7 +187,7 @@ namespace Ephemera.MidiLib
                 NoteOn evt => new NoteOnEvent(0, evt.ChannelNumber, evt.Note, evt.Velocity, 0),
                 NoteOff evt => new NoteEvent(0, evt.ChannelNumber, MidiCommandCode.NoteOff, evt.Note, 0),
                 Controller evt => new ControlChangeEvent(0, evt.ChannelNumber, (MidiController)evt.Id, evt.Value),
-                Patch evt => new PatchChangeEvent(0, evt.ChannelNumber, evt.Value),
+                Patch evt => new PatchChangeEvent(0, evt.ChannelNumber, Convert.ToInt32(evt.Value)),
                 //Other evt => MidiEvent.FromRawMessage(evt.RawMessage),
                 _ => throw new MidiLibException($"Invalid send event: {bevt}")
             };
