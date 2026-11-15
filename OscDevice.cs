@@ -249,7 +249,7 @@ namespace Ephemera.MidiLib
                             // /patch/ channel patchnum
                             msg = new NebOsc.Message() { Address = "/patch" };
                             msg.Data.Add(evt.ChannelNumber);
-                            msg.Data.Add(evt.Value);
+                            msg.Data.Add(evt.Id);
                             break;
 
                         default:

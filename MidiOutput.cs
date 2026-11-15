@@ -74,7 +74,7 @@ namespace Ephemera.MidiLib
             // Check args.
             if (patch is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"patch:{patch}"); }
 
-//TODO1            _device.Send(new Patch(ChannelNumber, patch));
+//            _device.Send(new Patch(ChannelNumber, patch));
         }
 
         /// <summary>

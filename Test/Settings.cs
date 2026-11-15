@@ -52,7 +52,7 @@ namespace Ephemera.MidiLib.Test
         public int DrumChannelNumber { get; init; } = 0;
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public MidiDefs.DrumKitId DrumPatch { get; set; }
+        public MidiDefs.DrumKitId DrumKitPatch { get; set; }
 
         [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
         public string DrumDeviceName { get; set; } = "";

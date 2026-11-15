@@ -132,54 +132,13 @@ namespace Ephemera.MidiLib
         }
     }
 
-
-    //public class Controller : BaseEvent
-    //{
-    //    /// <summary>Specific controller id.</summary>
-    //    public int Id
-    //    {
-    //        get { return _id; }
-    //        set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"Id:{value}");
-    //              _id = value; }
-    //    }
-    //    int _id = 0;
-
-    //    /// <summary>Payload.</summary>
-    //    public int Value
-    //    {
-    //        get { return _value; }
-    //        set { if (value is < 0 or > MidiDefs.MAX_MIDI) throw new ArgumentOutOfRangeException($"Value:{value}");
-    //              _value = value; }
-    //    }
-    //    int _value = 0;
-
-    //    public Controller(int channel, int id, int value, MusicTime? when = null)
-    //    {
-    //        if (channel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
-    //        if (id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"controllerId:{(id)}"); };
-    //        if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"value:{value}"); }
-    //        if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); };
-
-    //        When = when ?? MusicTime.ZERO;
-    //        ChannelNumber = channel;
-    //        Id = id;
-    //        Value = value;
-    //    }
-
-    //    /// <summary>Read me.</summary>
-    //    public override string ToString()
-    //    {
-    //        return $"Controller:{Value} {base.ToString()}";
-    //    }
-    //}
-
     //----------------------------------------------------------------
     public class Patch : BaseEvent
     {
         /// <summary>Payload.</summary>
-        public Enum Value { get; }
+        public Enum Id { get; }
 
-        public Patch(int channel, Enum value, MusicTime? when = null)
+        public Patch(int channel, Enum id, MusicTime? when = null)
         {
             if (channel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); }
             //if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"value:{value}"); }
@@ -187,13 +146,13 @@ namespace Ephemera.MidiLib
 
             When = when ?? MusicTime.ZERO;
             ChannelNumber = channel;
-            Value = value;
+            Id = id;
         }
 
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"Patch:{Value} ({Convert.ToInt32(Value)}) {base.ToString()}";
+            return $"Patch:{Id} ({Convert.ToInt32(Id)}) {base.ToString()}";
         }
     }
 

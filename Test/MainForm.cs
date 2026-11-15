@@ -17,12 +17,20 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib.Test
 {
+
+    #region Types
+    // Aliased instrument names.
+    public enum KustomInstrumentId { AmbientWind = 0, AmbientWind2 = 1, WaterWhistle1 = 18, OctaveStringPad = 27 }
+    #endregion
+
     public partial class MainForm : Form
     {
         #region Fields
         TestSettings _settings = new();
 
         readonly ChannelManager CM;
+
+        List<MidiOutput> _outputs = [];
 
         const string ERROR = "ERR";
         const string WARN = "WRN";
@@ -32,11 +40,6 @@ namespace Ephemera.MidiLib.Test
         public const string INDEV = "NebLoopback1";
         public const string OUTDEV1 = "VirtualMIDISynth #1";
         public const string OUTDEV2 = "Microsoft GS Wavetable Synth";
-        #endregion
-
-        #region Types
-        // Aliased instrument names.
-        public enum KustomInstrumentId { AmbientWind = 0, AmbientWind2 = 1, WaterWhistle1 = 18, OctaveStringPad = 27 }
         #endregion
 
         #region Lifecycle
@@ -82,7 +85,7 @@ namespace Ephemera.MidiLib.Test
 
             btnGo.Click += Go_Click; ;
             btnTimebar.Click += (_, _) => TestTimeBar();
-            btnProperty.Click += (_, _) => TestPropertyEditor();
+            btnProperty.Click += (_, _) => ChangePatch();
 
             btnSend.Click += (_, _) => TestSend();
 
@@ -142,10 +145,20 @@ namespace Ephemera.MidiLib.Test
             // CM.UpdateState();
             // var ls = CM.DumpState();
             // ls.ForEach(l => Tell(INFO, l));
+        }
 
-            //TODO1 change patch:
-            //            CM.SetPatch(mout, XXXPatch);
-
+        /// <summary>
+        /// For the UI.
+        /// </summary>
+        /// <param name="mout"></param>
+        /// <param name="ctrl"></param>
+        /// <param name="patch"></param>
+        void UpdateInfo(MidiOutput mout, ChannelControl ctrl, Enum? patch = null)
+        {
+            ctrl.Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}";
+            ctrl.Info2 = patch is null ?
+                $"No patch{Environment.NewLine}{mout}" :
+                $"{patch} ({Convert.ToInt32(patch)}){Environment.NewLine}{mout}";
         }
 
         /// <summary>
@@ -153,31 +166,33 @@ namespace Ephemera.MidiLib.Test
         /// </summary>
         void BuildStatic()
         {
-            // Keys
-            var mout = CM.OpenMidiOutput(_settings.KeysDeviceName, _settings.KeysChannelNumber, _settings.KeysChannelName, _settings.KeysPatch);
+            // Init system - Keys
+            var mout = CM.OpenMidiOutput(_settings.KeysDeviceName, _settings.KeysChannelNumber, _settings.KeysChannelName);
+            // Update system.
             CM.Bind(mout, cc1);
+            _outputs.Add(mout);
 
             // Init controls. Typically voloume and state would be persisted per output.
             cc1.Volume = 0.8;
             cc1.State = ChannelState.Normal;
             cc1.DrawColor = _settings.DrawColor;
             cc1.SelectedColor = _settings.SelectedColor;
-            cc1.Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}";
-            cc1.Info2 = $"{mout}";
             cc1.InfoClick += ChannelControl_InfoClick;
+            // Update UI.
+            UpdateInfo(mout, cc1, _settings.KeysPatch);
 
-            // Drums
-            mout = CM.OpenMidiOutput(_settings.DrumDeviceName, _settings.DrumChannelNumber, _settings.DrumChannelName, _settings.DrumPatch);
+            // Init system - Drums
+            mout = CM.OpenMidiOutput(_settings.DrumDeviceName, _settings.DrumChannelNumber, _settings.DrumChannelName);
             CM.Bind(mout, cc2);
+            _outputs.Add(mout);
 
             // Init controls.
             cc2.Volume = 0.72;
             cc2.State = ChannelState.Solo;
             cc2.DrawColor = _settings.DrawColor;
             cc2.SelectedColor = _settings.SelectedColor;
-            cc2.Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}";
-            cc2.Info2 = $"{mout}";
             cc2.InfoClick += ChannelControl_InfoClick;
+            UpdateInfo(mout, cc2, _settings.DrumKitPatch);
         }
 
         /// <summary>
@@ -189,32 +204,26 @@ namespace Ephemera.MidiLib.Test
             int x = cc2.Right + 10;
             int y = cc2.Top;
 
-            //var id = MidiDefs.Instruments.GetId("HonkyTonkPiano") ?? -1;
-            var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys", MidiDefs.InstrumentId.HonkyTonkPiano);
-            CreateControl(mout);
+            var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys");
+            CreateControl(mout, MidiDefs.InstrumentId.HonkyTonkPiano);
 
             // Custom.
-            //id = insts!.GetId("GlurbleVox") ?? -1;
-            mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass", KustomInstrumentId.OctaveStringPad);
-            CreateControl(mout);
+            mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass");
+            CreateControl(mout, KustomInstrumentId.OctaveStringPad);
 
             // Drum kit.
-            //id = MidiDefs.~DrumKits.GetId("Electronic") ?? -1;
-            mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums", MidiDefs.DrumKitId.Orchestra);
-            CreateControl(mout);
+            mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums");
+            CreateControl(mout, MidiDefs.DrumKitId.Orchestra);
 
             // Input.
             var inchan = CM.OpenMidiInput(INDEV, 1, "dyn input"); // TODO1 test midi input
 
             // Ceate a control for each channel and bind object.
-            void CreateControl(MidiOutput mout)
+            void CreateControl(MidiOutput mout, Enum patch)
             {
                 var ctrl = new ChannelControl()
                 {
                     // Name = chan.ChannelName,
-                    Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}",
-                    Info2 = $"Patch?? TODO1{Environment.NewLine}{mout}",
-//Info2 = $"{mout.Patch} ({Convert.ToInt32(mout.Patch)}){Environment.NewLine}{mout}",
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
                     DrawColor = _settings.DrawColor,
@@ -225,6 +234,10 @@ namespace Ephemera.MidiLib.Test
                 ctrl.InfoClick += ChannelControl_InfoClick;
 
                 CM.Bind(mout, ctrl);
+                CM.SetPatch(mout, patch);
+                UpdateInfo(mout, ctrl, patch);
+
+                _outputs.Add(mout);
 
                 x += ctrl.Width + 10; // Width is not valid until after previous statement.
             }
@@ -237,20 +250,31 @@ namespace Ephemera.MidiLib.Test
         void TestSend()  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         {
             // Run timer.
-            timer1.Interval = 500;
-            int count = 15;
+            timer1.Interval = 50;
+            int count = 100;
             Random rand = new();
+
             void Timer1_Tick(object? sender, EventArgs e)
             {
-                int noteNum = rand.Next(40, 60);
-                var mout = CM.GetMidiOutput(cc1);
-                SendNote(mout!, cc1, noteNum, 0.5);
 
-                if (--count <= 0)
+                _outputs.ForEach(op =>
                 {
-                    timer1.Stop();
-                    timer1.Tick -= Timer1_Tick;
-                }
+                    int pace = rand.Next(0, 10);
+
+                    if (pace == 0)
+                    {
+                        int noteNum = rand.Next(40, 70);
+                        SendNote(op, cc1, noteNum, 0.5);
+
+
+                    }
+
+                    if (--count <= 0)
+                    {
+                        timer1.Stop();
+                        timer1.Tick -= Timer1_Tick;
+                    }
+                });
             }
             timer1.Tick += Timer1_Tick;
             timer1.Start();
@@ -289,16 +313,6 @@ namespace Ephemera.MidiLib.Test
             timer1.Tick += Timer1_Tick;
             timer1.Start();
         }
-
-        /// <summary>
-        /// Test property editing
-        /// </summary>
-        void TestPropertyEditor()
-        {
-            var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
-
-            changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
-        }
         #endregion
 
         #region Stuff the real host needs to implement
@@ -325,7 +339,7 @@ namespace Ephemera.MidiLib.Test
 
                 DrumChannelName = "stat drums",
                 DrumChannelNumber = 10,
-                DrumPatch = MidiDefs.DrumKitId.Orchestra,
+                DrumKitPatch = MidiDefs.DrumKitId.Orchestra,
                 DrumDeviceName = OUTDEV1,
             };
         }
@@ -389,6 +403,35 @@ namespace Ephemera.MidiLib.Test
             {
                 throw new MidiLibException("Unknown/null channel");
             }
+        }
+
+        /// <summary>
+        /// Change patch using property editing
+        /// </summary>
+        void ChangePatch()
+        {
+            var changes = SettingsEditor.Edit(_settings, "TESTOMATIC", 300);
+
+            //changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
+
+            changes.ForEach(ch =>
+            {
+                if (ch.name == "KeysPatch")
+                {
+                    // Update system.
+                    CM.SetPatch(_outputs[0], _settings.KeysPatch);
+                    // Update UI.
+                    UpdateInfo(_outputs[0], cc1, _settings.KeysPatch);
+                }
+
+                if (ch.name == "DrumKitPatch")
+                {
+                    // Update system.
+                    CM.SetPatch(_outputs[1], _settings.DrumKitPatch);
+                    // Update UI.
+                    UpdateInfo(_outputs[1], cc2, _settings.DrumKitPatch);
+                }
+            });
         }
 
         /// <summary>
