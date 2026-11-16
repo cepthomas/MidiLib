@@ -142,8 +142,23 @@ namespace Ephemera.MidiLib.Test
         void Go_Click(object? sender, EventArgs e)
         {
             // CM.UpdateState();
-            // var ls = CM.DumpState();
-            // ls.ForEach(l => Tell(INFO, l));
+            List<string> res = [];
+            res.Add("Output Channels");
+            foreach (var (mout, ctrl) in CM.GetOutputs())
+            {
+                if (ctrl is not null)
+                {
+                    //res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{ctrl.Patch}");
+                    res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound}");
+                }
+                else
+                {
+                    //res.Add($"    Ch:{mout.ChannelNumber} ctrl:null Enb:{mout.EnableSound} Pt:{mout.Patch}");
+                    res.Add($"    Ch:{mout.ChannelNumber} ctrl:null Enb:{mout.EnableSound}");
+                }
+            }
+            // res.ForEach(l => Tell(INFO, l));
+
         }
 
         /// <summary>
@@ -391,15 +406,7 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         void Mgr_MessageReceived(object? sender, BaseEvent e)
         {
-            var mout = CM.GetMidiOutput(e.ChannelNumber);
-            if (mout is not null)
-            {
-                Tell(INFO, $"Mgr Received [{e}] on [{mout}]");
-            }
-            else
-            {
-                throw new MidiLibException("Unknown/null channel");
-            }
+            Tell(INFO, $"Mgr Received [{e}] on [{sender}]");
         }
 
         /// <summary>

@@ -18,6 +18,9 @@ namespace Ephemera.MidiLib
         /// <summary>Per device.</summary>
         public const int MIN_CHANNEL = 1;
 
+        /// <summary>Doesn't have a specific channel.</summary>
+        public const int ALL_CHANNEL = 0xFF;
+
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
         #endregion
@@ -54,7 +57,8 @@ namespace Ephemera.MidiLib
             FootControllerLSB = 036, PortamentoTimeLSB = 037, VolumeLSB = 039, BalanceLSB = 040, PanLSB = 042, ExpressionLSB = 043,
             Sustain = 064, Portamento = 065, Sostenuto = 066, SoftPedal = 067, Legato = 068, Sustain2 = 069, PortamentoControl = 084,
             AllSoundOff = 120, ResetAllControllers = 121, LocalKeyboard = 122, AllNotesOff = 123,
-        };
+            // NAudio names: MainVolume = 7, LegatoFootswitch = 68,
+            };
 
         public enum DrumId
         {

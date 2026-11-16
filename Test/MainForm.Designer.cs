@@ -31,7 +31,6 @@ namespace Ephemera.MidiLib.Test
             toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             btnSend = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             btnGo = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             tvInfo = new Ephemera.NBagOfUis.TextViewer();
@@ -48,7 +47,7 @@ namespace Ephemera.MidiLib.Test
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator4, btnTimebar, toolStripSeparator3, btnProperty, toolStripSeparator5, btnSend, toolStripSeparator6, toolStripSeparator7, btnGo, toolStripSeparator1 });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator4, btnTimebar, toolStripSeparator3, btnProperty, toolStripSeparator5, btnSend, toolStripSeparator6, btnGo, toolStripSeparator1 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(741, 26);
@@ -125,11 +124,6 @@ namespace Ephemera.MidiLib.Test
             // 
             toolStripSeparator6.Name = "toolStripSeparator6";
             toolStripSeparator6.Size = new System.Drawing.Size(6, 26);
-            // 
-            // toolStripSeparator7
-            // 
-            toolStripSeparator7.Name = "toolStripSeparator7";
-            toolStripSeparator7.Size = new System.Drawing.Size(6, 26);
             // 
             // btnGo
             // 
@@ -253,7 +247,6 @@ namespace Ephemera.MidiLib.Test
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripButton btnSend;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
     }
 }
 

@@ -45,7 +45,8 @@ namespace Ephemera.MidiLib
         /// <param name="channelName"></param>
         public MidiOutput(IOutputDevice device, int channelNumber, string channelName)
         {
-            if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
+            if ((channelNumber is not MidiDefs.ALL_CHANNEL) && (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL))
+                { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
             _device = device;
             ChannelNumber = channelNumber;
@@ -78,7 +79,11 @@ namespace Ephemera.MidiLib
             }
             else
             {
-                evt.ChannelNumber = ChannelNumber;
+                // Maybe fix channel number.
+                if (ChannelNumber is not MidiDefs.ALL_CHANNEL)
+                {
+                    evt.ChannelNumber = ChannelNumber;
+                }
                 _device.Send(evt);
             }
         }
@@ -88,7 +93,17 @@ namespace Ephemera.MidiLib
         /// </summary>
         public void Kill()
         {
-            Send(new Controller(ChannelNumber, MidiDefs.ControllerId.AllNotesOff, 0));
+            if (ChannelNumber is MidiDefs.ALL_CHANNEL)
+            {
+                for (int i = MidiDefs.MIN_CHANNEL; i < MidiDefs.MAX_CHANNEL; i++)
+                {
+                    Send(new Controller(i, MidiDefs.ControllerId.AllNotesOff, 0));
+                }
+            }
+            else
+            {
+                Send(new Controller(ChannelNumber, MidiDefs.ControllerId.AllNotesOff, 0));
+            }
         }
         #endregion
     }

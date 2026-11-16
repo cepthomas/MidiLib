@@ -47,7 +47,6 @@ namespace Ephemera.MidiLib
             if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
             _device = device;
-            // _config = config;
             ChannelNumber = channelNumber;
             ChannelName = channelName;
             Handle = new(device.Id, ChannelNumber, false);

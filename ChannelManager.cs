@@ -12,6 +12,7 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLib
 {
+    /// <summary>Hides all the messy logic with midi devices and channels, and the NAudio versions of each.</summary>
     public class ChannelManager : IDisposable
     {
         #region Fields
@@ -67,33 +68,35 @@ namespace Ephemera.MidiLib
 
         #region UI event handlers
         /// <summary>
-        /// User clicked solo/mute.
+        /// User clicked solo/mute. Slow-time.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void ChannelControl_StateChange(object? sender, ChannelControl.StateChangeEventArgs e)
         {
-            var cc = sender as ChannelControl;
-            var _ = GetMidiOutput(cc!) ?? throw new MidiLibException($"Invalid channel");
+            //var cc = sender as ChannelControl;
+            //var _ = GetMidiOutput(cc!) ?? throw new MidiLibException($"Invalid channel");
+
             UpdateState();
         }
 
         /// <summary>
-        /// User clicked something.
+        /// User clicked something. Slow-time.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void ChannelControl_SelectionChange(object? sender, ChannelControl.SelectionChangeEventArgs e)
         {
-            var cc = sender as ChannelControl;
-            var _ = GetMidiOutput(cc!) ?? throw new MidiLibException($"Invalid channel");
+            //var cc = sender as ChannelControl;
+            //var _ = GetMidiOutput(cc!) ?? throw new MidiLibException($"Invalid channel");
+
             // Nothing to do?
         }
         #endregion
 
         #region Outputs
         /// <summary>
-        /// Open a normal output channel. Lazy inits the device. Throws if anything is invalid.
+        /// Open a normal output channel. Lazy inits the device. Throws if anything is invalid. Slow-time.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
@@ -103,7 +106,8 @@ namespace Ephemera.MidiLib
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+            if ((channelNumber is not MidiDefs.ALL_CHANNEL) && (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL))
+                { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
@@ -115,7 +119,7 @@ namespace Ephemera.MidiLib
 
         #region Inputs
         /// <summary>
-        /// Open a midi input. Lazy inits the device. Throws if anything is invalid.
+        /// Open a midi input. Lazy inits the device. Throws if anything is invalid. Slow-time.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
@@ -135,11 +139,24 @@ namespace Ephemera.MidiLib
 
             return mi;
         }
+
+        /// <summary>
+        /// Something arrived from a midi device. Filter and maybe pass on to registered clients.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Dev_MessageReceived(object? sender, BaseEvent e)
+        {
+            var dev = (sender as MidiInputDevice)!;
+            ChannelHandle chnd = new(dev.Id, e.ChannelNumber, false);
+            var mins = _midiInputs.Where(mi => mi.Handle == chnd && mi.Enable);
+            mins.ForEach(i => MessageReceived?.Invoke(this, e));
+        }
         #endregion
 
         #region Devices
         /// <summary>
-        /// Get output device. Lazy creation.
+        /// Get output device. Lazy creation. Slow-time.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <returns>The device or null if invalid.</returns>
@@ -188,7 +205,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Get input device. Lazy creation.
+        /// Get input device. Lazy creation. Slow-time.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <returns>The device or null if invalid.</returns>
@@ -221,8 +238,7 @@ namespace Ephemera.MidiLib
                     {
                         _inputDevices.Add(dev);
                         dev.CaptureEnable = true;
-                        // Just pass inputs up and let client make sense of them.
-                        dev.MessageReceived += (sender, e) => MessageReceived?.Invoke((MidiInputDevice)sender!, e);
+                        dev.MessageReceived += Dev_MessageReceived;
                     }
                 }
                 catch (Exception)
@@ -237,6 +253,7 @@ namespace Ephemera.MidiLib
 
             return dev;
         }
+
         #endregion
 
         #region User functions
@@ -256,7 +273,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Bind a control to a midi output.
+        /// Bind a UI control to a midi output.
         /// </summary>
         /// <param name="mout"></param>
         /// <param name="ctrl"></param>
@@ -285,7 +302,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Handles solo/mute.
+        /// Handles solo/mute across all channels.
         /// </summary>
         public void UpdateState()
         {
@@ -337,7 +354,7 @@ namespace Ephemera.MidiLib
         }
 
         /// <summary>
-        /// Remove current channels and controls. Not devices
+        /// Remove current channels and controls - but not devices.
         /// </summary>
         public void Reset()
         {
@@ -360,37 +377,37 @@ namespace Ephemera.MidiLib
 
         #region Collection accessors
         /// <summary>
-        /// Get channel object from control object.
+        /// Iterate through the contents.
         /// </summary>
-        /// <param name="chCtrl"></param>
-        /// <returns>The channel or null if invalid control.</returns>
-        public MidiOutput? GetMidiOutput(ChannelControl chCtrl)
+        /// <returns></returns>
+        public IEnumerable<(MidiOutput mout, ChannelControl? ctrl)> GetOutputs() // TODO1 do better?
         {
-            foreach (var (mout, ctrl) in _midiOutputs) { if (ctrl == chCtrl) return mout; }
-            return null;
-        }
-
-        /// <summary>
-        /// Get channel object from channel number.
-        /// </summary>
-        /// <param name="channelNum"></param>
-        /// <returns>The channel or null if invalid number.</returns>
-        public MidiOutput? GetMidiOutput(int channelNum)
-        {
-            foreach (var (mout, _) in _midiOutputs) { if (mout.ChannelNumber == channelNum) return mout; }
-            return null;
+            foreach (var op in _midiOutputs)
+            {
+                yield return op;
+            }
         }
 
         ///// <summary>
-        ///// Iterate through the contents.
+        ///// Get channel object from control object.
         ///// </summary>
-        ///// <returns></returns>
-        //public IEnumerable<(MidiOutput chan, ChannelControl? ctrl)> GetChannels()
+        ///// <param name="chCtrl"></param>
+        ///// <returns>The channel or null if invalid control.</returns>
+        //public MidiOutput? GetMidiOutput(ChannelControl chCtrl)
         //{
-        //   foreach (var op in _midiOutputs)
-        //   {
-        //       yield return op;
-        //   }
+        //    foreach (var (mout, ctrl) in _midiOutputs) { if (ctrl == chCtrl) return mout; }
+        //    return null;
+        //}
+
+        ///// <summary>
+        ///// Get channel object from channel number.
+        ///// </summary>
+        ///// <param name="channelNum"></param>
+        ///// <returns>The channel or null if invalid number.</returns>
+        //public MidiOutput? GetMidiOutput(int channelNum)
+        //{
+        //    foreach (var (mout, _) in _midiOutputs) { if (mout.ChannelNumber == channelNum) return mout; }
+        //    return null;
         //}
 
         ///// <summary>
@@ -414,33 +431,6 @@ namespace Ephemera.MidiLib
         //    foreach (var (mout, _) in _midiOutputs) { if (mout.Handle == chnd) return mout; }
         //    return null;
         //}
-        #endregion
-
-        #region Dev stuff
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public List<string> DumpState()
-        {
-            List<string> res = [];
-            res.Add("Output Channels");
-
-            foreach (var (mout, ctrl) in _midiOutputs)
-            {
-                if (ctrl is not null)
-                {
-                    //res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{ctrl.Patch}");
-                    res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound}");
-                }
-                else
-                {
-                    //res.Add($"    Ch:{mout.ChannelNumber} ctrl:null Enb:{mout.EnableSound} Pt:{mout.Patch}");
-                    res.Add($"    Ch:{mout.ChannelNumber} ctrl:null Enb:{mout.EnableSound}");
-                }
-            }
-            return res;
-        }
         #endregion
     }
 }
