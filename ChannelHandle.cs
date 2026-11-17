@@ -24,15 +24,15 @@ namespace Ephemera.MidiLib
         public int DeviceId { get { return (_raw >> 4) & 0x0F; } }
 
         /// <summary>App-side value.</summary>
-        public int ChannelNumber { get { return _raw & 0x0F; } }
+        public int MidiChannel { get { return _raw & 0x0F; } }
 
         /// <summary>App-side value.</summary>
         public bool Output { get { return (_raw & OUTPUT_FLAG) > 0; } }
 
         /// <summary>App-side constructor.</summary>
-        public ChannelHandle(int deviceId, int channelNumber, bool output)
+        public ChannelHandle(int deviceId, int midiChannel, bool output)
         {
-            _raw = (deviceId << 4) | channelNumber | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
+            _raw = (deviceId << 4) | midiChannel | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
 
         /// <summary>Script-side constructor.</summary>
@@ -44,7 +44,7 @@ namespace Ephemera.MidiLib
         /// <summary>Human readable.</summary>
         public override string ToString()
         {
-            return $"{(Output ? "out" : "in")} {ChannelNumber} on D{DeviceId}";
+            return $"{(Output ? "out" : "in")} {MidiChannel} on D{DeviceId}";
         }
     }
 }

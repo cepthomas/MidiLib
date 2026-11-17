@@ -148,13 +148,13 @@ namespace Ephemera.MidiLib.Test
             {
                 if (ctrl is not null)
                 {
-                    //res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{ctrl.Patch}");
-                    res.Add($"    Ch:{mout.ChannelNumber} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound}");
+                    //res.Add($"    Ch:{mout.MidiChannel} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{ctrl.Patch}");
+                    res.Add($"    Ch:{mout.MidiChannel} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound}");
                 }
                 else
                 {
-                    //res.Add($"    Ch:{mout.ChannelNumber} ctrl:null Enb:{mout.EnableSound} Pt:{mout.Patch}");
-                    res.Add($"    Ch:{mout.ChannelNumber} ctrl:null Enb:{mout.EnableSound}");
+                    //res.Add($"    Ch:{mout.MidiChannel} ctrl:null Enb:{mout.EnableSound} Pt:{mout.Patch}");
+                    res.Add($"    Ch:{mout.MidiChannel} ctrl:null Enb:{mout.EnableSound}");
                 }
             }
             // res.ForEach(l => Tell(INFO, l));
@@ -169,19 +169,19 @@ namespace Ephemera.MidiLib.Test
         /// <param name="patch"></param>
         void UpdateInfo(MidiOutput mout, ChannelControl ctrl, Enum? patch = null)
         {
-            ctrl.Info1 = $"M{mout.ChannelNumber} {mout.ChannelName}";
+            ctrl.Info1 = $"M{mout.MidiChannel} {mout.Name}";
             ctrl.Info2 = patch is null ?
                 $"No patch{Environment.NewLine}{mout}" :
                 $"{patch} ({Convert.ToInt32(patch)}){Environment.NewLine}{mout}";
         }
 
         /// <summary>
-        /// Configure channels defined in designer.
+        /// Configure midi IO defined in designer.
         /// </summary>
         void BuildStatic()
         {
             // Init system - Keys
-            var mout = CM.OpenMidiOutput(_settings.KeysDeviceName, _settings.KeysChannelNumber, _settings.KeysChannelName);
+            var mout = CM.OpenMidiOutput(_settings.KeysDeviceName, _settings.KeysMidiChannel, _settings.KeysName);
             // Update system.
             CM.Bind(mout, cc1);
             _outputs.Add(mout);
@@ -196,7 +196,7 @@ namespace Ephemera.MidiLib.Test
             UpdateInfo(mout, cc1, _settings.KeysPatch);
 
             // Init system - Drums
-            mout = CM.OpenMidiOutput(_settings.DrumDeviceName, _settings.DrumChannelNumber, _settings.DrumChannelName);
+            mout = CM.OpenMidiOutput(_settings.DrumsDeviceName, _settings.DrumsMidiChannel, _settings.DrumsName);
             CM.Bind(mout, cc2);
             _outputs.Add(mout);
 
@@ -210,7 +210,7 @@ namespace Ephemera.MidiLib.Test
         }
 
         /// <summary>
-        /// Create channels and controls dynamically.
+        /// Create midi IO and controls dynamically.
         /// </summary>
         void BuildDynamic()
         {
@@ -232,12 +232,12 @@ namespace Ephemera.MidiLib.Test
             // Input.
             var inchan = CM.OpenMidiInput(INDEV, 1, "dyn input"); // TODO2 test midi input
 
-            // Ceate a control for each channel and bind object.
+            // Ceate a control for each output and bind object.
             void CreateControl(MidiOutput mout, Enum patch)
             {
                 var ctrl = new ChannelControl()
                 {
-                    // Name = chan.ChannelName,
+                    // Name = chan.Name,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
                     DrawColor = _settings.DrawColor,
@@ -340,19 +340,19 @@ namespace Ephemera.MidiLib.Test
                 DrawColor = Color.SpringGreen,
                 SelectedColor = Color.Magenta,
 
-                InputChannelName = "stat input",
-                InputChannelNumber = 1,
+                InputName = "stat input",
+                InputMidiChannel = 1,
                 InputDeviceName = INDEV,
 
-                KeysChannelName = "stat keys",
-                KeysChannelNumber = 2,
+                KeysName = "stat keys",
+                KeysMidiChannel = 2,
                 KeysPatch = MidiDefs.InstrumentId.Harpsichord,
                 KeysDeviceName = OUTDEV1,
 
-                DrumChannelName = "stat drums",
-                DrumChannelNumber = 10,
+                DrumsName = "stat drums",
+                DrumsMidiChannel = 10,
                 DrumKitPatch = MidiDefs.DrumKitId.Orchestra,
-                DrumDeviceName = OUTDEV1,
+                DrumsDeviceName = OUTDEV1,
             };
         }
 
@@ -360,7 +360,7 @@ namespace Ephemera.MidiLib.Test
         /// Send midi note.
         /// </summary>
         /// <param name="mout"></param>
-        /// <param name="ctrl">Only needed for channel volume.</param>
+        /// <param name="ctrl">Only needed for output volume.</param>
         /// <param name="note"></param>
         /// <param name="volume"></param>
         /// <exception cref="ArgumentException"></exception>
@@ -370,13 +370,13 @@ namespace Ephemera.MidiLib.Test
 
             if (volume == 0.0)
             {
-                mout.Send(new NoteOff(mout.ChannelNumber, note));
+                mout.Send(new NoteOff(mout.MidiChannel, note));
             }
             else
             {
                 var vol = volume * sldMasterVolume.Value * ctrl.Volume;
                 var vel = (int)MathUtils.Constrain(vol * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
-                var se = new NoteOn(mout.ChannelNumber, note, vel);
+                var se = new NoteOn(mout.MidiChannel, note, vel);
                 mout.Send(se);
                 //Tell($">>>", se.ToString());
             }
@@ -393,8 +393,7 @@ namespace Ephemera.MidiLib.Test
         {
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{value}"); }
 
-            // ?? if (channel.Enable)
-            var se = new Controller(mout.ChannelNumber, controller, value);
+            var se = new Controller(mout.MidiChannel, controller, value);
             mout.Send(se);
             //Tell($">>>", se.ToString());
         }

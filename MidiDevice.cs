@@ -184,10 +184,10 @@ namespace Ephemera.MidiLib
         {
             MidiEvent mevt = bevt switch
             {
-                NoteOn evt => new NoteOnEvent(0, evt.ChannelNumber, evt.Note, evt.Velocity, 0),
-                NoteOff evt => new NoteEvent(0, evt.ChannelNumber, MidiCommandCode.NoteOff, evt.Note, 0),
-                Controller evt => new ControlChangeEvent(0, evt.ChannelNumber, (MidiController)Convert.ToInt32(evt.Id), evt.Value),
-                Patch evt => new PatchChangeEvent(0, evt.ChannelNumber, Convert.ToInt32(evt.Id)),
+                NoteOn evt => new NoteOnEvent(0, evt.MidiChannel, evt.Note, evt.Velocity, 0),
+                NoteOff evt => new NoteEvent(0, evt.MidiChannel, MidiCommandCode.NoteOff, evt.Note, 0),
+                Controller evt => new ControlChangeEvent(0, evt.MidiChannel, (MidiController)Convert.ToInt32(evt.Id), evt.Value),
+                Patch evt => new PatchChangeEvent(0, evt.MidiChannel, Convert.ToInt32(evt.Id)),
                 //Other evt => MidiEvent.FromRawMessage(evt.RawMessage),
                 _ => throw new MidiLibException($"Invalid send event: {bevt}")
             };

@@ -36,7 +36,7 @@ namespace Ephemera.MidiLib.Test
     }
 
     //----------------------------------------------------------------
-    /// <summary>Test channel logic.</summary>
+    /// <summary>Test midi IO logic.</summary>
     public class MIDILIB_CHANNEL : TestSuite
     {
         readonly string myPath = MiscUtils.GetSourcePath();
@@ -74,7 +74,7 @@ namespace Ephemera.MidiLib.Test
             //chnd1.PatchName = "Trumpet";
             //Assert(sent is Patch);
             Patch pevt = (sent as Patch)!;
-            Assert(pevt.ChannelNumber == chnd1.ChannelNumber);
+            Assert(pevt.MidiChannel == chnd1.MidiChannel);
 //            Assert(pevt.Id == MidiDefs.InstrumentId.HonkyTonkPiano);
         }
     }

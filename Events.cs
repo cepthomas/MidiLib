@@ -11,13 +11,13 @@ namespace Ephemera.MidiLib
     public class BaseEvent
     {
         /// <summary>Channel number.</summary>
-        public int ChannelNumber
+        public int MidiChannel
         {
-            get { return _channelNumber; }
-            set { if (value is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) throw new ArgumentOutOfRangeException($"ChannelNumber:{value}");
-                  _channelNumber = value; }
+            get { return _midiChannel; }
+            set { if (value is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) throw new ArgumentOutOfRangeException($"MidiChannel:{value}");
+                  _midiChannel = value; }
         }
-        int _channelNumber = 0;
+        int _midiChannel = 0;
 
         /// <summary>When to send. ZERO means unknown or don't care.</summary>
         public MusicTime When { get; set; } = MusicTime.ZERO;
@@ -28,7 +28,7 @@ namespace Ephemera.MidiLib
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"ChannelNumber:{ChannelNumber} When:{When}";
+            return $"MidiChannel:{MidiChannel} When:{When}";
         }
     }
 
@@ -54,15 +54,15 @@ namespace Ephemera.MidiLib
         int _velocity = 0;
 
         /// <summary>Normal constructor.</summary>
-        public NoteOn(int channel, int note, int velocity, MusicTime? when = null)
+        public NoteOn(int midiChannel, int note, int velocity, MusicTime? when = null)
         {
-            if (channel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channel:{channel}"); }
+            if (midiChannel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"midiChannel:{midiChannel}"); }
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"note:{note}"); }
             if (velocity is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"velocity:{velocity}"); }
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); }
 
             When = when ?? MusicTime.ZERO;
-            ChannelNumber = channel;
+            MidiChannel = midiChannel;
             Note  = note;
             Velocity = velocity;
         }
@@ -87,14 +87,14 @@ namespace Ephemera.MidiLib
         int _note = 0;
 
         /// <summary>Normal constructor.</summary>
-        public NoteOff(int channel, int note, MusicTime? when = null)
+        public NoteOff(int midiChannel, int note, MusicTime? when = null)
         {
-            if (channel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channel:{channel}"); };
+            if (midiChannel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"midiChannel:{midiChannel}"); };
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"notec:{note}"); };
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); };
 
             When = when ?? MusicTime.ZERO;
-            ChannelNumber = channel;
+            MidiChannel = midiChannel;
             Note  = note;
         }
 
@@ -115,14 +115,14 @@ namespace Ephemera.MidiLib
         public int Value { get; }
 
         /// <summary>Normal constructor.</summary>
-        public Controller(int channel, Enum id, int value, MusicTime? when = null)
+        public Controller(int midiChannel, Enum id, int value, MusicTime? when = null)
         {
-            if (channel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); }
+            if (midiChannel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"midiChannel:{(midiChannel)}"); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"value:{value}"); }
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); }
 
             When = when ?? MusicTime.ZERO;
-            ChannelNumber = channel;
+            MidiChannel = midiChannel;
             Id = id;
             Value = value;
         }
@@ -131,7 +131,7 @@ namespace Ephemera.MidiLib
         public Controller(NAudio.Midi.ControlChangeEvent evt)
         {
             Id = (MidiDefs.ControllerId)Enum.ToObject(typeof(MidiDefs.ControllerId), evt.Controller);
-            ChannelNumber = evt.Channel;
+            MidiChannel = evt.Channel;
             Value = evt.ControllerValue;
             When = new(evt.AbsoluteTime);
         }
@@ -150,14 +150,14 @@ namespace Ephemera.MidiLib
         public Enum Id { get; }
 
         /// <summary>Normal constructor.</summary>
-        public Patch(int channel, Enum id, MusicTime? when = null)
+        public Patch(int midiChannel, Enum id, MusicTime? when = null)
         {
-            if (channel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); }
+            if (midiChannel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"midiChannel:{(midiChannel)}"); }
             //if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException($"value:{value}"); }
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); }
 
             When = when ?? MusicTime.ZERO;
-            ChannelNumber = channel;
+            MidiChannel = midiChannel;
             Id = id;
         }
 
@@ -165,7 +165,7 @@ namespace Ephemera.MidiLib
         public Patch(NAudio.Midi.PatchChangeEvent evt)
         {
             Id = (MidiDefs.InstrumentId)Enum.ToObject(typeof(MidiDefs.InstrumentId), evt.Patch);
-            ChannelNumber = evt.Channel;
+            MidiChannel = evt.Channel;
             When = new(evt.AbsoluteTime);
         }
 
@@ -184,20 +184,20 @@ namespace Ephemera.MidiLib
         public int RawMessage { get; init; }
 
         /// <summary>Normal constructor.</summary>
-        public Other(int channel, int rawMessage, MusicTime? when = null)
+        public Other(int midiChannel, int rawMessage, MusicTime? when = null)
         {
-            if (channel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
+            if (midiChannel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"midiChannel:{(midiChannel)}"); };
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{when}"); };
 
             When = when ?? MusicTime.ZERO;
-            ChannelNumber = channel;
+            MidiChannel = midiChannel;
             RawMessage = rawMessage;
         }
 
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"Channel:{ChannelNumber} {base.ToString()}";
+            return $"Channel:{MidiChannel} {base.ToString()}";
         }
     }
 
@@ -209,14 +209,14 @@ namespace Ephemera.MidiLib
         public Action ScriptFunction { get; init; }
 
         /// <summary>Normal constructor.</summary>
-        public Function(int channel, Action scriptFunc, MusicTime? when = null)
+        public Function(int midiChannel, Action scriptFunc, MusicTime? when = null)
         {
-            if (channel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channel:{(channel)}"); };
+            if (midiChannel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"midiChannel:{(midiChannel)}"); };
             if (scriptFunc is null) { throw new ArgumentOutOfRangeException($"scriptFunc:{(scriptFunc)}"); };
             if (when?.Tick is < 0) { throw new ArgumentOutOfRangeException($"when:{(when)}"); };
 
             When = when ?? MusicTime.ZERO;
-            ChannelNumber = channel;
+            MidiChannel = midiChannel;
             ScriptFunction = scriptFunc;
         }
 

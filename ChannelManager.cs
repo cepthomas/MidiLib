@@ -75,7 +75,7 @@ namespace Ephemera.MidiLib
         void ChannelControl_StateChange(object? sender, ChannelControl.StateChangeEventArgs e)
         {
             //var cc = sender as ChannelControl;
-            //var _ = GetMidiOutput(cc!) ?? throw new MidiLibException($"Invalid channel");
+            //var _ = GetMidiOutput(cc!) ?? throw new MidiLibException($"Invalid midiChannel");
 
             UpdateState();
         }
@@ -88,7 +88,7 @@ namespace Ephemera.MidiLib
         void ChannelControl_SelectionChange(object? sender, ChannelControl.SelectionChangeEventArgs e)
         {
             //var cc = sender as ChannelControl;
-            //var _ = GetMidiOutput(cc!) ?? throw new MidiLibException($"Invalid channel");
+            //var _ = GetMidiOutput(cc!) ?? throw new MidiLibException($"Invalid midiChannel");
 
             // Nothing to do?
         }
@@ -96,22 +96,22 @@ namespace Ephemera.MidiLib
 
         #region Outputs
         /// <summary>
-        /// Open a normal output channel. Lazy inits the device. Throws if anything is invalid. Slow-time.
+        /// Open a normal output midiChannel. Lazy inits the device. Throws if anything is invalid. Slow-time.
         /// </summary>
         /// <param name="deviceName"></param>
-        /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
+        /// <param name="midiChannel"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        public MidiOutput OpenMidiOutput(string deviceName, int channelNumber, string channelName)
+        public MidiOutput OpenMidiOutput(string deviceName, int midiChannel, string name)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if ((channelNumber is not MidiDefs.ALL_CHANNEL) && (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL))
-                { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
+            if ((midiChannel is not MidiDefs.ALL_CHANNEL) && (midiChannel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL))
+                { throw new ArgumentOutOfRangeException($"midiChannel:{(midiChannel)}"); }
 
             var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
-            MidiOutput mout = new(outdev, channelNumber, channelName);
+            MidiOutput mout = new(outdev, midiChannel, name);
             _midiOutputs.Add((mout, null));
             return mout;
         }
@@ -122,19 +122,19 @@ namespace Ephemera.MidiLib
         /// Open a midi input. Lazy inits the device. Throws if anything is invalid. Slow-time.
         /// </summary>
         /// <param name="deviceName"></param>
-        /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
+        /// <param name="midiChannel"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        public MidiInput OpenMidiInput(string deviceName, int channelNumber, string channelName)
+        public MidiInput OpenMidiInput(string deviceName, int midiChannel, string name)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
-            if (channelNumber is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{channelNumber}"); }
+            if (midiChannel is < 1 or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"midiChannel:{midiChannel}"); }
 
             var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
 
-            // Add the channel.
-            MidiInput mi = new(indev, channelNumber, channelName);
+            // Add the midiChannel.
+            MidiInput mi = new(indev, midiChannel, name);
             _midiInputs.Add(mi);
 
             return mi;
@@ -148,7 +148,7 @@ namespace Ephemera.MidiLib
         void Dev_MessageReceived(object? sender, BaseEvent e)
         {
             var dev = (sender as MidiInputDevice)!;
-            ChannelHandle chnd = new(dev.Id, e.ChannelNumber, false);
+            ChannelHandle chnd = new(dev.Id, e.MidiChannel, false);
             var mins = _midiInputs.Where(mi => mi.Handle == chnd && mi.Enable);
             mins.ForEach(i => MessageReceived?.Invoke(this, e));
         }
@@ -268,7 +268,7 @@ namespace Ephemera.MidiLib
             // Check args.
             ArgumentNullException.ThrowIfNull(mout);
 
-            var pe = new Patch(mout.ChannelNumber, patch);
+            var pe = new Patch(mout.MidiChannel, patch);
             mout.Send(pe);
         }
 
@@ -298,7 +298,7 @@ namespace Ephemera.MidiLib
                     return;
                 }
             }
-            throw new MidiLibException($"Unknown channel [{mout}]");
+            throw new MidiLibException($"Unknown midiChannel [{mout}]");
         }
 
         /// <summary>
@@ -389,10 +389,10 @@ namespace Ephemera.MidiLib
         }
 
         ///// <summary>
-        ///// Get channel object from control object.
+        ///// Get midiChannel object from control object.
         ///// </summary>
         ///// <param name="chCtrl"></param>
-        ///// <returns>The channel or null if invalid control.</returns>
+        ///// <returns>The midiChannel or null if invalid control.</returns>
         //public MidiOutput? GetMidiOutput(ChannelControl chCtrl)
         //{
         //    foreach (var (mout, ctrl) in _midiOutputs) { if (ctrl == chCtrl) return mout; }
@@ -400,32 +400,32 @@ namespace Ephemera.MidiLib
         //}
 
         ///// <summary>
-        ///// Get channel object from channel number.
+        ///// Get midiChannel object from midiChannel number.
         ///// </summary>
         ///// <param name="channelNum"></param>
-        ///// <returns>The channel or null if invalid number.</returns>
+        ///// <returns>The midiChannel or null if invalid number.</returns>
         //public MidiOutput? GetMidiOutput(int channelNum)
         //{
-        //    foreach (var (mout, _) in _midiOutputs) { if (mout.ChannelNumber == channelNum) return mout; }
+        //    foreach (var (mout, _) in _midiOutputs) { if (mout.MidiChannel == channelNum) return mout; }
         //    return null;
         //}
 
         ///// <summary>
-        ///// Get channel object from channel number.
+        ///// Get midiChannel object from midiChannel number.
         ///// </summary>
-        ///// <param name="channelName"></param>
-        ///// <returns>The channel or null if invalid number.</returns>
-        //public MidiOutput? GetMidiOutput(string channelName)
+        ///// <param name="name"></param>
+        ///// <returns>The midiChannel or null if invalid number.</returns>
+        //public MidiOutput? GetMidiOutput(string name)
         //{
-        //    foreach (var (mout, _) in _midiOutputs) { if (mout.ChannelName == channelName) return mout; }
+        //    foreach (var (mout, _) in _midiOutputs) { if (mout.name == name) return mout; }
         //    return null;
         //}
 
         ///// <summary>
-        ///// Get channel object from channel handle.
+        ///// Get midiChannel object from midiChannel handle.
         ///// </summary>
         ///// <param name="chnd">Channel handle</param>
-        ///// <returns>The channel or null if invalid handle.</returns>
+        ///// <returns>The midiChannel or null if invalid handle.</returns>
         //public MidiOutput? GetMidiOutput(ChannelHandle chnd)
         //{
         //    foreach (var (mout, _) in _midiOutputs) { if (mout.Handle == chnd) return mout; }

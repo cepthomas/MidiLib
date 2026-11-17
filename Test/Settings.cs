@@ -25,20 +25,20 @@ namespace Ephemera.MidiLib.Test
         #endregion
 
         #region Inputs
-        public string InputChannelName { get; set; } = "???";
+        public string InputName { get; set; } = "???";
 
-        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
-        public int InputChannelNumber { get; init; } = 0;
+        [Editor(typeof(MidiChannelTypeEditor), typeof(UITypeEditor))]
+        public int InputMidiChannel { get; init; } = 0;
 
         [Editor(typeof(MidiInputDeviceTypeEditor), typeof(UITypeEditor))]
         public string InputDeviceName { get; set; } = "";
         #endregion
 
         #region Outputs defined in designer
-        public string KeysChannelName { get; set; } = "???";
+        public string KeysName { get; set; } = "???";
 
-        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
-        public int KeysChannelNumber { get; init; } = 0;
+        [Editor(typeof(MidiChannelTypeEditor), typeof(UITypeEditor))]
+        public int KeysMidiChannel { get; init; } = 0;
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public MidiDefs.InstrumentId KeysPatch { get; set; }
@@ -46,16 +46,16 @@ namespace Ephemera.MidiLib.Test
         [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
         public string KeysDeviceName { get; set; } = "";
 
-        public string DrumChannelName { get; set; } = "???";
+        [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
+        public string DrumsDeviceName { get; set; } = "";
 
-        [Editor(typeof(ChannelNumberTypeEditor), typeof(UITypeEditor))]
-        public int DrumChannelNumber { get; init; } = 0;
+        public string DrumsName { get; set; } = "???";
+
+        [Editor(typeof(MidiChannelTypeEditor), typeof(UITypeEditor))]
+        public int DrumsMidiChannel { get; init; } = 0;
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public MidiDefs.DrumKitId DrumKitPatch { get; set; }
-
-        [Editor(typeof(MidiOutputDeviceTypeEditor), typeof(UITypeEditor))]
-        public string DrumDeviceName { get; set; } = "";
         #endregion
     }
 }

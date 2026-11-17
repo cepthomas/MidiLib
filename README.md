@@ -12,7 +12,7 @@ Requires VS2026 and .NET10.
 ## Core
 
 - Channel
-    - Represents physical channels in a way usable by `ChannelControl` and output devices.
+    - Represents midi channels in a way usable by `ChannelControl` and output devices.
     - Intelligent handling of patch names.
     - Primary talker to NAudio.
 

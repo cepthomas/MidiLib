@@ -24,12 +24,12 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <summary>1-based midi channel number. Required.</summary>
-        public int ChannelNumber { get; init; }
+        public int MidiChannel { get; init; }
 
-        /// <summary>Host supplied channel name.</summary>
-        public string ChannelName { get; init; }
+        /// <summary>Host supplied name.</summary>
+        public string Name { get; init; }
 
-        /// <summary>True if channel is active.</summary>
+        /// <summary>True if listening.</summary>
         public bool Enable { get; set; } = true;
 
         /// <summary>Handle for use by scripts.</summary>
@@ -40,21 +40,21 @@ namespace Ephemera.MidiLib
         /// Constructor with required args.
         /// </summary>
         /// <param name="device"></param>
-        /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
-        public MidiInput(IInputDevice device, int channelNumber, string channelName)
+        /// <param name="midiChannel"></param>
+        /// <param name="name"></param>
+        public MidiInput(IInputDevice device, int midiChannel, string name)
         {
-            if (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
+            if (midiChannel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL) { throw new ArgumentOutOfRangeException($"midiChannel:{(midiChannel)}"); }
 
             _device = device;
-            ChannelNumber = channelNumber;
-            ChannelName = channelName;
-            Handle = new(device.Id, ChannelNumber, false);
+            MidiChannel = midiChannel;
+            Name = name;
+            Handle = new(device.Id, MidiChannel, false);
         }
 
         public override string ToString()
         {
-            return $"In Ch:{ChannelNumber} Dev:{_device.DeviceName}";
+            return $"In Ch:{MidiChannel} Dev:{_device.DeviceName}";
         }
     }
 }

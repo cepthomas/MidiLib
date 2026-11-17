@@ -10,8 +10,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLib
 {
-    /// <summary>Select a midi value from a range. Handles special case of channel number.</summary>
-    public class ChannelNumberTypeEditor : UITypeEditor
+    /// <summary>Select a midi channel from a range.</summary>
+    public class MidiChannelTypeEditor : UITypeEditor
     {
         public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {

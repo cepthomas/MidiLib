@@ -21,12 +21,12 @@ namespace Ephemera.MidiLib
 
         #region Properties
         /// <summary>1-based midi channel number. Default is invalid/unknown.</summary>
-        public int ChannelNumber { get; init; } = 0;
+        public int MidiChannel { get; init; } = 0;
 
-        /// <summary>Host supplied channel name.</summary>
-        public string ChannelName { get; init; }
+        /// <summary>Host supplied name.</summary>
+        public string Name { get; init; }
 
-        /// <summary>True if channel is not muted.</summary>
+        /// <summary>True if not muted.</summary>
         public bool EnableSound { get; set; } = true;
 
         /// <summary>Handle for use by scripts.</summary>
@@ -41,17 +41,17 @@ namespace Ephemera.MidiLib
         /// Constructor for output.
         /// </summary>
         /// <param name="device"></param>
-        /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
-        public MidiOutput(IOutputDevice device, int channelNumber, string channelName)
+        /// <param name="midiChannel"></param>
+        /// <param name="name"></param>
+        public MidiOutput(IOutputDevice device, int midiChannel, string name)
         {
-            if ((channelNumber is not MidiDefs.ALL_CHANNEL) && (channelNumber is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL))
-                { throw new ArgumentOutOfRangeException($"channelNumber:{(channelNumber)}"); }
+            if ((midiChannel is not MidiDefs.ALL_CHANNEL) && (midiChannel is < MidiDefs.MIN_CHANNEL or > MidiDefs.MAX_CHANNEL))
+                { throw new ArgumentOutOfRangeException($"midiChannel:{(midiChannel)}"); }
 
             _device = device;
-            ChannelNumber = channelNumber;
-            ChannelName = channelName;
-            Handle = new(device.Id, ChannelNumber, true);
+            MidiChannel = midiChannel;
+            Name = name;
+            Handle = new(device.Id, MidiChannel, true);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            return $"Ch:{ChannelNumber} Dev:{_device.DeviceName}";
+            return $"Ch:{MidiChannel} Dev:{_device.DeviceName}";
         }
         #endregion
 
@@ -79,21 +79,21 @@ namespace Ephemera.MidiLib
             }
             else
             {
-                // Maybe fix channel number.
-                if (ChannelNumber is not MidiDefs.ALL_CHANNEL)
+                // Maybe fix midi channel number.
+                if (MidiChannel is not MidiDefs.ALL_CHANNEL)
                 {
-                    evt.ChannelNumber = ChannelNumber;
+                    evt.MidiChannel = MidiChannel;
                 }
                 _device.Send(evt);
             }
         }
 
         /// <summary>
-        /// Hard stop the channel.
+        /// Hard stop sending.
         /// </summary>
         public void Kill()
         {
-            if (ChannelNumber is MidiDefs.ALL_CHANNEL)
+            if (MidiChannel is MidiDefs.ALL_CHANNEL)
             {
                 for (int i = MidiDefs.MIN_CHANNEL; i < MidiDefs.MAX_CHANNEL; i++)
                 {
@@ -102,7 +102,7 @@ namespace Ephemera.MidiLib
             }
             else
             {
-                Send(new Controller(ChannelNumber, MidiDefs.ControllerId.AllNotesOff, 0));
+                Send(new Controller(MidiChannel, MidiDefs.ControllerId.AllNotesOff, 0));
             }
         }
         #endregion
