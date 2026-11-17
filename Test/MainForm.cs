@@ -230,7 +230,7 @@ namespace Ephemera.MidiLib.Test
             CreateControl(mout, MidiDefs.DrumKitId.Orchestra);
 
             // Input.
-            var inchan = CM.OpenMidiInput(INDEV, 1, "dyn input"); // TODO1 test midi input
+            var inchan = CM.OpenMidiInput(INDEV, 1, "dyn input"); // TODO2 test midi input
 
             // Ceate a control for each channel and bind object.
             void CreateControl(MidiOutput mout, Enum patch)

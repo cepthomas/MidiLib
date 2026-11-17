@@ -4,7 +4,7 @@ using System.Linq;
 using Ephemera.NBagOfTricks;
 
 
-// TODO1 Other midi resolutions. Pack subs into tick bits?
+// TODO2 Other midi resolutions. Pack subs into tick bits?
 
 namespace Ephemera.MidiLib
 {
