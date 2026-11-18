@@ -373,27 +373,18 @@ namespace Ephemera.MidiLib
             _midiInputs.Clear();
             _midiOutputs.Clear();
         }
-        #endregion
 
-
-        // void UpdateOutputs()
-        // {
-        //     _midiOutputs.ForEach(o => o.mout.VolumeDelta = o.ctrl is null ? 1.0 : o.ctrl.Volume);
-        // }
-
-        #region Collection accessors
         /// <summary>
-        /// Iterate through all the outputs.
+        /// Update runtime stuff and return output iterator.
         /// </summary>
         /// <returns></returns>
         public IEnumerable<MidiOutput> GetOutputs()
         {
-            // Update outputs.
+            // Updates.
             _midiOutputs.ForEach(o =>
             {
                 o.mout.VolumeDelta = o.ctrl is null ? 1.0 : o.ctrl.Volume;
                 o.mout.Selected = o.ctrl is null ? false : o.ctrl.Selected;
-
             });
 
             foreach (var op in _midiOutputs)
@@ -401,62 +392,6 @@ namespace Ephemera.MidiLib
                 yield return op.mout;
             }
         }
-
-        // /// <summary>
-        // /// Iterate through the contents.
-        // /// </summary>
-        // /// <returns></returns>
-        // public IEnumerable<(MidiOutput mout, ChannelControl? ctrl)> GetOutputs() // TODO1 do better?
-        // {
-        //     foreach (var op in _midiOutputs)
-        //     {
-        //         yield return op;
-        //     }
-        // }
-
-        ///// <summary>
-        ///// Get midiChannel object from control object.
-        ///// </summary>
-        ///// <param name="chCtrl"></param>
-        ///// <returns>The midiChannel or null if invalid control.</returns>
-        //public MidiOutput? GetMidiOutput(ChannelControl chCtrl)
-        //{
-        //    foreach (var (mout, ctrl) in _midiOutputs) { if (ctrl == chCtrl) return mout; }
-        //    return null;
-        //}
-
-        ///// <summary>
-        ///// Get midiChannel object from midiChannel number.
-        ///// </summary>
-        ///// <param name="channelNum"></param>
-        ///// <returns>The midiChannel or null if invalid number.</returns>
-        //public MidiOutput? GetMidiOutput(int channelNum)
-        //{
-        //    foreach (var (mout, _) in _midiOutputs) { if (mout.MidiChannel == channelNum) return mout; }
-        //    return null;
-        //}
-
-        ///// <summary>
-        ///// Get midiChannel object from midiChannel number.
-        ///// </summary>
-        ///// <param name="name"></param>
-        ///// <returns>The midiChannel or null if invalid number.</returns>
-        //public MidiOutput? GetMidiOutput(string name)
-        //{
-        //    foreach (var (mout, _) in _midiOutputs) { if (mout.name == name) return mout; }
-        //    return null;
-        //}
-
-        ///// <summary>
-        ///// Get midiChannel object from midiChannel handle.
-        ///// </summary>
-        ///// <param name="chnd">Channel handle</param>
-        ///// <returns>The midiChannel or null if invalid handle.</returns>
-        //public MidiOutput? GetMidiOutput(ChannelHandle chnd)
-        //{
-        //    foreach (var (mout, _) in _midiOutputs) { if (mout.Handle == chnd) return mout; }
-        //    return null;
-        //}
         #endregion
     }
 }

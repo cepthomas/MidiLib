@@ -41,13 +41,6 @@ namespace Ephemera.MidiLib
         public double VolumeDelta { get; internal set; } = 1.0;
         #endregion
 
-
-
-        /// <summary>Associated events - optional depending on implementation.</summary>
-        public EventCollection Events { get; set; } = new(); // TODO1 better way?
-
-
-
         #region Lifecycle
         /// <summary>
         /// Constructor for output.
@@ -72,7 +65,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public override string ToString()
         {
-            return $"Ch:{MidiChannel} Dev:{_device.DeviceName}";
+            return $"[{Name}] M{MidiChannel} on {_device.DeviceName}";
         }
         #endregion
 

@@ -144,21 +144,20 @@ namespace Ephemera.MidiLib.Test
             // CM.UpdateState();
             List<string> res = [];
             res.Add("Output Channels");
-            foreach (var (mout, ctrl) in CM.GetOutputs())
+            foreach (var mout in CM.GetOutputs())
             {
-                if (ctrl is not null)
-                {
-                    //res.Add($"    Ch:{mout.MidiChannel} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{ctrl.Patch}");
-                    res.Add($"    Ch:{mout.MidiChannel} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound}");
-                }
-                else
-                {
-                    //res.Add($"    Ch:{mout.MidiChannel} ctrl:null Enb:{mout.EnableSound} Pt:{mout.Patch}");
-                    res.Add($"    Ch:{mout.MidiChannel} ctrl:null Enb:{mout.EnableSound}");
-                }
+                //if (ctrl is not null)
+                //{
+                //    //res.Add($"    Ch:{mout.MidiChannel} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound} Pt:{ctrl.Patch}");
+                //    res.Add($"    Ch:{mout.MidiChannel} St:{ctrl.State} Sel:{ctrl.Selected} Enb:{mout.EnableSound}");
+                //}
+                //else
+                //{
+                //    //res.Add($"    Ch:{mout.MidiChannel} ctrl:null Enb:{mout.EnableSound} Pt:{mout.Patch}");
+                //    res.Add($"    Ch:{mout.MidiChannel} ctrl:null Enb:{mout.EnableSound}");
+                //}
             }
             // res.ForEach(l => Tell(INFO, l));
-
         }
 
         /// <summary>
