@@ -13,7 +13,7 @@ using Ephemera.NBagOfUis;
 namespace Ephemera.MidiLib
 {
     /// <summary>Hides all the messy logic with midi devices and channels, and the NAudio versions of each.</summary>
-    public class ChannelManager : IDisposable
+    public class MidiManager : IDisposable
     {
         #region Fields
         /// <summary>All midi devices to use for send. Index is the IOutputDevice.Id.</summary>
@@ -46,7 +46,7 @@ namespace Ephemera.MidiLib
         /// Normal constructor.
         /// </summary>
         /// <param name="controls">Required for using UI controls. Headless doesn't.</param>
-        public ChannelManager(Control.ControlCollection? controls = null)
+        public MidiManager(Control.ControlCollection? controls = null)
         {
             _controls = controls;
         }

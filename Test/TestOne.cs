@@ -45,7 +45,7 @@ namespace Ephemera.MidiLib.Test
         {
             StopOnFail(true);
 
-            ChannelManager CM = new();
+            MidiManager MM = new();
 
             // Dummy device.
             var outdev = "nullout:test1";
@@ -53,18 +53,18 @@ namespace Ephemera.MidiLib.Test
             BaseEvent? sent = null;
             //MidiManager.Instance.MessageSent += (sender, e) => sent = e;
             BaseEvent? revt = null;
-            CM.MessageReceived += (sender, e) => revt = e;
+            MM.MessageReceived += (sender, e) => revt = e;
 
             // Input
-            var chan_in1 = CM.OpenMidiInput(indev, 1, "my input");
+            var chan_in1 = MM.OpenMidiInput(indev, 1, "my input");
 
             ///// Named instrument mode
             // 1 is GM instruments
-            var chnd1 = CM.OpenMidiOutput(outdev, 1, "keys"); //, MidiDefs.InstrumentId.HonkyTonkPiano);
+            var chnd1 = MM.OpenMidiOutput(outdev, 1, "keys"); //, MidiDefs.InstrumentId.HonkyTonkPiano);
             // 2 is GM drums1
-            var chnd2 = CM.OpenMidiOutput(outdev, 10, "syndrums"); //, MidiDefs.DrumKitId.Electronic);
+            var chnd2 = MM.OpenMidiOutput(outdev, 10, "syndrums"); //, MidiDefs.DrumKitId.Electronic);
             // 3 is Alt instruments
-            var chnd3 = CM.OpenMidiOutput(outdev, 4, "woofer"); //, KustomInstrumentId.WaterWhistle1);
+            var chnd3 = MM.OpenMidiOutput(outdev, 4, "woofer"); //, KustomInstrumentId.WaterWhistle1);
 
 //            Assert(chnd1.PatchName == "HonkyTonkPiano");
 //            Assert(chnd2.PatchName == "Electronic");

@@ -12,7 +12,7 @@ Requires VS2026 and .NET10.
 
 ChannelControl   ChannelControl2
 ChannelHandle => NebHandle or Handle or just use int?
-ChannelManager => MidiManager??
+MidiManager => MidiManager??
 Common
 Events
 IDevice

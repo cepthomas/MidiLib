@@ -27,7 +27,7 @@ namespace Ephemera.MidiLib.Test
         #region Fields
         TestSettings _settings = new();
 
-        readonly ChannelManager CM;
+        readonly MidiManager MM;
 
         readonly List<MidiOutput> _outputs = [];
 
@@ -48,7 +48,7 @@ namespace Ephemera.MidiLib.Test
         public MainForm()
         {
             InitializeComponent();
-            CM = new(Controls);
+            MM = new(Controls);
 
             Text = "MidiLib ¯\\_(^^)_/¯";
 
@@ -78,7 +78,7 @@ namespace Ephemera.MidiLib.Test
             timeBar.StateChange += (sender, e) => { Tell(INFO, $">>> TimeBar event. {timeBar.Current}"); };
 
             // UI handlers.
-            btnKillMidi.Click += (_, __) => { CM.KillAll(); };
+            btnKillMidi.Click += (_, __) => { MM.KillAll(); };
             chkLoop.CheckedChanged += (_, __) => { timeBar.DoLoop = chkLoop.Checked; };
             btnRewind.Click += (_, __) => { timeBar.Rewind(); };
 
@@ -89,7 +89,7 @@ namespace Ephemera.MidiLib.Test
             btnSend.Click += (_, _) => TestSend();
 
             // Hook up manager notifications.
-            CM.MessageReceived += Mgr_MessageReceived;
+            MM.MessageReceived += Mgr_MessageReceived;
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Ephemera.MidiLib.Test
                 Tell(ERROR, ex.Message);
             }
 
-            CM.UpdateState();
+            MM.UpdateState();
 
             Tell(INFO, $">>> OnLoad done.");
             Tell(INFO, string.Join(Environment.NewLine, MidiDefs.GenUserDeviceInfo()));
@@ -126,7 +126,7 @@ namespace Ephemera.MidiLib.Test
         {
             if (disposing && (components is not null))
             {
-                CM.Dispose();
+                MM.Dispose();
                 components.Dispose();
             }
 
@@ -141,10 +141,10 @@ namespace Ephemera.MidiLib.Test
         /// <param name="e"></param>
         void Go_Click(object? sender, EventArgs e)
         {
-            // CM.UpdateState();
+            // MM.UpdateState();
             List<string> res = [];
             res.Add("Output Channels");
-            foreach (var mout in CM.GetOutputs())
+            foreach (var mout in MM.GetOutputs())
             {
                 //if (ctrl is not null)
                 //{
@@ -180,9 +180,9 @@ namespace Ephemera.MidiLib.Test
         void BuildStatic()
         {
             // Init system - Keys
-            var mout = CM.OpenMidiOutput(_settings.KeysDeviceName, _settings.KeysMidiChannel, _settings.KeysName);
+            var mout = MM.OpenMidiOutput(_settings.KeysDeviceName, _settings.KeysMidiChannel, _settings.KeysName);
             // Update system.
-            CM.Bind(mout, cc1);
+            MM.Bind(mout, cc1);
             _outputs.Add(mout);
 
             // Init controls. Typically voloume and state would be persisted per output.
@@ -195,8 +195,8 @@ namespace Ephemera.MidiLib.Test
             UpdateInfo(mout, cc1, _settings.KeysPatch);
 
             // Init system - Drums
-            mout = CM.OpenMidiOutput(_settings.DrumsDeviceName, _settings.DrumsMidiChannel, _settings.DrumsName);
-            CM.Bind(mout, cc2);
+            mout = MM.OpenMidiOutput(_settings.DrumsDeviceName, _settings.DrumsMidiChannel, _settings.DrumsName);
+            MM.Bind(mout, cc2);
             _outputs.Add(mout);
 
             // Init controls.
@@ -217,19 +217,19 @@ namespace Ephemera.MidiLib.Test
             int x = cc2.Right + 10;
             int y = cc2.Top;
 
-            var mout = CM.OpenMidiOutput(OUTDEV1, 3, "dyn keys");
+            var mout = MM.OpenMidiOutput(OUTDEV1, 3, "dyn keys");
             CreateControl(mout, MidiDefs.InstrumentId.HonkyTonkPiano);
 
             // Custom.
-            mout = CM.OpenMidiOutput(OUTDEV1, 4, "dyn bass");
+            mout = MM.OpenMidiOutput(OUTDEV1, 4, "dyn bass");
             CreateControl(mout, KustomInstrumentId.OctaveStringPad);
 
             // Drum kit.
-            mout = CM.OpenMidiOutput(OUTDEV1, 10, "dyn drums");
+            mout = MM.OpenMidiOutput(OUTDEV1, 10, "dyn drums");
             CreateControl(mout, MidiDefs.DrumKitId.Orchestra);
 
             // Input.
-            var inchan = CM.OpenMidiInput(INDEV, 1, "dyn input"); // TODO2 test midi input
+            var inchan = MM.OpenMidiInput(INDEV, 1, "dyn input"); // TODO2 test midi input
 
             // Ceate a control for each output and bind object.
             void CreateControl(MidiOutput mout, Enum patch)
@@ -246,8 +246,8 @@ namespace Ephemera.MidiLib.Test
                 };
                 ctrl.InfoClick += ChannelControl_InfoClick;
 
-                CM.Bind(mout, ctrl);
-                CM.SetPatch(mout, patch);
+                MM.Bind(mout, ctrl);
+                MM.SetPatch(mout, patch);
                 UpdateInfo(mout, ctrl, patch);
 
                 _outputs.Add(mout);
@@ -419,7 +419,7 @@ namespace Ephemera.MidiLib.Test
                 if (ch.name == "KeysPatch")
                 {
                     // Update system.
-                    CM.SetPatch(_outputs[0], _settings.KeysPatch);
+                    MM.SetPatch(_outputs[0], _settings.KeysPatch);
                     // Update UI.
                     UpdateInfo(_outputs[0], cc1, _settings.KeysPatch);
                 }
@@ -427,7 +427,7 @@ namespace Ephemera.MidiLib.Test
                 if (ch.name == "DrumKitPatch")
                 {
                     // Update system.
-                    CM.SetPatch(_outputs[1], _settings.DrumKitPatch);
+                    MM.SetPatch(_outputs[1], _settings.DrumKitPatch);
                     // Update UI.
                     UpdateInfo(_outputs[1], cc2, _settings.DrumKitPatch);
                 }
