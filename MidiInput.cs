@@ -27,7 +27,7 @@ namespace Ephemera.MidiLib
         public int MidiChannel { get; init; }
 
         /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
+        public NebId Id { get; init; }
 
         /// <summary>Host supplied name.</summary>
         public string Name { get; init; }
@@ -49,7 +49,7 @@ namespace Ephemera.MidiLib
             _device = device;
             MidiChannel = midiChannel;
             Name = name;
-            Handle = new(device.Id, MidiChannel, false);
+            Id = new(device.Id, MidiChannel, false);
         }
 
         public override string ToString()

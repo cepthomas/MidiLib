@@ -148,8 +148,8 @@ namespace Ephemera.MidiLib
         void Dev_MessageReceived(object? sender, BaseEvent e)
         {
             var dev = (sender as MidiInputDevice)!;
-            ChannelHandle chnd = new(dev.Id, e.MidiChannel, false);
-            var mins = _midiInputs.Where(mi => mi.Handle == chnd && mi.Enable);
+            NebId nid = new(dev.Id, e.MidiChannel, false);
+            var mins = _midiInputs.Where(mi => mi.Id == nid && mi.Enable);
             mins.ForEach(i => MessageReceived?.Invoke(this, e));
         }
         #endregion

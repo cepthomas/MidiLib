@@ -10,8 +10,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLib
 {
-    /// <summary>Channel handle class for interacting with scripts.</summary>
-    public class ChannelHandle
+    /// <summary>Handle class for interacting with scripts.</summary>
+    public class NebId
     {
         /// <summary>Differentiate inputs and outputs.</summary>
         static readonly int OUTPUT_FLAG = 0x0800;
@@ -30,13 +30,13 @@ namespace Ephemera.MidiLib
         public bool Output { get { return (_raw & OUTPUT_FLAG) > 0; } }
 
         /// <summary>App-side constructor.</summary>
-        public ChannelHandle(int deviceId, int midiChannel, bool output)
+        public NebId(int deviceId, int midiChannel, bool output)
         {
             _raw = (deviceId << 4) | midiChannel | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
 
         /// <summary>Script-side constructor.</summary>
-        public ChannelHandle(int handle)
+        public NebId(int handle)
         {
             _raw = handle;
         }
