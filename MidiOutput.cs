@@ -19,7 +19,7 @@ namespace Ephemera.MidiLib
         readonly IOutputDevice _device;
         #endregion
 
-        #region Properties
+        #region Properties from config
         /// <summary>1-based midi channel number. Default is invalid/unknown.</summary>
         public int MidiChannel { get; init; } = 0;
 
@@ -28,21 +28,25 @@ namespace Ephemera.MidiLib
 
         /// <summary>Host supplied name.</summary>
         public string Name { get; init; }
+        #endregion
+
+        #region Properties from runtime
+        /// <summary>True if not muted.</summary>
+        public bool EnableSound { get; internal set; } = true;
 
         /// <summary>True if not muted.</summary>
-        public bool EnableSound { get; set; } = true;
-
-
-
+        public bool Selected { get; internal set; } = false;
 
         /// <summary>Volume adjustment e.g. control slider.</summary>
-        public double VolumeDelta { get; set; } = 1.0;
+        public double VolumeDelta { get; internal set; } = 1.0;
+        #endregion
 
 
 
         /// <summary>Associated events - optional depending on implementation.</summary>
         public EventCollection Events { get; set; } = new(); // TODO1 better way?
-        #endregion
+
+
 
         #region Lifecycle
         /// <summary>

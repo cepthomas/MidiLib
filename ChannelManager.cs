@@ -386,10 +386,15 @@ namespace Ephemera.MidiLib
         /// Iterate through all the outputs.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<MidiOutput mout> GetOutputs()
+        public IEnumerable<MidiOutput> GetOutputs()
         {
             // Update outputs.
-            _midiOutputs.ForEach(o => o.mout.VolumeDelta = o.ctrl is null ? 1.0 : o.ctrl.Volume);
+            _midiOutputs.ForEach(o =>
+            {
+                o.mout.VolumeDelta = o.ctrl is null ? 1.0 : o.ctrl.Volume;
+                o.mout.Selected = o.ctrl is null ? false : o.ctrl.Selected;
+
+            });
 
             foreach (var op in _midiOutputs)
             {

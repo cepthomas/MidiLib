@@ -31,6 +31,7 @@
 
     <ItemGroup>
       <Compile Remove="UiEditors_1.cs" />
+      <Compile Remove="_temp.cs" />
     </ItemGroup>
 
     <ItemGroup>
