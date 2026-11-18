@@ -9,6 +9,24 @@ Requires VS2026 and .NET10.
 
 # Components
 
+
+ChannelControl   ChannelControl2
+ChannelHandle => NebHandle or Handle or just use int?
+ChannelManager => MidiManager??
+Common
+Events
+IDevice
+MidiDefs
+MidiDevice
+MidiInput
+MidiOutput
+MusicTime
+NullDevice
+OscDevice
+TimeBar
+UiEditors
+
+
 ## Core
 
 - Channel

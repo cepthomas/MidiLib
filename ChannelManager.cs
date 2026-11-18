@@ -22,7 +22,7 @@ namespace Ephemera.MidiLib
         /// <summary>All the outputs with associated controls.</summary>
         readonly List<(MidiOutput mout, ChannelControl? ctrl)> _midiOutputs = [];
 
-        /// <summary>Need to add/remove dynamically generated controls.</summary>
+        /// <summary>Add/remove dynamically generated controls to WinForms collection.</summary>
         readonly Control.ControlCollection? _controls;
 
         /// <summary>All midi devices to use for receive. Index is the id.</summary>
@@ -375,18 +375,39 @@ namespace Ephemera.MidiLib
         }
         #endregion
 
+
+        // void UpdateOutputs()
+        // {
+        //     _midiOutputs.ForEach(o => o.mout.VolumeDelta = o.ctrl is null ? 1.0 : o.ctrl.Volume);
+        // }
+
         #region Collection accessors
         /// <summary>
-        /// Iterate through the contents.
+        /// Iterate through all the outputs.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<(MidiOutput mout, ChannelControl? ctrl)> GetOutputs() // TODO1 do better?
+        public IEnumerable<MidiOutput mout> GetOutputs()
         {
+            // Update outputs.
+            _midiOutputs.ForEach(o => o.mout.VolumeDelta = o.ctrl is null ? 1.0 : o.ctrl.Volume);
+
             foreach (var op in _midiOutputs)
             {
-                yield return op;
+                yield return op.mout;
             }
         }
+
+        // /// <summary>
+        // /// Iterate through the contents.
+        // /// </summary>
+        // /// <returns></returns>
+        // public IEnumerable<(MidiOutput mout, ChannelControl? ctrl)> GetOutputs() // TODO1 do better?
+        // {
+        //     foreach (var op in _midiOutputs)
+        //     {
+        //         yield return op;
+        //     }
+        // }
 
         ///// <summary>
         ///// Get midiChannel object from control object.

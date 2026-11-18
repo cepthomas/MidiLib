@@ -26,14 +26,14 @@ namespace Ephemera.MidiLib
         /// <summary>1-based midi channel number. Required.</summary>
         public int MidiChannel { get; init; }
 
+        /// <summary>Handle for use by scripts.</summary>
+        public ChannelHandle Handle { get; init; }
+
         /// <summary>Host supplied name.</summary>
         public string Name { get; init; }
 
         /// <summary>True if listening.</summary>
         public bool Enable { get; set; } = true;
-
-        /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
         #endregion
 
         /// <summary>

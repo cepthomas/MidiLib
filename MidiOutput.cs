@@ -23,17 +23,25 @@ namespace Ephemera.MidiLib
         /// <summary>1-based midi channel number. Default is invalid/unknown.</summary>
         public int MidiChannel { get; init; } = 0;
 
+        /// <summary>Handle for use by scripts.</summary>
+        public ChannelHandle Handle { get; init; }
+
         /// <summary>Host supplied name.</summary>
         public string Name { get; init; }
 
         /// <summary>True if not muted.</summary>
         public bool EnableSound { get; set; } = true;
 
-        /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
+
+
+
+        /// <summary>Volume adjustment e.g. control slider.</summary>
+        public double VolumeDelta { get; set; } = 1.0;
+
+
 
         /// <summary>Associated events - optional depending on implementation.</summary>
-        public EventCollection Events { get; set; } = new();
+        public EventCollection Events { get; set; } = new(); // TODO1 better way?
         #endregion
 
         #region Lifecycle
