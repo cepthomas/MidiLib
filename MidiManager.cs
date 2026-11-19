@@ -23,7 +23,7 @@ namespace Ephemera.MidiLib
         readonly List<(MidiOutput mout, ChannelControl? ctrl)> _midiOutputs = [];
 
         /// <summary>Add/remove dynamically generated controls to WinForms collection.</summary>
-        readonly Control.ControlCollection? _controls;
+        readonly Control.ControlCollection? _winControls;
 
         /// <summary>All midi devices to use for receive. Index is the id.</summary>
         readonly List<IInputDevice> _inputDevices = [];
@@ -48,7 +48,7 @@ namespace Ephemera.MidiLib
         /// <param name="controls">Required for using UI controls. Headless doesn't.</param>
         public MidiManager(Control.ControlCollection? controls = null)
         {
-            _controls = controls;
+            _winControls = controls;
         }
 
         /// <summary>
@@ -279,7 +279,7 @@ namespace Ephemera.MidiLib
         /// <param name="ctrl"></param>
         public void Bind(MidiOutput mout, ChannelControl ctrl)
         {
-            if (_controls is null) { throw new MidiLibException($"This configuration does not support UI controls"); }
+            if (_winControls is null) { throw new MidiLibException($"This configuration does not support UI controls"); }
 
             for (int i = 0; i < _midiOutputs.Count; i++)
             {
@@ -287,9 +287,9 @@ namespace Ephemera.MidiLib
                 {
                     if (_midiOutputs[i].ctrl is not null) { throw new MidiLibException($"Channel [{mout}] already bound to [{ctrl}]"); }
 
-                    if (!_controls.Contains(ctrl))
+                    if (!_winControls.Contains(ctrl))
                     {
-                        _controls.Add(ctrl);
+                        _winControls.Add(ctrl);
                     }
 
                     ctrl.StateChange += ChannelControl_StateChange;
@@ -360,12 +360,12 @@ namespace Ephemera.MidiLib
         {
             KillAll();
 
-            if (_controls is not null)
+            if (_winControls is not null)
             {
                 // Clean out our current elements.
                 _midiOutputs.ForEach(b =>
                 {
-                    _controls.Remove(b.ctrl);
+                    _winControls.Remove(b.ctrl);
                     b.ctrl?.Dispose();
                 });
             }
@@ -380,7 +380,7 @@ namespace Ephemera.MidiLib
         /// <returns></returns>
         public IEnumerable<MidiOutput> GetOutputs()
         {
-            // Updates.
+            // Update dynamic stuff.
             _midiOutputs.ForEach(o =>
             {
                 o.mout.VolumeDelta = o.ctrl is null ? 1.0 : o.ctrl.Volume;

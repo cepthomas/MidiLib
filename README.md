@@ -1,4 +1,4 @@
-# MidiLib TODO1 update
+# MidiLib
 
 This library contains a bunch of midi components and controls accumulated over the years.
 
@@ -9,40 +9,19 @@ Requires VS2026 and .NET10.
 
 # Components
 
-
-ChannelControl   ChannelControl2
-ChannelHandle => NebId
-ChannelManager => MidiManager
-Common
-Events
-IDevice
-MidiDefs
-MidiDevice
-MidiInput
-MidiOutput
-MusicTime
-NullDevice
-OscDevice
-TimeBar
-UiEditors
-
-
 ## Core
 
-- Channel
-    - Represents midi channels in a way usable by `ChannelControl` and output devices.
+- MidiOutput
+    - Represents midi outputs and devices in a way usable by `ChannelControl`.
     - Intelligent handling of patch names.
     - Primary talker to NAudio.
 
-- ChannelControl
-    - UI aspects of a midi channel.
-    - Primary talker to user.
+- MidiInput
+    - Represents midi inputs and devices.
 
-- ChannelManager
-    - Coordinates Channel/ChannelControl/MidiOutputDevice lifetimes and interactions.
-
-- InputManager
-    - Coordinates MidiInputDevice lifetimes and interactions.
+- MidiManager
+    - Coordinates all component lifetimes and interactions.
+    - Hides all the messy logic behind API.
 
 - MidiOutputDevice/MidiInputDevice
     - The top level components for sending and receiving midi data.
@@ -55,7 +34,7 @@ UiEditors
 
 - MusicTime
     - Time is represented by `bar.beat.subbeat` but 0-based, unlike typical music representation.
-    - Resolution is limited to 32nd notes due to accuracy of the windows multimedia timer.
+    - Resolution is limited to 32nd notes.
 
 - BaseEvent and derived
     - Higher level event classes for use by client apps.
@@ -65,7 +44,6 @@ UiEditors
 
 - NullOutputDevice/NullInputDevice
     - Dummy devices for dev and debug.
-
 
 ## UI
 
