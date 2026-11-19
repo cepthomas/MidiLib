@@ -253,7 +253,6 @@ namespace Ephemera.MidiLib
 
             return dev;
         }
-
         #endregion
 
         #region User functions

@@ -37,8 +37,11 @@ namespace Ephemera.MidiLib
         /// <summary>True if not muted.</summary>
         public bool Selected { get; internal set; } = false;
 
-        /// <summary>Volume adjustment e.g. control slider.</summary>
+        /// <summary>Volume adjustment e.g. from control slider.</summary>
         public double VolumeDelta { get; internal set; } = 1.0;
+
+        /// <summary>Flavor of the day.</summary>
+        public Enum? CurrentPatch { get; internal set; } = null;
         #endregion
 
         #region Lifecycle
@@ -81,6 +84,11 @@ namespace Ephemera.MidiLib
                  evt is Function)
             {
                 // ignore
+            }
+            else if (evt is Patch)
+            {
+                var pe = evt as Patch;
+                CurrentPatch = pe?.Id;
             }
             else
             {
