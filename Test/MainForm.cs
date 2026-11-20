@@ -12,6 +12,7 @@ using System.Windows.Forms.Design;
 using System.Text.Json.Serialization;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
+using Ephemera.NBagOfTricks.PNUT;
 
 
 namespace Ephemera.MidiLib.Test
@@ -85,8 +86,8 @@ namespace Ephemera.MidiLib.Test
             btnGo.Click += Go_Click; ;
             btnTimebar.Click += (_, _) => TestTimeBar();
             btnProperty.Click += (_, _) => ChangePatch();
-
             btnSend.Click += (_, _) => TestSend();
+            btnUnitTest.Click += BtnUnitTest_Click;
 
             // Hook up manager notifications.
             MM.MessageReceived += Mgr_MessageReceived;
@@ -229,7 +230,7 @@ namespace Ephemera.MidiLib.Test
             CreateControl(mout, MidiDefs.DrumKitId.Orchestra);
 
             // Input.
-            var inchan = MM.OpenMidiInput(INDEV, 1, "dyn input"); // TODO2 test midi input
+            var inchan = MM.OpenMidiInput(INDEV, 1, "dyn input"); // TODO test midi input
 
             // Ceate a control for each output and bind object.
             void CreateControl(MidiOutput mout, Enum patch)
@@ -257,6 +258,19 @@ namespace Ephemera.MidiLib.Test
         }
 
         #region Test code
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void BtnUnitTest_Click(object? sender, EventArgs e)
+        {
+            TestRunner runner = new(OutputFormat.Readable);
+            var torun = new[] { "MIDILIB" };  // MIDILIB_MUSTIME
+            runner.RunSuites(torun);
+            runner.Context.OutputLines.ForEach(l => Tell("TST", l));
+        }
+
         /// <summary>
         /// Send some test stuff.
         /// </summary>

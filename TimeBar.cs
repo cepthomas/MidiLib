@@ -10,7 +10,7 @@ using Ephemera.NBagOfTricks;
 using System.Windows.Forms.VisualStyles;
 
 
-// TODO2 zoom, drag, shift
+// TODO zoom, drag, shift
 
 namespace Ephemera.MidiLib
 {
@@ -107,13 +107,8 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Events
-        /// <summary>Something happened.</summary>
-        public event EventHandler<StateChangeEventArgs>? StateChange;
-        public class StateChangeEventArgs : EventArgs
-        {
-            /// <summary>User changed current time.</summary>
-            public bool CurrentTimeChange { get; set; } = false;
-        }
+        /// <summary>User changed current time.</summary>
+        public event EventHandler<EventArgs>? TimeChange;
         #endregion
 
         #region Lifecycle
@@ -376,7 +371,7 @@ namespace Ephemera.MidiLib
                 else
                 {
                     _current.Set(newval, Snap);
-                    StateChange?.Invoke(this, new() { CurrentTimeChange = true });
+                    TimeChange?.Invoke(this, new());
                 }
 
                 ValidateTimes();

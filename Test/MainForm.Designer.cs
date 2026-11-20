@@ -33,6 +33,8 @@ namespace Ephemera.MidiLib.Test
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             btnGo = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            btnUnitTest = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             tvInfo = new Ephemera.NBagOfUis.TextViewer();
             sldMasterVolume = new Ephemera.NBagOfUis.Slider();
             cc1 = new ChannelControl();
@@ -47,7 +49,7 @@ namespace Ephemera.MidiLib.Test
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator4, btnTimebar, toolStripSeparator3, btnProperty, toolStripSeparator5, btnSend, toolStripSeparator6, btnGo, toolStripSeparator1 });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator4, btnTimebar, toolStripSeparator3, btnProperty, toolStripSeparator5, btnSend, toolStripSeparator6, btnUnitTest, toolStripSeparator1, btnGo, toolStripSeparator7 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(741, 26);
@@ -137,6 +139,20 @@ namespace Ephemera.MidiLib.Test
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
             toolStripSeparator1.Size = new System.Drawing.Size(6, 26);
+            // 
+            // btnUnitTest
+            // 
+            btnUnitTest.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            btnUnitTest.Image = (System.Drawing.Image)resources.GetObject("btnUnitTest.Image");
+            btnUnitTest.ImageTransparentColor = System.Drawing.Color.Magenta;
+            btnUnitTest.Name = "btnUnitTest";
+            btnUnitTest.Size = new System.Drawing.Size(37, 23);
+            btnUnitTest.Text = "unit";
+            // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new System.Drawing.Size(6, 26);
             // 
             // tvInfo
             // 
@@ -247,6 +263,8 @@ namespace Ephemera.MidiLib.Test
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripButton btnSend;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripButton btnUnitTest;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
     }
 }
 

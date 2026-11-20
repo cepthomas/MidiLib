@@ -4,27 +4,25 @@ using System.Linq;
 using Ephemera.NBagOfTricks;
 
 
-// TODO2 Other midi resolutions. Pack subs into tick bits?
-
 namespace Ephemera.MidiLib
 {
     /// <summary>Sort of like DateTime but for musical terminology in midi.</summary>
     public class MusicTime : IEquatable<MusicTime>, IComparable<MusicTime>
     {
         #region Fields
-        /// <summary>Only 4/4 time supported currently.</summary>
+        /// <summary>Tick resolution - per beat. Default is (8) which gives 32nd note resolution.</summary>
+        public static readonly int TICK_RES = 8;
+
+        /// <summary>Only 4/4 time supported currently. TODO support others.</summary>
         static readonly int _beatsPerBar = 4;
 
-        /// <summary>Tick resolution.
-        /// A quarter note gets one beat in standard time signatures like 4/4 or 3/4.
-        /// This internal resolution (8) gives 32nd note resolution (per subbbeat).
-        /// </summary>
-        static readonly int _subbeatsPerBeat = 8;
+        /// <summary>Same as tick resolution.</summary>
+        static readonly int _subbeatsPerBeat = TICK_RES;
 
         /// <summary>Convenience.</summary>
         static readonly int _subbeatsPerBar = _subbeatsPerBeat * _beatsPerBar;
 
-        /// <summary>For hashing comparable.</summary>
+        /// <summary>For comparable hashing.</summary>
         readonly int _id;
 
         /// <summary>Increment for unique value.</summary>

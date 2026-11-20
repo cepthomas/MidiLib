@@ -131,7 +131,7 @@ namespace Ephemera.MidiLib
         #endregion
 
         #region Events
-        /// <summary>Client needs to deal with this.</summary>
+        /// <summary>Client optional.</summary>
         public event EventHandler<BaseEvent>? MessageSent;
         #endregion
 

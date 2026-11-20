@@ -39,6 +39,9 @@ namespace Ephemera.MidiLib
         #region Events
         /// <summary>Handler for midi message arrived.</summary>
         public event EventHandler<BaseEvent>? MessageReceived;
+
+        /// <summary>Client optional.</summary>
+        public event EventHandler<BaseEvent>? MessageSent;
         #endregion
 
         #region Lifecycle
@@ -188,7 +191,7 @@ namespace Ephemera.MidiLib
                     if (dev is not null)
                     {
                         _outputDevices.Add(dev);
-                        //dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
+                        dev.MessageSent += (sender, e) => MessageSent?.Invoke((IOutputDevice)sender!, e);
                     }
                 }
                 catch (Exception)

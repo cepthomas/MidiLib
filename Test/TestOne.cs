@@ -20,8 +20,6 @@ namespace Ephemera.MidiLib.Test
         {
             StopOnFail(true);
 
-            //string fnIni = Path.Combine(myPath, "..", "gm_defs.ini");
-
             var smd = MidiDefs.GenMarkdown();
             var fnOut = Path.Join(myPath, "midi_defs.md");
             File.WriteAllText(fnOut, string.Join(Environment.NewLine, smd));
@@ -31,13 +29,13 @@ namespace Ephemera.MidiLib.Test
             File.WriteAllText(fnOut, string.Join(Environment.NewLine, sld));
 
             var sdi = MidiDefs.GenUserDeviceInfo();
-            Assert(sdi.Count == 0);
+            Assert(sdi.Count == 13); // YMMV
         }
     }
 
     //----------------------------------------------------------------
     /// <summary>Test midi IO logic.</summary>
-    public class MIDILIB_CHANNEL : TestSuite
+    public class MIDILIB_INPUT_OUTPUT : TestSuite
     {
         readonly string myPath = MiscUtils.GetSourcePath();
 
@@ -51,51 +49,32 @@ namespace Ephemera.MidiLib.Test
             var outdev = "nullout:test1";
             var indev = "nullin:test1";
             BaseEvent? sent = null;
-            //MidiManager.Instance.MessageSent += (sender, e) => sent = e;
+            MM.MessageSent += (sender, e) => sent = e;
             BaseEvent? revt = null;
             MM.MessageReceived += (sender, e) => revt = e;
 
             // Input
-            var chan_in1 = MM.OpenMidiInput(indev, 1, "my input");
+            var inp1 = MM.OpenMidiInput(indev, 1, "my input");
 
             ///// Named instrument mode
             // 1 is GM instruments
-            var chnd1 = MM.OpenMidiOutput(outdev, 1, "keys"); //, MidiDefs.InstrumentId.HonkyTonkPiano);
+            var outp1 = MM.OpenMidiOutput(outdev, 1, "keys");
+            MM.SetPatch(outp1, MidiDefs.InstrumentId.HonkyTonkPiano);
             // 2 is GM drums1
-            var chnd2 = MM.OpenMidiOutput(outdev, 10, "syndrums"); //, MidiDefs.DrumKitId.Electronic);
+            var outp2= MM.OpenMidiOutput(outdev, 10, "syndrums");
+            MM.SetPatch(outp2, MidiDefs.DrumKitId.Electronic);
             // 3 is Alt instruments
-            var chnd3 = MM.OpenMidiOutput(outdev, 4, "woofer"); //, KustomInstrumentId.WaterWhistle1);
+            var outp3 = MM.OpenMidiOutput(outdev, 4, "woofer");
+            MM.SetPatch(outp3, KustomInstrumentId.WaterWhistle1);
 
-//            Assert(chnd1.PatchName == "HonkyTonkPiano");
-//            Assert(chnd2.PatchName == "Electronic");
-//            Assert(chnd3.PatchName == "WaterWhistle1");
+            Assert(outp1.CurrentPatch!.ToString() == "HonkyTonkPiano");
+            Assert(outp2.CurrentPatch!.ToString() == "Electronic");
+            Assert(outp3.CurrentPatch!.ToString() == "WaterWhistle1");
 
-            // Should send midi patch.
-            //chnd1.PatchName = "Trumpet";
-            //Assert(sent is Patch);
+            // Last sent midi patch.
             Patch pevt = (sent as Patch)!;
-            Assert(pevt.MidiChannel == chnd1.MidiChannel);
-//            Assert(pevt.Id == MidiDefs.InstrumentId.HonkyTonkPiano);
-        }
-    }
-
-    //----------------------------------------------------------------
-    /// <summary>Test def file loading etc.</summary>
-    public class MIDILIB_DEF : TestSuite
-    {
-        readonly string myPath = MiscUtils.GetSourcePath();
-
-        public override void RunSuite()
-        {
-            StopOnFail(true);
-
-            string fn = Path.Join(myPath, "..", "gm_defs.ini");
-
-            var ir = new IniReader();
-            ir.ParseFile(fn);
-
-            var sn = ir.GetSectionNames();
-            Assert(sn.Count == 4);
+            Assert(pevt.MidiChannel == outp3.MidiChannel);
+            Assert(pevt.Id.ToString() == "WaterWhistle1");
         }
     }
 

@@ -89,6 +89,7 @@ namespace Ephemera.MidiLib
             {
                 var pe = evt as Patch;
                 CurrentPatch = pe?.Id;
+                _device.Send(pe);
             }
             else
             {
